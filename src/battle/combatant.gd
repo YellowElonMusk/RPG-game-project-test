@@ -37,6 +37,17 @@ var mp: int
 ## this combatant's own next turn starts, when BattleCore clears it.
 var is_defending: bool = false
 
+## Set by Karen's Speak to the Manager special (Story 003): this combatant
+## loses its next turn. BattleCore clears it the moment that turn is skipped,
+## the same "set once, cleared on the next turn" shape as `is_defending`.
+var is_stunned: bool = false
+
+## Rounds remaining of Florida Man's Viral Stunt special (Story 003): while
+## greater than 0, this combatant takes extra damage (DamageCalculator's F5
+## modifier, `VULNERABLE_PCT`). Unlike `is_defending`/`is_stunned`, this ticks
+## down once per round (BattleCore._tick_round_effects()), not per turn.
+var vulnerable_rounds_left: int = 0
+
 
 func _init(p_display_name: String, p_max_hp: int, p_max_mp: int, p_attack: int,
 		p_defense: int, p_speed: int, p_is_enemy: bool, p_is_boss: bool = false) -> void:
@@ -91,3 +102,5 @@ func reset_for_battle() -> void:
 	hp = max_hp
 	mp = max_mp
 	is_defending = false
+	is_stunned = false
+	vulnerable_rounds_left = 0

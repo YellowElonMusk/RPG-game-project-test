@@ -115,8 +115,9 @@ func get_active_combatant() -> Combatant:
 
 ## Resolves one action for the active squad combatant: Attack damages
 ## `target`, Defend halves incoming damage until the actor's next turn, and
-## a Special spends its MP cost and resolves its target with no further
-## effect (Acceptance Criterion 7 — effects are Story 003's scope).
+## a Special spends its MP cost and resolves its `special_effect` (Story 003:
+## stun, heal-party, heal-single, damage-debuff, or direct-damage — see
+## `src/battle/squad/specials.gd`).
 ##
 ## Returns the BattleOutcome for this action, or null if the action was
 ## illegal (wrong turn, a Special while faction_rule bans Specials this round,
@@ -199,20 +200,40 @@ func _resolve_move(actor: Combatant, move: Move, target: Combatant) -> BattleOut
 
 	match move.category:
 		Move.Category.ATTACK:
-			var amount: int = DamageCalculator.calculate_damage(actor, target, move.power, rng)
-			var removed: int = target.take_damage(amount)
-			hp_delta = -removed
+			hp_delta = -_apply_damage(actor, target, move.power)
 			target_knocked_out = target.is_knocked_out()
 		Move.Category.DEFEND:
 			actor.is_defending = true
 		Move.Category.SPECIAL:
-			pass  # Plumbing only — no effect defined yet (Story 003).
+			match move.special_effect:
+				Move.SpecialEffect.STUN:
+					SquadSpecials.apply_stun(target)
+				Move.SpecialEffect.HEAL_PARTY:
+					var side := get_living_enemies() if actor.is_enemy else get_living_squad()
+					hp_delta = SquadSpecials.heal_party(actor, side, move.power)
+				Move.SpecialEffect.HEAL_SINGLE:
+					hp_delta = SquadSpecials.heal_single(actor, target, move.power)
+				Move.SpecialEffect.DAMAGE_DEBUFF:
+					SquadSpecials.apply_vulnerable(target, move.effect_rounds)
+				Move.SpecialEffect.DIRECT_DAMAGE:
+					hp_delta = -_apply_damage(actor, target, move.power)
+					target_knocked_out = target.is_knocked_out()
+				Move.SpecialEffect.NONE:
+					pass  # No effect — not a real Special (shouldn't normally happen).
 
 	var outcome := BattleOutcome.new(actor, move.display_name, move.category,
 			target, hp_delta, mp_delta, target_knocked_out, round_number)
 	outcome_log.append(outcome)
 	action_resolved.emit(outcome)
 	return outcome
+
+
+## Shared by Move.Category.ATTACK and Move.SpecialEffect.DIRECT_DAMAGE (Home
+## Run): runs the same damage pipeline (Stats & Damage F3/F5/F6/F7) so the
+## two call sites can't drift apart. Returns the HP actually removed.
+func _apply_damage(attacker: Combatant, defender: Combatant, power: int) -> int:
+	var amount: int = DamageCalculator.calculate_damage(attacker, defender, power, rng)
+	return defender.take_damage(amount)
 
 
 func _skip_to_living_squad_member() -> void:
@@ -229,7 +250,9 @@ func _skip_to_living_squad_member() -> void:
 ## Each living enemy takes its turn in order. faction_rule.choose_enemy_action()
 ## chooses the turn, which may be several actions (for example Defend, then
 ## Attack). The actions resolve in sequence. An action whose target is already
-## knocked out is skipped.
+## knocked out is skipped. A stunned enemy (Karen's Speak to the Manager,
+## Story 003) skips its whole turn once and the flag clears, the same
+## "set once, cleared on the next turn" shape is_defending uses.
 func _run_enemy_phase() -> void:
 	state = State.ENEMY_TURN
 	for enemy in enemies:
@@ -239,6 +262,9 @@ func _run_enemy_phase() -> void:
 		if living_squad.is_empty():
 			break
 		enemy.is_defending = false
+		if enemy.is_stunned:
+			enemy.is_stunned = false
+			continue
 		var actions: Array = faction_rule.choose_enemy_action(enemy, living_squad, round_number, rng)
 		for action: Dictionary in actions:
 			var move: Move = action.get("move")
@@ -248,7 +274,19 @@ func _run_enemy_phase() -> void:
 			_resolve_move(enemy, move, target)
 			if _check_battle_end():
 				return
+	_tick_round_effects()
 	_advance_round()
+
+
+## Decrements Viral Stunt's per-round debuff (Story 003) for every combatant,
+## squad and enemies alike, once per round. Unlike is_defending/is_stunned
+## (cleared on the owner's next turn), this is round-based, so it ticks here
+## rather than in _skip_to_living_squad_member()/_run_enemy_phase()'s per-turn
+## clears.
+func _tick_round_effects() -> void:
+	for combatant in squad + enemies:
+		if combatant.vulnerable_rounds_left > 0:
+			combatant.vulnerable_rounds_left -= 1
 
 
 func _advance_round() -> void:

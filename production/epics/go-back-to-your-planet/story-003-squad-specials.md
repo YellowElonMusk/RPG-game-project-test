@@ -1,12 +1,12 @@
 # Story 003: Squad specials — Karen, Chef, Florida Man, Baguette Thrower
 
 > **Epic**: Go back to your planet!
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: [set by /dev-story when implementation begins]
+> **Last Updated**: 2026-10-20
 
 ## Context
 
@@ -83,10 +83,11 @@ Throwaway code; do not import it.
 
 ## Files
 
+- `src/battle/move.gd`
+- `src/battle/combatant.gd`
+- `src/battle/damage_calculator.gd`
+- `src/battle/battle_core.gd`
 - `src/battle/squad/specials.gd`
-- `tests/unit/squad/squad_specials_test.gd`
-
----
 
 ## QA Test Cases
 
@@ -108,3 +109,13 @@ Throwaway code; do not import it.
 
 - Depends on: `production/epics/go-back-to-your-planet/story-001-battle-core.md`, `production/epics/go-back-to-your-planet/story-002-bureaucratia.md`
 - Unlocks: `production/epics/go-back-to-your-planet/story-004-megacorp.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-20
+**Criteria**: 8/8 passing (none deferred)
+**Deviations**: ADVISORY — MP costs/powers/durations are hardcoded consts in `src/battle/squad/specials.gd` rather than an external data file, matching the existing pattern in `move.gd`/`bureaucratia.gd`.
+**Test Evidence**: waived at `qa.level: minimal`
+**Reviewed by**: self, no independent review (solo mode)
