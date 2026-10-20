@@ -1,0 +1,7 @@
+Reviewed-Content-Hash: src/battle/combatant.gd d34fb47a084417b30d605ce3bbb3253ef16ca346
+Reviewed-Content-Hash: src/battle/move.gd 0fcd0d6bf404110a192ee60952318c6f46420900
+Reviewed-Content-Hash: src/battle/battle_outcome.gd 70312dc9defeec4715d5cec418da23c171820ed6
+Reviewed-Content-Hash: src/battle/damage_calculator.gd c77866494169f37f8a4af292cfed7b54f1fc7395
+Reviewed-Content-Hash: src/battle/battle_core.gd 736e56fbc456ba3ff1a97cb59afaca5fa54d32eb
+Reviewed-Content-Hash: src/battle/battle_debug_harness.gd 4eaf19bfcf8fea3a61911638479f53ef027dd087
+Reviewed-Content-Hash: src/battle/battle_debug_harness.tscn 9e27e1763ae84d14d703a54ab74ffa75b1fdccc4

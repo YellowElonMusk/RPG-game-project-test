@@ -1,0 +1,421 @@
+# Game World Entity Registry
+#
+# PURPOSE: Single source of truth for all named game-world facts that appear
+# in more than one document. Skills check this before writing new content to
+# detect cross-doc inconsistencies at authoring time.
+#
+# RULES:
+#   - Only register facts that cross system boundaries. Internal-only facts
+#     (a formula used in one GDD only) do NOT need to be registered.
+#   - Never delete entries — set status: deprecated instead.
+#   - When a value changes: update the value, set revised: to today's date,
+#     and add a comment with the old value and which GDD changed it.
+#   - source: is the authoritative GDD — the one that "owns" this fact.
+#     Other GDDs that reference it list themselves in referenced_by.
+#   - When a new GDD references an existing entry, append its path to
+#     referenced_by. Do not create a duplicate entry.
+#
+# WRITTEN BY: /design-system (Phase 5 — after GDD sections are approved)
+#             /consistency-check (when resolving conflicts)
+#             economy-designer, systems-designer (new cross-system entries,
+#               after asking)
+# READ BY:    /design-system (Phase 2 — before authoring begins, and after
+#               Section C/D writes to conflict-check new entities/formulas)
+#             /consistency-check (primary input — grep-first, GDD-second)
+#             /review-all-gdds (Phase 1 — baseline for Phase 2 checks)
+#             /design-review (Phase 1 — cross-doc facts, in place of sibling GDDs)
+#             /content-audit (Step 2 — planned named-content count)
+#             /balance-check (Phase 3 — intended constant/formula values)
+#             /propagate-design-change (Step 3 — downstream GDD impact via referenced_by)
+#             /asset-spec (named entities to write specs for)
+#             economy-designer, systems-designer (before authoring items,
+#               loot tables and formulas)
+#
+# SEARCH PATTERNS (for skills using Grep):
+#   All entity names:        Grep pattern="^  - name:" path="design/registry/entities.yaml"
+#   Specific entity:         Grep pattern="  - name: goblin" path="design/registry/entities.yaml"
+#   All items:               Grep pattern="^  - name:" path="design/registry/entities.yaml" (items section)
+#   What combat.md owns:     Grep pattern="source: design/gdd/combat.md"
+#   What inventory.md uses:  Grep pattern="design/gdd/inventory.md" -B 8
+#                            (referenced_by is a block list, so match the
+#                            path; referenced_by.*inventory never matches)
+#   All gold values:          Grep pattern="value_gold:"
+#   Deprecated entries:      Grep pattern="status: deprecated"
+#
+# FORMAT: YAML. Consistent indentation is critical for grep reliability.
+#   Sections: entities | items | formulas | constants
+#   Each entry: name, status, source, referenced_by[], attributes{}, added, revised
+
+version: 1
+last_updated: "2026-10-20"
+
+# ─── ENTITIES ────────────────────────────────────────────────────────────────
+# Named game-world objects: enemies, NPCs, characters, factions, bosses.
+# Register an entity here when it appears in more than one GDD — e.g., an
+# enemy defined in combat.md that also drops items listed in inventory.md.
+#
+# Required fields: name, status, source, referenced_by, added
+# Attribute fields: any key stats that could appear in another GDD
+#   (health, damage, drops, faction, etc.)
+
+entities:
+  - name: faction_bureaucratia
+    status: active
+    source: design/art/art-bible.md
+    referenced_by:
+      - design/art/art-bible.md
+      - design/gdd/content-data-definitions.md
+    kind: alien
+    signature_color: "#D23A2E"   # Stamp Red
+    base_shape: square
+    added: 2026-10-13
+    revised: ""
+
+  - name: faction_influencia
+    status: active
+    source: design/art/art-bible.md
+    referenced_by:
+      - design/art/art-bible.md
+      - design/gdd/content-data-definitions.md
+    kind: alien
+    signature_color: "#E83E9C"   # Feed Magenta
+    base_shape: circle
+    added: 2026-10-13
+    revised: ""
+
+  - name: faction_megacorp
+    status: active
+    source: design/art/art-bible.md
+    referenced_by:
+      - design/art/art-bible.md
+      - design/gdd/content-data-definitions.md
+    kind: alien
+    signature_color: "#19C2D6"   # Terminal Cyan
+    base_shape: wedge
+    added: 2026-10-13
+    revised: ""
+
+  - name: faction_liberty7
+    status: active
+    source: design/art/art-bible.md
+    referenced_by:
+      - design/art/art-bible.md
+      - design/gdd/content-data-definitions.md
+    kind: alien
+    signature_color: "#2F5BEA"   # Anthem Blue
+    base_shape: star
+    added: 2026-10-13
+    revised: ""
+
+# Example (remove when first real entry is added):
+#
+# entities:
+#   - name: goblin
+#     status: active              # active | deprecated
+#     source: design/gdd/combat.md
+#     referenced_by:
+#       - design/gdd/combat.md
+#       - design/gdd/inventory.md
+#     health: 40
+#     damage: 8
+#     drops:
+#       - item: goblin_arm        # must match an entry in items section
+#         qty: 1
+#         drop_rate: 0.8          # 0.0–1.0
+#     added: 2026-03-26
+#     revised: ""
+
+
+# ─── ITEMS ───────────────────────────────────────────────────────────────────
+# Named collectables, equipment, consumables, crafting materials, currency.
+# Register an item when its name or value appears in more than one GDD.
+#
+# Required fields: name, status, source, referenced_by, added
+# Attribute fields: value_gold, weight, stackable, category, and any stat
+#   modifiers that another system (e.g., economy, crafting) might reference.
+
+items: []
+
+# Example:
+#
+# items:
+#   - name: goblin_arm
+#     status: active
+#     source: design/gdd/combat.md   # drop defined in combat GDD
+#     referenced_by:
+#       - design/gdd/combat.md
+#       - design/gdd/inventory.md    # inventory GDD lists its weight/stack rules
+#       - design/gdd/economy.md      # economy GDD references its sell price
+#     value_gold: 5
+#     weight: 1
+#     stackable: true
+#     category: crafting_material
+#     added: 2026-03-26
+#     revised: ""
+
+
+# ─── FORMULAS ────────────────────────────────────────────────────────────────
+# Named calculations with defined variables and output ranges.
+# Register a formula when its output feeds into another system's input,
+# or when another GDD references it by name.
+#
+# Required fields: name, status, source, referenced_by, variables[],
+#   output_range[min, max], added
+# Optional: expression (the actual formula), notes
+
+formulas:
+  - name: effective_stat
+    status: active
+    source: design/gdd/stats-damage-resolution.md
+    referenced_by:
+      - design/gdd/stats-damage-resolution.md
+    variables:
+      - stat
+      - "Σstat_flat"   # was: stat_flat_sum before 2026-10-20
+      - "Σstat_pct"    # was: stat_pct_sum before 2026-10-20
+      - stat_eff_min
+      - stat_eff_max
+    output_range: [0, 199]
+    expression: "clamp(floor((stat + Σstat_flat) * (1 + Σstat_pct)), stat_eff_min, stat_eff_max)"
+    notes: "F2. stat_eff_min is 1 for attack, 0 otherwise. Sums are not clamped; only the result is. Only attack, defense, speed are modifiable at MVP."
+    added: 2026-10-20
+    revised: 2026-10-20
+  - name: base_damage
+    status: active
+    source: design/gdd/stats-damage-resolution.md
+    referenced_by:
+      - design/gdd/stats-damage-resolution.md
+    variables:
+      - power
+      - power_scale
+      - attack_eff
+      - defense_eff
+    output_range: [0.0005, 1990]
+    expression: "(power / power_scale) * attack_eff^2 / (attack_eff + defense_eff)"
+    notes: "F3, pipeline step 1. Never 0 for valid input. Equal attack and defense gives power/10 * attack/2."
+    added: 2026-10-20
+    revised: ""
+  - name: base_heal
+    status: active
+    source: design/gdd/stats-damage-resolution.md
+    referenced_by:
+      - design/gdd/stats-damage-resolution.md
+    variables:
+      - power
+      - attack_eff
+      - heal_attack_scale
+    output_range: [1.02, 498]
+    expression: "power * (1 + attack_eff / heal_attack_scale)"
+    notes: "F4, pipeline step 1. Ignores target defense. Heals never draw from the RNG."
+    added: 2026-10-20
+    revised: ""
+  - name: modified_amount
+    status: active
+    source: design/gdd/stats-damage-resolution.md
+    referenced_by:
+      - design/gdd/stats-damage-resolution.md
+    variables:
+      - base
+      - "Σflat"   # was: flat_sum before 2026-10-20
+      - "Σpct"    # was: pct_sum before 2026-10-20
+      - mult_min
+      - mult_max
+    output_range: [0, 8967]
+    expression: "max(0, base + Σflat) * clamp(1 + Σpct, mult_min, mult_max)"
+    notes: "F5, pipeline step 2. Flat before percent; percents add. Applies to damage and heal. Result clamped to amount cap in step 4."
+    added: 2026-10-20
+    revised: 2026-10-20
+  - name: reward_totals
+    status: active
+    source: design/gdd/stats-damage-resolution.md
+    referenced_by:
+      - design/gdd/stats-damage-resolution.md
+    variables:
+      - reward.xp
+      - reward.money
+    output_range: [0, 59994]
+    expression: "sum of reward.xp and sum of reward.money over enemies KO'd in a won battle"
+    notes: "F9. Upper bound assumes 6 enemies per battle (Turn Battle owns the real maximum). Loss or flee gives 0."
+    added: 2026-10-20
+    revised: ""
+
+
+# Example:
+#
+# formulas:
+#   - name: damage_formula
+#     status: active
+#     source: design/gdd/combat.md
+#     referenced_by:
+#       - design/gdd/combat.md
+#       - design/gdd/progression.md   # progression GDD scales attack variable
+#     variables:
+#       - attack
+#       - defense
+#       - crit_chance
+#       - crit_multiplier
+#     output_range: [0, 999]
+#     expression: "max(0, attack - defense) * (1 + crit_chance * crit_multiplier)"
+#     notes: "Output feeds into health-system damage intake. Min is 0 (armour
+#       can absorb all damage). Max is uncapped in formula but tuning knob
+#       damage_cap in combat.md clamps at 999."
+#     added: 2026-03-26
+#     revised: ""
+
+
+# ─── CONSTANTS ───────────────────────────────────────────────────────────────
+# Named numerical values referenced across multiple systems.
+# Register a constant when it is defined in one GDD but another GDD must
+# agree with it (e.g., gold carry limit defined in economy but checked in
+# inventory, or base inventory slots defined in inventory but displayed in HUD).
+#
+# Required fields: name, status, source, referenced_by, value, unit, added
+
+constants:
+  - name: content_id_max_length
+    status: active
+    source: design/gdd/content-data-definitions.md
+    referenced_by:
+      - design/gdd/content-data-definitions.md
+    value: 64
+    unit: characters
+    added: 2026-10-13
+    revised: ""
+  - name: max_hp_cap
+    status: active
+    source: design/gdd/stats-damage-resolution.md
+    referenced_by:
+      - design/gdd/stats-damage-resolution.md
+      - design/gdd/content-data-definitions.md
+    value: 999
+    unit: hp   # F1 data range max for stat_block.max_hp; CDD validates
+    added: 2026-10-20
+    revised: ""
+  - name: max_mp_cap
+    status: active
+    source: design/gdd/stats-damage-resolution.md
+    referenced_by:
+      - design/gdd/stats-damage-resolution.md
+      - design/gdd/content-data-definitions.md
+    value: 99
+    unit: mp   # F1 data range max for stat_block.max_mp; CDD validates
+    added: 2026-10-20
+    revised: ""
+  - name: base_stat_cap
+    status: active
+    source: design/gdd/stats-damage-resolution.md
+    referenced_by:
+      - design/gdd/stats-damage-resolution.md
+      - design/gdd/content-data-definitions.md
+    value: 99
+    unit: points   # F1 data range max for attack, defense, speed; CDD validates
+    added: 2026-10-20
+    revised: ""
+  - name: stat_eff_max
+    status: active
+    source: design/gdd/stats-damage-resolution.md
+    referenced_by:
+      - design/gdd/stats-damage-resolution.md
+    value: 199
+    unit: points   # F2 ceiling on any modified stat
+    added: 2026-10-20
+    revised: ""
+  - name: power_scale
+    status: active
+    source: design/gdd/stats-damage-resolution.md
+    referenced_by:
+      - design/gdd/stats-damage-resolution.md
+    value: 10
+    unit: power   # F3: power 10 = 1.0x (basic attack)
+    added: 2026-10-20
+    revised: ""
+  - name: heal_attack_scale
+    status: active
+    source: design/gdd/stats-damage-resolution.md
+    referenced_by:
+      - design/gdd/stats-damage-resolution.md
+    value: 50
+    unit: attack   # F4: attack needed to add +100% to a heal
+    added: 2026-10-20
+    revised: ""
+  - name: mult_min
+    status: active
+    source: design/gdd/stats-damage-resolution.md
+    referenced_by:
+      - design/gdd/stats-damage-resolution.md
+    value: 0.1
+    unit: multiplier   # F5 lowest combined amount multiplier
+    added: 2026-10-20
+    revised: ""
+  - name: mult_max
+    status: active
+    source: design/gdd/stats-damage-resolution.md
+    referenced_by:
+      - design/gdd/stats-damage-resolution.md
+    value: 3
+    unit: multiplier   # F5 highest combined amount multiplier
+    added: 2026-10-20
+    revised: ""
+  - name: damage_variance
+    status: active
+    source: design/gdd/stats-damage-resolution.md
+    referenced_by:
+      - design/gdd/stats-damage-resolution.md
+    value: 0.1
+    unit: fraction   # F6 +/- swing on damage; heal_variance is 0
+    added: 2026-10-20
+    revised: ""
+  - name: min_damage
+    status: active
+    source: design/gdd/stats-damage-resolution.md
+    referenced_by:
+      - design/gdd/stats-damage-resolution.md
+    value: 1
+    unit: hp   # F7 floor; only an Override can produce 0
+    added: 2026-10-20
+    revised: ""
+  - name: damage_cap
+    status: active
+    source: design/gdd/stats-damage-resolution.md
+    referenced_by:
+      - design/gdd/stats-damage-resolution.md
+    value: 999
+    unit: hp   # F7 per-effect cap (heal_cap uses the same value)
+    added: 2026-10-20
+    revised: ""
+  - name: reward_value_cap
+    status: active
+    source: design/gdd/stats-damage-resolution.md
+    referenced_by:
+      - design/gdd/stats-damage-resolution.md
+      - design/gdd/content-data-definitions.md
+    value: 9999
+    unit: points   # Rule 12: max reward.xp and reward.money per enemy; CDD validates
+    added: 2026-10-20
+    revised: ""
+
+# Example:
+#
+# constants:
+#   - name: gold_carry_limit
+#     status: active
+#     source: design/gdd/economy.md
+#     referenced_by:
+#       - design/gdd/economy.md
+#       - design/gdd/inventory.md   # inventory enforces the carry limit
+#       - design/gdd/ui.md          # HUD displays current gold vs limit
+#     value: 9999
+#     unit: gold
+#     added: 2026-03-26
+#     revised: ""
+#
+#   - name: base_inventory_slots
+#     status: active
+#     source: design/gdd/inventory.md
+#     referenced_by:
+#       - design/gdd/inventory.md
+#       - design/gdd/progression.md  # progression unlocks additional slots
+#     value: 20
+#     unit: slots
+#     added: 2026-03-26
+#     revised: ""
