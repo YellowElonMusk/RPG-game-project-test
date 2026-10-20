@@ -1,8 +1,8 @@
-# Systems Index: Resistance Permit Denied (working title)
+# Systems Index: Go back to your planet!
 
 > **Status**: Draft
 > **Created**: 2026-10-13
-> **Last Updated**: 2026-10-13
+> **Last Updated**: 2026-10-21
 > **Source Concept**: design/gdd/game-concept.md
 > **TD-SYSTEM-BOUNDARY**: skipped — lean mode · **PR-SCOPE**: skipped — lean mode · **CD-SYSTEMS**: skipped — lean mode
 
@@ -30,11 +30,11 @@ A satirical turn-based RPG: the player recruits a squad of mismatched "misfit" h
 | 2 | Input System (inferred) | Core | MVP | Designed | design/gdd/input-system.md | Content Data Definitions (soft — bindings data) |
 | 3 | Content Data Definitions (inferred) | Core | MVP | Designed | design/gdd/content-data-definitions.md | — |
 | 4 | Sprite & Camera Presentation (inferred) | Core | MVP | Not Started | — | Game State & Scene Flow, Content Data Definitions |
-| 5 | Turn Battle System | Gameplay | MVP | Not Started | — | Game State & Scene Flow, Input System, Content Data Definitions, Stats & Damage Resolution |
+| 5 | Turn Battle System | Gameplay | MVP | Reverse-Documented | design/gdd/turn-battle-system.md | Game State & Scene Flow, Input System, Content Data Definitions, Stats & Damage Resolution |
 | 6 | Stats & Damage Resolution (inferred) | Gameplay | MVP | Designed | design/gdd/stats-damage-resolution.md | Content Data Definitions |
 | 7 | Quirk State System | Gameplay | MVP | Not Started | — | Turn Battle System, Stats & Damage Resolution |
 | 8 | Combo System & Codex | Gameplay | MVP | Not Started | — | Quirk State System, Turn Battle System, Stats & Damage Resolution |
-| 9 | Faction Rule Modifiers | Gameplay | MVP | Not Started | — | Turn Battle System, Quirk State System, Stats & Damage Resolution |
+| 9 | Faction Rule Modifiers | Gameplay | MVP | Reverse-Documented | design/gdd/faction-rule-modifiers.md | Turn Battle System, Quirk State System, Stats & Damage Resolution |
 | 10 | Enemy AI (inferred) | Gameplay | MVP | Not Started | — | Turn Battle System, Stats & Damage Resolution, Faction Rule Modifiers |
 | 11 | Overworld Exploration & Encounters | Gameplay | MVP | Not Started | — | Game State & Scene Flow, Input System, Content Data Definitions, Sprite & Camera Presentation, Dialogue Banter & Quests |
 | 12 | Squad Roster & Recruitment | Progression | MVP | Not Started | — | Content Data Definitions |
@@ -182,10 +182,10 @@ Effort: S = 1 session, M = 2–3 sessions, L = 4+ sessions (a session is one foc
 | Metric | Count |
 |--------|-------|
 | Total systems identified | 21 |
-| Design docs started | 4 |
+| Design docs started | 6 |
 | Design docs reviewed | 0 |
 | Design docs approved | 0 |
-| MVP systems designed | 4/16 |
+| MVP systems designed | 6/16 |
 | Vertical Slice systems designed | 0/5 |
 
 ---
