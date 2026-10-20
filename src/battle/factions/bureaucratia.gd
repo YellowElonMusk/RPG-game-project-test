@@ -144,3 +144,32 @@ func _weakest(combatants: Array[Combatant]) -> Combatant:
 
 func _hp_fraction(combatant: Combatant) -> float:
 	return float(combatant.hp) / float(maxi(1, combatant.max_hp))
+
+
+## Banner headline for the permit countdown/granted states (Acceptance
+## Criterion 3; Story 005).
+## Example: [code]rule.get_banner_text(1)  # "...arrives in 3 rounds..."[/code]
+func get_banner_text(round_number: int) -> String:
+	if specials_allowed(round_number):
+		return "PERMIT GRANTED — All-out war! Special moves are allowed for both sides."
+	var rounds_left: int = PERMIT_ROUNDS - round_number + 1
+	return "BUREAUCRATIA — Special moves need a government permit. It arrives in %d round%s. Attack and Defend only, for both sides." % [
+		rounds_left, "" if rounds_left == 1 else "s"]
+
+
+## Bureaucratia's stamp red (art bible), stable for the whole fight (Story 005).
+func get_identity_color() -> Color:
+	return Color("#D23A2E")
+
+
+## Stamp red while the permit is pending, the "all-out war" amber once it's
+## granted (Story 005) — unlike get_identity_color(), this does vary by round.
+func get_banner_color(round_number: int) -> Color:
+	return Color("#b07a12") if specials_allowed(round_number) else get_identity_color()
+
+
+## Plain-language explanation of the permit rule for tooltips (Story 005).
+func get_tooltip_text(round_number: int) -> String:
+	if specials_allowed(round_number):
+		return "The permit arrived: Special moves are now allowed for both sides."
+	return "Bureaucratia requires a government permit before anyone can use a Special move. Attack and Defend only until it arrives."

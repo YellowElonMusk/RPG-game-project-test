@@ -1,0 +1,7 @@
+Reviewed-Content-Hash: src/battle/ui/battle_hud.gd 139292b62ad2b8c69d97ac66d27abc3acb7ed7f0
+Reviewed-Content-Hash: src/battle/ui/battle_hud.tscn ebd0436a69e2492a6b3cf392f164223a1feca165
+Reviewed-Content-Hash: src/battle/ui/battle_hud_demo.gd bfbbcfa31a165fd78db369ab20115119545901c6
+Reviewed-Content-Hash: src/battle/ui/battle_hud_demo.tscn e496bb7f07611807b3c55ea7774f9afeea5e0a9c
+Reviewed-Content-Hash: src/battle/factions/faction_rule.gd 0daf8b53860df4dd84da2c9b0163056e6677b6a9
+Reviewed-Content-Hash: src/battle/factions/bureaucratia.gd 5de327dfa53bb42c3de5cea70c296aec32aba1d4
+Reviewed-Content-Hash: src/battle/factions/megacorp.gd 0f7b2d09afb7b7a3ffd49a00399d77fe33d24d6e

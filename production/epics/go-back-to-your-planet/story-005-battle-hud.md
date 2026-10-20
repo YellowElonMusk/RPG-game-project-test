@@ -1,12 +1,12 @@
 # Story 005: Battle HUD — bars, rule banner, floating numbers, tooltips
 
 > **Epic**: Go back to your planet!
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Presentation
 > **Type**: UI
 > **Estimate**: M
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: [set by /dev-story when implementation begins]
+> **Last Updated**: 2026-10-20
 
 ## Context
 
@@ -82,8 +82,11 @@ its proven layout and behavior unless design changes it.
 
 - `src/battle/ui/battle_hud.gd`
 - `src/battle/ui/battle_hud.tscn`
-
----
+- `src/battle/ui/battle_hud_demo.gd`
+- `src/battle/ui/battle_hud_demo.tscn`
+- `src/battle/factions/faction_rule.gd`
+- `src/battle/factions/bureaucratia.gd`
+- `src/battle/factions/megacorp.gd`
 
 ## QA Test Cases
 
@@ -107,3 +110,13 @@ its proven layout and behavior unless design changes it.
 
 - Depends on: `production/epics/go-back-to-your-planet/story-001-battle-core.md`, `production/epics/go-back-to-your-planet/story-002-bureaucratia.md`, `production/epics/go-back-to-your-planet/story-004-megacorp.md`
 - Unlocks: `production/epics/go-back-to-your-planet/story-006-chapter-flow.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-20
+**Criteria**: 7/7 passing (none deferred)
+**Deviations**: ADVISORY — UI colors/strings hardcoded rather than data-driven (matches existing pattern); the squad/enemy columns don't expand to fill the 1280-wide layout, leaving empty space right-of-center (non-blocking, nothing clips).
+**Test Evidence**: `production/qa/evidence/story-005-battle-hud/` (5 screenshots, stamped) + `production/qa/evidence/battle-hud-evidence.md`
+**Reviewed by**: self, no independent review (solo mode)
