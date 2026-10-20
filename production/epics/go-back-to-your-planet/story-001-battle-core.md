@@ -1,7 +1,7 @@
 # Story 001: Battle core
 
 > **Epic**: Go back to your planet!
-> **Status**: In Progress
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: L
@@ -115,3 +115,12 @@ No test file: test evidence is waived at `qa.level: minimal`.
 
 - Depends on: None
 - Unlocks: `production/epics/go-back-to-your-planet/story-002-bureaucratia.md`, `production/epics/go-back-to-your-planet/story-003-squad-specials.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-20
+**Criteria**: 8/8 passing (0 deferred)
+**Deviations**: ADVISORY — the damage formula's constants (`power_scale`, `damage_variance`, `mult_min`, `mult_max`, `min_damage`, `damage_cap`) are hardcoded in `damage_calculator.gd` rather than read from a data file (coding standard: gameplay values should be data-driven). Values match `design/registry/entities.yaml`.
+**Test Evidence**: waived at `qa.level: minimal` — no test file written
+**Reviewed by**: self, no independent review (solo mode)

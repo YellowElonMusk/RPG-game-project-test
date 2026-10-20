@@ -1,8 +1,10 @@
 ## The turn-based battle state machine: squad vs. enemies, Attack/Defend/
-## Special, MP, knockouts, win/loss and retry. No faction rule (permit ban,
-## billing) is implemented here — Stories 002/004 add those on top. No HUD
-## is implemented here — Story 005 owns the real battle HUD; this class only
-## reports BattleOutcome records a HUD can read.
+## Special, MP, knockouts, win/loss and retry. Faction rules (Story 002's
+## Bureaucratia permit ban, Story 004's MegaCorp billing) are not coded here:
+## BattleCore consults an injected FactionRule (see `faction_rule`), which
+## defaults to the neutral FactionRule base. No HUD is implemented here —
+## Story 005 owns the real battle HUD; this class only reports BattleOutcome
+## records a HUD can read.
 ##
 ## BattleCore has no scene-tree dependency (RefCounted, not Node), so it can
 ## be constructed and driven entirely from a unit test or a headless script.
@@ -43,15 +45,21 @@ var state: State = State.SQUAD_TURN
 ## Full history of resolved outcomes this battle, in order. A later HUD
 ## story can read this directly instead of only listening to the signal.
 var outcome_log: Array[BattleOutcome] = []
+## This battle's faction rule. It decides whether Specials are allowed each
+## round and what each enemy does on its turn. It is never null: with no rule
+## injected, it is the neutral FactionRule base (Specials always allowed,
+## random basic Attack).
+var faction_rule: FactionRule
 
 var _active_squad_index: int = 0
 
 
 func _init(p_squad: Array[Combatant], p_enemies: Array[Combatant],
-		p_rng: RandomNumberGenerator = null) -> void:
+		p_rng: RandomNumberGenerator = null, p_faction_rule: FactionRule = null) -> void:
 	squad = p_squad
 	enemies = p_enemies
 	rng = p_rng if p_rng != null else RandomNumberGenerator.new()
+	faction_rule = p_faction_rule if p_faction_rule != null else FactionRule.new()
 
 
 ## Resets every combatant to full HP/MP and starts the battle at round 1,
@@ -111,8 +119,9 @@ func get_active_combatant() -> Combatant:
 ## effect (Acceptance Criterion 7 — effects are Story 003's scope).
 ##
 ## Returns the BattleOutcome for this action, or null if the action was
-## illegal (wrong turn, insufficient MP, or an invalid/knocked-out target) —
-## in which case no state changes.
+## illegal (wrong turn, a Special while faction_rule bans Specials this round,
+## insufficient MP, or an invalid/knocked-out target) — in which case no
+## state changes.
 ##
 ## When this ends the squad's actions for the round, the enemy phase and
 ## any following round advance happen synchronously inside this call; their
@@ -132,6 +141,10 @@ func submit_action(move: Move, target: Combatant = null) -> BattleOutcome:
 	var actor := get_active_combatant()
 	if actor == null:
 		push_error("BattleCore.submit_action called with no active combatant")
+		return null
+	if move.category == Move.Category.SPECIAL and not faction_rule.specials_allowed(round_number):
+		push_error("BattleCore.submit_action: %s is a Special, and Specials are banned in round %d" % [
+			move.display_name, round_number])
 		return null
 	if not actor.can_afford(move.mp_cost):
 		push_error("BattleCore.submit_action: %s cannot afford %s (needs %d MP, has %d)" % [
@@ -213,9 +226,10 @@ func _skip_to_living_squad_member() -> void:
 		state = State.ENEMY_TURN
 
 
-## Placeholder enemy AI: every living enemy makes a basic power-10 Attack on
-## a random living squad member. Deliberately neutral — faction AI (Story
-## 002's hunker-down, Story 004's drones) replaces or extends this.
+## Each living enemy takes its turn in order. faction_rule.choose_enemy_action()
+## chooses the turn, which may be several actions (for example Defend, then
+## Attack). The actions resolve in sequence. An action whose target is already
+## knocked out is skipped.
 func _run_enemy_phase() -> void:
 	state = State.ENEMY_TURN
 	for enemy in enemies:
@@ -225,10 +239,15 @@ func _run_enemy_phase() -> void:
 		if living_squad.is_empty():
 			break
 		enemy.is_defending = false
-		var target: Combatant = living_squad[rng.randi_range(0, living_squad.size() - 1)]
-		_resolve_move(enemy, Move.make_attack(), target)
-		if _check_battle_end():
-			return
+		var actions: Array = faction_rule.choose_enemy_action(enemy, living_squad, round_number, rng)
+		for action: Dictionary in actions:
+			var move: Move = action.get("move")
+			var target: Combatant = action.get("target")
+			if target != null and target.is_knocked_out():
+				continue
+			_resolve_move(enemy, move, target)
+			if _check_battle_end():
+				return
 	_advance_round()
 
 

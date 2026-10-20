@@ -1,12 +1,12 @@
 # Story 002: Bureaucratia — permit, hunker-down, Supervisor boss
 
 > **Epic**: Go back to your planet!
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: [set by /dev-story when implementation begins]
+> **Last Updated**: 2026-10-20
 
 ## Context
 
@@ -78,10 +78,12 @@ playtested and called "decent." Throwaway code; do not import it.
 
 ## Files
 
-- `src/battle/factions/bureaucratia.gd`
-- `tests/unit/bureaucratia/bureaucratia_test.gd`
+- `src/battle/factions/faction_rule.gd` (new: FactionRule base class, neutral defaults)
+- `src/battle/factions/bureaucratia.gd` (new: BureaucratiaRule)
+- `src/battle/battle_core.gd` (modified: faction_rule hook, specials gate)
+- `src/battle/battle_debug_harness.gd` (modified: Bureaucratia roster, specials ALLOWED/BANNED)
 
----
+No test file: test evidence is waived at `qa.level: minimal`.
 
 ## QA Test Cases
 
@@ -103,3 +105,12 @@ playtested and called "decent." Throwaway code; do not import it.
 
 - Depends on: `production/epics/go-back-to-your-planet/story-001-battle-core.md`
 - Unlocks: `production/epics/go-back-to-your-planet/story-003-squad-specials.md`, `production/epics/go-back-to-your-planet/story-005-battle-hud.md`, `production/epics/go-back-to-your-planet/story-006-chapter-flow.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-20
+**Criteria**: 7/7 passing (0 deferred)
+**Deviations**: ADVISORY — the rule's constants (permit length, HP threshold, move powers, Clerk/Supervisor stats) are hardcoded in `bureaucratia.gd` rather than read from a data file (same pattern as Story 001's damage constants).
+**Test Evidence**: waived at `qa.level: minimal` — no test file written. Screenshot: `production/qa/evidence/story-002-bureaucratia/harness00000029.png`
+**Reviewed by**: self, no independent review (solo mode)

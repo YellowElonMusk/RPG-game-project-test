@@ -32,11 +32,14 @@ func _build_data_and_battle() -> void:
 		Combatant.new("Hero A", 30, 10, 12, 8, 10, false),
 		Combatant.new("Hero B", 30, 12, 11, 8, 10, false),
 	]
+	# Story 002: the Bureaucratia roster and rule, so the permit ban and
+	# hunker-down behavior can be exercised by hand.
 	var enemies: Array[Combatant] = [
-		Combatant.new("Enemy A", 20, 0, 10, 6, 8, true),
-		Combatant.new("Enemy B", 20, 0, 10, 6, 8, true),
+		BureaucratiaRule.make_clerk(),
+		BureaucratiaRule.make_clerk(),
+		BureaucratiaRule.make_supervisor(),
 	]
-	_battle = BattleCore.new(squad, enemies)
+	_battle = BattleCore.new(squad, enemies, null, BureaucratiaRule.new())
 
 
 func _build_ui() -> void:
@@ -69,9 +72,10 @@ func _render_turn() -> void:
 		return
 
 	var actor := _battle.get_active_combatant()
-	_status_label.text = "Round %d — %s's turn (HP %d/%d, MP %d/%d)" % [
+	var specials_allowed: bool = _battle.faction_rule.specials_allowed(_battle.round_number)
+	_status_label.text = "Round %d — %s's turn (HP %d/%d, MP %d/%d) — specials %s" % [
 		_battle.round_number, actor.display_name, actor.hp, actor.max_hp,
-		actor.mp, actor.max_mp]
+		actor.mp, actor.max_mp, "ALLOWED" if specials_allowed else "BANNED"]
 
 	var attack_button := Button.new()
 	attack_button.text = "Attack"
@@ -85,7 +89,7 @@ func _render_turn() -> void:
 
 	var special_button := Button.new()
 	special_button.text = "Test Special (%d MP)" % TEST_SPECIAL_MP_COST
-	special_button.disabled = not actor.can_afford(TEST_SPECIAL_MP_COST)
+	special_button.disabled = not specials_allowed or not actor.can_afford(TEST_SPECIAL_MP_COST)
 	special_button.pressed.connect(_on_special_pressed)
 	_command_box.add_child(special_button)
 

@@ -1,0 +1,4 @@
+Reviewed-Content-Hash: src/battle/factions/faction_rule.gd 59dffb668a3cb0efe91eec969954419383764ed0
+Reviewed-Content-Hash: src/battle/factions/bureaucratia.gd dbbfc18faa05ccd72660ee4fdc1faa8dd561ee67
+Reviewed-Content-Hash: src/battle/battle_core.gd 3c5accbc601515fe4b562494cfe84ba7318e9580
+Reviewed-Content-Hash: src/battle/battle_debug_harness.gd 06cc5fb7f2a59443707b645b184e5a40b180b171
