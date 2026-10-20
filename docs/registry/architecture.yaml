@@ -30,7 +30,7 @@
 #   Superseded entries:     Grep pattern="status: superseded"
 
 version: 1
-last_updated: ""
+last_updated: "2026-10-21"
 
 # ─── STATE OWNERSHIP ─────────────────────────────────────────────────────────
 # Who is the authoritative owner of each piece of shared game state.
@@ -43,7 +43,17 @@ last_updated: ""
 # interface: how other systems access this state (read-only property, method call,
 #   signal, shared resource, etc.) — this is the contract other ADRs depend on.
 
-state_ownership: []
+state_ownership:
+  - state: content_catalog_records
+    status: active
+    owner_system: content-catalog
+    adr: docs/architecture/adr-0001-content-data-storage-format.md
+    interface: "ContentCatalog.get_record(type, id) / has_record / all_records / resolve_alias (read-only after Ready)"
+    write_access: content-catalog-only
+    referenced_by:
+      - docs/architecture/adr-0001-content-data-storage-format.md
+    added: 2026-10-21
+    revised: ""
 
 # Example:
 #
@@ -71,7 +81,19 @@ state_ownership: []
 #
 # pattern options: signal | direct_call | event_bus | shared_resource | rpc | none
 
-interfaces: []
+interfaces:
+  - contract: content_vocabulary_registration
+    status: active
+    pattern: direct_call
+    producer: "Turn Battle System, Faction Rule Modifiers (each registers its own vocabulary)"
+    consumers:
+      - content-catalog
+    adr: docs/architecture/adr-0001-content-data-storage-format.md
+    signal_signature: "ContentCatalog.register_known_effect_types(system: StringName, types: PackedStringArray) -> void, called before load_all()'s Validating phase"
+    referenced_by:
+      - docs/architecture/adr-0001-content-data-storage-format.md
+    added: 2026-10-21
+    revised: ""
 
 # Example:
 #
@@ -131,7 +153,27 @@ performance_budgets: []
 # Register an API decision when the choice is non-obvious and other ADRs might
 # make a different choice for the same purpose without knowing this was decided.
 
-api_decisions: []
+api_decisions:
+  - purpose: content_file_discovery
+    status: active
+    api: ResourceLoader.list_directory(path)
+    not: DirAccess directory listing
+    adr: docs/architecture/adr-0001-content-data-storage-format.md
+    reason: "Part of Godot's resource virtual filesystem; correct against both the editor and an exported build, where .tres files become binary + .remap companions that a raw DirAccess listing would surface incorrectly. Empirically verified present in Godot 4.7.2."
+    referenced_by:
+      - docs/architecture/adr-0001-content-data-storage-format.md
+    added: 2026-10-21
+    revised: ""
+  - purpose: content_catalog_access
+    status: active
+    api: Godot autoload singleton (ContentCatalog)
+    not: dependency injection into static factories
+    adr: docs/architecture/adr-0001-content-data-storage-format.md
+    reason: "Explicit, documented exception to the project's DI-over-singletons standard: the catalog is read-only after Ready, and every existing static factory (SquadSpecials.*, BureaucratiaRule.*, MegaCorpRule.*) is parameterless, so DI would require changing every already-shipped call site."
+    referenced_by:
+      - docs/architecture/adr-0001-content-data-storage-format.md
+    added: 2026-10-21
+    revised: ""
 
 # Example:
 #
@@ -157,7 +199,13 @@ api_decisions: []
 # Register a pattern when an ADR explicitly bans it AND other ADRs might
 # unknowingly use it (i.e., it's a tempting but wrong approach for this project).
 
-forbidden_patterns: []
+forbidden_patterns:
+  - pattern: direct_resource_reference_in_content_records
+    status: active
+    description: "A Content Data Definitions record (Resource subclass under data/) must never @export a field typed as another Resource subclass. Cross-references must be plain String/PackedStringArray ID fields."
+    why: "A direct Resource reference reintroduces file-path coupling through Godot's .tres ExtResource mechanism, violating the GDD's Rule 3 (references by ID only) and defeating the whole point of ID-based indirection (stable IDs across refactors, save-file compatibility)."
+    adr: docs/architecture/adr-0001-content-data-storage-format.md
+    added: 2026-10-21
 
 # Example:
 #

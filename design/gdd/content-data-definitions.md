@@ -2,7 +2,7 @@
 
 > **Status**: In Design
 > **Author**: user + agents
-> **Last Updated**: 2026-10-20
+> **Last Updated**: 2026-10-21
 > **Last Verified**: 2026-10-13
 > **Implements Pillar**: The Joke Is the Mechanic · Misfits Make the Combo · Readable in One Turn
 
@@ -53,7 +53,7 @@ Character and Enemy are deliberately separate types: each has fields the other d
 
 **8. Validation.** Validation runs on every load and also as a standalone headless check, so tests and CI can run it. It checks that: required fields are present; field types and enums are valid; IDs are well-formed and unique (aliases included); every reference resolves to a record of the correct type; every EffectDescriptor `type` is known; `signature_color`, `backup_icon_id` and `rule_id` appear only on `alien` factions; Faction `base_shape` matches its `kind`; and `stat_block` fields and `reward` fields are within the ranges their owning GDD defines (Stats & Damage Resolution F1, Rule 12): `max_hp` 1–999, `max_mp` 0–99, `attack`/`defense`/`speed` 1–99, `reward.xp` and `reward.money` 0–9999. `Move.cost` is a non-negative integer. A value outside its range is an **error** naming the record and field. It reports **every** problem found, not just the first, in two severities. **Errors** block: any error puts the catalog in the Failed state, and the game does not start with partially loaded content in either debug or release builds. **Warnings** are reported but never block (see Edge Cases for which problems are which). Handling of invalid modded content is deferred to the post-launch mod feature.
 
-**9. Lookup.** Other systems read the catalog through four operations: `get(type, id)` returns a definition or an error, `exists(type, id)`, `all(type)`, and `resolve_alias(id)`. `all(type)` returns records in a fixed order sorted by ID, so tests and saves behave identically on every run.
+**9. Lookup.** Other systems read the catalog through four operations: `get_record(type, id)` returns a definition or an error, `has_record(type, id)`, `all_records(type)`, and `resolve_alias(id)`. `all_records(type)` returns records in a fixed order sorted by ID, so tests and saves behave identically on every run. (Named `get_record`/`has_record`/`all_records` rather than `get`/`exists`/`all` per ADR-0001: `get` collides with `Object`'s own built-in single-argument method, which every GDScript class inherits.)
 
 ### States and Transitions
 
@@ -121,7 +121,7 @@ Game State & Scene Flow must wait for Ready before leaving the boot state. Looku
 
 **Lookup and load**
 - **If any lookup happens before the catalog is Ready, or after it Failed**: an error is returned, never partial data.
-- **If `all(type)` is called with an unknown type**: an error is returned, not an empty list.
+- **If `all_records(type)` is called with an unknown type**: an error is returned, not an empty list.
 - **If the catalog is Failed**: the player sees a plain-text error screen listing the first 20 errors and the log file location, never a crash or blank screen. The full list goes to the log.
 - **If the same data is loaded twice in one session**: not supported; the catalog loads once at boot (Ready is terminal).
 
@@ -186,9 +186,9 @@ Criteria come from Detailed Design and Edge Cases (this system has no Formulas s
 Evidence type: **[L]** Logic (automated gdUnit4 test under `tests/unit/content_data/`), **[I]** Integration, **[UI]** retained screenshot in `production/qa/evidence/`, **[P]** performance benchmark output.
 
 **Loading and lookup**
-- **AC-1 [L]** GIVEN the fixture `valid_one_of_each` (one record of each of the 7 types, including list fields and nested EffectDescriptors), WHEN the catalog loads, THEN the state is Ready and `get(type, id)` returns every record with every field deep-equal to the fixture.
-- **AC-2 [L]** GIVEN a Ready catalog, WHEN `all(type)` is called on each type, THEN records come back sorted by ID, and the result is identical when the same files are loaded in a shuffled file order.
-- **AC-3 [L]** GIVEN a fixture with zero records of every type, WHEN it loads, THEN the state is Ready and `all(type)` returns an empty list for each type.
+- **AC-1 [L]** GIVEN the fixture `valid_one_of_each` (one record of each of the 7 types, including list fields and nested EffectDescriptors), WHEN the catalog loads, THEN the state is Ready and `get_record(type, id)` returns every record with every field deep-equal to the fixture.
+- **AC-2 [L]** GIVEN a Ready catalog, WHEN `all_records(type)` is called on each type, THEN records come back sorted by ID, and the result is identical when the same files are loaded in a shuffled file order.
+- **AC-3 [L]** GIVEN a fixture with zero records of every type, WHEN it loads, THEN the state is Ready and `all_records(type)` returns an empty list for each type.
 - **AC-4 [L]** GIVEN a Ready catalog, WHEN `get` is called with a missing ID, THEN it returns a not-found result and no record. WHEN `all` is called with an unknown type, THEN it returns an error, not an empty list.
 - **AC-5 [L]** GIVEN a Ready catalog, WHEN a caller modifies a returned definition (including a nested list and a nested EffectDescriptor), THEN the next `get` for that ID returns the original values.
 
