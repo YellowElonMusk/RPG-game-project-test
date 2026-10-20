@@ -1,4 +1,4 @@
-# Art Bible: Resistance Permit Denied
+# Art Bible: Go back to your planet!
 
 > **Status**: Draft
 > **Owned By**: art-director

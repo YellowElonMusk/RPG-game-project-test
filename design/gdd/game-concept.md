@@ -1,4 +1,4 @@
-# Game Concept: Resistance Permit Denied (working title)
+# Game Concept: Go back to your planet!
 
 *Created: 2026-10-12*
 *Status: Draft*

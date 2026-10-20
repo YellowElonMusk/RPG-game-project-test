@@ -1,5 +1,11 @@
 # Game Brief: Go back to your planet!
 
+> **Superseded by the full design.** This brief drove the MVP vertical slice
+> (Bureaucratia + MegaCorp, 6 stories, all Complete) at `rigor: minimal`. Now
+> that rigor is `full`, `design/gdd/game-concept.md` and `design/gdd/systems-index.md`
+> are the authoritative design record going forward — this brief is kept as the
+> historical record of what the MVP proved, not a doc to keep in sync.
+
 **One-sentence pitch:** Earth's military has fallen to a satirical alien alliance, and you lead humanity's most unlikely heroes into turn-based battles, cracking each planet's absurd rule to send the invaders home.
 
 ## Core loop
