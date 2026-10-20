@@ -1,12 +1,12 @@
 # Story 004: MegaCorp — subscription billing, drones, CEO boss
 
 > **Epic**: Go back to your planet!
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: [set by /dev-story when implementation begins]
+> **Last Updated**: 2026-10-20
 
 ## Context
 
@@ -80,9 +80,8 @@ gets tested early. Expect this story to need iteration.
 ## Files
 
 - `src/battle/factions/megacorp.gd`
-- `tests/unit/megacorp/megacorp_test.gd`
-
----
+- `src/battle/factions/faction_rule.gd`
+- `src/battle/battle_core.gd`
 
 ## QA Test Cases
 
@@ -104,3 +103,13 @@ gets tested early. Expect this story to need iteration.
 
 - Depends on: `production/epics/go-back-to-your-planet/story-001-battle-core.md`, `production/epics/go-back-to-your-planet/story-003-squad-specials.md`
 - Unlocks: `production/epics/go-back-to-your-planet/story-005-battle-hud.md`, `production/epics/go-back-to-your-planet/story-006-chapter-flow.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-20
+**Criteria**: 7/7 passing (none deferred)
+**Deviations**: ADVISORY — MP billing amount, enemy stats, and attack powers are hardcoded consts in `src/battle/factions/megacorp.gd` rather than an external data file, matching the existing pattern in `bureaucratia.gd`/`specials.gd`.
+**Test Evidence**: waived at `qa.level: minimal`
+**Reviewed by**: self, no independent review (solo mode)

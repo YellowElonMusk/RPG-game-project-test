@@ -66,9 +66,20 @@ func _init(p_squad: Array[Combatant], p_enemies: Array[Combatant],
 ## squad turn. Also doubles as the retry entry point (Acceptance Criterion
 ## 6): calling this again after a loss restores the exact starting state,
 ## with no permadeath and no lost progress.
-func start_battle() -> void:
-	for combatant in squad:
-		combatant.reset_for_battle()
+##
+## `reset_squad` defaults to true — the original full-reset behavior every
+## existing call site relies on (a single standalone battle always wants its
+## squad at full HP/MP). Pass false to carry the squad's current HP/MP into
+## this battle instead: enemies are still fully reset and first-turn
+## selection still runs as normal, but against the squad's current (not
+## reset) HP, so a squad member already knocked out in a previous fight is
+## correctly skipped rather than being revived and then picked as the active
+## turn-taker. Added for Story 006's chapter flow, which must carry HP/MP
+## between a chapter's fights without reviving anyone mid-chapter.
+func start_battle(reset_squad: bool = true) -> void:
+	if reset_squad:
+		for combatant in squad:
+			combatant.reset_for_battle()
 	for combatant in enemies:
 		combatant.reset_for_battle()
 	round_number = 1
@@ -121,8 +132,9 @@ func get_active_combatant() -> Combatant:
 ##
 ## Returns the BattleOutcome for this action, or null if the action was
 ## illegal (wrong turn, a Special while faction_rule bans Specials this round,
-## insufficient MP, or an invalid/knocked-out target) — in which case no
-## state changes.
+## a move faction_rule.move_allowed() rejects (e.g. MegaCorp suspension —
+## Story 004), insufficient MP, or an invalid/knocked-out target) — in which
+## case no state changes.
 ##
 ## When this ends the squad's actions for the round, the enemy phase and
 ## any following round advance happen synchronously inside this call; their
@@ -146,6 +158,10 @@ func submit_action(move: Move, target: Combatant = null) -> BattleOutcome:
 	if move.category == Move.Category.SPECIAL and not faction_rule.specials_allowed(round_number):
 		push_error("BattleCore.submit_action: %s is a Special, and Specials are banned in round %d" % [
 			move.display_name, round_number])
+		return null
+	if not faction_rule.move_allowed(actor, move):
+		push_error("BattleCore.submit_action: %s is not allowed for %s right now (faction rule)" % [
+			move.display_name, actor.display_name])
 		return null
 	if not actor.can_afford(move.mp_cost):
 		push_error("BattleCore.submit_action: %s cannot afford %s (needs %d MP, has %d)" % [
@@ -275,6 +291,7 @@ func _run_enemy_phase() -> void:
 			if _check_battle_end():
 				return
 	_tick_round_effects()
+	faction_rule.apply_round_upkeep(get_living_squad())
 	_advance_round()
 
 
