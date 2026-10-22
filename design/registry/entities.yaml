@@ -47,7 +47,7 @@
 #   Each entry: name, status, source, referenced_by[], attributes{}, added, revised
 
 version: 1
-last_updated: "2026-10-20"
+last_updated: "2026-10-22"
 
 # ─── ENTITIES ────────────────────────────────────────────────────────────────
 # Named game-world objects: enemies, NPCs, characters, factions, bosses.
@@ -238,6 +238,52 @@ formulas:
     notes: "F9. Upper bound assumes 6 enemies per battle (Turn Battle owns the real maximum). Loss or flee gives 0."
     added: 2026-10-20
     revised: ""
+  - name: replay_time
+    status: active
+    source: design/gdd/sprite-camera-presentation.md
+    referenced_by:
+      - design/gdd/sprite-camera-presentation.md
+      - docs/architecture/adr-0006-battle-replay-ownership.md   # implements it (§4, §6)
+    variables:
+      - w_i               # renamed 2026-10-22 (revision 4; was anim_i / t_impact_i): wind-up at 1x, from impact_frame
+      - impact_frame      # added 2026-10-22 (revision 4)
+      - beat_min
+      - ff_mult
+      - protected_i       # added 2026-10-21 (CD-GDD-ALIGN revision)
+      - battle_speed_2x   # added 2026-10-21 (CD-GDD-ALIGN revision)
+      - reaction_hold     # added 2026-10-21 (design-review revision 2)
+      - ko_hold           # added 2026-10-22 (revision 4)
+      - battle_speed_mult # added 2026-10-21 (design-review revision 2)
+      - latched           # revised 2026-10-22 (revision 5; was ff_level None/Plain/All): one latch level
+      - speed_up_all      # added 2026-10-22 (revision 5): "Speed up all replay beats" setting
+      - dt_max            # added 2026-10-22 (revision 4)
+      - blend_boss        # added 2026-10-22 (revision 4)
+      - boss_hold         # added 2026-10-22 (revision 4)
+      - boss_retry_hold   # added 2026-10-22 (revision 5): Retry settle
+      # removed 2026-10-22 (revision 5, automatic speed-up deferred): replay_cap, speed_auto_max, speed_max
+    output_range: [1.0, 2.5]   # per-wind-up playback speed (1x to ff_mult max); holds are never scaled; wall_i = max(w_i / speed_i + hold_i, beat_min)
+    expression: "w_i = Σ_{k < impact_frame} duration_k / fps; hold_i = protected_i ? ko_hold : reaction_hold; speed_i = debug ? 1 : protected_i ? ((latched and speed_up_all) ? ff_mult : 1) : max(latched ? ff_mult : 1, battle_speed_2x ? battle_speed_mult : 1); per frame (dt = min(step, dt_max)): wind-up progress += dt * speed_i, impact on the first frame progress >= w_i; post-impact clock += dt unscaled; beat ends on the first frame post >= hold_i and elapsed >= beat_min (padding extends the hold); leftover dt dropped at every event; takeover_full = (blend_boss + boss_hold) / ((latched and speed_up_all) ? ff_mult : 1); takeover_settle (Retry) = boss_retry_hold / max(latched ? ff_mult : 1, battle_speed_2x ? battle_speed_mult : 1); debug path with no action animation: w_i = beat_min - reaction_hold at speed 1"
+    notes: "Battle replay pacing per replay (one command's outcomes up to the next command menu; the boss takeover is a replay of its own), implemented by BattleReplayController (ADR-0006 revision 2). Only the wind-up and the Retry settle scale; holds (reaction_hold, ko_hold on knockouts) are unscaled mode time. beat_min floors the beat, with padding in the hold. Revision 5 (fourth design-review rulings): one latch level, where any press (confirm, fast_forward, indicator click) speeds plain beats only; knockouts and the first-encounter takeover are sped only when latched with speed_up_all on; Battle Speed never speeds protected beats; Cancel and the replay's end clear the latch; no automatic speed-up (GDD Open Question 16). Load validation, 1e-6 tolerance in the passing direction: battle_speed_mult <= ff_mult; reaction_hold <= beat_min - 0.10; reaction_hold <= ko_hold; D < reaction_hold; dt_max < beat_min; boss_retry_hold <= blend_boss + boss_hold; blend_victory <= victory_hold; blend_defeat <= defeat_hold. ff_mult is a proposal pending Turn Battle ratification. Long replays run long, never cut."
+    added: 2026-10-21
+    revised: "2026-10-22"
+  - name: flash_gate
+    status: active
+    source: design/gdd/sprite-camera-presentation.md
+    referenced_by:
+      - design/gdd/sprite-camera-presentation.md
+      - design/gdd/game-state-scene-flow.md   # retry flash is gated
+    variables:
+      - flash_rate_max
+      - flash_luma_delta
+      - t_last_flash
+      - flash_rate_reduced   # added 2026-10-21 (design-review revision 2)
+      - flash_area_min       # added 2026-10-21 (design-review revision 2)
+      - A_exempt             # added 2026-10-22 (revision 4): summed declared area of concurrent area-exempt effects
+    output_range: [0, 3]   # flashes in any closed one-second window, global across all sources
+    expression: "allowed = (t_now - t_last_flash) > 1 / flash_rate_eff  (strict; real time; t_last_flash starts at -inf); flash_rate_eff = reduce_flashing ? flash_rate_reduced : flash_rate_max; an area-exempt effect starts exempt only if A_exempt + its declared area < flash_area_min, else it requests the gate"
+    notes: "Photosensitivity limit. A flash is a swing >= flash_luma_delta over >= flash_area_min (25% of any 10-degree window), or a saturated-red transition. Covers every large-area luminance source: the victory burst, the boss flood, attack and comedy VFX, and Game State's retry flash, wipes and fades. A gated full variant holds at most one flash pair; a refused source plays its capped variant below flash_luma_delta; Reduce Flashing forces every gated source to its capped variant. Campfire flicker must stay below flash_luma_delta and never counts."
+    added: 2026-10-21
+    revised: "2026-10-22"
 
 
 # Example:
@@ -392,6 +438,60 @@ constants:
     value: 9999
     unit: points   # Rule 12: max reward.xp and reward.money per enemy; CDD validates
     added: 2026-10-20
+    revised: ""
+  - name: error_screen_cap
+    status: active
+    source: design/gdd/content-data-definitions.md
+    referenced_by:
+      - design/gdd/content-data-definitions.md
+    value: 20
+    unit: errors   # F4: errors listed on the plain-text error screen; log holds all
+    added: 2026-10-21
+    revised: ""
+  - name: content_load_time_budget
+    status: active
+    source: design/gdd/content-data-definitions.md
+    referenced_by:
+      - design/gdd/content-data-definitions.md
+    value: 1.0
+    unit: seconds   # F5: median of 10 runs, provisional until target hardware is decided
+    added: 2026-10-21
+    revised: ""
+  - name: content_benchmark_record_count
+    status: active
+    source: design/gdd/content-data-definitions.md
+    referenced_by:
+      - design/gdd/content-data-definitions.md
+    value: 500
+    unit: records   # F5: size of the generated benchmark catalog
+    added: 2026-10-21
+    revised: ""
+  - name: flash_rate_max
+    status: active
+    source: design/gdd/sprite-camera-presentation.md
+    referenced_by:
+      - design/gdd/sprite-camera-presentation.md
+    value: 3
+    unit: flashes per second   # safety ceiling; never raise above 3
+    added: 2026-10-21
+    revised: ""
+  - name: beat_min
+    status: active
+    source: design/gdd/sprite-camera-presentation.md
+    referenced_by:
+      - design/gdd/sprite-camera-presentation.md
+    value: 0.40
+    unit: seconds   # shortest battle replay beat; UI shows numbers at the beat's END (after reaction_hold); missing-animation impact at beat_min - reaction_hold
+    added: 2026-10-21
+    revised: "2026-10-22"
+  - name: battle_draw_call_budget
+    status: active
+    source: design/gdd/sprite-camera-presentation.md
+    referenced_by:
+      - design/gdd/sprite-camera-presentation.md
+    value: 150
+    unit: draw calls   # Battle sub-budget inside project.yaml's 2000 limit
+    added: 2026-10-21
     revised: ""
 
 # Example:

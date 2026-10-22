@@ -71,9 +71,9 @@ the explicit ordering.
 | System | Owns | Exposes | Consumes | Engine APIs (risk) |
 |---|---|---|---|---|
 | Content Data Definitions | Record catalog, ID/alias resolution, Ready/Failed state | `get_record`/`has_record`/`all_records`/`resolve_alias` | — (Foundation) | `Resource`, `ResourceLoader.load()`, `ResourceLoader.list_directory()` — 4.4+, post-cutoff, **empirically verified working in 4.7.2** (ADR-0001) |
-| Game State & Scene Flow | Current mode, overlay stack, transition lifecycle, frozen overworld snapshot | `request_transition(target_mode, payload)`, `open_overlay(kind, payload)`/`close_overlay()`; signals `transition_started(from, to)`, `mode_exited(from)`, `mode_entered(to)`, `transition_finished(to)`, `overlay_opened(kind)`, `overlay_closed(kind)` (named in `game-state-scene-flow.md` Rule 4) | Content Data (Ready/Failed), Input (routed actions) | Not yet implemented — scene-swap mechanism is an open ADR. **Overlap to resolve in that ADR**: `ChapterFlow` (below) already owns a slice of what this system is designed to own (battle entry/retry/results sequencing) — decide whether Game State replaces it, wraps it, or becomes its parent |
-| Input System | Device state, active-device tracking, bindings | Proposed surface (not yet an ADR — named here so the ADR has a starting contract, not an invented one): `is_pressed(action)`/`is_just_pressed(action)`/`is_just_released(action)`, `get_move_vector() -> Vector2`; signals `action_pressed(action)`, `action_released(action)`, `action_held(action)`, `device_lost()`, `device_restored()`, `focus_lost()`, `focus_gained()`, `active_device_changed(kind)` (action/signal vocabulary from `input-system.md` Rules 1, 9; exact names are this system's own ADR to confirm or change) | Content Data (bindings record, soft) | `Input` singleton, `InputEvent.DEVICE_ID_MOUSE/KEYBOARD` — 4.7, post-cutoff, HIGH risk, not yet empirically verified in this project |
-| Sprite & Camera Presentation | Per-mode lighting, sprite rendering, fixed battle camera | `apply_mode_lighting(mode)` | Game State (mode_entered), Content Data (asset IDs) | `Sprite3D`/`AnimatedSprite3D`, `AreaLight3D` — 4.7, HIGH risk, NEEDS VERIFICATION; `Compositor` (4.3+, training data) |
+| Game State & Scene Flow | Current mode, overlay stack, transition lifecycle, detached Overworld instance (lifetime only — its contents are Overworld's), battle-start snapshot handle (contents are Battle mode's) | `request_transition(target_mode, payload)`, `open_overlay(kind, payload)`/`close_overlay()`; signals `transition_started(from, to)`, `mode_exited(from)`, `mode_entered(to)`, `transition_finished(to)`, `overlay_opened(kind)`, `overlay_closed(kind)` (named in `game-state-scene-flow.md` Rule 4) | Content Data (Ready/Failed), Input (routed actions) | Not yet implemented. Mechanism in **ADR-0002 (Proposed)**: `Node.add_child`/`remove_child`, `process_mode`, `PackedScene.instantiate()`, `ResourceLoader.load()` (pre-cutoff, detach and freeze behaviour empirically verified on 4.7.2), and `@abstract` (4.5). `ChapterFlow` overlap resolved there: Game State is the parent, and ChapterFlow is the interim Overworld |
+| Input System | Device state, active-device tracking, compiled bindings | **ADR-0003 (Proposed)**: `get_move_vector() -> Vector2`; signals `action_pressed(action)` (including derived `nav_*`), `action_released(action)`, `action_held(action)`, `device_lost()`, `device_restored()`, `focus_lost()`, `focus_gained()`, `active_device_changed(kind, pad_style)`, `pointer_confirm/cancel(position)`, `wheel_step(direction)`. The proposed `is_pressed`/`is_just_*` polling API was dropped | Content Data (`bindings_default` record, validated via ADR-0004's `register_record_validator`) | `InputEvent.DEVICE_ID_MOUSE/KEYBOARD` (4.7), SDL3 positional `JoyButton` (4.5), `InputMap.action_erase_events` + `Input.parse_input_event` on `ui_*`, `ignore_joypad_on_unfocused_application`: **empirically verified on 4.7.2**. Pad names under SDL3 still need real hardware |
+| Sprite & Camera Presentation | Per-mode lighting, sprite rendering, fixed battle camera | **ADR-0005 (Proposed)**: `PresentationDirector` applies `LightingProfile`s to the single in-tree `DioramaStage` on `mode_entered`; modes call `DioramaStage.request_profile(id)`; global shader uniform `mode_time` (stops under the Menu) | Game State (`mode_entered`, overlay signals, `mode_time`), Content Data (`sprite_set_id`, validated via ADR-0004) | `AnimatedSprite3D` + a per-sprite `ShaderMaterial` override (the shader owns texture, billboard and alpha scissor: an override gets nothing from SpriteBase3D on 4.7.2, verified), `DirectionalLight3D` `light_cull_mask`, global shader uniforms, `CameraAttributesPractical` DOF. `AreaLight3D` and HDR are **not used**. Sprite shadow shape still open. **No GDD yet** |
 | Stats & Damage Resolution | Nothing stateful — pure functions | `DamageCalculator.calculate_damage()` only (corrected — `calculate_heal()` is **not** here, see SquadSpecials below) | Content Data (stat_block, cost) | `RandomNumberGenerator` (injected) — **implemented**, LOW risk |
 | SquadSpecials | The squad's 4 named specials (stun, heal-party, heal-single, direct-damage) and their `calculate_heal()` (F4) | `make_speak_to_the_manager()`, `make_family_meal()`, `make_appetizer()`, `make_home_run()`, `calculate_heal(power, healer)` | Turn Battle System (the `Move`/`SpecialEffect` vocabulary it builds on) | **implemented** — `src/battle/squad/specials.gd`. No owning system in `systems-index.md` yet; closest fit is Turn Battle System or a future Quirk State System (see Open Questions) |
 | ChapterFlow | Multi-fight sequencing: constructs `BattleCore` instances, listens to `battle_ended`, carries squad HP/MP between fights, drives chapter-won | `fight_started`, `fight_lost`, `chapter_won` signals | Turn Battle System, Faction Rule Modifiers | **implemented** — `src/chapters/chapter_flow.gd`. Overlaps Game State & Scene Flow's designed scope (see that row); resolve ownership in Game State's own ADR, not here |
@@ -143,13 +143,17 @@ the explicit ordering.
   (fundamental, pre-cutoff), but the exact scene-swap mechanism, and its
   relationship to the already-shipped `ChapterFlow`, are undecided (Required
   ADRs, below).
-- **`Input System`** (Foundation, not yet an ADR — proposed surface only,
-  named so the ADR starts from a contract rather than inventing one from
-  scratch): see Module Ownership's Exposes cell for the proposed method and
-  signal names, sourced directly from `input-system.md` Rules 1 and 9. This
-  system's own ADR is where these names are confirmed or changed — flagging
-  here only that a near-term, "must have before coding starts" system should
-  not reach implementation with an unnamed API.
+- **`Input System`** (Foundation, **ADR-0003, Proposed**): the
+  `InputResolver` (`RefCounted`) is fed raw events by an `InputSystem` node
+  under `GameRoot/Services`. It satisfies ADR-0002's `ActionSource`
+  (`action_pressed`/`action_released` including the derived `nav_*` steps,
+  `focus_lost`, `device_lost`, `get_move_vector()`), and also emits
+  `action_held`, `focus_gained`, `device_restored`,
+  `active_device_changed(kind, pad_style)` and the raw `pointer_*`/
+  `wheel_step`. The proposed `is_pressed`/`is_just_*` polling API was
+  **dropped**: modes never poll Input. Guarantees: no `InputMap` use; the
+  built-in `ui_*` navigation actions carry no device events; the resolver is
+  held only by Game State and the UI Framework service.
 
 ## ADR Audit
 
@@ -192,12 +196,16 @@ retroactive-ADR in Stats & Damage/Turn Battle/Faction Rules).
 **Must have before coding starts (Foundation & Core):**
 - Game State & Scene Flow — scene management/mode-transition implementation
   strategy; must also resolve its overlap with the already-shipped
-  `ChapterFlow` (TR-gamestate-001 to 004)
+  `ChapterFlow` (TR-gamestate-001 to 004) — **written: ADR-0002 (Proposed)**
 - Input System — concrete method/signal names for the proposed surface above
-  (TR-input-001 to 004)
+  (TR-input-001 to 006) — **written: ADR-0003 (Proposed)**, with its
+  boot-ordering prerequisite split into **ADR-0004 Content Boot Ordering
+  (Proposed)**, which amends ADR-0001 and ADR-0002
 - Sprite & Camera Presentation — the lit-diorama rendering approach and fixed
   battle-camera implementation (promoted here from "should have," since
-  Overworld depends on it directly — resolves TD item 2 / LP item 1)
+  Overworld depends on it directly — resolves TD item 2 / LP item 1) —
+  **written: ADR-0005 (Proposed)**. It cannot be Accepted until its GDD
+  (`design/gdd/sprite-camera-presentation.md`, not yet written) supplies TR IDs
 
 **Explicit build order** (resolves TD item 2 / LP item 1): Overworld
 Exploration & Encounters cannot start until **all three** of the above are
@@ -263,9 +271,12 @@ further.
 ## Open Questions
 
 - **Scene-transition implementation mechanism** (Game State & Scene Flow's own
-  Open Question #4): autoload state machine, scene-tree swapping, or
-  sub-viewports. Blocks that system's own ADR, which also must resolve its
-  overlap with `ChapterFlow`.
+  Open Question #4): **answered, pending acceptance**, by ADR-0002 (Proposed
+  2026-10-21). It uses a `RefCounted` `GameStateMachine` driven by a persistent
+  `GameRoot` main scene and swaps modes as child nodes under `ModeHost`. The
+  Overworld is frozen by detaching its live instance, not by serializing it. The
+  `ChapterFlow` overlap is settled the same way: Game State becomes the parent,
+  and ChapterFlow stays as the stand-in Overworld until Overworld Exploration ships.
 - **Overworld movement/map representation**: undecided, blocks Overworld
   Exploration & Encounters. **Choosing free-roam reopens the Physics/Jolt HIGH
   risk rating** (Jolt is the default 3D physics engine since 4.6) — a
@@ -278,7 +289,12 @@ further.
   HIGH risk and the battle HUD already being built on `Control`. Coupled to
   the Input System ADR (which owns the device/focus signals) — resolve there
   or add a dedicated one before UI Framework work continues past the battle
-  HUD.
+  HUD. **Partly addressed by ADR-0003 (Proposed):**
+  - keyboard and gamepad menu navigation is routed, then re-injected into native `Control` focus (focus-bounded, press-only);
+  - mouse stays native, with `MOUSE_FILTER_STOP` backdrops and a transition blocker;
+  - hover→focus sync is assigned to the UI Framework.
+
+  AccessKit and prompt key labels remain open for a UI Framework ADR.
 - **Save/Load serialization format**: undecided.
 - **Does randomness repeat on Retry?** (Game State & Scene Flow's own Open
   Question #2) — Turn Battle System's `retry_battle()` exists; whether its

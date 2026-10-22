@@ -181,7 +181,7 @@ The transition_time formula is defined as:
 
 - **Battle wipe** (Overworld ↔ Battle): the signature transition of the game, played hundreds of times. It must read as "a fight starts" instantly. Its style (e.g. a diorama-card flip or a stamp slam tinted by the encounter's faction shape) is an art-direction decision for `/asset-spec`. It must not use faction color unless the encounter belongs to that faction (art bible Principle 3).
 - **Fades** (camp, maps, title, retreat): neutral Ink Navy (#1B2440) fades, never a faction color.
-- **Retry flash**: a short cream (#F4EAD2) flash. It should feel like "rewind", not like a new fight.
+- **Retry flash**: a short cream (#F4EAD2) flash. It should feel like "rewind", not like a new fight. It counts toward the global photosensitivity limit (`flash_gate`, at most 3 full flashes per second, `design/gdd/sprite-camera-presentation.md`). If it would land inside that gap, for example right after a victory burst, it plays as a soft fade below the flash threshold; its timing never changes.
 - **Per-mode look**: on `mode_entered`, Presentation applies that mode's lighting signature from art bible §2 (golden-hour overworld, neutral battle key light, campfire camp, frozen blurred diorama behind menus).
 - **Audio**: each mode change cues Audio Manager. Battle music starts during the wipe's *out* phase, so the fight begins on the beat. The Defeat Prompt uses a short, wry sting, never a dirge.
 

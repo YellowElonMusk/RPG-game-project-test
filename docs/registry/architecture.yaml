@@ -52,8 +52,49 @@ state_ownership:
     write_access: content-catalog-only
     referenced_by:
       - docs/architecture/adr-0001-content-data-storage-format.md
+      - docs/architecture/adr-0002-game-state-scene-flow.md   # Boot reads state; descriptor validation uses has_record
     added: 2026-10-21
     revised: ""
+  - state: game_mode_and_overlay_stack
+    status: active
+    owner_system: game-state
+    adr: docs/architecture/adr-0002-game-state-scene-flow.md
+    interface: "GameStateMachine.current_mode / overlay_stack / phase (read-only); changed only via request_transition / open_overlay / close_overlay / request_quit"
+    write_access: game-state-only
+    referenced_by:
+      - docs/architecture/adr-0002-game-state-scene-flow.md
+    added: 2026-10-21
+    revised: ""
+  - state: battle_start_snapshot
+    status: active
+    owner_system: game-state
+    adr: docs/architecture/adr-0002-game-state-scene-flow.md
+    interface: "Opaque handle: game-state holds it; Battle mode creates it via capture_start_snapshot() and owns its contents; restored via restore_start_snapshot(handle) on Retry"
+    write_access: battle-mode-creates-contents, game-state-holds-handle
+    referenced_by:
+      - docs/architecture/adr-0002-game-state-scene-flow.md
+    added: 2026-10-21
+    revised: ""
+  - state: input_device_state
+    status: active
+    owner_system: input-system
+    adr: docs/architecture/adr-0003-input-system.md
+    interface: "InputResolver: held set, move vector, active device/pad style, focus; read via its signals and get_move_vector() by game-state, and via the UI Framework service's read-only prompt/pointer facade by widgets"
+    write_access: input-system-only
+    referenced_by:
+      - docs/architecture/adr-0003-input-system.md
+    added: 2026-10-21
+    revised: ""
+  - state: battle_replay_queue_and_display_hp
+    status: active
+    owner_system: battle-replay-controller
+    adr: docs/architecture/adr-0006-battle-replay-ownership.md
+    interface: "BattleReplayController.get_display(combatant) -> CombatantDisplay (hp, mp, status), get_display_hp(), get_state(), is_replaying(), is_latched(), get_windup_progress(), get_post_impact_time(), get_hold_time(), get_boss_combatant() (read-only); queue, display snapshots and clocks are private; changed only by advance(delta), enqueue_reveal_gate(), open_reveal_gate(), enqueue_takeover(), request_latch(), clear_latch(), set_speed_settings(), cancel_pending_replay(), resync(), dispose()"
+    write_access: battle-replay-controller-only
+    referenced_by:
+      - docs/architecture/adr-0006-battle-replay-ownership.md
+    added: 2026-10-21
+    revised: "2026-10-22"
 
 # Example:
 #
@@ -85,15 +126,111 @@ interfaces:
   - contract: content_vocabulary_registration
     status: active
     pattern: direct_call
-    producer: "Turn Battle System, Faction Rule Modifiers (each registers its own vocabulary)"
+    # old producer (2026-10-21): "Turn Battle System, Faction Rule Modifiers (each registers its own vocabulary)"
+    producer: "Turn Battle System, Faction Rule Modifiers (each owns its vocabulary), invoked via ContentBootstrap.run() before load_all() (ADR-0004)"
     consumers:
       - content-catalog
     adr: docs/architecture/adr-0001-content-data-storage-format.md
     signal_signature: "ContentCatalog.register_known_effect_types(system: StringName, types: PackedStringArray) -> void, called before load_all()'s Validating phase"
     referenced_by:
       - docs/architecture/adr-0001-content-data-storage-format.md
+      - docs/architecture/adr-0004-content-boot-ordering.md
+    added: 2026-10-21
+    revised: "2026-10-21"
+  - contract: content_record_validation
+    status: active
+    pattern: direct_call
+    producer: "record-type owners (Input System today), invoked via ContentBootstrap.run()"
+    consumers:
+      - content-catalog
+    adr: docs/architecture/adr-0004-content-boot-ordering.md
+    signal_signature: "ContentCatalog.register_record_validator(type: StringName, validator: Callable) -> void; validator(record: Resource) -> PackedStringArray (pure, empty = valid); rejected once load_all() starts"
+    referenced_by:
+      - docs/architecture/adr-0004-content-boot-ordering.md
+      - docs/architecture/adr-0003-input-system.md
+      - docs/architecture/adr-0005-sprite-camera-presentation.md   # sprite_set_exists for character/enemy
     added: 2026-10-21
     revised: ""
+  - contract: stage_profile_request
+    status: active
+    pattern: signal
+    producer: "modes (via DioramaStage.request_profile)"
+    consumers:
+      - sprite-camera-presentation
+    adr: docs/architecture/adr-0005-sprite-camera-presentation.md
+    signal_signature: "DioramaStage.profile_requested(profile_id: StringName); PresentationDirector then calls stage.apply_profile(profile, blend_time) (blend_time = 0 on mode_entered); modes never write light/environment properties"
+    referenced_by:
+      - docs/architecture/adr-0005-sprite-camera-presentation.md
+    added: 2026-10-21
+    revised: ""
+  - contract: input_prompt_facade
+    status: active
+    pattern: direct_call
+    producer: ui-framework
+    consumers:
+      - modes-and-overlays
+    adr: docs/architecture/adr-0003-input-system.md
+    signal_signature: "Read-only facade on the UI Framework service exposing active device kind, pad style and pointer events to widgets; the InputResolver reference never leaves the service"
+    referenced_by:
+      - docs/architecture/adr-0003-input-system.md
+    added: 2026-10-21
+    revised: ""
+  - contract: game_state_announcements
+    status: active
+    pattern: signal
+    producer: game-state
+    consumers:
+      - sprite-camera-presentation
+      - audio-manager
+      - ui-framework
+      - overworld
+    adr: docs/architecture/adr-0002-game-state-scene-flow.md
+    signal_signature: "transition_started(from, to), mode_exited(from), mode_entered(to), transition_finished(to), overlay_opened(kind), overlay_closed(kind) on GameStateMachine; fixed order; consumers never poll"
+    referenced_by:
+      - docs/architecture/adr-0002-game-state-scene-flow.md
+      - docs/architecture/adr-0005-sprite-camera-presentation.md   # PresentationDirector: mode_entered + Menu overlay
+    added: 2026-10-21
+    revised: ""
+  - contract: action_source
+    status: active
+    pattern: signal
+    producer: input-system
+    consumers:
+      - game-state
+    adr: docs/architecture/adr-0002-game-state-scene-flow.md
+    signal_signature: "Contract, not a base class: signals action_pressed(action: StringName), action_released(action: StringName), focus_lost(), device_lost(); func get_move_vector() -> Vector2. Input ADR conforms directly or via an adapter in GameRoot"
+    referenced_by:
+      - docs/architecture/adr-0002-game-state-scene-flow.md
+      - docs/architecture/adr-0003-input-system.md   # InputResolver satisfies it directly; nav_* steps arrive as action_pressed
+    added: 2026-10-21
+    revised: ""
+  - contract: transition_presenter
+    status: active
+    pattern: direct_call
+    producer: game-state
+    consumers:
+      - ui-framework
+    adr: docs/architecture/adr-0002-game-state-scene-flow.md
+    signal_signature: "TransitionPresenter.play_out(type: StringName, duration: float) / play_in(type, duration); fire-and-forget, the machine's tick timing is authoritative"
+    referenced_by:
+      - docs/architecture/adr-0002-game-state-scene-flow.md
+    added: 2026-10-21
+    revised: ""
+  - contract: battle_replay_gating
+    status: active
+    pattern: signal
+    producer: battle-replay-controller
+    consumers:
+      - ui-framework          # BattleHud: command menu, HP bars, result
+      - battle-mode           # reports the outcome to Game State on battle_ended_after_replay
+      - sprite-camera-presentation   # beat and hold signals; frames from the controller's clocks
+      - audio-manager                # hit sound on beat_impact
+    adr: docs/architecture/adr-0006-battle-replay-ownership.md
+    signal_signature: "BattleReplayController: replay_started(), replay_finished(), replay_cancelled(), latch_changed(latched: bool), hold_started(kind: HoldKind, boss: Combatant), hold_finished(kind: HoldKind), beat_started(plan: BeatPlan), beat_impact(plan: BeatPlan), beat_finished(plan: BeatPlan), round_advanced_after_replay(round_number: int), turn_started_after_replay(combatant: Combatant), battle_ended_after_replay(won: bool); markers released in BattleCore emission order, each only after every earlier timed entry (reveal gate, takeover hold, beat) has finished; replay_finished precedes the marker that ends a replay"
+    referenced_by:
+      - docs/architecture/adr-0006-battle-replay-ownership.md
+    added: 2026-10-21
+    revised: "2026-10-22"
 
 # Example:
 #
@@ -172,8 +309,111 @@ api_decisions:
     reason: "Explicit, documented exception to the project's DI-over-singletons standard: the catalog is read-only after Ready, and every existing static factory (SquadSpecials.*, BureaucratiaRule.*, MegaCorpRule.*) is parameterless, so DI would require changing every already-shipped call site."
     referenced_by:
       - docs/architecture/adr-0001-content-data-storage-format.md
+      - docs/architecture/adr-0004-content-boot-ordering.md   # access unchanged; only the load moves
     added: 2026-10-21
     revised: ""
+  - purpose: mode_switching
+    status: active
+    api: "ModeHost child swap (PackedScene.instantiate + add_child / remove_child) under a persistent GameRoot main scene"
+    not: "SceneTree.change_scene_to_file / change_scene_to_packed / reload_current_scene"
+    adr: docs/architecture/adr-0002-game-state-scene-flow.md
+    reason: "change_scene_* frees the current scene, which would destroy the Overworld instead of freezing it and take overlays and services with it; detaching keeps an exact restore. Detach state retention empirically verified on 4.7.2."
+    referenced_by:
+      - docs/architecture/adr-0002-game-state-scene-flow.md
+    added: 2026-10-21
+    revised: ""
+  - purpose: menu_time_stop
+    status: active
+    api: "ModeHost.process_mode = PROCESS_MODE_DISABLED"
+    not: "SceneTree.paused"
+    adr: docs/architecture/adr-0002-game-state-scene-flow.md
+    reason: "SceneTree.paused is global and would stop Audio Manager and overlays unless each opted out; disabling ModeHost stops only the mode subtree (Timers and Tweens verified on 4.7.2)."
+    referenced_by:
+      - docs/architecture/adr-0002-game-state-scene-flow.md
+      - docs/architecture/adr-0005-sprite-camera-presentation.md   # extended to shaders via mode_time
+    added: 2026-10-21
+    revised: ""
+  - purpose: game_state_access
+    status: active
+    api: "GameStateMachine instance injected via setup() from GameRoot"
+    not: "Godot autoload singleton"
+    adr: docs/architecture/adr-0002-game-state-scene-flow.md
+    reason: "Game State is mutable; Architecture Principle 4 limits autoloads to read-only state (ContentCatalog). Injection also lets every GDD acceptance criterion run headlessly against stubs."
+    referenced_by:
+      - docs/architecture/adr-0002-game-state-scene-flow.md
+    added: 2026-10-21
+    revised: ""
+  - purpose: input_event_resolution
+    status: active
+    api: "InputResolver (RefCounted) fed raw InputEvents by InputSystem._input(); own binding table on physical_keycode / JoyButton / JoyAxis"
+    not: "InputMap actions + Input.is_action_* / Input.get_vector() polling"
+    adr: docs/architecture/adr-0003-input-system.md
+    reason: "Input merges devices and cannot express the GDD's held-until-all-release, d-pad-wins-ties, fresh-press-after-focus and active-pad-only-disconnect rules; a pure resolver keeps every acceptance criterion headless with no global InputMap."
+    referenced_by:
+      - docs/architecture/adr-0003-input-system.md
+    added: 2026-10-21
+    revised: ""
+  - purpose: gui_keyboard_navigation
+    status: active
+    api: "Built-in ui_* navigation actions stripped of device events (InputMap.action_erase_events in InputSystem._enter_tree); routed actions re-injected via Input.parse_input_event(InputEventAction ui_*), focus-bounded and press+release atomic"
+    not: "Device-bound ui_* actions driving Control focus natively"
+    adr: docs/architecture/adr-0003-input-system.md
+    reason: "Native ui_* navigation reads devices directly and would bypass Game State's input lock; re-injection keeps native focus/Button/ItemList behaviour. Verified on 4.7.2."
+    referenced_by:
+      - docs/architecture/adr-0003-input-system.md
+    added: 2026-10-21
+    revised: ""
+  - purpose: content_load_entry
+    status: active
+    api: "ContentBootstrap.run(catalog: ContentCatalogService) from GameRoot._enter_tree() (also harness scenes' _enter_tree() and validate-content.gd's _initialize()); idempotent"
+    not: "ContentCatalog autoload _ready() calling load_all()"
+    adr: docs/architecture/adr-0004-content-boot-ordering.md
+    reason: "Registrants must run before the Validating phase; measured on 4.7.2, an autoload's _ready() runs after the main scene's _enter_tree(), so the original premise did not hold."
+    referenced_by:
+      - docs/architecture/adr-0004-content-boot-ordering.md
+      - docs/architecture/adr-0003-input-system.md
+    added: 2026-10-21
+    revised: ""
+  - purpose: sprite_rendering
+    status: active
+    api: "AnimatedSprite3D (pixel_size = 1/pixels_per_unit) with a per-sprite ShaderMaterial override; the shader owns frame_tex (fed on frame_changed), Y-locked billboard in vertex() and ALPHA_SCISSOR_THRESHOLD"
+    not: "Relying on SpriteBase3D node properties (texture_filter, alpha_cut, billboard) while an override is set; 2D CanvasLayer sprites over 3D; SubViewport compositing"
+    adr: docs/architecture/adr-0005-sprite-camera-presentation.md
+    reason: "On 4.7.2 an override bypasses SpriteBase3D's generated material (verified), and billboard/alpha_scissor render modes are invalid; sprites must stay lit inside the diorama."
+    referenced_by:
+      - docs/architecture/adr-0005-sprite-camera-presentation.md
+    added: 2026-10-21
+    revised: ""
+  - purpose: presentation_stage_lookup
+    status: active
+    api: "Group &\"active_diorama_stage\" (at most one in-tree member by ADR-0002's one-mode guarantee), read only by PresentationDirector and only on mode_entered"
+    not: "A stage registry autoload, or any other system querying the group"
+    adr: docs/architecture/adr-0005-sprite-camera-presentation.md
+    reason: "Stateless, read-only soft global bounded to one reader; detached modes leave the group automatically. Registered so the pattern is not copied for other lookups."
+    referenced_by:
+      - docs/architecture/adr-0005-sprite-camera-presentation.md
+    added: 2026-10-21
+    revised: ""
+  - purpose: menu_ambient_freeze
+    status: active
+    api: "Global shader uniform mode_time (set each frame by PresentationDirector from GameStateMachine.mode_time) + DioramaStage.set_ambient_paused() for particles on Menu open/close"
+    not: "Shader TIME in world shaders; SceneTree.paused"
+    adr: docs/architecture/adr-0005-sprite-camera-presentation.md
+    reason: "ModeHost disable (ADR-0002) stops nodes but not shader TIME; mode_time stops under the Menu. Global uniform set at runtime verified on 4.7.2."
+    referenced_by:
+      - docs/architecture/adr-0005-sprite-camera-presentation.md
+    added: 2026-10-21
+    revised: ""
+  - purpose: battle_replay_clock
+    status: active
+    api: "BattleReplayController.advance(delta) called from the Battle mode's _process with mode-time delta: clamp to dt_max, step the entry in progress (scaled wind-up or HOLD clock; unscaled post-impact clock), release markers, start the next entry. Leftover dt is dropped at every event; at most one timed entry finishes per call. Presentation reads get_windup_progress() / get_post_impact_time() / get_hold_time(), never its own timers"
+    not: "Timer, Tween, SceneTree.create_timer or await on real time inside the controller"
+    adr: docs/architecture/adr-0006-battle-replay-ownership.md
+    reason: "Keeps the controller RefCounted and headless (tests drive advance() with chosen deltas, no wall-clock wait), and freezes the replay under the Menu because ADR-0002 disables ModeHost processing."
+    referenced_by:
+      - docs/architecture/adr-0006-battle-replay-ownership.md
+    added: 2026-10-21
+    revised: "2026-10-22"
 
 # Example:
 #
@@ -205,6 +445,66 @@ forbidden_patterns:
     description: "A Content Data Definitions record (Resource subclass under data/) must never @export a field typed as another Resource subclass. Cross-references must be plain String/PackedStringArray ID fields."
     why: "A direct Resource reference reintroduces file-path coupling through Godot's .tres ExtResource mechanism, violating the GDD's Rule 3 (references by ID only) and defeating the whole point of ID-based indirection (stable IDs across refactors, save-file compatibility)."
     adr: docs/architecture/adr-0001-content-data-storage-format.md
+    added: 2026-10-21
+  - pattern: scene_tree_change_scene
+    status: active
+    description: "No code may call SceneTree.change_scene_to_file(), change_scene_to_packed() or reload_current_scene(). GameRoot is the only main scene; modes swap under ModeHost."
+    why: "Frees the current scene, destroying the frozen Overworld, the overlay stack and the services that Game State depends on."
+    adr: docs/architecture/adr-0002-game-state-scene-flow.md
+    added: 2026-10-21
+  - pattern: scene_tree_paused_for_menu
+    status: active
+    description: "SceneTree.paused must not be used to stop mode time for the Menu or any overlay."
+    why: "Global pause also stops Audio Manager and overlays; Game State disables ModeHost instead."
+    adr: docs/architecture/adr-0002-game-state-scene-flow.md
+    added: 2026-10-21
+  - pattern: mutable_autoload_singleton
+    status: active
+    description: "No autoload may hold mutable game state. ContentCatalog (read-only after Ready, ADR-0001) is the only permitted autoload exception."
+    why: "Architecture Principle 4; mutable globals defeat dependency injection and the stub-driven acceptance tests."
+    adr: docs/architecture/adr-0002-game-state-scene-flow.md
+    added: 2026-10-21
+  - pattern: mode_direct_input_access
+    status: active
+    description: "Modes and overlays must not reference the Input System or connect to its signals; discrete actions arrive via handle_action(), movement via GameStateMachine.get_move_vector(self)."
+    why: "Game State owns routing and the input lock (Input GDD rule 2); a mode reading Input directly bypasses the lock during transitions and overlays."
+    adr: docs/architecture/adr-0002-game-state-scene-flow.md
+    added: 2026-10-21
+  - pattern: engine_input_outside_input_system
+    status: active
+    description: "No script except src/input/input_system.gd may override _input/_unhandled_input to read gameplay input, poll Input.*, or mutate InputMap. Sole exception: the UI Framework re-injection helper may call Input.parse_input_event() with a ui_* InputEventAction, focus-bounded and press-only."
+    why: "A second reader of engine input bypasses the resolver's device rules and Game State's lock."
+    adr: docs/architecture/adr-0003-input-system.md
+    added: 2026-10-21
+  - pattern: device_zero_as_keyboard_mouse
+    status: active
+    description: "event.device == 0 must never be used to mean keyboard or mouse; use the event type or InputEvent.DEVICE_ID_KEYBOARD / DEVICE_ID_MOUSE."
+    why: "Since Godot 4.7, keyboard/mouse report dedicated IDs (16/32 verified) and some joypads report device 0."
+    adr: docs/architecture/adr-0003-input-system.md
+    added: 2026-10-21
+  - pattern: load_all_outside_bootstrap
+    status: active
+    description: "ContentCatalog.load_all() may be called only by ContentBootstrap.run(); ContentCatalog._ready() must not assign, clear or allocate catalog state."
+    why: "Registrants must run before validation; the autoload's _ready() runs after the main scene's _enter_tree() on 4.7.2 and would erase a completed load."
+    adr: docs/architecture/adr-0004-content-boot-ordering.md
+    added: 2026-10-21
+  - pattern: world_shader_time
+    status: active
+    description: "Spatial or canvas shaders used inside mode scenes must never read TIME; they read the global uniform mode_time. UI shaders outside ModeHost may use TIME."
+    why: "TIME keeps running while the Menu is open, breaking Game State rule 10's frozen diorama."
+    adr: docs/architecture/adr-0005-sprite-camera-presentation.md
+    added: 2026-10-21
+  - pattern: shared_actor_material
+    status: active
+    description: "Actor sprites must never share one ShaderMaterial; each CharacterSprite owns its own instance and refreshes frame_tex on frame_changed/animation_changed."
+    why: "A sampler cannot be an instance uniform, so a shared material shows the same frame on every sprite."
+    adr: docs/architecture/adr-0005-sprite-camera-presentation.md
+    added: 2026-10-21
+  - pattern: direct_battlecore_turn_signal_listening
+    status: active
+    description: "BattleHud and the Battle mode must never connect to BattleCore.turn_started, round_advanced or battle_ended; they use BattleReplayController's *_after_replay signals and read HP, MP and status through get_display(). Under Game State the Battle mode never calls start_battle() with its default argument, or retry_battle()."
+    why: "BattleCore emits these synchronously before any beat plays; listening directly opens the command menu, shows the result and reveals final HP ahead of the replay (sprite-camera-presentation.md rule 9)."
+    adr: docs/architecture/adr-0006-battle-replay-ownership.md
     added: 2026-10-21
 
 # Example:

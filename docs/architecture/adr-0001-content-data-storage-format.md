@@ -1,7 +1,7 @@
 # ADR-0001: Content Data Definitions Storage & Loading Format
 
 ## Status
-Accepted
+Accepted — bootstrap amendment pending in ADR-0004 (Proposed 2026-10-21; takes effect when ADR-0004 is Accepted)
 
 ## Date
 2026-10-21
@@ -121,6 +121,15 @@ own GDD starts this load at boot, is not built) — until it exists, the
 autoload's own `_ready()` is the bootstrap; `project.godot` must list it
 under `[autoload]` as part of implementing this ADR.
 
+> **Amendment pending — ADR-0004 (Content Boot Ordering).** Reason (3) and
+> the bootstrap sentence above are replaced: `load_all()` is not called from
+> the autoload's `_ready()`. `ContentBootstrap.run()` registers every
+> vocabulary and validator and then loads, called from `GameRoot._enter_tree()`
+> (and from harness scenes and `validate-content.gd`). Measured on 4.7.2, an
+> autoload's `_ready()` actually runs *after* the main scene's `_enter_tree()`,
+> so the premise of reason (3) did not hold. The autoload remains the
+> read-only access pattern (reasons 1 and 2 stand).
+
 **Characterization tests do not use the catalog.** They are written against
 *today's* hardcoded factories, before migration, specifically to pin current
 behavior; the same tests, unchanged, are run again after migration to prove
@@ -236,6 +245,8 @@ data/items/*.tres       ─┘
   and the equivalent for faction-rule-class resolution — the vocabulary-
   registration calls described above, invoked by Feature-layer systems before
   `load_all()`'s Validating phase.
+- *(Amendment pending, ADR-0004)* `ContentCatalog.register_record_validator(type: StringName, validator: Callable) -> void`:
+  a per-record-type semantic validator, run during Validating and rejected once `load_all()` has started.
 - `ContentCatalog.state -> State` (`UNLOADED | LOADING | VALIDATING | READY | FAILED`)
 - Record base shape: every record Resource exports `id: String` and, where
   Rule 2 applies, `aliases: PackedStringArray`.
@@ -280,6 +291,9 @@ data/items/*.tres       ─┘
   sees registered record classes. Do not call `load_all()` from another
   autoload's `_init()` — that is the one ordering that could run ahead of
   class registration.
+  *(Amendment pending, ADR-0004: there is no `_ready()` load pass. Catalog
+  state is set up in initializers or `_init()`, `_ready()` must not touch it,
+  and `load_all()` is called only by `ContentBootstrap.run()`.)*
 
 ## Alternatives Considered
 
@@ -431,6 +445,10 @@ data/items/*.tres       ─┘
    unchanged after a refactor).
 1. Build `ContentCatalog` (as the autoload described in Decision) and the
    record Resource script classes (new code; no existing code changes yet).
+   *(Amendment pending, ADR-0004: the load entry point is
+   `src/boot/content_bootstrap.gd`, not the autoload's `_ready()`; the script
+   declares `class_name ContentCatalogService`, and `ContentCatalog` gains
+   `register_record_validator(type, validator)`.)*
 2. Author `.tres` records for the **stable data first**: the Clerk/Supervisor/
    Security Drone/Middle Manager/CEO `Enemy` records (including their named
    attacks as `Move` records, keyed by `id` not `display_name` — resolves the
@@ -484,3 +502,8 @@ data/items/*.tres       ─┘
   before moving Status to Accepted, in a fresh session per the standard
   `/architecture-review` guidance (never in the same session that authored
   the ADR).
+- **2026-10-21 — amendment proposed by ADR-0004 (Content Boot Ordering)**:
+  an additive annotation of four passages (Access pattern reason 3 and the
+  bootstrap sentence; the `_ready()` load-pass guideline; Migration Step 1's
+  load entry point; Key Interfaces gains `register_record_validator()`). The
+  original text is kept. The amendment takes effect when ADR-0004 is Accepted.

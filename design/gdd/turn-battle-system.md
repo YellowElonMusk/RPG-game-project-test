@@ -230,6 +230,12 @@ scene-tree dependency, matching every other battle class's convention).
 
 **Content Dependencies**: none yet — all content is in-code (see Tuning Knobs).
 
+**Downstream dependents**:
+- Sprite & Camera Presentation (`design/gdd/sprite-camera-presentation.md`, hard for Battle). It receives each `action_resolved` outcome in order through `BattleReplayController` (ADR-0006) and **replays** them beat by beat, because this system resolves a whole round, including the enemy phase, synchronously. The battle's command menu opens only after the replay finishes, and the battle outcome is reported to Game State only after the last beat. A replay never changes a result.
+  - **Open, owned here:** the `fast_forward` replay speed (`ff_mult`, proposed 2.0×).
+  - **Open, owned here:** a possible `action_started` signal for a separate wind-up beat.
+  - **Open, owned here:** a miss/evade flag, if misses become a mechanic.
+
 ---
 
 ## 7. Tuning Knobs

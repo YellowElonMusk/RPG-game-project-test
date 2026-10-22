@@ -2,9 +2,11 @@
 
 > **Status**: In Design
 > **Author**: user + agents
-> **Last Updated**: 2026-10-13
+> **Last Updated**: 2026-10-22
 > **Last Verified**: 2026-10-13
 > **Implements Pillar**: Readable in One Turn (via the `inspect` action and consistent, device-aware prompts)
+> **Amendment (2026-10-22)**: `fast_forward` is a button that may be tapped or held, not a hold-only action. In battle replays a tap latches fast-forward and Cancel clears it, per Sprite & Camera Presentation rule 9 (creative-director ruling of the 2026-10-22 `/design-review`); Dialogue may still use it as a hold. OS key-repeat echoes never produce a second `pressed` (rule 2). Input's own behavior is otherwise unchanged.
+> **Follow-up (2026-10-22, fourth `/design-review` ruling 1)**: the battle-replay latch has one level. A `fast_forward` or `confirm` press (or a click on the replay prompt) speeds plain beats only; knockouts and the first boss entrance are sped only with the opt-in "Speed up all replay beats" setting. Input's own behavior is unchanged.
 
 ## Summary
 
@@ -32,15 +34,15 @@ Players feel it as controls that simply work, whichever device they pick up: wal
 | `menu` | button | Tab, M | Start | — | Open the Menu overlay |
 | `inspect` | button | I, Q | North face button | Hover (tooltip) | Show the full rule text of a hovered enemy, quirk state or faction rule (Pillar 4) |
 | `page_left` / `page_right` | button | 1 / 3 | Left / right shoulder | Mouse wheel (in lists) | Switch party member, tab or list page |
-| `fast_forward` | hold | Shift (held) | West face button (held) | — | Speed up battle animations and text while held; how much is decided by Turn Battle and Dialogue |
+| `fast_forward` | button | Shift | West face button | — | Speed up battle replays and dialogue text. In a battle replay, a press latches a speed-up of the remaining plain beats and `cancel` clears it (Sprite & Camera Presentation rule 9); in Dialogue it speeds text while held. How much is decided by Turn Battle and Dialogue |
 
-**2. Device → action only.** Input reports actions as `pressed`, `released` and `held`, plus the current `move` vector. It has **no knowledge of modes, overlays or transitions** and never decides whether an action should be used. Game State & Scene Flow routes actions to the current mode or top overlay and applies the input lock. This rule is what prevents a dependency loop between the two systems.
+**2. Device → action only.** Input reports actions as `pressed`, `released` and `held`, plus the current `move` vector. It has **no knowledge of modes, overlays or transitions** and never decides whether an action should be used. A button produces exactly one `pressed` per physical press: while it stays down, Input emits `held`, and the operating system's key-repeat echoes never produce another `pressed`. Receivers that guard against mashing (Sprite & Camera Presentation rule 9) rely on this. Game State & Scene Flow routes actions to the current mode or top overlay and applies the input lock. This rule is what prevents a dependency loop between the two systems.
 
-**3. Mouse scope.** The mouse provides raw pointer events: `pointer_position`, `pointer_confirm` (left-click), `pointer_cancel` (right-click) and wheel steps. Input always reports them, because it cannot know what is clickable. The **UI Framework** decides whether a click landed on an interactive element and, if so, turns it into `confirm` or `cancel` for that element. A click on empty space therefore does nothing. Only menus, battle command windows and other UI use the pointer. **Overworld movement is never driven by the mouse** (no click-to-move). Hovering a UI element moves keyboard/gamepad focus to it, so the two never disagree about what is selected (Godot 4.6+ keeps mouse focus and keyboard/gamepad focus separate, so the UI Framework must sync them).
+**3. Mouse scope.** The mouse provides raw pointer events: `pointer_position`, `pointer_confirm` (left-click), `pointer_cancel` (right-click) and wheel steps. Input always reports them, because it cannot know what is clickable. The **UI Framework** decides whether a click landed on an interactive element and, if so, turns it into `confirm` or `cancel` for that element. A click on empty space therefore does nothing. Only menus, battle command windows and other UI use the pointer. **Overworld movement is never driven by the mouse** (no click-to-move). Hovering a UI element moves keyboard/gamepad focus to it, but only once the pointer has moved at least `pointer_switch_px` (cumulative) since that menu opened, so a resting or bumped pointer never steals the default focus (Sprite & Camera Presentation rule 9), and the two never disagree about what is selected (Godot 4.6+ keeps mouse focus and keyboard/gamepad focus separate, so the UI Framework must sync them).
 
 **4. Active device.** Input tracks the **active device kind**: `keyboard_mouse` or `gamepad`. It switches to the kind of the last meaningful input: a key press, a mouse click or a mouse move of at least `pointer_switch_px` pixels; a gamepad button press; or a stick or trigger past its deadzone. It then broadcasts `active_device_changed(kind, pad_style)`, where `pad_style` (`xbox` | `playstation` | `nintendo` | `generic`) lets the UI show matching button prompts. Stick drift inside the deadzone never switches the device.
 
-**5. Menu navigation repeat.** When `move` drives a menu, holding a direction produces one navigation step immediately, then repeats after `repeat_delay` at every `repeat_interval` (Formulas) until released. Overworld walking uses the continuous `move` vector and has no repeat.
+**5. Menu navigation repeat.** When `move` drives a menu, holding a direction produces one navigation step immediately, then repeats after `repeat_delay` at every `repeat_interval` (Formulas) until released. Overworld walking uses the continuous `move` vector and has no repeat. Each step is reported as one of four **derived actions**, `nav_up`, `nav_down`, `nav_left` and `nav_right` (never bound, `pressed` only). They are always emitted, since Input knows no modes, and a receiver that doesn't navigate ignores them (ADR-0003). `move` is bound as four sub-actions (`move_up/down/left/right`) that only feed the vector.
 
 **6. Analog handling.** Sticks use a radial deadzone and rescale the remaining range to 0–1 (Formulas). For menu navigation, a stick counts as a direction once its magnitude passes `menu_stick_threshold` along that axis. The d-pad and keys are always full magnitude, and their diagonals are normalized to length 1, so walking diagonally is never faster than walking straight.
 
@@ -173,7 +175,7 @@ None of its own. Button-prompt art (keyboard keys, mouse, and Xbox / PlayStation
 - **Zero perceived lag:** an action is reported in the same frame the device reports it. Input adds no buffering or smoothing beyond the deadzone rescale.
 - **Menus fly but don't overshoot:** the 0.40 s repeat delay stops a single tap from skipping two entries, and the 0.08 s interval scrolls long lists quickly. Both are tuned by feel.
 - **Prompts never lie:** the moment the player touches a different device, every on-screen prompt matches it. A prompt showing the wrong device makes a turn-based game feel broken.
-- **`fast_forward` is a held button, not a toggle**, so letting go always returns to normal speed. That matters for a comedy game where players will want to see the punchlines.
+- **Fast-forward never costs a punchline by accident.** In a battle replay, one tap of `fast_forward` or `confirm` speeds up the rest of that replay's plain beats, and `cancel` returns it to normal speed at once; the next replay always starts at normal speed. No press ever speeds a knockout or the first boss entrance unless the player has turned on "Speed up all replay beats" (Sprite & Camera Presentation rules 9 and 13). In Dialogue, holding `fast_forward` speeds text and letting go returns it to normal. That matters for a comedy game where players will want to see the punchlines.
 
 ## UI Requirements
 
@@ -201,7 +203,7 @@ Evidence: **[L]** Logic (gdUnit4, `tests/unit/input/`). UI evidence for button p
 
 **Bindings and actions**
 - **AC-1 [L]** Parametrized over every default binding (all 8 actions, keyboard and gamepad): press emits `pressed` for that action, release emits `released`.
-- **AC-2 [L]** Holding `fast_forward` emits `held` on every tick while held, and exactly one `released` on release.
+- **AC-2 [L]** Holding `fast_forward` emits exactly one `pressed`, `held` on every tick while held, and exactly one `released` on release. A one-tick tap emits exactly one `pressed` and one `released`. A keyboard key held through the operating system's key-repeat, with synthetic echo events injected, emits no second `pressed`, for `fast_forward` and `confirm` alike.
 - **AC-3 [L]** Validation reports an error for an action with no keyboard binding, an action with no gamepad binding, and a key bound to two actions. A valid default set reports zero errors.
 
 **Movement and analog**
@@ -244,4 +246,4 @@ Evidence: **[L]** Logic (gdUnit4, `tests/unit/input/`). UI evidence for button p
 | 1 | **Esc opens the menu?** Esc is bound to `cancel`. PC players expect Esc to open the menu on the overworld. Should Game State treat `cancel` with nothing to cancel (in Overworld or Camp) as `menu`? | user + Game State & Scene Flow GDD | Next revision of the Game State GDD |
 | 2 | **Controller rumble**: none in MVP. Wanted for combo punchlines or boss hits? | user + game-designer | Vertical Slice |
 | 3 | **Default key choices** (Z/X, I/Q, 1/3, Shift) were picked without `ux-designer`; validate them in the first playtest. | user + ux-designer | First playable |
-| 4 | **Engine setting**: Godot 4.7's "Ignore Joypad on Unfocused Application" may implement rule 9 directly; confirm in the ADR. | `/architecture-decision` (godot-specialist) | Technical Setup |
+| 4 | ~~**Engine setting**: Godot 4.7's "Ignore Joypad on Unfocused Application" may implement rule 9 directly; confirm in the ADR.~~ **Resolved (ADR-0003, Proposed):** `input_devices/joypads/ignore_joypad_on_unfocused_application` exists on 4.7.2 (verified). It is enabled as a backstop, and the resolver's own focus gate still implements rule 9. | `/architecture-decision` (godot-specialist) | Technical Setup |

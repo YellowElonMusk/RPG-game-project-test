@@ -38,9 +38,254 @@
 #   line in any other shape is reported as unsupported layout, with its number.
 
 version: 1
-last_updated: ""
+last_updated: "2026-10-21"
 
-requirements: []
+requirements:
+- id: TR-content-001
+  system: content
+  gdd: design/gdd/content-data-definitions.md
+  requirement: "7 record types plus reserved types; permanent lowercase snake_case IDs with type prefix, max 64 chars, unique; aliases resolve one hop only"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-content-002
+  system: content
+  gdd: design/gdd/content-data-definitions.md
+  requirement: "Catalog state machine Unloaded to Loading to Validating to Ready or Failed; Ready and Failed are terminal for the session; lookups error outside Ready"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-content-003
+  system: content
+  gdd: design/gdd/content-data-definitions.md
+  requirement: "Validation checks the complete set and reports every problem in two severities; any error fails the catalog; also runs as a standalone headless check (exit 0 or 1)"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-content-004
+  system: content
+  gdd: design/gdd/content-data-definitions.md
+  requirement: "Lookup API get_record, has_record, all_records (sorted by ID) and resolve_alias"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-content-005
+  system: content
+  gdd: design/gdd/content-data-definitions.md
+  requirement: "Records reference each other by ID only and assets by asset ID; the catalog never names a file path"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-content-006
+  system: content
+  gdd: design/gdd/content-data-definitions.md
+  requirement: "Records hold data only; EffectDescriptors are stored uninterpreted and their type vocabulary is registered by the owning systems before validation"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-content-007
+  system: content
+  gdd: design/gdd/content-data-definitions.md
+  requirement: "Catalog is immutable after Ready; a caller modifying a returned definition, including nested lists and descriptors, never changes later lookups"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-content-008
+  system: content
+  gdd: design/gdd/content-data-definitions.md
+  requirement: "Validation entries are structured (severity, record_id, field, location) in a deterministic order; error screen lists the first ERROR_SCREEN_CAP; log holds all"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-content-009
+  system: content
+  gdd: design/gdd/content-data-definitions.md
+  requirement: "Game State and Scene Flow waits for Ready before leaving boot; a Failed catalog never lets the game enter overworld or battle"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-content-010
+  system: content
+  gdd: design/gdd/content-data-definitions.md
+  requirement: "Load plus validation of 500 generated records has a median under LOAD_TIME_BUDGET (1.0 s, provisional) over 10 benchmark runs"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-content-011
+  system: content
+  gdd: design/gdd/content-data-definitions.md
+  requirement: "Field ranges are read from the owning system's constants, never literals in the catalog validator"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-content-012
+  system: content
+  gdd: design/gdd/content-data-definitions.md
+  requirement: "Player-visible strings are plain-text record fields kept apart from logic so a localization pass can extract them mechanically"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-gamestate-001
+  system: gamestate
+  gdd: design/gdd/game-state-scene-flow.md
+  requirement: "One mode plus a stacked overlay set, changed only via request_transition, open_overlay and close_overlay; its 6 signals fire in a fixed order"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-gamestate-002
+  system: gamestate
+  gdd: design/gdd/game-state-scene-flow.md
+  requirement: "One transition at a time with no queue (only Quit waits); input locked out-to-in; a failed swap rolls back to the source mode"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-gamestate-003
+  system: gamestate
+  gdd: design/gdd/game-state-scene-flow.md
+  requirement: "Freeze and restore the Overworld snapshot around Battle; the Encounter descriptor payload is validated before entry"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-gamestate-004
+  system: gamestate
+  gdd: design/gdd/game-state-scene-flow.md
+  requirement: "Retry restarts from the battle start snapshot with no scene load; Retreat goes to the last camp visited and drops the snapshot"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-gamestate-005
+  system: gamestate
+  gdd: design/gdd/game-state-scene-flow.md
+  requirement: "Boot waits for ContentCatalog: Ready leads to Title; Failed leads to a terminal Content Error mode where only Quit works"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-gamestate-006
+  system: gamestate
+  gdd: design/gdd/game-state-scene-flow.md
+  requirement: "Per-type transition timings and budgets come from data; clock and scene loader are injectable; Menu stops mode time; overruns are logged"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-input-001
+  system: input
+  gdd: design/gdd/input-system.md
+  requirement: "8-action set with positional pad names; default bindings are a validated Content Data record; player overrides persist via Save/Load"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-input-002
+  system: input
+  gdd: design/gdd/input-system.md
+  requirement: "Radial deadzone rescale and menu-repeat timing, all thresholds from data, with an injectable clock"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-input-003
+  system: input
+  gdd: design/gdd/input-system.md
+  requirement: "Keyboard and mouse identified by event type or InputEvent.DEVICE_ID_* (Godot 4.7), never by device 0"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-input-004
+  system: input
+  gdd: design/gdd/input-system.md
+  requirement: "device_lost, device_restored, focus_lost and focus_gained broadcasts; held actions released before lost; pad input ignored while unfocused"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-input-005
+  system: input
+  gdd: design/gdd/input-system.md
+  requirement: "Track the active device kind and emit active_device_changed(kind, pad_style); pad style detected under the SDL3 backend"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-input-006
+  system: input
+  gdd: design/gdd/input-system.md
+  requirement: "Input maps devices to actions only, knows no modes and never depends on Game State; raw pointer events go to UI, which syncs 4.6 dual focus"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-stats-001
+  system: stats
+  gdd: design/gdd/stats-damage-resolution.md
+  requirement: "Fixed pipeline Base, Modify, Vary, Round and clamp, Override, Apply (F2-F8); tuning constants injected; median under 50 microseconds per resolution"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-stats-002
+  system: stats
+  gdd: design/gdd/stats-damage-resolution.md
+  requirement: "RNG is always injected, never global"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-stats-003
+  system: stats
+  gdd: design/gdd/stats-damage-resolution.md
+  requirement: "Registration interface for step-2 modifiers and step-5 overrides, ordered by priority with a stable tie-break"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-stats-004
+  system: stats
+  gdd: design/gdd/stats-damage-resolution.md
+  requirement: "current_hp is written only by Apply; exactly one outcome record per resolution, including unaffordable and no_target"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-stats-005
+  system: stats
+  gdd: design/gdd/stats-damage-resolution.md
+  requirement: "stat_block, Move.cost and Enemy.reward ranges checked by Content Data validation; modifiers on max_hp and max_mp are rejected"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-turnbattle-001
+  system: turnbattle
+  gdd: design/gdd/turn-battle-system.md
+  requirement: "Battle state machine on RefCounted with no scene tree; presentation is signal-only and never polls"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-turnbattle-002
+  system: turnbattle
+  gdd: design/gdd/turn-battle-system.md
+  requirement: "Ordered gates MP, move_allowed, specials_allowed, target; a rejected submit returns null and changes nothing"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-turnbattle-003
+  system: turnbattle
+  gdd: design/gdd/turn-battle-system.md
+  requirement: "Battle consumes the Encounter descriptor and reports Victory, Fled or Defeat plus a results-done signal to Game State"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-turnbattle-004
+  system: turnbattle
+  gdd: design/gdd/turn-battle-system.md
+  requirement: "Hardcoded Combatant and Move factories are replaced by Content Data Character, Enemy and Move records through the EffectDescriptor adapter"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-factionrules-001
+  system: factionrules
+  gdd: design/gdd/faction-rule-modifiers.md
+  requirement: "Stateless 9-method FactionRule contract with neutral defaults; BattleCore and HUD never branch on the subclass"
+  created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-factionrules-002
+  system: factionrules
+  gdd: design/gdd/faction-rule-modifiers.md
+  requirement: "Faction.rule_id maps to a FactionRule class through a registry owned by Faction Rule Modifiers code, not by the Foundation layer"
+  created: 2026-10-21
+  revised: ""
+  status: active
 
 # --- EXAMPLE ENTRIES (remove when first real entries are added) ---
 #
