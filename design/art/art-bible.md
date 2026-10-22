@@ -2,7 +2,7 @@
 
 > **Status**: Draft
 > **Owned By**: art-director
-> **Last Updated**: 2026-10-13
+> **Last Updated**: 2026-10-22 (§2 boss row and §4 dusk flood swatches, per the Sprite & Camera Presentation GDD revision 6, ruling D1; provisional until the user ratifies D1–D4, GDD Open Question 18)
 > **Art Director Sign-Off (AD-ART-BIBLE)**: SKIPPED 2026-10-13 — lean mode
 
 `/art-bible` writes these nine sections in this order and replaces each
@@ -52,7 +52,7 @@ Every state has its own lighting signature, so a player glancing at the screen k
 | Occupied town | Absurd oppression | Faction light logic over a warm base; flatter contrast | Faction posters and banners multiplying along streets | smothered, petty, over-signed, uneasy | 3 |
 | Dungeon | Comic dread | Cool ambient, one warm pool around the party, high contrast | A light pool that travels with the squad | cramped, echoing, bureaucratic-gothic | 3 |
 | Battle | Focused play | Neutral key light on sprites; background dimmed 30% and blurred | Rim light on every combatant | crisp, staged, readable, punchy | 4 |
-| Boss battle | Escalation | Faction light takes over the sky, the set and the fill, with the hardest set contrast in the game (a low-energy fill; the set light keeps its Battle direction). The actors keep their neutral key and rim, so the squad still reads as itself | The sky floods with the faction's **flood swatch**: its signature hue at mid-saturation (at most ~70% of the signature chroma), clearly different from the planet's own sky. Full signature saturation stays reserved for the actors and rule UI | operatic, overbearing, ridiculous | 5 |
+| Boss battle | Escalation | The sky falls into a deep **dusk** in the faction's hue, and faction light takes over the set and the fill, with the hardest set contrast in the game (a low-energy fill; the set light keeps its Battle direction). The actors keep their neutral key and rim, so the squad reads light against the dark and still reads as itself | The sky card floods with the faction's **dusk flood swatch** (§4): its signature hue at mid-saturation (at most ~65% of the signature chroma, lower where dusk can't hold it), L\* 35 or darker, keeping its gradient and clouds, with a **neon horizon** band glowing lighter in the same hue. Clearly different from the planet's own sky. Full signature saturation stays reserved for the actors and rule UI | operatic, overbearing, ridiculous | 5 |
 | Camp | Belonging | Night firelight, lowest contrast | Campfire flicker on the sprites | warm, intimate, loose, funny | 1 |
 | Victory | Release | White-warm burst settling back to golden hour | Cream confetti and the squad's fanfare poses | triumphant, silly, bright | 4 |
 | Defeat | "Try again, you learned something" | Desaturated, single overhead spotlight | A rubber-stamped "CLAIM DENIED"-style card (neutral navy, not faction red) | brief, wry, instructive, never cruel | 2 |
@@ -126,6 +126,19 @@ Every faction's vocabulary gets equal parody density (Pillar 2). No faction is d
 | Liberty-7 | Anthem Blue | #2F5BEA | Mid-dark | The flag's other color: loud, saturated, sure of itself |
 
 Stamp Red and Anthem Blue share a lightness band but stay apart: under protanopia/deuteranopia red turns olive while blue stays blue, and under tritanopia red stays red while blue shifts teal. The squad/neutral palette (navy, cream, slate, leaf, gold) never uses the four faction colors. Liberty-7 UI elements drawn on navy windows get a cream outline, because Anthem Blue shares a hue family with Ink Navy.
+
+**Dusk flood swatches (boss takeover).** Each faction has exactly one flood swatch, used for every one of its boss stages and never adjusted per stage. Its rule (Sprite & Camera Presentation GDD, Formulas `flood`):
+- **Hue:** the faction's signature hue.
+- **Chroma:** `min(0.65 × signature chroma, the largest chroma sRGB can show at the swatch's L* midpoint and hue)`. Terminal Cyan is gamut-capped near C\* 21 at dusk, so its lavishness comes from the gradient and the neon horizon, not chroma.
+- **Lightness:** an L\* range at or below 35 (deep dusk). Only the neon horizon band may glow lighter, up to 15 L\* above the range, in the same hue.
+- **Distance from the stage:** at least ΔE2000 15 from the native sky of every boss stage of that faction. A stage that fails re-authors its own sky; the swatch never moves.
+
+| Faction | Hue | Flood chroma | L\* range | Status |
+|---|---|---|---|---|
+| Bureaucratia | 35.9° (Stamp Red) | C\* 46.9 (e.g. #81271E at L\* 30) | ≤ 35 | Provisional; values set in the Step 1 capture tuning pass |
+| Influencia | Feed Magenta's | 0.65 × signature, gamut-capped | ≤ 35 | To tune at Step 1 |
+| MegaCorp | 213.5° (Terminal Cyan) | C\* 20.5, gamut-capped (e.g. #0A535C at L\* 32) | ≤ 35 | Provisional; values set in the Step 1 capture tuning pass |
+| Liberty-7 | 295.6° (Anthem Blue) | C\* 54.9 at L\* 30 | ≤ 35 | To tune at Step 1 |
 
 **Semantic usage.** All semantic colors are neutral. Faction color means "a rule", never "a result".
 

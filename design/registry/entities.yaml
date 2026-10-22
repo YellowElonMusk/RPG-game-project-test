@@ -249,21 +249,23 @@ formulas:
       - impact_frame      # added 2026-10-22 (revision 4)
       - beat_min
       - ff_mult
-      - protected_i       # added 2026-10-21 (CD-GDD-ALIGN revision)
-      - battle_speed_2x   # added 2026-10-21 (CD-GDD-ALIGN revision)
+      - battle_speed_on   # renamed 2026-10-22 (revision 6; was battle_speed_2x): "Faster battle animations"
       - reaction_hold     # added 2026-10-21 (design-review revision 2)
       - ko_hold           # added 2026-10-22 (revision 4)
-      - battle_speed_mult # added 2026-10-21 (design-review revision 2)
+      - land_frame        # added 2026-10-22 (revision 6): knockout slump landing frame
+      - k_i               # added 2026-10-22 (revision 6): slump time at 1x
+      - battle_speed_mult # added 2026-10-21 (design-review revision 2); default 1.5 (revision 6)
       - latched           # revised 2026-10-22 (revision 5; was ff_level None/Plain/All): one latch level
-      - speed_up_all      # added 2026-10-22 (revision 5): "Speed up all replay beats" setting
+      - speed_up_boss     # renamed 2026-10-22 (revision 6; was speed_up_all): "Speed up boss entrances"
       - dt_max            # added 2026-10-22 (revision 4)
       - blend_boss        # added 2026-10-22 (revision 4)
       - boss_hold         # added 2026-10-22 (revision 4)
       - boss_retry_hold   # added 2026-10-22 (revision 5): Retry settle
+      # removed 2026-10-22 (revision 6, knockouts are plain beats): protected_i
       # removed 2026-10-22 (revision 5, automatic speed-up deferred): replay_cap, speed_auto_max, speed_max
     output_range: [1.0, 2.5]   # per-wind-up playback speed (1x to ff_mult max); holds are never scaled; wall_i = max(w_i / speed_i + hold_i, beat_min)
-    expression: "w_i = Σ_{k < impact_frame} duration_k / fps; hold_i = protected_i ? ko_hold : reaction_hold; speed_i = debug ? 1 : protected_i ? ((latched and speed_up_all) ? ff_mult : 1) : max(latched ? ff_mult : 1, battle_speed_2x ? battle_speed_mult : 1); per frame (dt = min(step, dt_max)): wind-up progress += dt * speed_i, impact on the first frame progress >= w_i; post-impact clock += dt unscaled; beat ends on the first frame post >= hold_i and elapsed >= beat_min (padding extends the hold); leftover dt dropped at every event; takeover_full = (blend_boss + boss_hold) / ((latched and speed_up_all) ? ff_mult : 1); takeover_settle (Retry) = boss_retry_hold / max(latched ? ff_mult : 1, battle_speed_2x ? battle_speed_mult : 1); debug path with no action animation: w_i = beat_min - reaction_hold at speed 1"
-    notes: "Battle replay pacing per replay (one command's outcomes up to the next command menu; the boss takeover is a replay of its own), implemented by BattleReplayController (ADR-0006 revision 2). Only the wind-up and the Retry settle scale; holds (reaction_hold, ko_hold on knockouts) are unscaled mode time. beat_min floors the beat, with padding in the hold. Revision 5 (fourth design-review rulings): one latch level, where any press (confirm, fast_forward, indicator click) speeds plain beats only; knockouts and the first-encounter takeover are sped only when latched with speed_up_all on; Battle Speed never speeds protected beats; Cancel and the replay's end clear the latch; no automatic speed-up (GDD Open Question 16). Load validation, 1e-6 tolerance in the passing direction: battle_speed_mult <= ff_mult; reaction_hold <= beat_min - 0.10; reaction_hold <= ko_hold; D < reaction_hold; dt_max < beat_min; boss_retry_hold <= blend_boss + boss_hold; blend_victory <= victory_hold; blend_defeat <= defeat_hold. ff_mult is a proposal pending Turn Battle ratification. Long replays run long, never cut."
+    expression: "w_i = Σ_{k < impact_frame} duration_k / fps; k_i = Σ_{k < land_frame} duration_k / fps (knockout animation); hold_i = 0 if no combatant reacts (Defend), max(ko_hold, max k_i over the beat's knockouts) if any knockout, else reaction_hold; speed_p = max(latched ? ff_mult : 1, battle_speed_on ? battle_speed_mult : 1); speed_i = debug ? 1 : speed_p; per frame (dt = min(step, dt_max)): wind-up progress += dt * speed_i, impact on the first frame progress >= w_i; post-impact clock += dt unscaled; beat ends on the first frame post >= hold_i and elapsed >= beat_min (padding extends the hold); leftover dt dropped at every event; takeover_full = (blend_boss + boss_hold) / (speed_up_boss ? speed_p : 1); takeover_settle (Retry) = boss_retry_hold / speed_p; press_effective = remaining wind-up, Retry settle, or (speed_up_boss) first-encounter takeover; debug path with no action animation: w_i = beat_min - reaction_hold at speed 1"
+    notes: "Battle replay pacing per replay (one command's outcomes up to the next command menu; the boss takeover is a replay of its own), implemented by BattleReplayController (ADR-0006 revision 3). Only the wind-up and the takeover scale; holds (reaction_hold, the knockout hold) are unscaled mode time. beat_min floors the beat, with padding in the hold. Revision 6 (fifth design-review CD rulings 1-3): knockouts are plain beats whose wind-up speeds up like any other, holding until the slump lands and never less than ko_hold; only the first-encounter takeover is protected, sped only with 'Speed up boss entrances' on (then by speed_p, so Battle Speed applies with no press); a passive indicator state plus refusal feedback when press_effective is false; Cancel and the replay's end clear the latch; no automatic speed-up (GDD Open Question 16). Load validation, 1e-6 tolerance in the passing direction: battle_speed_mult <= ff_mult - 0.25; reaction_hold <= beat_min - 0.10; reaction_hold <= ko_hold; D < reaction_hold; dt_max < beat_min; boss_retry_hold <= blend_boss + boss_hold; blend_victory <= victory_hold; blend_defeat <= defeat_hold. ff_mult is a proposal pending Turn Battle ratification. Long replays run long, never cut."
     added: 2026-10-21
     revised: "2026-10-22"
   - name: flash_gate
@@ -275,13 +277,14 @@ formulas:
     variables:
       - flash_rate_max
       - flash_luma_delta
-      - t_last_flash
-      - flash_rate_reduced   # added 2026-10-21 (design-review revision 2)
       - flash_area_min       # added 2026-10-21 (design-review revision 2)
+      - t_req                # added 2026-10-22 (revision 6): request time
+      - offset               # added 2026-10-22 (revision 6): declared transition offset from the source's start
       - A_exempt             # added 2026-10-22 (revision 4): summed declared area of concurrent area-exempt effects
-    output_range: [0, 3]   # flashes in any closed one-second window, global across all sources
-    expression: "allowed = (t_now - t_last_flash) > 1 / flash_rate_eff  (strict; real time; t_last_flash starts at -inf); flash_rate_eff = reduce_flashing ? flash_rate_reduced : flash_rate_max; an area-exempt effect starts exempt only if A_exempt + its declared area < flash_area_min, else it requests the gate"
-    notes: "Photosensitivity limit. A flash is a swing >= flash_luma_delta over >= flash_area_min (25% of any 10-degree window), or a saturated-red transition. Covers every large-area luminance source: the victory burst, the boss flood, attack and comedy VFX, and Game State's retry flash, wipes and fades. A gated full variant holds at most one flash pair; a refused source plays its capped variant below flash_luma_delta; Reduce Flashing forces every gated source to its capped variant. Campfire flicker must stay below flash_luma_delta and never counts."
+      # removed 2026-10-22 (revision 6, landing-time booking): t_last_flash, flash_rate_reduced
+    output_range: [0, 3]   # flashes in any closed one-second window, counted at landing, global across all sources
+    expression: "a gated request at real time t_req declaring transitions at offsets is allowed iff, with them booked at t_req + offset, no closed one-second window holds more than flash_rate_max flashes (a booked transition counts as one flash if it opposes the booked transition before it); allowed -> book and play full, refused -> book nothing and play capped; reduce_flashing -> every gated request refused; reserved sources (boss flood) book unconditionally, each scripted reserved sequence boot-validated alone; an area-exempt source starts exempt only if A_exempt + its declared area < flash_area_min, else it requests like a gated source; swing-exempt sources never request"
+    notes: "Photosensitivity limit (WCAG 2.2 SC 2.3.1). A transition is a relative-luminance change >= flash_luma_delta (0.10) with the darker state below 0.80, or a saturated-red change (linear R/(R+G+B) >= 0.8, (R-G-B)*320 changing by > 20), covering >= flash_area_min (25%) of some 10-degree window ((4/9)H x (1/3)H px). Booking at landing time, not request time, so staggered requests cannot put four flashes in one second. Real time, so the Menu cannot reset the gate. The gate never delays a source (Game State's retry flash and wipes keep their timing). Covers the victory burst, the boss flood (reserved), attack and comedy VFX, and Game State's retry flash, wipes and fades. Campfire flicker must stay below flash_luma_delta and never counts. Load validation: flash_rate_max <= 3; flash_luma_delta = 0.10 and flash_area_min = 0.25 are constants."
     added: 2026-10-21
     revised: "2026-10-22"
 
