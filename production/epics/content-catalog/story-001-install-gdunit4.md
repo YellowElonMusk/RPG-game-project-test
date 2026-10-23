@@ -1,12 +1,12 @@
 # Story 001: Install gdUnit4 and prove the runner discovers and passes one test
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Config/Data
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-23
 
 ## Context
 
@@ -63,13 +63,11 @@
 
 ## Files
 
-- `addons/gdUnit4/` (installed, committed)
-- `project.godot` (plugin enabled)
+- `addons/gdUnit4/` (installed, committed — v6.2.2 from the GitHub release archive)
+- `project.godot` (plugin enabled via `[editor_plugins]`)
 - `tests/README.md` (pinned gdUnit4 version recorded)
-- `tests/unit/content_data/content_data_framework_smoke_test.gd`
-- `tests/integration/content_data/.gdkeep`
-
----
+- `tests/unit/content_data/content_data_framework_smoke_test.gd` (new)
+- `tests/integration/content_data/.gdignore_placeholder` (new; named per the sibling convention after LP-CODE-REVIEW, replacing the story's planned `.gdkeep`)
 
 ## QA Test Cases
 
@@ -99,3 +97,12 @@
 
 - Depends on: None
 - Unlocks: `production/epics/content-catalog/story-002-load-one-of-each-type.md` (and through it every later story in this epic)
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-23
+**Criteria**: 1/1 passing (none deferred)
+**Deviations**: Integration placeholder named `.gdignore_placeholder` (sibling convention) instead of the planned `.gdkeep`, per LP-CODE-REVIEW. Unapplied `/code-review` suggestion: add a `tests/README.md` note on the documented intermittent first-`--import` crash on Godot 4.7.x (`docs/engine-reference/godot/current-best-practices.md`). gdUnit4 6.2.2's upstream table lists through Godot 4.7.1; 4.7.2 confirmed by the actual run.
+**Test Evidence**: `production/qa/smoke-2026-10-23.md` (PASS; runner summary 1 test, 0 failures, 0 orphans, exit 0) + `tests/unit/content_data/content_data_framework_smoke_test.gd`
+**Reviewed by**: lead-programmer (LP-CODE-REVIEW CONCERNS → revised); `/code-review` APPROVED WITH SUGGESTIONS; QL-TEST-COVERAGE skipped — Config/Data

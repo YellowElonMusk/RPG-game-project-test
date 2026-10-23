@@ -38,6 +38,14 @@ Planned suites named by the Accepted ADRs (create each when its story starts):
 
 Commit `addons/gdUnit4/`. CI runs the committed copy (`version: installed`).
 
+**Installed version**: gdUnit4 **6.2.2** (Story 001, 2026-10-23), pulled from the
+project's GitHub release archive (Asset Store listing lagged 4.7.2) and enabled
+via `project.godot`'s `[editor_plugins]` section. The project's upstream README
+compatibility table lists `v6.2.x` as compatible through Godot v4.7.1; v4.7.2 is
+a patch release of 4.7.1 and is not separately listed. Confirmed working by the
+actual headless test run (Story 001's acceptance criterion), not by the editor
+UI — re-verify in the editor if anything looks off after an engine upgrade.
+
 ## Running Tests
 
 ```bash
