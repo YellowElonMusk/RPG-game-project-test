@@ -1,7 +1,7 @@
 # Story 003: `all_records(type)` returns records sorted by ID, whatever the discovery order
 
 > **Epic**: Content Catalog
-> **Status**: In Progress
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
@@ -92,3 +92,12 @@
 
 - Depends on: `production/epics/content-catalog/story-002-load-one-of-each-type.md`
 - Unlocks: `production/epics/content-catalog/story-023-deterministic-report-order.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-23
+**Criteria**: 1/1 passing (AC-2). None deferred.
+**Deviations**: Advisory, deferred hardening of the test-only `discovery_order_transform` seam: (1) `load_all()` does not check that the transform returns a same-size listing; (2) assigning the seam after `load_all()` has no `state != UNLOADED` guard, unlike the two registration methods. Neither affects production, which never sets the seam. AC-2's "shuffled" is implemented as two fixed permutations (reverse, rotate-by-one) per the Determinism rule, as the story's Implementation Notes direct. FAILED-catalog ordering is untested here; story 009 owns the FAILED path.
+**Test Evidence**: `tests/unit/content_data/content_data_sort_order_test.gd` (7 functions); suite 25/25, 0 orphans, exit 0 on Godot 4.7.2. Mutation check: removing the sort fails 9 assertions on the reversed and rotated catalogs. Commit d9a69cc.
+**Reviewed by**: lead-programmer (LP-CODE-REVIEW APPROVE); QL-TEST-COVERAGE ADEQUATE; `/code-review` APPROVED WITH SUGGESTIONS
