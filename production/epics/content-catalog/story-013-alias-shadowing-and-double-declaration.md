@@ -43,6 +43,7 @@
 - **Rebuilt from the revised AC-12** (the earlier "chained alias" and "alias whose record is missing" cases could not be built under this data model and were dropped from the GDD; a reference to an ID that is neither live nor an alias is covered by stories 014 and 028).
 - **Shadowing.** Record B declares an alias equal to record A's live `id`. One entry: `severity = &"error"`, `record_id` = the declaring record's ID (B), `field = "aliases"`, `location` = B's location, `related_locations` = [A's location]. It does not matter which record sorts first; the declaring record owns the entry.
 - **Declared twice.** Records C and D both declare alias `x`. One entry: `record_id` = the record whose location sorts first, `field = "aliases"`, `related_locations` = the other's location. Same shape as story 011.
+- **Build order: story 014 first.** T3's one-hop reference clause is implemented by story 014's reference pass; before it exists, T3 passes without proving anything. T1 and T2 need only stories 010-012. (QL-STORY-READY, 2026-10-24.)
 - **One-hop reference.** The reference pass (story 014) resolves each referenced ID through the alias map before checking existence and type. A Character whose `move_ids` holds `move_old`, which `move_new` declares as an alias, produces no reference error, and the referenced type is `move_new`'s type. No reference ever resolves through two hops, because an alias can only name a live record.
 - **Live-ID passthrough.** `resolve_alias(live_id)` returns `live_id` with `last_lookup_error == &""`.
 
@@ -55,6 +56,7 @@
 - Story 011: two live records sharing one ID.
 - Story 014: references to missing or wrong-type IDs.
 - Story 028: IDs that vanished between builds.
+- Story 019: the unreferenced-record warning, including that a record referenced only through an alias raises none.
 
 ---
 
@@ -76,7 +78,7 @@
   - Then: `FAILED`; exactly one error entry with `field == "aliases"` and `record_id == "char_b"`; its `related_locations` holds `char_a`'s `res://` path.
   - Edge cases: the same result with reversed discovery order (story 003 seam).
 - **AC-12 / T2**: The same alias on two records errors, naming both.
-  - Given: `alias_rules/declared_twice/`: `char_c` and `char_d`, both with `aliases: ["char_gone"]`.
+  - Given: `alias_rules/declared_twice/`: `char_c` and `char_d`, both with `aliases: ["char_gone"]`, plus their faction. (Faction added at QL-STORY-READY GAPS fix, 2026-10-24: once story 014 checks references, a Character whose `nation_id` does not resolve is a second error.)
   - When: loaded.
   - Then: `FAILED`; exactly one error entry with `field == "aliases"`; `location.file_path` is `char_c`'s path (sorts first) and `related_locations` holds `char_d`'s path.
   - Edge cases: none.
@@ -84,7 +86,7 @@
   - Given: `alias_rules/alias_reference/`: `move_new` with `aliases: ["move_old"]`; `char_user` with `move_ids: ["move_old"]`, plus its faction.
   - When: loaded.
   - Then: `OK`, `READY`, 0 error entries; `resolve_alias("move_old") == "move_new"`; `get_record(&"move", resolve_alias("move_old"))` is non-null; `resolve_alias("move_new") == "move_new"` with `last_lookup_error == &""`.
-  - Edge cases: `move_new` is referenced through its alias, so it raises no unreferenced warning either.
+  - Edge cases: none. (The "no unreferenced warning through an alias" case moved to story 019, which owns that warning; QL-STORY-READY GAPS fix, 2026-10-24.)
 
 ---
 
