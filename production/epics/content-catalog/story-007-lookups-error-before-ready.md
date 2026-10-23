@@ -44,6 +44,11 @@
 - **Loading seam.** Add `var file_loaded_hook: Callable` (default empty) to `ContentCatalogService`. `load_all()` calls it once after each file is loaded, while `state == LOADING`, passing the file path. It is a test seam only; doc-comment it as such. Do not use a signal: story 021's monitor allows only the catalog's state-change signal during load.
 - **Validating seam.** No new API: register a test-only validator with `register_record_validator()` that calls each lookup and records the results. ADR-0004 forbids lookups inside production validators (purity). A test double may do it, because its purpose is to observe that the lookups are refused.
 - **Unloaded.** A fresh `ContentCatalogService.new()`, with a lookup called before any `load_all()`.
+- **Move validator execution into the Validating phase (QL-STORY-READY GAPS fix, 2026-10-23).** Story 002's `load_all()` runs registered validators inside `_load_one()`, while `state == LOADING`; `state = VALIDATING` is set only after loading ends. ADR-0004 §4 requires validators to run during Validating, after the catalog's own generic checks. Without this move the Validating test case cannot pass. Decided by ADR-0004 §4:
+  - **One pass, after all types have loaded.** Set `state = VALIDATING`, then run validators over every stored record: types in `TYPE_TABLE` order, ids in the already-sorted bucket order, so the report order stays deterministic (story 023 builds on this). Generic reference checks in later stories need the complete set, which is why it is not per type.
+  - **Location is the record's file path, `record_index` 0.** `_load_one()` records each stored record's source path (for example a `_record_paths` dictionary keyed by type and id) so the pass can fill `location`.
+  - Records that failed the null or filename check are not stored and are not validated, as today.
+  - `_load_one()` keeps only the null check, the filename check and storage. No existing test registers a validator, so nothing depends on the old timing.
 
 ---
 
@@ -58,7 +63,7 @@
 
 ## Files
 
-- `src/data/content_catalog.gd` (`file_loaded_hook` seam; state guard on every lookup)
+- `src/data/content_catalog.gd` (`file_loaded_hook` seam; state guard on every lookup; validator pass moved into the Validating phase)
 - `tests/unit/content_data/content_data_state_guard_test.gd` (reuses `fixtures/valid_one_of_each/`)
 
 ---
