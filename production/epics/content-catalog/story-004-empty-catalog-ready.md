@@ -1,7 +1,7 @@
 # Story 004: A zero-record data set loads Ready with an empty list for every type
 
 > **Epic**: Content Catalog
-> **Status**: In Progress
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -99,6 +99,11 @@
 ---
 
 ## Completion Notes
+**Completed**: 2026-10-23
+**Criteria**: 1/1 passing (AC-3). None deferred.
+**Deviations**: None.
+**Test Evidence**: `tests/unit/content_data/content_data_empty_catalog_test.gd` (T1, T2); suite 27/27, 0 orphans, exit 0 on Godot 4.7.2. Commit e880fd3.
+**Reviewed by**: lead-programmer (LP-CODE-REVIEW APPROVE); QL-TEST-COVERAGE ADEQUATE; `/code-review` APPROVED
 
 **Engine Notes observed**: Probed on the pinned 4.7.2 install
 (`C:/Godot/Godot_v4.7.2-stable_win64.exe`) with a one-off `SceneTree` script
