@@ -1,7 +1,7 @@
 # Story 006: A caller's edit to a returned record, including nested lists and descriptors, never leaks back
 
 > **Epic**: Content Catalog
-> **Status**: In Progress
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
@@ -86,7 +86,7 @@
 **Required evidence**:
 - Logic: `tests/unit/content_data/content_data_immutability_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (see Completion Notes)
 
 ---
 
@@ -98,6 +98,11 @@
 ---
 
 ## Completion Notes
+**Completed**: 2026-10-23
+**Criteria**: 1/1 passing (AC-5). None deferred.
+**Deviations**: None.
+**Test Evidence**: `tests/unit/content_data/content_data_immutability_test.gd` (T1 Move, T2 Character, cost observation); suite 36/36, 0 orphans, exit 0 on Godot 4.7.2. Commit d917222.
+**Reviewed by**: lead-programmer (LP-CODE-REVIEW APPROVE); QL-TEST-COVERAGE ADEQUATE; `/code-review` APPROVED
 
 **Engine Notes observed**: On the pinned 4.7.2 install, the no-argument `Resource.duplicate_deep()` that story 002 already calls copies every level of a Move record: the record, its `effects` array and each `effects[i]` dictionary are distinct objects, and edits to the copy never reach the original. No mode argument was needed, so `src/data/content_catalog.gd` is unchanged. For this data `duplicate(true)` behaves the same, because records hold plain dictionaries and no sub-Resources (ADR-0001 forbids them); the documented difference only applies to nested sub-Resources.
 
