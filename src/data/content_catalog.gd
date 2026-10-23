@@ -379,8 +379,7 @@ func _load_one(type: StringName, file_path: String, bucket: Dictionary) -> void:
 
 	# GDD F1 is one boolean, so an id with several defects gives one entry.
 	var prefix: String = TYPE_TABLE[type]["prefix"]
-	if record_id.length() > ID_MAX_LENGTH or _id_regex.search(record_id) == null \
-			or not record_id.begins_with(prefix):
+	if _breaks_id_format(record_id, prefix):
 		push_error("ContentCatalog: %s has id %s, which breaks the id format rule." % [file_path, record_id])
 		_add_report_entry(&"error", record_id, &"id", file_path,
 				"The id must be at most %d characters, match %s and start with %s." % [ID_MAX_LENGTH, ID_PATTERN, prefix], [])
@@ -398,13 +397,20 @@ func _load_one(type: StringName, file_path: String, bucket: Dictionary) -> void:
 	# added to the map; several malformed aliases on one record give one entry
 	# each (never one naming all of them).
 	for alias: String in record.get("aliases"):
-		if alias.length() > ID_MAX_LENGTH or _id_regex.search(alias) == null \
-				or not alias.begins_with(prefix):
+		if _breaks_id_format(alias, prefix):
 			push_error("ContentCatalog: %s declares alias %s, which breaks the id format rule." % [file_path, alias])
 			_add_report_entry(&"error", record_id, &"aliases", file_path,
 					"The alias must be at most %d characters, match %s and start with %s." % [ID_MAX_LENGTH, ID_PATTERN, prefix], [])
 			continue
 		_aliases[alias] = record_id
+
+
+# GDD F1 as one boolean: true when `candidate` is over ID_MAX_LENGTH, does
+# not match ID_PATTERN, or does not start with the type's `prefix`. Applied to
+# a record's own id and to each alias it declares, so the rule lives here once.
+func _breaks_id_format(candidate: String, prefix: String) -> bool:
+	return candidate.length() > ID_MAX_LENGTH or _id_regex.search(candidate) == null \
+			or not candidate.begins_with(prefix)
 
 
 # Appends one entry in the GDD's Entry shape. record_index is 0: one record

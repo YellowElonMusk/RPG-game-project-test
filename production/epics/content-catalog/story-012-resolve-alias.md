@@ -59,10 +59,10 @@
 
 ## Files
 
-- `src/data/content_catalog.gd` (`_load_one()` applies the F1 id format check to each declared alias; a malformed alias is one error on field `aliases` and is never added to the alias map)
-- `tests/unit/content_data/content_data_alias_resolve_test.gd` (10 test functions) and its `.uid`
+- `src/data/content_catalog.gd` (`_load_one()` applies the F1 id format check to each declared alias; a malformed alias is one error on field `aliases` and is never added to the alias map; F1 lives once in `_breaks_id_format()`, shared by the id and alias checks)
+- `tests/unit/content_data/content_data_alias_resolve_test.gd` (11 test functions) and its `.uid`
 - `tests/unit/content_data/fixtures/alias_basic/` (`char_new` declaring `char_old` and `char_older`, plus its faction)
-- `tests/unit/content_data/fixtures/alias_format_defects/` (`uppercase/`, `space/`, `no_prefix/`, `len_65/`, `len_64/`, each a `char_new` with one alias plus its faction)
+- `tests/unit/content_data/fixtures/alias_format_defects/` (`uppercase/`, `space/`, `no_prefix/`, `len_65/`, `len_64/`, each a `char_new` with one alias, and `two_malformed/` with two; each plus its faction)
 
 ## QA Test Cases
 

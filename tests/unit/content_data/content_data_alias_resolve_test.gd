@@ -127,3 +127,17 @@ func test_resolve_alias_on_failed_catalog_returns_empty_with_not_ready_error() -
 
 	assert_str(resolved).is_equal("")
 	assert_str(String(catalog.last_lookup_error)).is_equal("not_ready")
+
+
+## Edge case: two malformed aliases on one record give one entry each, never
+## one entry naming both (the loop continues past a malformed alias).
+func test_load_all_two_malformed_aliases_give_two_aliases_errors() -> void:
+	var catalog: ContentCatalogService = auto_free(ContentCatalogService.new())
+
+	var result: Error = catalog.load_all(DEFECTS_ROOT.path_join("two_malformed"))
+
+	assert_int(result).is_equal(FAILED)
+	assert_int(catalog.report.size()).is_equal(2)
+	for entry: Dictionary in catalog.report:
+		assert_str(String(entry["field"])).is_equal("aliases")
+		assert_str(entry["record_id"]).is_equal(LIVE_ID)
