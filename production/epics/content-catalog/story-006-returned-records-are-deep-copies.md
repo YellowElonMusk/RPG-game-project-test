@@ -1,12 +1,12 @@
 # Story 006: A caller's edit to a returned record, including nested lists and descriptors, never leaks back
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: In Progress
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-23
 
 ## Context
 
@@ -58,10 +58,8 @@
 
 ## Files
 
-- `src/data/content_catalog.gd` (`duplicate_deep()` on return, if story 002 did not already do it)
-- `tests/unit/content_data/content_data_immutability_test.gd` (reuses `fixtures/valid_one_of_each/`)
-
----
+- `tests/unit/content_data/content_data_immutability_test.gd` (3 test functions: T1 Move, T2 Character, cost observation; reuses `fixtures/valid_one_of_each/`) and its `.uid` sidecar
+- `src/data/content_catalog.gd` — unchanged: the no-argument `duplicate_deep()` from story 002 already deep-copies nested arrays and dictionaries on 4.7.2
 
 ## QA Test Cases
 
@@ -75,7 +73,7 @@
 - **AC-5 / T2**: List edits on a Character do not leak.
   - Given: the same catalog.
   - When: the test appends to a returned Character's `move_ids`.
-  - Then: the next `get_record` returns the original `move_ids`.
+  - Then: the next `get_record` returns an independent instance with the original `move_ids`. Note (QL-STORY-READY GAPS fix, 2026-10-23): `move_ids` is a value-semantics `PackedStringArray`, so this case proves instance independence, not deep-copy correctness on its own. T1, on Move's `Array[Dictionary]` `effects`, is the evidence for AC-5's deep-copy guarantee; T2 is a supplementary instance-independence check.
   - Edge cases: edits made through an element of `all_records(&"character")` do not leak into `get_record` either, and the reverse holds.
 
 ---
@@ -96,3 +94,13 @@
 
 - Depends on: `production/epics/content-catalog/story-002-load-one-of-each-type.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Engine Notes observed**: On the pinned 4.7.2 install, the no-argument `Resource.duplicate_deep()` that story 002 already calls copies every level of a Move record: the record, its `effects` array and each `effects[i]` dictionary are distinct objects, and edits to the copy never reach the original. No mode argument was needed, so `src/data/content_catalog.gd` is unchanged. For this data `duplicate(true)` behaves the same, because records hold plain dictionaries and no sub-Resources (ADR-0001 forbids them); the documented difference only applies to nested sub-Resources.
+
+**Watched fail**: T1 was run against a mutation where `get_record` returned the cached instance with no copy. It failed (3 assertion failures, exit 100). With the copy restored it passes; the full suite is 36/36.
+
+**Cost observation** (not a gate): about 6.4 µs per `get_record()` on the Move fixture, from three runs of 1000 calls (6.38, 6.53 and 6.44 µs). That is consistent with copying at construction time and never per frame.
