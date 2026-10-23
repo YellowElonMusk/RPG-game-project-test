@@ -1,7 +1,7 @@
 # Story 005: A missing ID returns not-found, and an unknown type returns an error, not an empty list
 
 > **Epic**: Content Catalog
-> **Status**: In Progress
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -81,7 +81,7 @@
 **Required evidence**:
 - Logic: `tests/unit/content_data/content_data_lookup_errors_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (see Completion Notes)
 
 ---
 
@@ -89,3 +89,12 @@
 
 - Depends on: `production/epics/content-catalog/story-002-load-one-of-each-type.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-23
+**Criteria**: 1/1 passing (AC-4). None deferred.
+**Deviations**: Advisory: the GDD's AC-4 prose says an unknown type "returns an error, not an empty list"; the ADR-0001 2026-10-23 amendment, which this story implements, returns `[]` with `last_lookup_error = &"unknown_type"` and a `push_error()`. The GDD wording should be synced by its owner. No production code changed: story 002's channel already met the contract. The Engine Notes question is answered: gdUnit4 6.2.2 does not fail a test on `push_error()`, so no error-expectation wrapper was needed.
+**Test Evidence**: `tests/unit/content_data/content_data_lookup_errors_test.gd` (6 functions); suite 33/33, 0 orphans, exit 0 on Godot 4.7.2. Commit 1156b0b.
+**Reviewed by**: lead-programmer (LP-CODE-REVIEW APPROVE); QL-TEST-COVERAGE ADEQUATE; `/code-review` APPROVED
