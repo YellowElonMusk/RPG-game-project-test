@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/content-data-definitions.md
 > **Architecture Module**: Content Data Definitions (`ContentCatalog`, record classes) + Content Boot Ordering (`ContentBootstrap`, composition-root code under `src/boot/`)
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories content-catalog`
+> **Stories**: 30 (28 Ready, 2 Blocked on game-state-scene-flow) — see the table below
 
 ## Overview
 
@@ -63,6 +63,40 @@ tests) can run alongside it. `input-system` and `game-state-scene-flow` Step 1 f
 | TR-content-011 | Field ranges read from the owning system's constants | ADR-0001, ADR-0007 §7 ✅ |
 | TR-content-012 | Player-visible strings extractable for localization | ADR-0013, ADR-0008 §11 ✅ |
 
+## Stories
+
+| # | Story | Type | Status | ADR |
+|---|-------|------|--------|-----|
+| 001 | Install gdUnit4 and prove the runner discovers and passes one test | Config/Data | Ready | ADR-0001 |
+| 002 | Load one record of each of the 12 types and get every field back deep-equal | Logic | Ready | ADR-0001 |
+| 003 | `all_records(type)` returns records sorted by ID, whatever the discovery order | Logic | Ready | ADR-0001 |
+| 004 | A zero-record data set loads Ready with an empty list for every type | Logic | Ready | ADR-0001 |
+| 005 | A missing ID returns not-found, and an unknown type returns an error, not an empty list | Logic | Ready | ADR-0001 |
+| 006 | A caller's edit to a returned record, including nested lists and descriptors, never leaks back | Logic | Ready | ADR-0001 |
+| 007 | Any lookup during Unloaded, Loading or Validating returns an error | Logic | Ready | ADR-0001 |
+| 008 | A second load request on a Ready or Failed catalog is rejected and changes nothing | Logic | Ready | ADR-0001 |
+| 009 | One error anywhere fails the whole catalog, even for records that were valid themselves | Logic | Ready | ADR-0001 |
+| 010 | A malformed ID is an error naming it; 64 characters loads, 65 does not | Logic | Ready | ADR-0001 |
+| 011 | Two records sharing one ID produce exactly one error, located at the first file, with the other in `related_locations` | Logic | Ready | ADR-0001 |
+| 012 | `resolve_alias` resolves a record's declared alias to its live ID | Logic | Ready | ADR-0001 |
+| 013 | Alias rules: a shadowing alias and a doubly declared alias each error; an alias reference resolves in one hop | Logic | Ready | ADR-0001 |
+| 014 | Missing, wrong-type, self- and cyclic references, and a duplicate list entry, each error | Logic | Ready | ADR-0001 |
+| 015 | Unknown, missing, wrong-typed, empty and whitespace-only fields, and an unknown descriptor type, each error naming record and field | Logic | Ready | ADR-0001 |
+| 016 | Registered range validators reject every F2 boundary outside its bound and accept it at the bound | Logic | Ready | ADR-0001 |
+| 017 | Two new-game-entry maps, a duplicate (faction, stage) pair and a human `patrol_archetype_id` each error; a registered `faction_rule` loads | Logic | Ready | ADR-0012 |
+| 018 | An alien-only field on a human nation, and a `base_shape` that does not match `kind`, each error | Logic | Ready | ADR-0001 |
+| 019 | A shared alien colour, a shared alien shape, a duplicated signature move and an unreferenced record each warn, and the catalog stays Ready | Logic | Ready | ADR-0001 |
+| 020 | Two errors and two warnings fail the catalog, and the report carries all four with the right severities | Logic | Ready | ADR-0001 |
+| 021 | A Move's EffectDescriptors round-trip untouched, and loading triggers no game effect | Logic | Ready | ADR-0001 |
+| 022 | An unparsable file is one error naming it, and validation still reports the other files' errors | Logic | Ready | ADR-0001 |
+| 023 | A fixture triggering five rules gives five errors, in the same order on every run | Logic | Ready | ADR-0001 |
+| 024 | Build the capped error-screen text and the full log text from a 30-error report | Logic | Ready | ADR-0001 |
+| 025 | On launch with 30 errors, the player sees the plain-text error screen, never a crash or blank screen | UI | Blocked (needs game-state-scene-flow) | ADR-0001 |
+| 026 | A Failed catalog keeps Game State in its boot state, never reaching overworld or battle | Integration | Blocked (needs game-state-scene-flow) | ADR-0001 |
+| 027 | The headless validation check exits 0 on valid data, and 1 with the full report on any error | Integration | Ready | ADR-0001 |
+| 028 | CI fails on an ID that vanished without an alias, passes once it is aliased, and the old ID resolves through the alias | Integration | Ready | ADR-0001 |
+| 029 | 500 generated records load and validate with a median under 1.0 s over 10 runs (advisory) | Config/Data | Ready | ADR-0001 |
+| 030 | In an exported Windows build, `ResourceLoader.list_directory()` finds every record | Integration | Ready | ADR-0001 |
 ## Definition of Done
 
 - Every story implemented, reviewed and closed with `/story-done`

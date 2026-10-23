@@ -132,7 +132,7 @@ func validator_for(rule_class: StringName) -> Callable
 **Registration.**
 - `rule_class` is a stable vocabulary ID owned by this system (`&"bureaucratia_permit"`, `&"megacorp_billing"`), never a script class name.
 - `factory` is `func(faction: FactionData, rule: FactionRuleData) -> FactionRule`.
-- `validator` is `func(rule: FactionRuleData) -> PackedStringArray`. It is pure and checks the class's `params`, `texts` and colours (§5).
+- `validator` is `func(rule: FactionRuleData) -> Array[Dictionary]` (structured entries, ADR-0004 §4 as amended 2026-10-23). It is pure and checks the class's `params`, `texts` and colours (§5).
 - Registration is explicit, in `FactionRules.register_all(registry)` (`src/battle/factions/faction_rules.gd`), the one list of rule classes.
 
 **Boot (ADR-0004 §1 step 2, annotation).** `ContentBootstrap.run()`:
@@ -211,7 +211,7 @@ An unregistered `rule_class` there is a programming error, because validation al
 ## src/battle/factions/faction_rule.gd — neutral default; not @abstract
 class_name FactionRule extends RefCounted
 static func from_data(faction: FactionData, rule: FactionRuleData) -> FactionRule
-static func validate_record(rule: FactionRuleData) -> PackedStringArray     # base: texts/colors shape only
+static func validate_record(rule: FactionRuleData) -> Array[Dictionary]     # base: texts/colors shape only; ADR-0004 §4 entry shape
 func _configure(faction: FactionData, rule: FactionRuleData) -> void        # the only place fields are written
 func specials_allowed(round_number: int) -> bool                            # pure
 func move_allowed(actor: Combatant, move: Move) -> bool                     # pure

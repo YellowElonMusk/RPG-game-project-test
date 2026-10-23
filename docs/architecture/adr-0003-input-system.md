@@ -98,7 +98,7 @@ Godot's `Input.is_action_pressed()` and `InputMap` merge devices and can't expre
 - **Mouse is native, and locked by layering.** Clicks and wheel go straight to the native GUI, as GDD rule 3 intends. The lock covers the mouse too. During a transition, `TransitionLayer` (ADR-0002) shows a full-screen `Control` with `mouse_filter = MOUSE_FILTER_STOP`. Every overlay's root has a full-screen backdrop with `MOUSE_FILTER_STOP`, so clicks never reach the GUI beneath it. Game State owns when the transition blocker is up; the UI Framework owns the overlay backdrops. The UI Framework syncs 4.6 dual focus by calling `grab_focus()` on `mouse_entered`.
 - **Ownership.** The re-injection helper belongs to the UI Framework. This ADR fixes the contract: `ui_*` has no device bindings, injection is focus-bounded and press-only, and the helper is the only code besides `InputSystem` allowed to call into `Input` (and only `parse_input_event()` with a `ui_*` `InputEventAction`).
 
-**6. Bindings validation runs inside the catalog's own pass.** ADR-0004's `ContentBootstrap` registers `InputBindingsValidator.validate` with `ContentCatalog.register_record_validator(&"bindings", ...)` before `load_all()`. This is this ADR's only addition to the bootstrap's registration list. `InputBindingsValidator.validate(record) -> PackedStringArray` is a static pure function in `src/input/`, and it enforces GDD rule 7:
+**6. Bindings validation runs inside the catalog's own pass.** ADR-0004's `ContentBootstrap` registers `InputBindingsValidator.validate` with `ContentCatalog.register_record_validator(&"bindings", ...)` before `load_all()`. This is this ADR's only addition to the bootstrap's registration list. `InputBindingsValidator.validate(record) -> Array[Dictionary]` (structured entries, ADR-0004 §4 as amended 2026-10-23) is a static pure function in `src/input/`, and it enforces GDD rule 7:
 - every action has at least one keyboard and one gamepad binding;
 - no key or button is bound to two actions on the same device;
 - every token parses;
@@ -206,7 +206,7 @@ static func make_fallback_bindings() -> InputBindings                   # Conten
 
 ## src/input/input_bindings_validator.gd
 class_name InputBindingsValidator
-static func validate(record: InputBindings) -> PackedStringArray       # empty = valid
+static func validate(record: InputBindings) -> Array[Dictionary]       # structured entries (ADR-0004 §4 as amended 2026-10-23); empty = valid
 
 ## src/data/records/input_bindings.gd — data only (ADR-0001)
 class_name InputBindings extends Resource

@@ -65,7 +65,7 @@ machine, and the Input System*
 - **Owning systems register their vocabulary before validation**: Turn Battle System calls `ContentCatalog.register_known_effect_types(system, types)`. `Faction.rule_id` is an ordinary reference to a `faction_rule` record, checked by the generic reference pass, and the record's `rule_class` resolves through `FactionRuleRegistry`, never by reflection — source: ADR-0001, as amended by ADR-0011 §4–§5
 - **Numeric ranges (e.g. `max_hp` 1–999) are owned by Stats & Damage Resolution** and checked by its validators (`StatsValidators.*`, with `StatsConfig` bound), registered through `ContentBootstrap`. They are never written as literals in `ContentCatalog` — source: ADR-0001, as amended by ADR-0007 §7
 - **Every string-typed record export is listed in exactly one of the record script's `LOC_FIELDS` or `NON_LOC_FIELDS`**. `LocFieldsValidator` is registered for every record type and checks it at boot, and that every `LOC_FIELDS` value has balanced `{placeholder}` braces — source: ADR-0013 §4 (ADR-0004 amendment)
-- **Headless validation script at `res://.claude/scripts/validate-content.gd`**, exiting with the error count — source: ADR-0001
+- **Headless validation script at `res://tools/ci/validate-content.gd`**, exiting with `min(error_count, 1)` and accepting `--data-root=` — source: ADR-0001 (amendment 2026-10-23)
 
 *Migration*
 - **Characterization tests are written against today's hardcoded factories before migration** and rerun unchanged after it — source: ADR-0001
@@ -83,7 +83,7 @@ machine, and the Input System*
   It returns its boot result (`PresentationConfig`, the `FactionRuleRegistry`) to `GameRoot`. It is a no-op unless `catalog.state == UNLOADED` — source: ADR-0004, as amended by ADR-0007 §7, ADR-0011 and ADR-0013
 - **`GameRoot._enter_tree()` calls only `ContentBootstrap.run()`.** Everything else is built in `GameRoot._ready()`, by which point the load has already finished. That includes `SettingsService` (created first), `TransitionConfig`, `InputConfig`, `InputResolver`, `GameStateMachine`, `FlashGate`, `PresentationDirector`, `UiService` and `SaveService` — source: ADR-0004, ADR-0008 §1, ADR-0009 §7
 - **`ContentCatalog` sets up all its state in field initializers or `_init()`.** Its `_ready()` must do nothing to catalog state — it runs *after* the bootstrap has loaded (verified on 4.7.2: an autoload's `_ready()` runs after the main scene's `_enter_tree()`) — source: ADR-0004
-- **`register_record_validator(type, validator)`** — `validator: func(record) -> PackedStringArray` must be pure (empty array = valid); a registration made after `load_all()` has started is rejected — source: ADR-0004
+- **`register_record_validator(type, validator)`** — `validator: func(record) -> Array[Dictionary]` returns structured entries (`severity`, `field`, `message`, optional `related_locations`) and must be pure (empty array = valid; amended 2026-10-23); a registration made after `load_all()` has started is rejected — source: ADR-0004
 - **Harness scenes and `validate-content.gd` call `ContentBootstrap.run()`** in their own `_enter_tree()` / `_initialize()`, never `_init()` — source: ADR-0004
 - **The catalog script declares `class_name ContentCatalogService`**, distinct from its autoload node name `ContentCatalog` — source: ADR-0004
 - **Nodes under `GameRoot` get catalog data through `setup()`**, not by reading the catalog in their own `_ready()` — source: ADR-0004

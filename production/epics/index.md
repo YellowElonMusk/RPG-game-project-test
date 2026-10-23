@@ -6,7 +6,7 @@ Engine: Godot 4.7.2
 | Epic | Layer | System | GDD | Stories | Status |
 |------|-------|--------|-----|---------|--------|
 | [Go back to your planet!](go-back-to-your-planet/EPIC.md) | MVP (minimal tier, pre-architecture) | Battle core, squad, Bureaucratia, MegaCorp, battle HUD, chapter flow | design/game-brief.md | 6 (done) | In Progress |
-| [Content Catalog](content-catalog/EPIC.md) | Foundation | Content Data Definitions (+ Content Boot Ordering) | content-data-definitions.md | Not yet created | Ready |
+| [Content Catalog](content-catalog/EPIC.md) | Foundation | Content Data Definitions (+ Content Boot Ordering) | content-data-definitions.md | 30 stories | Ready |
 | [Content Migration](content-migration/EPIC.md) | Foundation | Content Data Definitions (ADR-0001 Migration Plan) | content-data-definitions.md | Not yet created | Ready |
 | [Input System](input-system/EPIC.md) | Foundation | Input System | input-system.md | Not yet created | Ready |
 | [Game State & Scene Flow](game-state-scene-flow/EPIC.md) | Foundation | Game State & Scene Flow | game-state-scene-flow.md | Not yet created | Ready |

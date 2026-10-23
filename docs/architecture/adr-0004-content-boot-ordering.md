@@ -7,7 +7,7 @@ Accepted — amended by ADR-0013 (§1's registrant list gains the `LocFieldsVali
 2026-10-21
 
 ## Last Verified
-2026-10-21
+2026-10-23
 
 ## Decision Makers
 User (autonomous mode — decisions logged in `production/session-logs/decision-log.md`), Claude (orchestrating session). Split out of ADR-0003 at the request of the technical-director (TD-ADR finding 1); reviewed by godot-specialist and technical-director
@@ -32,7 +32,7 @@ ADR-0001 runs `ContentCatalog.load_all()` in the catalog autoload's own `_ready(
 | Field | Value |
 |-------|-------|
 | **Depends On** | ADR-0001 (Content Data Definitions storage format) — **Accepted**: the catalog, its states, and `register_known_effect_types`. ADR-0002 (Game State & Scene Flow) — **Accepted** 2026-10-22: `GameRoot` as the composition root and Boot as the consumer of the catalog's terminal state. ADR-0004 cannot be Accepted before ADR-0002 |
-| **Enables** | ADR-0003 (Input System) — its bindings validator registers through `register_record_validator()`; Turn Battle System and Faction Rule Modifiers vocabulary registration (ADR-0001's design, now with a place to run); `res://.claude/scripts/validate-content.gd` validating with full vocabularies |
+| **Enables** | ADR-0003 (Input System) — its bindings validator registers through `register_record_validator()`; Turn Battle System and Faction Rule Modifiers vocabulary registration (ADR-0001's design, now with a place to run); `res://tools/ci/validate-content.gd` validating with full vocabularies |
 | **Blocks** | ContentCatalog implementation (ADR-0001's migration Steps 1+) — the load entry point must be built this way from the start; ADR-0003's acceptance |
 | **Ordering Note** | **Amends ADR-0001 and ADR-0002 additively.** The original text is annotated, not rewritten, and each amendment takes effect when ADR-0004 is Accepted.<br>**ADR-0001**, four passages: (a) the "Access pattern" paragraph's reason (3) and its closing sentences ("the autoload's own `_ready()` is the bootstrap"); (b) the Implementation Guideline saying "`ContentCatalog`'s `_ready()` load pass always sees registered record classes", since there is no longer a `_ready()` load pass; (c) Migration Step 1's "as the autoload described in Decision", for the load entry point only; (d) Key Interfaces, which gains `register_record_validator()`. The autoload stays the access pattern for read-only lookups.<br>**ADR-0002**, two passages: Decision §10's "the autoload has already run `load_all()` in its `_ready()`" becomes "`GameRoot._enter_tree()` has already run `ContentBootstrap.run()`"; and Decision §2's `GameRoot` description gains that `_enter_tree()` call. The machine is still built in `GameRoot._ready()` per its §9.<br>`ContentCatalog` is not implemented yet, so no shipped code changes |
 
@@ -80,11 +80,11 @@ The registration list is the one place that knows every registrant. That is why 
 
 **3. The autoload no longer loads, and its `_ready()` must not change state.** All of `ContentCatalog`'s state (its `state` field, record dictionaries and registries) is set up in field initializers or `_init()`, and it starts `UNLOADED`. On 4.7.2 the autoload's `_ready()` runs **after** `GameRoot._enter_tree()` has already loaded the catalog. Under `-s`, it runs after `_initialize()`. So a `_ready()` that resets or allocates catalog state would silently erase a completed load. `ContentCatalog._ready()` therefore does nothing to catalog state, and ideally is not defined at all. A `get_record()` while `UNLOADED` is rejected like any lookup on a non-Ready catalog, with an error naming the missing bootstrap.
 
-**4. `register_record_validator(type: StringName, validator: Callable) -> void`** is added to `ContentCatalog`. `validator(record: Resource) -> PackedStringArray` returns error strings, and an empty array means valid. During the Validating phase, the catalog calls each registered validator once per record of that type, *after* its own generic checks (ID, prefix, unknown fields, references). It prefixes each error with the file path and adds it to the full error list, never failing fast. A validator must be pure: no side effects, and no lookups beyond the record it is given. A registration made after `load_all()` has started is rejected with an error and has no effect. Validators run in registration order.
+**4. `register_record_validator(type: StringName, validator: Callable) -> void`** is added to `ContentCatalog`. `validator(record: Resource) -> Array[Dictionary]` returns structured entries of the GDD's entry shape (`severity`, `field`, `message`, optional `related_locations`; the catalog fills `record_id` and `location`), and an empty array means valid *(amended 2026-10-23 from `PackedStringArray`: tests assert on structured fields, never on wording)*. During the Validating phase, the catalog calls each registered validator once per record of that type, *after* its own generic checks (ID, prefix, unknown fields, references). It adds each entry, with the record's file path as its location, to the full report, never failing fast. A validator must be pure: no side effects, and no lookups beyond the record it is given. A registration made after `load_all()` has started is rejected with an error and has no effect. Validators run in registration order.
 
 **5. Every other entry point uses the same function.**
 - Harness scenes (`battle_debug_harness.tscn`, `battle_hud_demo.tscn`, `chapter_flow_demo.tscn` or its ADR-0002 rewrite) call `ContentBootstrap.run(ContentCatalog)` in their own `_enter_tree()`. They do this once their factories read the catalog, which is ADR-0001 migration Step 3. Before that they don't touch the catalog and need nothing.
-- `res://.claude/scripts/validate-content.gd` (a `SceneTree` script) calls `ContentBootstrap.run()` from `_initialize()`, never `_init()`, where the autoload doesn't exist yet. It gets the catalog with `root.get_node(^"ContentCatalog")` and exits with the error count, so CI validates with every vocabulary and validator registered. A fresh checkout runs `godot --headless --path . --import` first, so the class cache exists.
+- `res://tools/ci/validate-content.gd` (a `SceneTree` script) calls `ContentBootstrap.run()` from `_initialize()`, never `_init()`, where the autoload doesn't exist yet. It gets the catalog with `root.get_node(^"ContentCatalog")` and exits with `min(error_count, 1)` (ADR-0001 amendment 2026-10-23), so CI validates with every vocabulary and validator registered. It passes `--data-root=` to `ContentBootstrap.run(data_root)`. A fresh checkout runs `godot --headless --path . --import` first, so the class cache exists.
 - Thanks to the guard, a harness that is later embedded under `GameRoot` cannot trigger a second load.
 
 ### Architecture Diagram
@@ -118,7 +118,7 @@ static func run(catalog: ContentCatalogService) -> void   # no-op unless state =
 
 ## Additions to ContentCatalog (ADR-0001)
 func register_record_validator(type: StringName, validator: Callable) -> void
-#   validator: func(record: Resource) -> PackedStringArray   (pure; empty = valid)
+#   validator: func(record: Resource) -> Array[Dictionary]   (pure; structured entries; empty = valid; amended 2026-10-23)
 #   rejected (error, no effect) once load_all() has started
 ```
 
@@ -217,3 +217,6 @@ func register_record_validator(type: StringName, validator: Callable) -> void
 - 2026-10-22 — **Accepted** by the user, after ADR-0002 (explicit instruction: accept ADR-0002 → ADR-0004 → ADR-0003 → ADR-0006 → ADR-0005). The annotated amendments to ADR-0001 (four passages) and ADR-0002 (§2, §10) take effect now. No stories were Blocked on this ADR.
 - Enables: `docs/architecture/adr-0003-input-system.md` (bindings validator)
 - Design: `design/gdd/content-data-definitions.md`, `design/gdd/game-state-scene-flow.md`, `design/gdd/input-system.md`
+
+- 2026-10-23 — Path correction (no decision change): the headless validator lives at `res://tools/ci/validate-content.gd`, not `res://.claude/scripts/`. `.claude/` holds the agent framework's helpers, while game tooling belongs under `tools/ci/` (`.claude/docs/directory-structure.md`), next to ADR-0012's `tools/ci/validate_maps.gd`. Control manifest updated to match. Found while drafting the content-catalog stories.
+- 2026-10-23 — Testability amendment (no decision change; QL-STORY-READY on the content-catalog stories): lookup error channel `last_lookup_error`, `load_all(data_root) -> Error`, headless exit `min(error_count, 1)` with `--data-root=`, `duplicate_deep()` copies (ADR-0001); record validators return structured `Array[Dictionary]` entries instead of `PackedStringArray` (ADR-0004 §4; ADR-0003, ADR-0007 and ADR-0011 signatures and the control manifest synced).

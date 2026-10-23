@@ -191,7 +191,7 @@ static func fmt(text: String, args: Dictionary) -> String
 
 ## src/loc/loc_fields_validator.gd — pure; registered for every record type via ContentBootstrap (ADR-0004 §1)
 class_name LocFieldsValidator
-static func validate(record: Resource) -> PackedStringArray
+static func validate(record: Resource) -> Array[Dictionary]   # structured entries, ADR-0004 §4 as amended 2026-10-23
 
 ## On every record script with string-typed exports (ADR-0001 records)
 const LOC_FIELDS: Array[StringName] = [&"display_name", &"description"]   # translatable

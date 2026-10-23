@@ -181,6 +181,8 @@ The validation_outcome formula is defined as:
 **Output Range:** Two values, decided by `error_count` alone. A single error fails the whole catalog, including records that were valid themselves (AC-8).
 **Example:** 2 errors and 2 warnings → `Failed`, with all 4 entries in the report (AC-19). 0 errors and 3 warnings → `Ready` (AC-18).
 
+**Entry shape.** Every entry carries `severity`, `record_id`, `field` (empty when the whole record is at fault), `location` (`{file_path, record_index}`), a human-readable `message`, and `related_locations` (an array, empty unless the problem spans several places: a duplicate ID or alias lists every other location there). Tests assert on these structured fields, never on `message` wording. Validators registered by other systems (ADR-0004 §4) return entries of this shape.
+
 **Report order.** Entries are sorted ascending by the key `(location.file_path, location.record_index, field, severity)`, with an empty `field` sorting first. The key uses only fields every entry already carries, and it groups problems by file, which is how an author fixes them. File paths are normalised to their `res://` form with forward slashes and compared as case-sensitive strings, so the order does not depend on the order the filesystem lists files or on the OS (AC-20). An error that names two locations (a duplicate ID, AC-10) sorts by its first location.
 
 **F4. Error-screen display count**
@@ -229,7 +231,7 @@ The performance_pass formula is defined as:
 **References**
 - **If a reference points at a missing ID**: **error.**
 - **If a reference points at a record of the wrong type** (e.g. `move_ids` contains `char_…`, or a Character's `nation_id` names an `alien` faction): **error.**
-- **If records form a reference cycle** (e.g. a Move whose effect triggers a Move that triggers the first): **error.** Cycle checking covers every reference an owning GDD does not explicitly declare as allowed to loop.
+- **If a record references itself** through any reference field: **error.** **If records form a cycle along fields declared acyclic**: **error** naming every record in the cycle. An owning system declares a reference field acyclic when it registers its vocabulary (`register_acyclic_field(type, field)`, ADR-0001 amendment 2026-10-23). Cross-type references (Faction → FactionRule → Enemy → Faction, the normal shape of a faction) are lookups, not definitions, and are never cycle-checked. Move-triggers-Move chains live inside EffectDescriptors, which the catalog never interprets, so their owner (Turn Battle) checks them with its own registered validator.
 - **If a list field contains the same ID twice**: **error**, unless the owning GDD defines duplicates as meaningful.
 
 **Structure**
@@ -248,7 +250,7 @@ The performance_pass formula is defined as:
 
 **Other warnings** (reported, never blocking)
 - A Character's `signature_move_id` also appears in its own `move_ids`, so it would be available from the start rather than unlocked.
-- A record that nothing references (e.g. a QuirkState no Move or Combo uses).
+- A record that nothing references (e.g. a QuirkState no Move or Combo uses). **Root types are exempt**, since nothing is expected to reference them: Character, Map, OccupationStage, InputBindings, Combo and Item.
 
 **Lookup and load**
 - **If any lookup happens before the catalog is Ready, or after it Failed**: an error is returned, never partial data.
@@ -351,9 +353,9 @@ Evidence type: **[L]** Logic (automated gdUnit4 test under `tests/unit/content_d
 
 **Identity and aliases**
 - **AC-9 [L]** One test per defect: an ID with uppercase letters, one with a space, one without its type prefix, and one of 65 characters each produce an error whose `record_id` is the offending ID. An ID of exactly 64 characters loads.
-- **AC-10 [L]** GIVEN two records with the same ID in two different files, WHEN validating, THEN one error lists both locations.
+- **AC-10 [L]** GIVEN two records with the same ID in two different files, WHEN validating, THEN exactly one error is reported, its `location` is the first file in report order and its `related_locations` holds the other.
 - **AC-11 [L]** GIVEN `char_new` with `aliases: [char_old]`, WHEN `resolve_alias("char_old")` is called, THEN it returns `char_new`.
-- **AC-12 [L]** One test each: an alias equal to a live ID, an alias that points to another alias, and an alias whose record is missing each produce an error.
+- **AC-12 [L]** One test each: an alias equal to a live ID produces an error naming both records; the same alias declared on two records produces an error naming both (an alias belongs to one record, so a chain of aliases cannot exist); a reference that uses an alias resolves to the aliased record in one hop, and `resolve_alias` of a live ID returns that ID unchanged. (Revised 2026-10-23, QL-STORY-READY: aliases are declared on the live record, so "an alias whose record is missing" cannot be built; a reference to an ID that is neither live nor an alias is covered by AC-13 and AC-28.)
 
 **References**
 - **AC-13 [L]** One test each: a reference to a missing ID; a wrong-type reference (`move_ids` containing a `char_` ID, and a Character `nation_id` naming an `alien` faction); a self-reference; a 2-record cycle; a 3-record cycle; and a duplicate entry in a list field. Each produces an error.
@@ -363,7 +365,7 @@ Evidence type: **[L]** Logic (automated gdUnit4 test under `tests/unit/content_d
 - **AC-26 [L]** One test per boundary: `stat_block.max_hp` 0 and 1000, `max_mp` −1 and 100, `attack`/`defense`/`speed` 0 (or −1 for `defense`) and 100, `Move.cost` −1, `reward.xp` −1 and 10000, `reward.money` −1 and 10000, `OccupationStage.stage` 0 and 4, `Map.base_stage` 0 and 4, a `stage_table` value 4, `Map.zone_rate` −0.01 and 1.01, `liberation_grumble_min` 0.09 and 0.41. Each produces an error naming the record and field. The matching minimum and maximum values each load.
 - **AC-27 [L]** GIVEN two Map records that both set `new_game_entry`, THEN an error names both. GIVEN two OccupationStage records with the same `(faction_id, stage)`, THEN an error names both. GIVEN a human_nation faction with `patrol_archetype_id` set, THEN an error names the record and field. GIVEN a `faction_rule` record `rule_ok` whose `rule_class` is registered, THEN it passes F1 and loads.
 - **AC-28 [I]** GIVEN a previous ID manifest containing `char_old` and a current catalog where that record's `id` is `char_new` with no alias, WHEN the CI check runs, THEN it fails naming `char_old`. With `aliases: ["char_old"]` added, it passes. A save referencing `char_old` loads through the alias.
-- **AC-15 [L]** GIVEN a Move whose effects use only known descriptor types, WHEN loaded, THEN `get_record` returns the descriptors deep-equal to the fixture and loading triggers no game effect.
+- **AC-15 [L]** GIVEN a Move whose effects use only known descriptor types, WHEN loaded, THEN `get_record` returns the descriptors deep-equal to the fixture and loading triggers no game effect: every record script defines no methods beyond getters (checked with `get_script_method_list()`), and a signal monitor attached during load records no signal other than the catalog's own state changes.
 - **AC-16 [L]** GIVEN one data file that does not parse alongside valid files, WHEN loading, THEN there is one error naming that file, the state is Failed, and errors in the other files are still reported.
 
 **Faction rules and warnings**

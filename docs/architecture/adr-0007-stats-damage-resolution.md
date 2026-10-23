@@ -281,8 +281,8 @@ static func load_or_default(path: String) -> StatsConfig
 
 ## src/battle/stats/stats_validators.gd — pure; registered from ContentBootstrap with the config bound
 class_name StatsValidators
-static func validate_stat_block(config: StatsConfig, record: Resource) -> PackedStringArray
-static func validate_move(config: StatsConfig, record: Resource) -> PackedStringArray
+static func validate_stat_block(config: StatsConfig, record: Resource) -> Array[Dictionary]   # ADR-0004 §4 entry shape (amended 2026-10-23)
+static func validate_move(config: StatsConfig, record: Resource) -> Array[Dictionary]
 
 ## src/battle/combatant.gd (Core, §0) — changes
 var _hp: int

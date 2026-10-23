@@ -7,7 +7,7 @@ Accepted — amended by ADR-0004 (bootstrap; Accepted 2026-10-22, amendment in e
 2026-10-21
 
 ## Last Verified
-2026-10-21
+2026-10-23
 
 ## Decision Makers
 User, Claude (orchestrating session), reviewed by godot-specialist and technical-director (TD-ADR)
@@ -162,10 +162,10 @@ instantiating each `Resource`:
    and continue loading the rest of the set — never abort early.
 
 **Standalone headless validation** (Rule 8's CI requirement): a small script
-at `res://.claude/scripts/validate-content.gd` (mirroring the existing
+at `res://tools/ci/validate-content.gd` (mirroring the existing
 `godot-parse-check.gd` pattern) calls `ContentCatalog.load_all()` directly and
-exits with the error count as its exit code, runnable via
-`godot --headless -s res://.claude/scripts/validate-content.gd` with no scene
+exits with `min(error_count, 1)` as its exit code (amendment 2026-10-23), runnable via
+`godot --headless -s res://tools/ci/validate-content.gd` with no scene
 needed.
 
 ### EffectDescriptor adapter (resolves the Move-shape mismatch)
@@ -250,6 +250,30 @@ data/items/*.tres       ─┘
   and the equivalent for faction-rule-class resolution — the vocabulary-
   registration calls described above, invoked by Feature-layer systems before
   `load_all()`'s Validating phase.
+
+**Amendment 2026-10-23 (testability; found by QL-STORY-READY on the
+content-catalog stories; no decision change).**
+- **One error channel for lookups.** A lookup outside Ready, with an unknown
+  type, or for a missing ID returns the type's empty value (`null`, `false`,
+  `[]`, `""`), calls `push_error()`, and sets
+  `ContentCatalog.last_lookup_error: StringName` to `&"not_ready"`,
+  `&"unknown_type"` or `&"missing_id"` (`&""` after a successful lookup). Tests
+  assert on `last_lookup_error`, never on the log, so "an error, not an empty
+  list" is observable and the three causes are distinguishable.
+- **`load_all(data_root: String = "res://data") -> Error`.** It returns `OK`
+  when it reaches Ready, `FAILED` when it reaches Failed, and
+  `ERR_ALREADY_IN_USE` (changing nothing) when called a second time. The data
+  root is injectable so tests load fixture sets from the test root.
+- **Headless exit code.** `tools/ci/validate-content.gd` exits with
+  `min(error_count, 1)` (0 = valid, warnings allowed; 1 = any error) and prints
+  the full report, matching the GDD's AC-24. It accepts `--data-root=<path>`,
+  and the ID-manifest check accepts `--previous-manifest=<path>`.
+- **Deep copies.** "Callers copy values" (TR-content-007) is enforced, not
+  left to discipline: `get_record` and `all_records` return
+  `duplicate_deep()` copies (Godot 4.5+), so a caller's edit to a nested array
+  or EffectDescriptor never reaches the cached record. The cost is bounded by
+  record size and lookups happen at construction time, never per frame.
+- **Cycles.** `register_acyclic_field(type: StringName, field: StringName) -> void` (before Validating, through `ContentBootstrap`) marks a reference field for cycle checking; a self-reference on any reference field is always an error; unmarked cross-type references are never cycle-checked.- **`ContentBootstrap.run(data_root: String = "res://data")`** passes its root to `load_all()` (ADR-0004), so the headless tools' `--data-root=` reaches the catalog. Discovery covers only the record-type directories under the root; `data/config/` and `data/ui/` hold project config, not records.
 - *(Amendment pending, ADR-0004)* `ContentCatalog.register_record_validator(type: StringName, validator: Callable) -> void`:
   a per-record-type semantic validator, run during Validating and rejected once `load_all()` has started.
 - `ContentCatalog.state -> State` (`UNLOADED | LOADING | VALIDATING | READY | FAILED`)
@@ -418,7 +442,7 @@ data/items/*.tres       ─┘
 | content-data-definitions.md | Rule 7 (read-only at runtime) | `ContentCatalog.state` is terminal at `Ready`; no write-back API exists; Implementation Guidelines forbid mutating a loaded record |
 | content-data-definitions.md | Rule 8 (validation: structure, references, ranges) | `ContentCatalog`'s validation pass, run once over the complete set, reporting every problem |
 | content-data-definitions.md | Rule 8 (validation: unknown fields, missing fields, parse failures) | Explicit raw-text diff mechanism, required-range convention, and null-checked `ResourceLoader.load()` — see Decision's validation mechanism subsection |
-| content-data-definitions.md | Rule 8 (standalone headless check) | `res://.claude/scripts/validate-content.gd`, run via `godot --headless -s` |
+| content-data-definitions.md | Rule 8 (standalone headless check) | `res://tools/ci/validate-content.gd`, run via `godot --headless -s` |
 | content-data-definitions.md | Rule 9 (lookup operations) | `get_record`/`has_record`/`all_records`/`resolve_alias` as the Key Interfaces above |
 | content-data-definitions.md | States and Transitions table | `ContentCatalog.state` enum matches `Unloaded → Loading → Validating → Ready\|Failed` exactly |
 | game-state-scene-flow.md | Rule 13 / Boot | Boot can block on `ContentCatalog.state == READY` before leaving the boot mode |
@@ -514,3 +538,4 @@ data/items/*.tres       ─┘
   original text is kept. The amendment takes effect when ADR-0004 is Accepted.
 - **2026-10-22 — ADR-0004 Accepted**: the bootstrap amendment above is now in
   effect. Where the annotated passages and ADR-0004 differ, ADR-0004 governs.
+- 2026-10-23 — Testability amendment (no decision change; QL-STORY-READY on the content-catalog stories): lookup error channel `last_lookup_error`, `load_all(data_root) -> Error`, headless exit `min(error_count, 1)` with `--data-root=`, `duplicate_deep()` copies (ADR-0001); record validators return structured `Array[Dictionary]` entries instead of `PackedStringArray` (ADR-0004 §4; ADR-0003, ADR-0007 and ADR-0011 signatures and the control manifest synced).
