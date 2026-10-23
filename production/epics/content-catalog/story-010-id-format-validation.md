@@ -1,12 +1,12 @@
 # Story 010: A malformed ID is an error naming it; 64 characters loads, 65 does not
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: In Progress
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-23
 
 ## Context
 
@@ -59,11 +59,9 @@
 
 ## Files
 
-- `src/data/content_catalog.gd` (F1 check)
-- `tests/unit/content_data/fixtures/id_defects/uppercase/`, `.../space/`, `.../no_prefix/`, `.../len_65/`, `.../len_64/`
-- `tests/unit/content_data/content_data_id_format_test.gd`
-
----
+- `src/data/content_catalog.gd` (F1 id-format check in `_load_one()`; `ID_MAX_LENGTH`, `ID_PATTERN` constants; RegEx compiled once)
+- `tests/unit/content_data/fixtures/id_defects/` (uppercase, space, no_prefix, len_65, len_64: one character plus its human-nation faction each)
+- `tests/unit/content_data/content_data_id_format_test.gd` (6 test functions) and its `.uid`
 
 ## QA Test Cases
 

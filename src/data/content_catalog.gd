@@ -49,6 +49,13 @@ const TYPE_TABLE: Dictionary = {
 	&"occupation_stage": {"prefix": "ostage_", "dir": "occupation_stages"},
 }
 
+## Maximum length of a record `id`, in characters (GDD F1; ADR-0001). A fixed
+## constant, deliberately not a tuning knob (GDD Tuning Knobs).
+const ID_MAX_LENGTH := 64
+## Lowercase snake_case starting with a letter (GDD F1; ADR-0001). A fixed
+## constant, deliberately not a tuning knob (GDD Tuning Knobs).
+const ID_PATTERN := "^[a-z][a-z0-9_]*$"
+
 ## Current load state. Starts UNLOADED; only `load_all()` changes it.
 var state: State = State.UNLOADED
 
@@ -106,6 +113,8 @@ var _aliases: Dictionary[String, String] = {}
 var _validators: Dictionary = {}
 # system StringName → PackedStringArray of known EffectDescriptor types.
 var _known_effect_types: Dictionary = {}
+# ID_PATTERN compiled once at construction, never per record in _load_one().
+var _id_regex: RegEx = _compile_id_regex()
 
 
 ## Registers the EffectDescriptor `type` vocabulary an owning system
@@ -304,8 +313,19 @@ func _run_validators() -> void:
 							paths.get(id, ""), raw_entry["message"], raw_entry.get("related_locations", []))
 
 
-# Loads one record file: the null check, the filename = id check, then
-# storage (with its source path) and alias registration. Validators run
+# Builds the RegEx for ID_PATTERN; called once from _id_regex's initializer.
+func _compile_id_regex() -> RegEx:
+	var regex := RegEx.new()
+	var err: Error = regex.compile(ID_PATTERN)
+	if err != OK:
+		# A bad ID_PATTERN would otherwise fail every id silently.
+		push_error("ContentCatalog: ID_PATTERN %s does not compile (error %d)." % [ID_PATTERN, err])
+	return regex
+
+
+# Loads one record file: the null check, the filename = id check, the id
+# format check (GDD F1), then storage (with its source path) and alias
+# registration. Validators run
 # later, in load_all()'s Validating pass (ADR-0004 §4), not here. A record
 # that fails a check is reported and not stored; loading continues.
 func _load_one(type: StringName, file_path: String, bucket: Dictionary) -> void:
@@ -322,6 +342,15 @@ func _load_one(type: StringName, file_path: String, bucket: Dictionary) -> void:
 		push_error("ContentCatalog: %s declares id %s, which does not match its filename." % [file_path, record_id])
 		_add_report_entry(&"error", record_id, &"id", file_path,
 				"The filename without extension must equal the record's id.", [])
+		return
+
+	# GDD F1 is one boolean, so an id with several defects gives one entry.
+	var prefix: String = TYPE_TABLE[type]["prefix"]
+	if record_id.length() > ID_MAX_LENGTH or _id_regex.search(record_id) == null \
+			or not record_id.begins_with(prefix):
+		push_error("ContentCatalog: %s has id %s, which breaks the id format rule." % [file_path, record_id])
+		_add_report_entry(&"error", record_id, &"id", file_path,
+				"The id must be at most %d characters, match %s and start with %s." % [ID_MAX_LENGTH, ID_PATTERN, prefix], [])
 		return
 
 	bucket[record_id] = record
