@@ -1,12 +1,12 @@
 # Story 005: A missing ID returns not-found, and an unknown type returns an error, not an empty list
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: In Progress
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-23
 
 ## Context
 
@@ -58,10 +58,8 @@
 
 ## Files
 
-- `src/data/content_catalog.gd` (only if story 002's channel needs a fix)
-- `tests/unit/content_data/content_data_lookup_errors_test.gd` (reuses `fixtures/valid_one_of_each/`)
-
----
+- `tests/unit/content_data/content_data_lookup_errors_test.gd` (6 test functions, AC-4; reuses `fixtures/valid_one_of_each/`)
+- `src/data/content_catalog.gd` — unchanged: story 002's error channel already met the contract
 
 ## QA Test Cases
 
