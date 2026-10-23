@@ -1,7 +1,7 @@
 # Story 009: One error anywhere fails the whole catalog, even for records that were valid themselves
 
 > **Epic**: Content Catalog
-> **Status**: In Progress
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
@@ -83,7 +83,7 @@
 **Required evidence**:
 - Logic: `tests/unit/content_data/content_data_failed_state_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (see Completion Notes)
 
 ---
 
@@ -91,3 +91,12 @@
 
 - Depends on: `production/epics/content-catalog/story-007-lookups-error-before-ready.md`
 - Unlocks: `production/epics/content-catalog/story-019-warning-cases.md`, `story-020-mixed-severity-report.md`, `story-023-deterministic-report-order.md`, `story-026-failed-catalog-blocks-boot.md` (all under `production/epics/content-catalog/`)
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-23
+**Criteria**: 1/1 passing (AC-8). None deferred.
+**Deviations**: None. The existing state guards already refused lookups on a Failed catalog, so no production code changed. The `one_error_rest_valid` fixture was built in story 008 to this story's spec and reused unchanged.
+**Test Evidence**: `tests/unit/content_data/content_data_failed_state_test.gd` (6 functions); suite 50/50, 0 orphans, exit 0 on Godot 4.7.2. Watched fail: each of the two lookup guards (`_check_lookup` and `resolve_alias`'s own) failed its tests when made to admit FAILED, then passed once restored. Commit f72e7ce.
+**Reviewed by**: lead-programmer (LP-CODE-REVIEW APPROVE); QL-TEST-COVERAGE ADEQUATE
