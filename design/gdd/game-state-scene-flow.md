@@ -18,6 +18,24 @@ Game State & Scene Flow is the traffic controller for the whole game. It decides
 
 The player never sees it as a feature, but feels it constantly. Every step of the core loop passes through it: walking the overworld, a wipe into a separate Dragon Quest-style battle scene, the victory fanfare, and back to exactly where they stood. A loss offers an instant retry. If any of that is slow, inconsistent or loses state, the loop breaks, so the system's job is to make every transition fast, predictable and lossless (Readable in One Turn applies to the game's flow as much as to its fights). How scenes are implemented in Godot (autoloads, scene swapping, sub-viewports) is an ADR decision, not part of this GDD.
 
+## Player Fantasy
+
+**"Snap in, snap out, never lost."** The player should feel that the game is
+always one quick, readable beat away from where they want to be. Touching a
+Clerk is a stamp-slam wipe straight into the fight; winning drops them back on
+the exact cobblestone they left; a loss is one press from a clean retry. Nothing
+ever loads in front of them, nothing half-builds on screen, and a mashed button
+never lands in the wrong place.
+
+This system is felt, not seen. It carries the Dragon Quest promise that battle
+is a separate, framed stage (Pillar 4, Readable in One Turn): the wipe *is* the
+announcement that the rules just changed. Its guardrails:
+- **Never a wait without a picture.** Every transition is covered by a wipe or a fade, inside its budget (Formulas).
+- **Never a lost world.** Leaving a battle restores the overworld exactly; the player never re-walks or re-fights because of a transition.
+- **Never an eaten or doubled input.** Input locks during a transition and unlocks the frame it ends.
+
+> Retrofit 2026-10-23 (commit-hook gap at `workflow: full`), written from the existing Overview, Game Feel and rules 3, 5 and 8; no rule changed.
+
 ## Detailed Design
 
 ### Core Rules
@@ -174,6 +192,25 @@ The transition_time formula is defined as:
 | Save/Load & Settings | Soft (Vertical Slice) | Safe save moments; Continue on Title |
 
 **Bidirectional notes:** Content Data Definitions already lists this system as a hard dependent. The systems index row for this system is updated to depend on Content Data Definitions and Input System, and Input's own GDD must state that it does **not** depend on this system (so there is no cycle).
+
+## Tuning Knobs
+
+All knobs live in `TransitionConfig` (`data/config/transition_config.tres`, ADR-0002 §9), per transition type. None is a code literal.
+
+| Knob | Default | Safe range | Too low | Too high | Bound by |
+|---|---|---|---|---|---|
+| `t_out` (battle wipe) | 0.35 s | 0.15–0.50 | The wipe reads as a cut; the "rules changed" beat is lost | The game feels sluggish entering every fight | `transition_budget` |
+| `t_in` (battle wipe) | 0.30 s | 0.15–0.50 | The battle stage pops in | Slow reveal on every fight | `transition_budget` |
+| `t_out` / `t_in` (reverse wipe) | 0.30 / 0.30 s | 0.15–0.50 | The return to the overworld pops | Slow return after every fight | `transition_budget` |
+| `t_out` / `t_in` (Retry flash) | 0.10 / 0.15 s | 0.05–0.25 | Retry is a jarring cut | Retry stops feeling instant | `transition_budget`; the flash gate (ADR-0005 §12) may cap the flash |
+| `t_out` / `t_in` (fades: camp, map change, title, retreat, in-mode fade) | 0.25 / 0.25 s | 0.15–0.50 | Map changes and redirects strobe | Walking between maps drags | `transition_budget` |
+| `transition_budget` (battle wipes) | 1.0 s | 0.6–1.5 | Warnings on ordinary stage loads | Slow loads go unnoticed | Must be ≥ `t_out + t_in` |
+| `transition_budget` (Retry) | 0.5 s | 0.25–0.75 | Warnings on every Retry | A slow Retry goes unnoticed | Must be ≥ `t_out + t_in` |
+| `transition_budget` (fades) | 1.5 s | 1.0–2.5 | Warnings on map loads | Slow map loads go unnoticed | Must be ≥ `t_out + t_in` |
+
+**How the knobs interact.** A budget is a warning threshold, never a cut-off: if `t_swap` overruns it the IN phase still waits and a performance warning is logged (Formulas). Lowering `t_out`/`t_in` leaves more of the budget for `t_swap`. The in-mode fade (rule 2) uses the `fade` row and has a zero-length swap.
+
+> Retrofit 2026-10-23 (commit-hook gap at `workflow: full`), collected from the Formulas budgets table; no value changed.
 
 ## Visual/Audio Requirements
 

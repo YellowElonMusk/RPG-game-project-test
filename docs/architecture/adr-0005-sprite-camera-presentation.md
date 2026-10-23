@@ -1,7 +1,7 @@
 # ADR-0005: Sprite & Camera Presentation — Constant-Scale Pixel Sprites in 3D Dioramas, a Level Shift-Lens Battle Camera, Data-Driven Lighting
 
 ## Status
-Accepted — amended by ADR-0012 (Accepted 2026-10-23, amendment in effect, annotation only): §4's same-mode skip of the entry-profile apply covers only the same-instance `BATTLE → BATTLE` row; an in-mode fade (ADR-0002 §11) triggers no rebind and no profile apply; the Overworld resolves its lighting profile per map × faction × stage, or the liberated profile, before the stage enters the tree. **Annotation text still owed in this ADR** (TR-overworld-017): profiles keyed by faction × stage and the liberated profile, `sky_card`, interior travelling-light constraints, leader-relative tilt-shift blur bounds, and per-cue capture-ID tags (incl. `SKY`) in §13.
+Accepted — amended by ADR-0012 (Accepted 2026-10-23, amendment in effect, annotation only): §4's same-mode skip of the entry-profile apply covers only the same-instance `BATTLE → BATTLE` row; an in-mode fade (ADR-0002 §11) triggers no rebind and no profile apply; the Overworld resolves its lighting profile per map × faction × stage, or the liberated profile, before the stage enters the tree. The Overworld presentation text is §14 (written 2026-10-23, closes TR-overworld-017).
 
 ## Date
 2026-10-21 (revision 2: 2026-10-22; revision 3: 2026-10-22)
@@ -152,7 +152,7 @@ The stage joins the group `&"active_diorama_stage"` on `_enter_tree()`, leaves i
 - **Shadow:** `shadow_color`, for the blob shadows.
 - **Blend:** `blend_time`.
 
-MVP profiles: `title`, `overworld`, `battle`, `boss_bureaucratia`, `boss_megacorp`, `camp`, `victory`, `defeat`. `occupied_*` and `dungeon` come with the Overworld ADR's regions. Profiles are presentation config, not Content Data records.
+MVP profiles: `title`, `overworld`, `battle`, `boss_bureaucratia`, `boss_megacorp`, `camp`, `victory`, `defeat`, plus the overworld stage and interior profiles of §14 (`ow_bureaucratia_s1`..`s3`, `ow_bureaucratia_interior_s3`, `ow_interior_liberated`). Profiles are presentation config, not Content Data records.
 
 `PresentationConfig` (`data/config/presentation_config.tres`) holds:
 - `texel_base_lines` (360) and `humanoid_height_px`;
@@ -249,6 +249,15 @@ All are set in `project.godot`, and AC-47 checks them.
 - **Output:** the measurements file.
 
 It is a Visual/Feel tool, so it runs windowed on the development PC. Every [C] clause in the GDD names this tool and gates the story that ships the measured feature.
+
+**14. Overworld presentation** *(amendment 2026-10-23, requested by ADR-0012 §7 and the Overworld GDD rules 8, 17 and `chase_visibility`; annotation-style addition, in effect with ADR-0012's acceptance; closes TR-overworld-017)*
+- **Profile IDs per faction × stage.** The overworld profiles are `overworld` (unoccupied), `ow_<faction>_s<stage>` (for example `ow_bureaucratia_s2`), `ow_<faction>_interior_s<stage>` for interior maps (the art bible's Dungeon row) and the liberated profiles each map names (`liberated_profile_id`, normally `overworld` or `ow_interior_liberated`). An `occupation_stage` record names its profile ID; the profile table holds the file. At Boot, `ContentBootstrap` checks that every profile ID referenced by a `map` or `occupation_stage` record exists in the table (a content error names the record).
+- **Stage light rule (art bible §2, user ruling 2026-10-22).** Within one faction's stage profiles the key light (Storybook Amber) is identical; a higher stage raises the faction-tinted `FillLight` (its energy and its weight toward the faction hue), never darkens the scene. Boot validates, per faction: `fill_energy` non-decreasing with stage, key color and energy equal across stages, and the sky's upper gradient at CIELAB L\* ≥ 60 at every stage (measured by AC-54 through the `SKY` capture tag).
+- **The sky card is the profile's sky fields.** The Overworld GDD's `sky_card` data (top and horizon colors) is the profile's existing `sky_top`/`sky_bottom`/`sky_horizon*` fields; no second store.
+- **Interior travelling light.** A profile may set `travel_light_enabled` with `travel_light_color`, `travel_light_energy`, `travel_light_range` and `travel_light_shadow`. `DioramaStage` then owns one `OmniLight3D` (`TravelLight`, cull mask `SET` only, never `ACTORS`) that **exists from the stage's first frame and is never toggled**: a profile without it sets energy 0. Its shadow flag is fixed per profile and never changes at runtime. The Overworld moves it to the party anchor every frame (position only). Boot warm-up (§11) renders interior set materials with the light present and its shadow flag in its shipped state. *(Probed, Overworld GDD review 2: the first `OmniLight3D` adds a surface pipeline and enabling its shadow a specialization pipeline; moving it adds none.)*
+- **Tilt-shift blur bounds.** Overworld profiles use `CameraAttributesPractical` DOF: `dof_near_enabled` may be true (unlike battle profiles). The GDD's `dof_near_end` is `dof_blur_near_distance` and `dof_far_begin` is `dof_blur_far_distance`; the transitions ramp away from the sharp band and are free knobs. Godot compares **view-space depth along the camera axis**, not Euclidean distance (**PROBED** 4.7.2, 2026-10-23: two quads at equal view depth 10 but 12.81 m apart radially blur identically), which is the GDD's `d_cam`. Boot validates the shipped overworld profiles against the GDD's `chase_visibility` blur inequalities (`s_blur`, `H_max·sin(pitch)`) at the shipped camera. *(UNVERIFIED: the exact depth at which the ramp reaches full blur; DOF on the Compatibility renderer, which this project does not ship.)*
+- **Capture-ID tags (§13).** The ID pass gains per-cue tags for the Overworld's [C] criteria: `SKY` (the sky card, already tagged `sky`), `notice_slip`, `chase_tag`, `stun_pose`, `checkpoint_open`, `checkpoint_closed`, `safe_paving`, `exit_beacon`, `camp_sign`, `interact_prompt`, `symbol`. A cue node carries its tag as node metadata (`capture_id`), and the tool's override pass renders each tag's mask. This is part of Migration Step 1c's capture-tool story.
+- **In-mode fade.** On an ADR-0002 §11 in-mode fade (`transition_started` with `from == to`, no `mode_entered`), the Director neither rebinds nor applies a profile.
 
 ### Architecture Diagram
 
@@ -365,7 +374,15 @@ class_name LightingProfile extends Resource
 @export var dof_far_enabled: bool
 @export var dof_far_distance: float
 @export var dof_amount: float
-@export var dof_near_enabled: bool          # false in every battle-family profile (validated)
+@export var dof_near_enabled: bool          # false in every battle-family profile (validated); may be true in overworld profiles (§14)
+@export var dof_near_distance: float        # = CameraAttributesPractical.dof_blur_near_distance (GDD dof_near_end), §14
+@export var dof_near_transition: float
+@export var dof_far_transition: float
+@export var travel_light_enabled: bool      # §14 interior travelling light; the light always exists, energy 0 when false
+@export var travel_light_color: Color
+@export var travel_light_energy: float
+@export var travel_light_range: float
+@export var travel_light_shadow: bool       # fixed per profile, never changed at runtime
 @export var shadow_color: Color
 @export var blend_time: float
 
@@ -620,3 +637,4 @@ No 3D presentation code exists; the battle HUD and demos are 2D `Control` scenes
   - Advisory E5 (`ALPHA_SCISSOR` discards in the depth prepass, so "early-z stays on" is overstated) and E10 (Shader Baker plus global uniforms on a Linux export built from Windows) are not yet folded in.
 - 2026-10-22 — **Accepted** by the user, last in the order ADR-0002 → ADR-0004 → ADR-0003 → ADR-0006 → ADR-0005 (explicit instruction). No stories were Blocked on this ADR.
 - 2026-10-22 — `/architecture-review` (`architecture-review-2026-10-22c.md`), godot-specialist **E4**: the texel formula now names its source, `get_viewport().size.y` (full window height under ADR-0008's refit). Wording only; T is unchanged.
+- 2026-10-23 — ADR-0012 acceptance follow-up (with a godot-specialist DOF probe), amendment: §14 Overworld presentation added: profile IDs per faction × stage and interior, stage light rule and its Boot validation, sky card = profile sky fields, the interior `TravelLight` (always present, never toggled, fixed shadow flag), tilt-shift bounds mapped to `dof_blur_near_distance`/`dof_blur_far_distance` with view-space depth PROBED, per-cue capture-ID tags, no rebind on an in-mode fade. `LightingProfile` gains the near-DOF and travel-light fields

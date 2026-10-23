@@ -20,6 +20,23 @@ Input System turns physical devices (keyboard, mouse and gamepad) into a small s
 
 Players feel it as controls that simply work, whichever device they pick up: walking with WASD, the arrow keys, a stick or a d-pad; menus and battle commands navigable by keyboard, gamepad, or by pointing and clicking with the mouse; and on-screen button prompts that switch to match the device last used. Bindings live in data from day one, so the remapping screen planned for the Vertical Slice is a UI task, not a redesign.
 
+## Player Fantasy
+
+**"My hands already know this game."** Whatever the player picks up (keyboard,
+an Xbox or PlayStation pad, the Steam Deck), the controls should feel like the
+ones they already trust from the genre: the stick walks, `confirm` confirms,
+`cancel` backs out, menus scroll at a steady clip and never overshoot. The
+player never reads a prompt for a device they are not holding, and never has to
+hold a button to do anything.
+
+The system serves Pillar 4 (Readable in One Turn) at the level of the hands: a
+command the player meant is the command that happens, once. Its guardrails:
+- **One press, one action.** No doubled or eaten presses, across devices and across transitions.
+- **Prompts never lie.** The on-screen glyph always matches the device in use.
+- **Nothing held or timed.** Every action is a discrete press (accessibility commitment).
+
+> Retrofit 2026-10-23 (commit-hook gap at `workflow: full`), written from the existing Overview and Game Feel; no rule changed.
+
 ## Detailed Design
 
 ### Core Rules
@@ -165,6 +182,23 @@ There is no dependency on Game State & Scene Flow, by design (rule 2).
 - Game State & Scene Flow lists Input System as a hard upstream dependency (provisional). This GDD now confirms that interface, and its action list (`confirm`, `cancel`, `menu`, directions) is a subset of rule 1.
 - Content Data Definitions does not yet list the bindings record or Input as a consumer. Add Input to its Interactions table when that GDD is next revised.
 - The systems index lists Input with no dependencies. It should gain a *soft* dependency on Content Data Definitions.
+
+## Tuning Knobs
+
+All knobs are data (the `bindings_default` record and the input config, ADR-0003); none is a code literal.
+
+| Knob | Default | Safe range | Too low | Too high | Bound by |
+|---|---|---|---|---|---|
+| `deadzone` | 0.20 | 0.10–0.30 | Worn sticks drift the leader | Small tilts are ignored; slow walking is hard | `stick_output` |
+| `repeat_delay` | 0.40 s | 0.25–0.60 | One tap skips two menu entries | Long lists feel sticky | `menu_repeat_times` |
+| `repeat_interval` | 0.08 s | 0.05–0.15 | Held directions overshoot | Long lists drag | `menu_repeat_times` |
+| `menu_stick_threshold` | 0.60 | 0.40–0.80 | A diagonal nudge moves the menu | Menus need a hard push | Applied after the deadzone rescale |
+| `pointer_switch_px` | 8 px | 4–32 | A bumped mouse swaps every prompt to keyboard glyphs | Mouse users see pad prompts after moving the mouse | Device switching (rule 3) |
+| Default bindings | `bindings_default` | Any conflict-free set | — | — | Validated at boot (ADR-0003, ADR-0004) |
+
+**How the knobs interact.** `deadzone` rescales the stick before `menu_stick_threshold` is tested, so raising the deadzone also makes menu navigation by stick feel heavier. `repeat_delay` and `repeat_interval` together set how fast a held direction crosses a list (Formulas example: 9 steps in 1.0 s).
+
+> Retrofit 2026-10-23 (commit-hook gap at `workflow: full`), collected from the Formulas variable tables; no value changed.
 
 ## Visual/Audio Requirements
 

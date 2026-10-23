@@ -1,15 +1,16 @@
 # Go back to your planet! — Master Architecture
 
 ## Document Status
-- Version: 4 (synced to ADR-0007–0013 and `architecture-review-2026-10-22c.md`)
-- Last Updated: 2026-10-22
+- Version: 5 (synced to ADR-0012 rev 3 Accepted, the ADR-0002 §11 revision, ADR-0005 §14 and `architecture-review-2026-10-23.md`)
+- Last Updated: 2026-10-23
 - Engine: Godot 4.7.2
-- GDDs Covered: content-data-definitions.md, game-state-scene-flow.md, input-system.md, sprite-camera-presentation.md, stats-damage-resolution.md, turn-battle-system.md, faction-rule-modifiers.md
-- ADRs Referenced: ADR-0001 to ADR-0013. ADR-0001 was Accepted 2026-10-21; ADR-0002 to ADR-0011 and ADR-0013 were Accepted 2026-10-22. ADR-0012 is Proposed and waits for the Overworld GDD.
+- GDDs Covered: content-data-definitions.md, game-state-scene-flow.md, input-system.md, sprite-camera-presentation.md, stats-damage-resolution.md, turn-battle-system.md, faction-rule-modifiers.md, overworld-exploration-encounters.md (rev 4, Approved)
+- ADRs Referenced: ADR-0001 to ADR-0013. ADR-0001 was Accepted 2026-10-21; ADR-0002 to ADR-0011 and ADR-0013 were Accepted 2026-10-22. ADR-0012 was Accepted 2026-10-23; all 13 are Accepted.
 - TD-ARCHITECTURE: 2026-10-21 — CONCERNS, REVISED after CONCERNS (v2)
 - LP-FEASIBILITY: 2026-10-21 — CONCERNS, REVISED after CONCERNS (v2)
 - v3 changes: the Architecture Document Coverage findings of `architecture-review-2026-10-22.md` (BattleReplayController and FlashGate added, the Sprite & Camera row rewritten for ADR-0005 rev 3, the enemy-phase replay data flow added, the TR baseline pointed at `tr-registry.yaml`), plus status updates for the five ADRs accepted today
 - v4 changes: the Architecture Document Coverage findings of `architecture-review-2026-10-22b.md` and `-22c.md`. Module rows rewritten for ADR-0007 (Stats), ADR-0008 (UI Framework), ADR-0009 (Save/Load & Settings), ADR-0010 (Turn Battle), ADR-0011 (Faction Rules) and ADR-0012 (Overworld, Proposed). New rows for Localization (ADR-0013) and Settings. Content Boot registrants updated. New data flows for damage resolution and settings delivery, and the save path rewritten. ADR Audit extended to 13 ADRs. TR baseline and Required ADRs brought up to date
+- v5 changes (2026-10-23): ADR-0012 Accepted (Overworld module row rewritten: `SymbolBrain`, `WorldState.camp_returns`/`chapter_step`, ADR-0002 §11 in-mode fade and `register_camp`); ADR-0005 §14 (overworld profiles, travelling light, DOF mapping); TR baseline 83 requirements across 8 GDDs; Required ADRs and Open Questions updated.
 
 ## Engine Knowledge Gap Summary
 Engine: Godot 4.7.2 | LLM Training Covers: up to ~4.3 | Post-Cutoff: 4.4, 4.5, 4.6, 4.7
@@ -18,7 +19,7 @@ Engine: Godot 4.7.2 | LLM Training Covers: up to ~4.3 | Post-Cutoff: 4.4, 4.5, 4
   - **Rendering**: ADR-0005 pins the approach and probed most of it on 4.7.2 (`PROJECTION_FRUSTUM` + `frustum_offset`, the clip-space sprite quad, pipeline-compilation counters, runtime global uniforms, `SubViewport` defaults). The backend is pinned to **Vulkan with both fallbacks off** (Vulkan is the 4.7.2 default on Windows; the engine reference was corrected). `AreaLight3D` and HDR output are deliberately **not used**. Still open: ADR-0005 Verification Required items (12)–(16), measured in its Migration Step 1 spike, including on the Steam Deck.
   - **UI**: 4.6 dual focus and AccessKit (4.5+). ADR-0003 fixes the input side (routed, then re-injected navigation). ADR-0008 (Accepted) fixes the UI side, with probes on 4.7.2: one focus owner plus hidden focus (`grab_focus(hide_focus)` stated per path), `canvas_items` integer stretch refit to the window size every frame the size changes, plain-`Control` roots for full-rect children, and AccessKit properties. Code-set text is translated exactly once (ADR-0013). Still open: font sharpness at 3× and 4×, and `get_final_transform()` mapping (ADR-0008 Verification items 9 and 10).
   - **Input**: ADR-0003 verified the device-ID constants, `InputMap.action_erase_events()` and re-injection on 4.7.2. Still open: real pad names under SDL3, and Steam Input on the Deck ("Steam Virtual Gamepad").
-  - **Physics/Jolt**: not used. ADR-0012 (Proposed) moves the party with a pure `GroundMover` on a baked `WalkGrid`, with no physics engine for movement or triggers. The risk returns only if that ADR is rejected.
+  - **Physics/Jolt**: not used. ADR-0012 (Accepted) moves the party with a pure `GroundMover` on a baked `WalkGrid`, with no physics engine for movement or triggers. The risk returns only if that ADR is rejected.
 - **MEDIUM RISK**: Animation (Tween/IK changes; `AnimatedSprite3D` `stop()` and `animation` both reset `frame` to 0, probed, ADR-0005 §1), Audio (one default flipped: `area_mask`).
 - **LOW RISK**: Core scripting fundamentals (`RefCounted`, `Resource`, signals, `RandomNumberGenerator`, typed `Dictionary[K, V]`): exercised in the shipped battle code and probed for the ADRs. Node lifecycle order was **measured**, not assumed (ADR-0004: an autoload's `_ready()` runs after the main scene's `_enter_tree()`).
 
@@ -46,7 +47,7 @@ the verified behaviours as rules.
 │               │ Quirk State System (not built), Combo System & Codex (not
 │               │ built), Enemy AI (collapses into Faction Rule Modifiers at
 │               │ MVP scope), Overworld Exploration & Encounters (not built —
-│               │ ADR-0012 Proposed, blocked on its GDD), Camp & Party
+│               │ GDD Approved, ADR-0012 Accepted), Camp & Party
 │               │ Management (not built), Leveling & Loyalty (not built,
 │               │ Vertical Slice), Faction Reputation & Endings (not built,
 │               │ MVP-lite→Alpha), Items/Equipment & Shops (not built,
@@ -73,9 +74,9 @@ Layer order reused from `design/gdd/systems-index.md`'s own dependency map.
 **Build-order note**: Overworld Exploration & Encounters is "the system
 requested next" only in the sense of *design* priority. Its three prerequisite
 ADRs (Game State & Scene Flow, Input System, Sprite & Camera Presentation) are
-Accepted. Its own ADR-0012 is written but Proposed: it needs
-`design/gdd/overworld-exploration-encounters.md` first, then acceptance, then
-those three systems' implementation before its code can start. See Required ADRs.
+Accepted, its GDD is Approved (rev 4) and its own ADR-0012 is Accepted (2026-10-23). What remains before its code starts is
+the implementation of those three prerequisite systems (Game State, Input,
+Sprite & Camera) and the overworld test plan. See Required ADRs.
 
 ## Module Ownership
 
@@ -99,7 +100,7 @@ those three systems' implementation before its code can start. See Required ADRs
 | Combo System & Codex | Combo matching, Codex unlocks | combo-fired event | Quirk State, Turn Battle | Not yet implemented |
 | Faction Rule Modifiers | Per-faction rule/AI/presentation, stateless per battle | **ADR-0011 (Accepted, retroactive)**: 10-method `FactionRule` contract (`specials_allowed`, `move_allowed`, `apply_round_upkeep`, `register_resolution_hooks`, `choose_enemy_action -> EnemyAction`, banner/tooltip text, identity/banner colours); `FactionRuleRegistry` (`register`, `create`, `known_rule_classes`, `validator_for`); the `FactionRule` record type (`rule_class`, `params`, `texts`, `colors`, `ref_ids`) | Turn Battle (consulted by), Stats & Damage (hooks), Content Data, Localization (`texts` through `LocText`) | **Implemented** (Bureaucratia, MegaCorp), LOW risk. Not yet built: the registry, rule records, `Combatant.record_id` (MegaCorp's AI still tells enemies apart by name) |
 | Enemy AI | Collapses into Faction Rule Modifiers at MVP scope | — | — | — |
-| Overworld Exploration & Encounters | Map state, the party's map and position (`WorldState`, single owner), encounters, camp spots | **ADR-0012 (Proposed)**: `GroundMover.step()` (pure) on a `WalkGrid` baked from a `TileMapLayer`; `OverworldMode` (`start_encounter`, `on_thawed`); injected `WorldState`; `map_`/`enc_` record types; `MapEntryPayload`, `CampEntryPayload` | Game State, Input (`get_move_vector()`), Content Data, Sprite & Camera (its diorama, `FollowCamera` from `WalkGrid.bounds()`, `occupied_*`/`dungeon` profiles), Save/Load (a participant), Dialogue | No physics engine. `TileMapLayer` read at load time only, LOW risk. Not yet implemented; ADR-0012 can't be Accepted until its GDD exists |
+| Overworld Exploration & Encounters | Map state, the party's map and position (`WorldState`, single owner, incl. `camp_returns` and the interim `chapter_step`), symbol AI, encounters, checkpoints, camp registration | **ADR-0012 (Accepted 2026-10-23)**: `GroundMover.step()` (pure) on a `WalkGrid` baked from a `TileMapLayer` (SAFE tags, batched `set_blocked`, 4-connected components, pinned `AStarGrid2D`); pure `SymbolBrain`; `OverworldMode` (`start_encounter`, `on_thawed`, `probe()`); injected `WorldState`; `map_`/`enc_`/`ostage_` record types; `MapEntryPayload`, `CampEntryPayload`; `OverworldConfig.validate()` (I1–I18); `tools/ci/validate_maps.gd` | Game State (incl. ADR-0002 §11 `request_in_mode_fade`, `register_camp`), Input (`get_move_vector()`), Content Data, Sprite & Camera (its diorama, `FollowCamera` from `WalkGrid.bounds()`, the §14 overworld profiles and travelling light), Save/Load (a participant), Localization (`LocText`), Dialogue | No physics engine. `TileMapLayer` read at load time only. 2 ms p99 budget (`performance.per_system.overworld_ms`). Not yet implemented |
 | Camp & Party Management | Active squad at camp | swap-party hook | Squad Roster, Game State | Not yet implemented |
 | Leveling & Loyalty | XP/level, loyalty, unlocks | — | Stats & Damage, Squad Roster, Dialogue | Not yet implemented (Vertical Slice) |
 | Faction Reputation & Endings | Reputation counters, ending choice | — | Squad Roster, Dialogue | Not yet implemented (MVP-lite → Alpha) |
@@ -281,13 +282,13 @@ those three systems' implementation before its code can start. See Required ADRs
 | ADR-0009: Save/Load & Settings | Core | Accepted | ✅ (22b F6–F8 advisory) | ✅ TR-input-001 (persistence), TR-presentation-022 | None |
 | ADR-0010: Turn Battle System | Feature | Accepted (retroactive) | ✅ | ✅ TR-turnbattle-001..004 | None. Flee rules wait for a GDD section |
 | ADR-0011: Faction Rule Modifiers | Feature | Accepted (retroactive) | ✅ | ✅ TR-factionrules-001, 002 | None |
-| ADR-0012: Overworld Exploration & Encounters | Feature | **Proposed** | ✅ | ❌ no GDD, so no TR IDs | None. Blocked on its GDD |
+| ADR-0012: Overworld Exploration & Encounters | Feature | **Accepted** 2026-10-23 | ✅ | ✅ TR-overworld-001..019 (`architecture-review-2026-10-23.md`) | None. Amends ADR-0001, ADR-0002 (§11 revision) and ADR-0005 (§14) |
 | ADR-0013: Localization | Foundation (cross-cutting) | Accepted | ✅ | ✅ TR-content-012 | None |
 
 Dependency order (`.claude/scripts/adr-dep-graph.sh`, acyclic, 40 edges):
 ADR-0001 → ADR-0002 → ADR-0004 → ADR-0006 → ADR-0003 → ADR-0005 → ADR-0007 →
 ADR-0013 → ADR-0008 → ADR-0011 → ADR-0009 → ADR-0010, with ADR-0012
-(Proposed) after ADR-0001–0005. No Accepted ADR depends on a Proposed one.
+(Accepted 2026-10-23) after ADR-0001–0005 and ADR-0013. All 13 ADRs are Accepted.
 
 Open advisory items from the 2026-10-22 review, not yet folded into their
 ADRs: E5 (ADR-0005, `ALPHA_SCISSOR` and early-z), E6 (ADR-0006, the boss-light
@@ -298,13 +299,13 @@ from Windows). The control manifest lists each one.
 
 ### Technical Requirements Baseline
 
-The baseline lives in **`docs/architecture/tr-registry.yaml`** (64 requirements
-across 7 GDDs as of 2026-10-22), with the GDD-to-ADR matrix in
+The baseline lives in **`docs/architecture/tr-registry.yaml`** (83 requirements
+across 8 GDDs as of 2026-10-23), with the GDD-to-ADR matrix in
 `docs/architecture/requirements-traceability.md`. This document no longer keeps
 its own copy: v2's 17-row table used provisional IDs from before the registry
 existed, and the registry is now the only source of IDs.
 
-Coverage at `architecture-review-2026-10-22c.md`: 60 of 64 covered by
+Coverage at `architecture-review-2026-10-23.md` plus ADR-0012's acceptance and ADR-0005 §14: 79 of 83 covered by
 Accepted ADRs, 0 resting on Proposed ADRs, 4 partial, 0 gaps. The 4 partials:
 - TR-content-007/008/010 (Content Data, **Foundation**): immutability is
   protected by discipline only; the report entry shape and `ERROR_SCREEN_CAP`
@@ -313,8 +314,8 @@ Accepted ADRs, 0 resting on Proposed ADRs, 4 partial, 0 gaps. The 4 partials:
 - TR-stats-005 (Stats, Core): `Enemy.reward` ranges land with the
   enemy-record migration.
 
-Not yet in the registry: Flee (needs a section in `turn-battle-system.md`) and
-every Overworld requirement (needs its GDD).
+Not yet in the registry: Flee (needs a section in `turn-battle-system.md`). The
+Overworld's 19 requirements are TR-overworld-001..019.
 
 ## Required ADRs
 
@@ -325,10 +326,10 @@ ADR-0007 Stats & Damage Resolution (retroactive), ADR-0008 UI Framework,
 ADR-0009 Save/Load & Settings, ADR-0010 Turn Battle System (retroactive),
 ADR-0011 Faction Rule Modifiers (retroactive), ADR-0013 Localization.
 
-**Proposed:** ADR-0012 Overworld Exploration & Encounters. It can't be Accepted
-until `design/gdd/overworld-exploration-encounters.md` exists and
-`/architecture-review` assigns its TR IDs. It needs no physics, so the Jolt
-question is closed once it is Accepted.
+**Accepted 2026-10-23:** ADR-0012 Overworld Exploration & Encounters (GDD rev 4
+Approved; TR-overworld-001..019). It needs no physics, so the Jolt question is
+closed. Its ADR-0002 §11 revision and ADR-0005 §14 amendment are in effect.
+
 
 **Owed amendments (not new ADRs):** an ADR-0001 amendment for the
 TR-content-007/008/010 partials; ADR-0009's advisory F6–F8 before the first
@@ -407,10 +408,10 @@ allocation-free work per frame (ADR-0002, ADR-0003, ADR-0006).
   as children of `ModeHost`; the Overworld is frozen by detaching it; Game
   State becomes ChapterFlow's parent, and ChapterFlow stays as the interim
   Overworld until Overworld Exploration ships.
-- **Overworld movement/map representation**: proposed by ADR-0012
+- **Overworld movement/map representation**: **resolved** by ADR-0012
   (continuous movement on a logical ground plane, `GroundMover` on a
-  `WalkGrid` baked from a `TileMapLayer`, no physics). Settled when ADR-0012
-  is Accepted, after its GDD.
+  `WalkGrid` baked from a `TileMapLayer`, no physics), Accepted 2026-10-23
+  after its GDD was Approved.
 - **Quirk State / Combo System's relationship to today's `SpecialEffect`
   enum (QQ-02)** (owned by `SquadSpecials`): `INTENT UNKNOWN`, carried from
   `turn-battle-system.md`'s own Open Questions. ADR-0006 §10 leaves a slot for

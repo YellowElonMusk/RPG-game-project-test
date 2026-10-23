@@ -4,9 +4,9 @@ Engine: Godot 4.7.2
 
 ## Coverage Summary
 - Total requirements: 83 (19 new: TR-overworld-001..019; TR-gamestate-001 and -004 reworded)
-- Covered (Accepted ADR): 78 (94%)
+- Covered (Accepted ADR): 79 (95%)
 - Covered (Proposed ADR): 0
-- Partial: 5 (TR-content-007, 008, 010; TR-stats-005; TR-overworld-017)
+- Partial: 4 (TR-content-007, 008, 010; TR-stats-005)
 - Gaps: 0
 
 Only **Accepted** ADRs count as covered. All 13 ADRs (ADR-0001 to ADR-0013) are Accepted. ADR-0012 was Accepted 2026-10-23, and ADR-0002 §11 (in-mode fade, `register_camp`) is in effect with it.
@@ -15,7 +15,7 @@ Only **Accepted** ADRs count as covered. All 13 ADRs (ADR-0001 to ADR-0013) are 
 
 | Requirement ID | GDD | System | Requirement | ADR Coverage | Status |
 |---|---|---|---|---|---|
-| TR-content-001 | content-data-definitions.md | Content Data | 8 record types (incl. `bindings_`), permanent prefixed IDs, aliases | ADR-0001; ADR-0003 adds `bindings_` (ADR-0012, Proposed, would add `map_`/`enc_`) | ✅ |
+| TR-content-001 | content-data-definitions.md | Content Data | 11 record types (incl. `bindings_`, `map_`, `enc_`, `ostage_`), permanent prefixed IDs, aliases | ADR-0001; ADR-0003 adds `bindings_`; ADR-0012 adds `map_`/`enc_`/`ostage_` | ✅ |
 | TR-content-002 | content-data-definitions.md | Content Data | Unloaded → Loading → Validating → Ready \| Failed, terminal | ADR-0001 | ✅ |
 | TR-content-003 | content-data-definitions.md | Content Data | Full-set validation, two severities, headless check | ADR-0001 + ADR-0004 | ✅ |
 | TR-content-004 | content-data-definitions.md | Content Data | `get_record` / `has_record` / `all_records` / `resolve_alias` | ADR-0001 | ✅ |
@@ -95,7 +95,7 @@ Only **Accepted** ADRs count as covered. All 13 ADRs (ADR-0001 to ADR-0013) are 
 | TR-overworld-014 | overworld-exploration-encounters.md | Overworld | `WorldState` single owner; save moments; Continue | ADR-0012 §4; ADR-0009 §3 | ✅ |
 | TR-overworld-015 | overworld-exploration-encounters.md | Overworld | `probe()`, prompt, lockouts, pointer ignored | ADR-0012 §6; ADR-0003 | ✅ |
 | TR-overworld-016 | overworld-exploration-encounters.md | Overworld | Invariants I1–I18; `validate_maps.gd` | ADR-0012 §3, §9 | ✅ |
-| TR-overworld-017 | overworld-exploration-encounters.md | Overworld | Profile per map × faction × stage, `chase_visibility`, followers, sprite clock | ADR-0012 §2, §7; ADR-0005 annotations owed | ⚠️ |
+| TR-overworld-017 | overworld-exploration-encounters.md | Overworld | Profile per map × faction × stage, `chase_visibility`, followers, sprite clock | ADR-0012 §2, §7; ADR-0005 §14 | ✅ |
 | TR-overworld-018 | overworld-exploration-encounters.md | Overworld | Overworld text as `LocText`; timed text holds | ADR-0013 §1–§3; ADR-0008 | ✅ |
 | TR-overworld-019 | overworld-exploration-encounters.md | Overworld | Interim flag registry; no `Engine.time_scale` | ADR-0012 §4, Guidelines | ✅ |
 
@@ -108,7 +108,6 @@ No requirement is without an ADR. Remaining work:
 | TR-content-007/008/010 (partial) | ADR-0001 amendment or catalog story notes: immutability guard, report entry format and `ERROR_SCREEN_CAP`, the 500-record load benchmark | Foundation | LOW |
 | TR-stats-005 (partial) | `Enemy.reward` range validator lands with the enemy-record migration (ADR-0001 Step 3 / ADR-0010 §3) | Core | LOW |
 | Flee | `turn-battle-system.md` has no Flee section; ADR-0010 §5 blocks Flee-shipping stories on one plus a new TR | Feature | LOW |
-| TR-overworld-017 (partial) | ADR-0005 annotation text owed: profiles per faction × stage, liberated profile, `sky_card`, interior light, blur bounds, capture-ID tags (incl. `SKY`) | Core | MEDIUM |
 
 ## Superseded Requirements
 

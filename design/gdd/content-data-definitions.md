@@ -41,7 +41,7 @@ Combo discovery ("the combo was always there", Pillar 3) is served by this catal
 
 | Type | ID prefix | Purpose | Key fields | Field meaning owned by |
 |---|---|---|---|---|
-| Faction | `faction_` | A human nation or alien civilization | `display_name`, `kind` (`human_nation` \| `alien`), `base_shape` (`organic` for nations; `square` \| `circle` \| `wedge` \| `star` for aliens), `signature_color` (hex; **alien only**), `backup_icon_id` (alien only), `rule_id` (alien only → FactionRule) | Art bible §3–4 (shape, color); Faction Rule Modifiers (`rule_id`) |
+| Faction | `faction_` | A human nation or alien civilization | `display_name`, `kind` (`human_nation` \| `alien`), `base_shape` (`organic` for nations; `square` \| `circle` \| `wedge` \| `star` for aliens), `signature_color` (hex; **alien only**), `backup_icon_id` (alien only), `rule_id` (alien only → FactionRule), `patrol_archetype_id` (alien only; asset ID of its overworld patrol symbol, 2026-10-23) | Art bible §3–4 (shape, color); Faction Rule Modifiers (`rule_id`); Overworld (`patrol_archetype_id`) |
 | Character | `char_` | A recruitable squad misfit | `display_name`, `nation_id` (→ Faction, `human_nation`), `archetype_line` (one-sentence description of the prop/pose joke), `stat_block`, `move_ids` (→ Move), `signature_move_id` (→ Move, unlocked by loyalty), `sprite_set_id`, `portrait_id` | Stats & Damage (`stat_block`); Turn Battle (`move_ids`); Leveling & Loyalty (`signature_move_id`) |
 | Enemy | `enemy_` | A hostile combatant, including bosses | `display_name`, `faction_id` (→ Faction, `alien`), `is_boss`, `stat_block`, `move_ids`, `ai_profile_id` (→ AIProfile, *reserved*), `sprite_set_id`, `reward` | Stats & Damage (`stat_block`, `reward`); Enemy AI (`ai_profile_id`) |
 | Move | `move_` | A command a combatant can use | `display_name`, `target_type`, `cost`, `effects` (list of EffectDescriptor), `animation_id`, `flavor_text` | Turn Battle (`target_type`); Stats & Damage (`cost`) |
@@ -49,7 +49,10 @@ Combo discovery ("the combo was always there", Pillar 3) is served by this catal
 | Combo | `combo_` | A named payoff of cashing quirk states | `display_name` (title-card text), `required_state_ids` (→ QuirkState), `required_character_ids` (→ Character; empty = any), `effects`, `punchline_text`, `animation_id`, `codex_text` | Combo System & Codex |
 | Item | `item_` | A consumable, piece of equipment, or key item (reserved for Vertical Slice; no MVP records required) | `display_name`, `description`, `kind` (`consumable` \| `equipment` \| `key`), `effects`, `price` | Items, Equipment & Shops |
 | InputBindings | `bindings_` | The default key and gamepad bindings (one record, `bindings_default`) | `bindings` (list of `action:device:input` entries) | Input System (meaning; semantic validation registered per ADR-0003/ADR-0004) |
-| *reserved* | | FactionRule, AIProfile, Encounter/Region, Conversation, LoyaltyQuest, Ending | | Faction Rule Modifiers; Enemy AI; Overworld; Dialogue; Leveling & Loyalty; Faction Reputation |
+| Map | `map_` | An overworld map (2026-10-23, ADR-0012) | `display_name`, `faction_id` (→ Faction, optional), `base_stage`, `stage_table` (flag → stage), `critical_path` (legs), `region_liberation_flag`, `liberated_profile_id`, `liberated_kit_id` (asset IDs), `encounter_zone_ids` (→ Encounter), `zone_rate`, `new_game_entry`. The scene path is derived from the ID, never stored (Rule 3) | Overworld Exploration & Encounters |
+| Encounter | `enc_` | One battle the overworld can start (2026-10-23, ADR-0012) | `enemy_ids` (→ Enemy), `battle_stage_id` (asset ID), `faction_id` (→ Faction), `is_boss`, `can_flee`, `retreat_allowed`, `respawn`, `victory_payoff` | Overworld (meaning; descriptor fields: Game State rule 6) |
+| OccupationStage | `ostage_` | Presentation and density parameters for one faction × stage (2026-10-23, ADR-0012) | `faction_id` (→ Faction), `stage` (1–3), clutter caps per kind (non-decreasing in stage), civilian density and pool, `lighting_profile_id`, `set_kit_id`, `ambience_bed_id`, name-card subtitle, `liberation_grumble_min`, `decree_gag_by_flag` | Overworld Exploration & Encounters |
+| *reserved* | | FactionRule, AIProfile, Region, Conversation, LoyaltyQuest, Ending | | Faction Rule Modifiers; Enemy AI; Overworld; Dialogue; Leveling & Loyalty; Faction Reputation |
 
 Character and Enemy are deliberately separate types: each has fields the other does not (loyalty data only on characters, AI profile and rewards only on enemies). To avoid duplicating shared definitions they reuse two sub-records, `stat_block` and `move_ids`, which are defined once.
 
@@ -117,7 +120,7 @@ The id_valid formula is defined as:
 | id | string | 1+ characters | data file | The record's `id` field |
 | ID_MAX_LENGTH | int | 64 | constant | Maximum ID length (Rule 2). A constant, not a knob: IDs are permanent once shipped, so the limit cannot shrink later |
 | ID_PATTERN | regex | `^[a-z][a-z0-9_]*$` | constant | Lowercase ASCII snake_case (Rule 2) |
-| type_prefix | string | one per record type (`faction_`, `char_`, `enemy_`, `move_`, `quirk_`, `combo_`, `item_`, `bindings_`) | constant | Required prefix for the record's type (Rule 1 table) |
+| type_prefix | string | one per record type (`faction_`, `char_`, `enemy_`, `move_`, `quirk_`, `combo_`, `item_`, `bindings_`, `map_`, `enc_`, `ostage_`) | constant | Required prefix for the record's type (Rule 1 table) |
 | id_valid | bool | true / false | calculated | Whether the ID passes the identity rule; false is an error whose `record_id` is the ID |
 
 **Output Range:** Boolean. The 64-character boundary is inclusive: 64 loads, 65 is an error (AC-9).
