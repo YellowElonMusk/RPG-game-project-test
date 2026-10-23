@@ -62,8 +62,8 @@
 ## Files
 
 - `src/data/content_catalog.gd` (`REFERENCE_SCHEMA` with the 14 reference fields; `register_acyclic_field()`; the reference pass for missing, wrong-type, wrong-kind, self- and duplicate references; static `find_reference_cycles()` and the cycle check over registered acyclic fields)
-- `tests/unit/content_data/content_data_reference_test.gd` (12 test functions) and its `.uid`
-- `tests/unit/content_data/fixtures/reference_defects/` (`missing_id/`, `wrong_type_move_ids/`, `wrong_kind_nation_id/`, `cycle_3/`, `duplicate_list_entry/`, `alias_reference_ok/`, `valid_references/`)
+- `tests/unit/content_data/content_data_reference_test.gd` (14 test functions) and its `.uid`
+- `tests/unit/content_data/fixtures/reference_defects/` (`missing_id/`, `wrong_type_move_ids/`, `wrong_kind_nation_id/`, `cycle_3/`, `duplicate_list_entry/`, `alias_reference_ok/`, `valid_references/`, `self_reference/`, `duplicate_missing/`)
 - `tests/unit/content_data/fixtures/valid_one_of_each/` (changed: `char_baguette_thrower.nation_id` now names a new `faction_human_republic`, because `nation_id` must name a `human_nation`)
 
 ## QA Test Cases

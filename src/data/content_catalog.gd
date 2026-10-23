@@ -547,15 +547,29 @@ func _find_record_type(id: String) -> StringName:
 	return &""
 
 
-# The cycle check: builds the edge map from the registered acyclic fields,
-# after alias resolution, and reports each cycle once. Self-edges are left
-# out because the reference pass already reports every self-reference. The
-# entry is located at the member that sorts first; its field is that member's
-# registered field whose name sorts first; the other members follow in
-# related_locations in cycle order.
+# The cycle check: reports each cycle in the registered acyclic fields once.
+# The entry is located at the member that sorts first; its field is that
+# member's registered field whose name sorts first; the other members follow
+# in related_locations in cycle order.
 func _run_cycle_checks() -> void:
-	var edges: Dictionary = {}
 	var node_fields: Dictionary = {}
+	var edges: Dictionary = _build_acyclic_edge_map(node_fields)
+	for cycle: Array in find_reference_cycles(edges):
+		var first_id: String = cycle[0]
+		var first_fields: Array = node_fields[first_id]
+		var related_locations: Array[Dictionary] = []
+		for member: String in cycle.slice(1):
+			related_locations.append({"file_path": _record_path_of(member), "record_index": 0})
+		_add_report_entry(&"error", first_id, first_fields[0], _record_path_of(first_id),
+				"This record is part of a reference cycle.", related_locations)
+
+
+# Builds `{record id: Array of target ids}` from the registered acyclic fields,
+# after alias resolution, and fills `node_fields` with each record's sorted
+# registered fields. Self-edges are left out because the reference pass
+# already reports every self-reference.
+func _build_acyclic_edge_map(node_fields: Dictionary) -> Dictionary:
+	var edges: Dictionary = {}
 	for type: StringName in _acyclic_fields:
 		var fields: Array = (_acyclic_fields[type] as Array).duplicate()
 		fields.sort()
@@ -576,15 +590,7 @@ func _run_cycle_checks() -> void:
 					if resolved != id:
 						targets.append(resolved)
 			edges[id] = targets
-
-	for cycle: Array in find_reference_cycles(edges):
-		var first_id: String = cycle[0]
-		var first_fields: Array = node_fields[first_id]
-		var related_locations: Array[Dictionary] = []
-		for member: String in cycle.slice(1):
-			related_locations.append({"file_path": _record_path_of(member), "record_index": 0})
-		_add_report_entry(&"error", first_id, first_fields[0], _record_path_of(first_id),
-				"This record is part of a reference cycle.", related_locations)
+	return edges
 
 
 # Source file of a stored record of any type; "" when it is not stored.

@@ -164,3 +164,25 @@ func test_reference_through_alias_loads_ready_with_no_errors() -> void:
 ## Edge case: every REFERENCE_SCHEMA field resolves, so 0 error entries.
 func test_valid_references_fixture_loads_ready_with_no_errors() -> void:
 	_assert_ready_with_no_errors("valid_references")
+
+
+## Edge case: a real self-reference through load_all(). char_x.move_ids names
+## char_x itself, which is also a wrong type for move_ids; the value gives
+## exactly one error, never a self-reference plus a wrong-type entry.
+func test_self_reference_through_load_all_reports_one_error() -> void:
+	_assert_one_reference_error("self_reference", "char_x", "move_ids")
+
+
+## Edge case: a value that is both missing and repeated gives two errors on
+## the same field, one for each rule, because the two checks are independent.
+func test_repeated_missing_value_reports_missing_and_duplicate_errors() -> void:
+	var catalog: ContentCatalogService = auto_free(ContentCatalogService.new())
+
+	var result: Error = catalog.load_all(ROOT.path_join("duplicate_missing"))
+
+	assert_int(result).is_equal(FAILED)
+	var errors: Array[Dictionary] = _errors(catalog)
+	assert_int(errors.size()).is_equal(2)
+	for entry: Dictionary in errors:
+		assert_str(entry["record_id"]).is_equal("char_x")
+		assert_str(String(entry["field"])).is_equal("move_ids")

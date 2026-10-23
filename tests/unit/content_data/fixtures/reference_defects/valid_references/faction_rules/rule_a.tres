@@ -5,4 +5,4 @@
 [resource]
 script = ExtResource("1_a")
 id = "rule_a"
-ref_ids = PackedStringArray("enemy_a")
+ref_ids = PackedStringArray("enemy_a", "move_a")
