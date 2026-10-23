@@ -1,7 +1,7 @@
 # Story 012: `resolve_alias` resolves a record's declared alias to its live ID
 
 > **Epic**: Content Catalog
-> **Status**: In Progress
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -89,7 +89,7 @@
 **Required evidence**:
 - Logic: `tests/unit/content_data/content_data_alias_resolve_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (see Completion Notes)
 
 ---
 
@@ -97,3 +97,12 @@
 
 - Depends on: `production/epics/content-catalog/story-010-id-format-validation.md`
 - Unlocks: `production/epics/content-catalog/story-013-alias-shadowing-and-double-declaration.md`, `production/epics/content-catalog/story-028-id-manifest-ci.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-24
+**Criteria**: 2/2 passing (AC-11, AC-11b). None deferred.
+**Deviations**: ADVISORY: AC-11b was added to this story at QL-STORY-READY from GDD Rule 8 ("IDs are well-formed and unique (aliases included)"), but the GDD's own Acceptance Criteria list has no matching entry; game-designer should add it for traceability. Notes: `resolve_alias()` and the alias map already existed from story 002, so AC-11 needed only fixtures and tests. The alias map fills during `_load_one()`, not after the load as the first Implementation Note says; the end state is the same. Code review moved the F1 condition into one helper, `_breaks_id_format()`, shared by the id and alias checks, and added the `two_malformed/` fixture and test. That a malformed alias stays out of the alias map cannot be observed from outside, because a FAILED catalog refuses every lookup; accepted.
+**Test Evidence**: `tests/unit/content_data/content_data_alias_resolve_test.gd` (11 functions); suite 72/72, 0 orphans, exit 0 on Godot 4.7.2. Watched fail (gdUnit `-c`): disabling the alias check failed the 4 malformed-alias tests and the refused-lookup test; changing the loop's `continue` to `break` failed the two-malformed test; forcing `_breaks_id_format()` false failed the alias tests and story 010's id-format tests. Commits 4628f00, 398c3c5.
+**Reviewed by**: lead-programmer (LP-CODE-REVIEW APPROVE); QL-TEST-COVERAGE ADEQUATE; /code-review APPROVED WITH SUGGESTIONS (both applied)
