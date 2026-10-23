@@ -42,10 +42,25 @@ commands:
   run: "godot --path . --windowed --resolution 1280x720"
   smoke: "godot --headless --quit-after 5"
 
+platform:
+  # 2026-10-22, user decision. Vulkan is required on every target (no D3D12
+  # fallback); Steam Deck runs SteamOS (Linux) at 1280x800 (16:10).
+  targets: ["Windows", "Linux/SteamOS (Steam Deck, native Linux export)"]
+  rendering_backend: "Vulkan (required, no fallback)"
+  min_spec: "GTX 1080-class desktop GPU, 8 GB system RAM; Steam Deck must run smoothly"
+
 performance:
   target_framerate: 60
   frame_budget_ms: 16.6
-  draw_call_limit: 2000
+  # 2026-10-22, user accepted the technical director's proposal (ADR-0005 review 6):
+  # battle = 300 3D draw calls (incl. SetLight cascades) + 100 canvas/HUD.
+  draw_call_limit: 400
+  frame_time_p99_ms: 16.6
+  frame_time_worst_ms: 33
+  # 2026-10-23, user accepted the technical director's proposal (Overworld GDD OQ-19,
+  # ADR-0012 TD-ADR review): per-system p99 shares of frame_budget_ms.
+  per_system:
+    overworld_ms: 2.0   # symbol stepping + notice searches + repaths, p99 (GDD AC-46)
 
 testing:
   framework: "gdUnit4"

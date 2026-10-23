@@ -6,7 +6,7 @@
 > **Last Verified**: 2026-10-13
 > **Implements Pillar**: Readable in One Turn (via the `inspect` action and consistent, device-aware prompts)
 > **Amendment (2026-10-22)**: `fast_forward` is a button that may be tapped or held, not a hold-only action. In battle replays a tap latches fast-forward and Cancel clears it, per Sprite & Camera Presentation rule 9 (creative-director ruling of the 2026-10-22 `/design-review`); Dialogue may still use it as a hold. OS key-repeat echoes never produce a second `pressed` (rule 2). Input's own behavior is otherwise unchanged.
-> **Follow-up (2026-10-22, fourth `/design-review` ruling 1)**: the battle-replay latch has one level. A `fast_forward` or `confirm` press (or a click on the replay prompt) speeds plain beats only; knockouts and the first boss entrance are sped only with the opt-in "Speed up all replay beats" setting. Input's own behavior is unchanged.
+> **Follow-up (2026-10-22, fourth `/design-review` ruling 1)**: the battle-replay latch has one level. A `fast_forward` or `confirm` press (or a click on the replay prompt) speeds every beat's wind-up, knockouts included (the slump hold after a knockout always plays at normal speed). The first boss entrance is sped only with the opt-in "Speed up boss entrances" setting. (Updated 2026-10-22 to the presentation GDD revision 6 rulings: knockouts became plain beats, and the setting was renamed from "Speed up all replay beats".) Input's own behavior is unchanged.
 
 ## Summary
 
@@ -175,12 +175,12 @@ None of its own. Button-prompt art (keyboard keys, mouse, and Xbox / PlayStation
 - **Zero perceived lag:** an action is reported in the same frame the device reports it. Input adds no buffering or smoothing beyond the deadzone rescale.
 - **Menus fly but don't overshoot:** the 0.40 s repeat delay stops a single tap from skipping two entries, and the 0.08 s interval scrolls long lists quickly. Both are tuned by feel.
 - **Prompts never lie:** the moment the player touches a different device, every on-screen prompt matches it. A prompt showing the wrong device makes a turn-based game feel broken.
-- **Fast-forward never costs a punchline by accident.** In a battle replay, one tap of `fast_forward` or `confirm` speeds up the rest of that replay's plain beats, and `cancel` returns it to normal speed at once; the next replay always starts at normal speed. No press ever speeds a knockout or the first boss entrance unless the player has turned on "Speed up all replay beats" (Sprite & Camera Presentation rules 9 and 13). In Dialogue, holding `fast_forward` speeds text and letting go returns it to normal. That matters for a comedy game where players will want to see the punchlines.
+- **Fast-forward never costs a punchline by accident.** In a battle replay, one tap of `fast_forward` or `confirm` speeds up the rest of that replay's beats, knockouts included, and `cancel` returns it to normal speed at once; the next replay always starts at normal speed. A knockout's slump hold always plays at normal speed, so the punchline still lands. No press ever speeds the first boss entrance unless the player has turned on "Speed up boss entrances" (Sprite & Camera Presentation rules 9 and 13). In Dialogue, holding `fast_forward` speeds text and letting go returns it to normal. That matters for a comedy game where players will want to see the punchlines.
 
 ## UI Requirements
 
 - **Button prompts** everywhere an action is shown, drawn for the active device and `pad_style` (rule 4).
-- **Focus sync:** hovering with the mouse moves keyboard/gamepad focus to the same element (rule 3).
+- **Focus sync:** hovering with the mouse moves keyboard/gamepad focus to the same element once the pointer has moved `pointer_switch_px` since the screen opened (rule 3).
 - **Remap screen (Vertical Slice):** lists every action with its keyboard and gamepad bindings, captures a new key or button, rejects conflicts with a clear message, has "Restore defaults", and includes "swap confirm/cancel".
 
 > **📌 UX Flag — Input System**: This system has UI requirements (button prompts, focus sync, and the Vertical Slice remap screen). In Pre-Production, run `/ux-design` for the remap screen and the prompt conventions before writing epics.

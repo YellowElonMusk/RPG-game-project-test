@@ -36,7 +36,7 @@ A satirical turn-based RPG: the player recruits a squad of mismatched "misfit" h
 | 8 | Combo System & Codex | Gameplay | MVP | Not Started | — | Quirk State System, Turn Battle System, Stats & Damage Resolution |
 | 9 | Faction Rule Modifiers | Gameplay | MVP | Reverse-Documented | design/gdd/faction-rule-modifiers.md | Turn Battle System, Quirk State System, Stats & Damage Resolution |
 | 10 | Enemy AI (inferred) | Gameplay | MVP | Not Started | — | Turn Battle System, Stats & Damage Resolution, Faction Rule Modifiers |
-| 11 | Overworld Exploration & Encounters | Gameplay | MVP | Not Started | — | Game State & Scene Flow, Input System, Content Data Definitions, Sprite & Camera Presentation, Dialogue Banter & Quests |
+| 11 | Overworld Exploration & Encounters | Gameplay | MVP | Approved | design/gdd/overworld-exploration-encounters.md | Game State & Scene Flow, Input System, Content Data Definitions, Sprite & Camera Presentation, Dialogue Banter & Quests |
 | 12 | Squad Roster & Recruitment | Progression | MVP | Not Started | — | Content Data Definitions |
 | 13 | Camp & Party Management | Progression | MVP | Not Started | — | Squad Roster & Recruitment, Game State & Scene Flow |
 | 14 | Leveling & Loyalty | Progression | Vertical Slice | Not Started | — | Stats & Damage Resolution, Squad Roster & Recruitment, Dialogue Banter & Quests |
@@ -182,10 +182,10 @@ Effort: S = 1 session, M = 2–3 sessions, L = 4+ sessions (a session is one foc
 | Metric | Count |
 |--------|-------|
 | Total systems identified | 21 |
-| Design docs started | 7 |
+| Design docs started | 8 |
 | Design docs reviewed | 0 |
 | Design docs approved | 0 |
-| MVP systems designed | 7/16 |
+| MVP systems designed | 8/16 |
 | Vertical Slice systems designed | 0/5 |
 
 ---

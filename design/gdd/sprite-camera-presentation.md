@@ -1,6 +1,6 @@
 # Sprite & Camera Presentation
 
-> **Status**: In Review (revision 6, pending a targeted re-review)
+> **Status**: In Review (revision 7, pending a short re-review)
 > **Author**: user + agents
 > **Last Updated**: 2026-10-22
 > **Last Verified**: 2026-10-22
@@ -18,7 +18,8 @@
 >   - **(6)** The gating split.
 >   - **(7)** Mechanism and procedure moved out: to ADR-0005, to ADR-0006 and to the new test plan `production/qa/test-plans/sprite-camera-presentation-test-plan.md`. Rules are now guarantees, knobs and formulas, and ACs are observable outcomes with test-plan procedure IDs.
 >
->   The 4(D1–D4) art-direction rulings were adopted in autonomous mode; the user may veto them (Open Question 18).
+>   The four (D1–D4) art-direction rulings were adopted in autonomous mode and **ratified by the user on 2026-10-22**, D1 on condition that dusk skies show some stars (Open Question 18, resolved).
+> - **Revision 7 (2026-10-22)** answers the sixth review (targeted; NEEDS REVISION, 11 local blockers). Flash bookings follow each source's own clock and re-book on freeze or speed change; a capped variant is capped on red as well as luminance. The dusk sky is dark outside a `horizon_band_frac` band, with a mean-L\* ceiling and the user's **stars** (single-texel, sparse, slow twinkle, area-exempt). read_order sectors are judged in a fixed order (geometry, size, lights), and the enemy-vs-flood test is per sector. The Victory curve starts from the captured light (no dip after a boss), the flood stays through Victory, and the results screen opens over the settle. The quad's left edge is `x_a − floor(frame_w·T/2)`. AC-24, AC-25 and AC-68 fixed; AC-4, AC-11, AC-14b, AC-26, AC-34, AC-55, AC-56 and AC-69 tightened; the test plan gains the frame-0 convention, the AC-67 step and the new read-order and flood steps. Steam Deck (1280×800, `T = 2`, 16:10) is a target.
 
 ## Summary
 
@@ -81,7 +82,7 @@ These follow the art bible's Visual Rule: *paint the rules in light and color; t
 - **Filtering is nearest-neighbor, always.**
 - **No rotation or rescaling, ever.** A sprite is never scaled or rotated: not for juice, not for a gag. A gag that needs a bigger sprite is a separate, bigger sprite drawn at the same scale.
 - **Sprites face the screen.** Every sprite's quad is parallel to the screen, so every texel is square.
-- **Feet stay planted, and texels never crawl.** The bottom-centre of a sprite's quad sits on the screen point where its foot anchor on the ground projects, snapped to whole screen pixels every frame, in every mode. A walking sprite therefore never shows a sub-pixel phase crawl. Because its size is constant, its texel rows never change height either.
+- **Feet stay planted, and texels never crawl.** The bottom-centre of a sprite's quad sits on the screen point where its foot anchor on the ground projects, snapped to whole screen pixels every frame, in every mode. The quad's left edge is that snapped point minus `floor(frame_w · T / 2)` pixels, so a quad an odd number of pixels wide still starts on a whole pixel and every texel column is exactly `T` px (Formulas `texel_scale`). A walking sprite therefore never shows a sub-pixel phase crawl. Because its size is constant, its texel rows never change height either.
 - **Occlusion is an upright card at the feet.** For occlusion, each sprite behaves as an upright card standing at its foot anchor, facing the camera's direction across the ground. Set geometry in front of its feet hides it, and geometry behind its feet never cuts into its upper body. With the level battle camera (rule 4), that card is the sprite's own screen-facing quad. With the pitched Overworld and Camp cameras, the card is upright while the quad faces the screen, and the guarantee still holds (ADR-0005 owns the build).
 - **Depth of field never blurs an actor.** In Battle, the background blur starts behind the farthest actor slot, and there is no near blur, so the party row in front of the camera stays sharp.
 
@@ -107,7 +108,7 @@ These follow the art bible's Visual Rule: *paint the rules in light and color; t
 **6. In-mode changes are visible blends.** Three changes happen inside a mode, and all three are blends the player is meant to watch.
 
 **Boss takeover.** At the start of a boss fight, over `blend_boss`, the sky goes to a deep **dusk** in the boss faction's hue with a neon horizon, the set and fill lights take the faction's hue, and the set's contrast hardens. The actors' key and rim stay neutral (rules 1 and 11), and the set rises only to `set_brightness_boss`, still below 1.0. When the blend ends:
-- **The sky is the faction's dusk flood.** Each faction has one flood swatch in art bible §4: its signature hue, a chroma, and an L\* range at or below `flood_l_max` (35, deep dusk). The sky is a backdrop card behind the set (ADR-0005), so it is always where the camera can see it. It keeps a gradient and clouds, and a **neon horizon band** glows lighter in the same hue. At least `sky_match_min` of the visible sky pixels match the swatch's hue and chroma (Formulas, `flood`), and their lightness may rise above the swatch's range by up to `flood_l_gradient`, which is the horizon glow.
+- **The sky is the faction's dusk flood.** Each faction has one flood swatch in art bible §4: its signature hue, a chroma, and an L\* range at or below `flood_l_max` (35, deep dusk). The sky is a backdrop card behind the set (ADR-0005), so it is always where the camera can see it. It keeps a gradient and clouds, and a **neon horizon band** just above the horizon glows lighter in the same hue; nothing else in the sky is lighter than the swatch. **Some stars** show in the upper sky (user condition on D1): sparse, single-texel, gently twinkling, and never counted as a flash. At least `sky_match_min` of the visible sky pixels match the swatch's hue and chroma (Formulas, `flood`).
 - **The sky is seen.** Every boss stage is framed so that, at the default battle camera, the sky covers at least `sky_share_min` (20%) of the frame. A takeover the player can't see the sky in is not a takeover.
 - **The flood is mid-saturation, never full.** The flood's chroma is at most `flood_chroma_frac` (≤ 70%) of the faction's signature chroma, and lower where a dusk lightness can't hold that chroma (Terminal Cyan at dusk holds about C\* 21; Formulas). The art bible keeps full saturation for the actors and rule UI.
 - **The flood is unmistakably not the stage's own sky.** Every boss stage's own sky is at least `flood_native_de_min` (ΔE2000 15) from its faction's flood swatch. The swatch is one per faction and never changes per stage. A stage whose own sky is too close (a night stage under Anthem Blue's dusk) has its own sky re-authored.
@@ -124,7 +125,7 @@ These follow the art bible's Visual Rule: *paint the rules in light and color; t
 - **One clock drives it.** The blend and the boss's `intro` frame both come from the takeover's own clock (ADR-0006). The stage runs no animation of its own for it.
 - **Prerequisite.** None of this can be built until the Battle mode, not `ChapterFlow`, constructs and starts `BattleCore` (ADR-0002 Migration Step 2: Dependencies).
 
-**Victory.** A white-warm burst over `blend_victory` raises the actors' key and rim, and the squad plays its `victory` fanfare poses (rule 10). The set rises from its Battle level to at most `set_brightness_victory`, still below 1.0, at the burst's peak (the end of `blend_victory`). It then settles over `victory_settle` toward the stage's own native light, at `set_brightness_victory_settle`, still below 1.0. That is golden hour on most overworld-style stages, but a dungeon stage settles to its own light. So the fanfare poses stay the brightest thing on screen.
+**Victory.** A white-warm burst over `blend_victory` raises the actors' key and rim, and the squad plays its `victory` fanfare poses (rule 10). The set rises from wherever it is (its Battle level, or its boss level after a boss fight) to at most `set_brightness_victory`, still below 1.0, at the burst's peak (the end of `blend_victory`). It then settles over `victory_settle` toward the stage's own native light, at `set_brightness_victory_settle`, still below 1.0. That is golden hour on most overworld-style stages, but a dungeon stage settles to its own light. So the fanfare poses stay the brightest thing on screen.
 
 **Defeat.** Over `blend_defeat`, the set desaturates and drops to `set_brightness_defeat`, and one soft, wide, neutral (not cold-blue) overhead spotlight pools on the **party row's formation centre**, so the squad stays lit and readable in its knockout poses. It is a wry curtain call, not a funeral: no vignette to black, no slow fade, and the actors keep their key and rim.
 
@@ -213,7 +214,7 @@ Once latched:
 - the Retry settle and, with "Speed up boss entrances" On, the first boss entrance play at `ff_mult` too.
 
 The latch clears in three ways:
-- **Cancel** clears it from the next frame, and so does a second click on the indicator. The pace returns to the player's setting (Faster battle animations or 1×).
+- **Cancel** clears it from the next frame, and so does a second click on the indicator, while any latch-dependent time remains in the replay. The pace returns to the player's setting (Faster battle animations or 1×). When nothing left would change, Cancel is refused like any ineffective press, and the latch simply ends with the replay (ADR-0006 §6).
 - The latch also clears when the replay ends, so every replay starts unlatched.
 
 There is one latch level and no global fast-forward toggle. `battle_speed_mult` is always clearly below `ff_mult`, so a press always helps even with Faster battle animations On. Holding `fast_forward` works as well, since its first press latches.
@@ -306,7 +307,7 @@ Faction color in light is always accompanied by that faction's shape on screen, 
 - the UI's large-area transitions: the Menu's backdrop opening and closing, the Defeat card's stamp, and the results screen opening.
 
 Each source is declared in its data as one of four classes:
-- **Gated:** before playing, the source asks the gate, declaring when its luminance changes will land. If refused, it plays its **capped variant**: the same effect with its luminance swing below `flash_luma_delta`, a soft swell rather than a flash.
+- **Gated:** before playing, the source asks the gate, declaring when its luminance changes will land. If refused, it plays its **capped variant**: the same effect with no transition at all, a soft swell rather than a flash. Its luminance swing stays below `flash_luma_delta` **and** it makes no red transition (a refused red stamp swells in a desaturated or darker red), or else it covers less than `flash_area_min`. A source's transitions are declared on **its own clock** (the mode or replay clock it plays on), so if that clock freezes or changes speed, the gate re-books what hasn't landed yet (Formulas `flash_gate`).
 - **Reserved:** a source that must reach its end state, the boss flood. Its changes are always booked, and the sources around it yield. Boot validation proves that the reserved sequences alone never exceed the limit.
 - **Exempt by area:** the effect never covers `flash_area_min` on its own (a small hit spark). Exemptions add up: if the effects playing at once would together cover `flash_area_min`, the next one is treated as gated.
 - **Exempt by swing:** the effect never swings `flash_luma_delta` (campfire flicker, a slow fade).
@@ -360,7 +361,11 @@ The classes, the declared changes and the hard limits are checked at boot. A sou
 
 The texel_scale formula is defined as:
 
-`T = max(1, floor(H_screen / texel_base_lines))`. Every sprite's quad is `frame_w × T` by `frame_h × T` screen pixels, in every mode and at every depth (rule 2). Its bottom-centre is the projected foot anchor, rounded to whole pixels (round-half-away-from-zero) every frame.
+`T = max(1, floor(H_screen / texel_base_lines))`. Every sprite's quad is `frame_w × T` by `frame_h × T` screen pixels, in every mode and at every depth (rule 2). Its bottom-centre is the projected foot anchor, rounded to whole pixels (round-half-away-from-zero) every frame: `(x_a, y_a)`. Its pixel rectangle is
+
+`x_left = x_a − floor(frame_w · T / 2)`, `y_bottom = y_a`,
+
+so both edges always fall on whole pixels, including when `frame_w · T` is odd (an odd `frame_w` at `T = 3`), and every texel column and row is exactly `T` px.
 
 **Variables:**
 | Variable | Type | Range | Source | Description |
@@ -371,7 +376,9 @@ The texel_scale formula is defined as:
 | frame_w, frame_h | int (texels) | per sprite set | data file (sprite set) | The animation frame's size; a humanoid's `frame_h` covers `humanoid_height_px` |
 
 **Output Range:** `T` is 2 at 720p, 3 at 1080p, 4 at 1440p and 6 at 2160p. Between those heights it rounds down, so at 900p `T = 2` and a 64-texel sprite is 128 px tall: 14% of the frame, against 18% at 1080p. Sprites never blur or mix scales at any height, but their size relative to the frame steps with `T`. Sub-720p windows are unsupported.
-**Example:** a 64-texel-tall sprite at 1440p is `64 × 4 = 256` px tall, wherever it stands. A foot anchor projecting to (812.5, 900.49) is drawn at (813, 900).
+**Example:** a 64-texel-tall sprite at 1440p is `64 × 4 = 256` px tall, wherever it stands. A foot anchor projecting to (812.5, 900.49) is drawn at (813, 900). At 1080p a 33-texel-wide frame is 99 px wide, so its left edge is `813 − 49 = 764` and its right edge 863: 33 columns of exactly 3 px.
+
+**Steam Deck (1280×800, 16:10):** `T = floor(800/360) = 2`, so a 64-texel humanoid is 128 px, 16% of the frame height. 16:10 is below 16:9, so the battle camera's widened vertical view applies (Formulas `battle_framing`, `F_v_eff`).
 
 ### battle_framing
 
@@ -429,16 +436,17 @@ This is WCAG's contrast-ratio formula, applied locally and per side.
 
 **Sectors.**
 - The edge band and the ring are split into 8 equal angular sectors around the centre of the actor's quad, and each sector compares its own edge band with its own ring. So an actor whose left side vanishes into the set fails even when its other sides are bright.
-- Ring pixels below the foot anchor's row (the ground contact and the blob shadow) are left out, and so are set pixels tagged emissive.
-- A sector whose remaining ring is less than half of its full ring fails: the actor is staged too close to a light or a contact.
-- A sector with fewer than `band_px_min` edge or ring pixels is skipped.
-- A capture with fewer than 6 valid sectors for any actor is **invalid**: a tool error that must be fixed, never a pass, a fail or a NaN.
+- Each sector is judged in this order:
+  1. **Geometry first.** Ring pixels below the foot anchor's row (the ground contact and the blob shadow), pixels of any other actor, and the stars of a dusk sky (Formulas `flood`) are removed. What is left is the sector's **full ring**. So a flat-based actor (a filing-cabinet boss) and an actor partly behind another (up to the `actor_visible_min` overlap, rule 4) are judged only on the set they actually stand against.
+  2. **Too small to judge.** A sector whose edge band or full ring holds fewer than `band_tx_min` texels is skipped.
+  3. **Lights in the ring.** Set pixels tagged emissive are removed from the full ring. A sector where fewer than half of its full ring's pixels remain fails: the actor is staged too close to a light. Only this step can fail a sector for what was removed.
+- A capture with fewer than 5 valid sectors for any actor is **invalid**: a tool error that must be fixed, never a pass, a fail or a NaN. (A flat-based actor loses its bottom sector to step 1, which is why the floor is 5, not 6.)
 
-**Enemy against flood (boss takeover only).** Luminance alone can't tell a Stamp Red boss from a Stamp Red sky. In every boss takeover capture, each enemy also passes
+**Enemy against flood (boss takeover only).** Luminance alone can't tell a Stamp Red boss from a Stamp Red sky. In every boss takeover capture, each enemy also passes, in **every** valid sector `s` (the same sectors and exclusions as above):
 
-`ΔE(mean Lab of its costume band, mean Lab of its ring) ≥ enemy_flood_de_min`.
+`ΔE(mean Lab of its costume band in s, mean Lab of its ring in s) ≥ enemy_flood_de_min`.
 
-It is measured on the costume band, not on the rim-lit edge, because the neutral rim desaturates the edge.
+It is per sector for the same reason as the contrast test: a red boss half in front of the red sky and half in front of a grey set must fail on its sky side, not pass on the average. It is measured on the costume band, not on the rim-lit edge, because the neutral rim desaturates the edge.
 
 **Variables:**
 | Variable | Type | Range | Source | Description |
@@ -447,13 +455,13 @@ It is measured on the costume band, not on the rim-lit edge, because the neutral
 | edge_tx | int (texels) | 1 | constant | Width of the edge band: the one texel ring the rim lights |
 | body_tx | int (texels) | 1–3 (default 2) | data file | Width of the costume band |
 | ring_tx | int (texels) | 2–4 (default 3) | data file | Width of the set ring |
-| band_px_min | int (px) | 12 | constant | Fewest pixels a sector's edge band or ring may hold to be judged |
+| band_tx_min | int (texels) | 3 | constant | Fewest texels a sector's edge band or full ring may hold to be judged. In texels, so a sector's validity doesn't change with the resolution |
 | actor_contrast_min | float | 3.0–4.5 (default 3.0) | data file | Minimum local contrast (WCAG 1.4.11's 3:1 for non-text graphics) |
 | enemy_flood_de_min | float (ΔE) | 12–20 (default 15) | data file | Smallest color difference between an enemy's costume and the flood around it |
 
 **Output Range:** `C_s` runs 1–21. Saturation is not part of the pass test: a deliberately grey character (a robot clerk) is legal, so set saturation is judged by the art director in AC-32. The enemy-against-flood test applies only in boss takeovers.
 **Example:**
-- **On a dusk flood:** a ring on Stamp Red's dusk sky at L\* 30 has `L_ring = 0.062`. A rim-lit edge sector at `L_edge = 0.40` gives `0.45 / 0.112 = 4.02`, which passes. A sector where the rim is turned away from the camera, at `L_edge = 0.20`, gives `0.25 / 0.112 = 2.23`, which fails, however bright the actor's other sectors are.
+- **On a dusk flood:** a ring on Stamp Red's dusk sky at L\* 30 has `L_ring = 0.062`. A rim-lit edge sector at `L_edge = 0.40` gives `0.45 / 0.112 = 4.02`, which passes. A sector where a dark costume holds the rim down to `L_edge = 0.20` (the rim runs round the whole perimeter, but a dark costume texel under it stays dark) gives `0.25 / 0.112 = 2.23`, which fails, however bright the actor's other sectors are. The fix is the costume's edge colour, not the light.
 - **Enemy against flood:** the old light-flood case, a costume at L\* 48 C\* 62 on a ring of the same lightness at C\* 47, gives ΔE 4.3 and fails. A costume at L\* 45 C\* 62 against Stamp Red's dusk ring (L\* 30, C\* 46.9) gives ΔE 13.5 and fails too. Lifted to L\* 50 C\* 65, it gives 18.3 and passes.
 - **720p:** `T = 2`, so the edge band is 2 px wide.
 
@@ -463,13 +471,27 @@ The flood formula is defined as (boss takeover, rule 6):
 
 `h_flood = h_signature`; `C*_flood = min(flood_chroma_frac × C*_signature, C*_max(L*_mid, h_signature))`. Here `C*_max` is the largest chroma sRGB can display at the swatch's L\* midpoint and hue, and every swatch's L\* range lies at or below `flood_l_max`.
 
-A sky pixel **matches** iff `|Δh| ≤ flood_hue_tol` and `|C*_pixel − C*_flood| ≤ flood_chroma_tol`. A takeover's sky passes iff all of these hold:
-- at least `sky_match_min` of the visible sky pixels match;
-- every sky pixel's L\* lies within the swatch's L\* range widened by `flood_l_gradient` on each side. The upper side is the neon horizon's glow;
+A sky pixel **matches** iff `|Δh| ≤ flood_hue_tol` and `|C*_pixel − C*_flood| ≤ flood_chroma_tol`. The **horizon band** is the rows from `y_h − horizon_band_frac · H_screen` down to the horizon row `y_h` (a continuous boundary: a row is in the band iff its centre is at or below `y_h − horizon_band_frac · H_screen`). **Stars** are tagged sky detail (below) and are left out of every sky test except the star rule. A takeover's sky passes iff all of these hold:
+- at least `sky_match_min` of the visible non-star sky pixels match;
+- **lightness, outside the horizon band:** every non-star sky pixel's L\* lies between the swatch's lower L\* bound minus `flood_l_gradient` and its upper bound. The gradient and clouds may go darker, never lighter;
+- **lightness, inside the horizon band:** every non-star sky pixel's L\* lies within the swatch's range widened by `flood_l_gradient` on each side. Only the neon horizon glows lighter;
+- the mean L\* of all visible non-star sky pixels is at most `flood_l_max`, so the sky as a whole is dark;
 - `sky_share ≥ sky_share_min`;
-- `ΔE(swatch at its L\* midpoint, native_sky) ≥ flood_native_de_min` for every boss stage of that faction.
+- `ΔE(swatch at its L\*_mid, native_sky) ≥ flood_native_de_min` for every boss stage of that faction;
+- **the star rule** holds (below).
 
-Hue and chroma are compared in LCh, and lightness is left out of the match, so the sky keeps its gradient, clouds and horizon glow. `native_sky` is the mean color of the stage's own sky in its Battle capture. The swatches live in art bible §4 (Open Question 7). A stage that fails the native-sky floor re-authors its own sky. A swatch never moves per stage.
+Hue and chroma are compared in LCh, and lightness is left out of the match, so the sky keeps its gradient, clouds and horizon glow.
+
+**Stars (user condition on D1).** Every dusk flood shows some stars. They are sky-card detail, not set lights:
+- at the default battle camera, at least `star_count_min` stars are visible, all above the horizon band;
+- each star is a single texel, `T × T` px, like every other sprite pixel (rule 2);
+- the stars together cover at most `star_share_max` of the visible sky, so the sky still reads as the flood;
+- a star may twinkle: its brightness follows a smooth cycle on `mode_time` (so it freezes with the Menu, rule 7) with a period of at least `star_twinkle_period_min` and its own phase. The whole starfield's area is far below `flash_area_min`, so twinkling is exempt from the flash gate by area (Formulas `flash_gate`), and no star counts as a flash source;
+- stars are removed from actors' rings with the geometry (Formulas `read_order`, step 1), so a star behind a shoulder never fails or passes an actor;
+- stars are drawn as `T`-scaled screen-space points on the sky layer, snapped to whole pixels like sprites (rule 2), never baked into the sky card's texture, where perspective would resize them;
+- a star's peak lightness is at most L\* 80, so it reads as a star and not as a light.
+
+`native_sky` is the mean color of the stage's own sky in its Battle capture. The swatches live in art bible §4 (Open Question 7). A stage that fails the native-sky floor re-authors its own sky. A swatch never moves per stage.
 
 **Variables:**
 | Variable | Type | Range | Source | Description |
@@ -481,17 +503,23 @@ Hue and chroma are compared in LCh, and lightness is left out of the match, so t
 | flood_hue_tol | float (°) | 5–10 (default 8) | data file | Largest hue difference for a matching sky pixel |
 | flood_chroma_tol | float (C\*) | 6–12 (default 10) | data file | Largest chroma difference for a matching sky pixel |
 | sky_match_min | float | 0.85–0.95 (default 0.90) | data file | Share of visible sky pixels that must match |
-| flood_l_gradient | float (L\*) | 10–15 (default 15) | data file | How far sky lightness may stray outside the swatch range, for the gradient, clouds and the horizon glow |
+| L\*_mid | float (L\*) | per swatch | art bible §4 | The midpoint of the swatch's L\* range. The one lightness at which the gamut cap, the swatch's quoted colour and the native-sky ΔE are all computed |
+| flood_l_gradient | float (L\*) | 10–15 (default 15) | data file | How far sky lightness may stray outside the swatch range: darker anywhere (gradient, clouds), lighter only inside the horizon band (the neon glow) |
+| horizon_band_frac | float | 0.05–0.12 (default 0.08) | data file | Height of the horizon band, as a share of the frame height, just above the horizon row |
+| star_count_min | int | 8–40 (default 16) | data file | Fewest stars visible above the horizon band at the default battle camera on a dusk flood |
+| star_share_max | float | 0.002–0.01 (default 0.005) | data file | Largest share of the visible sky the stars may cover together |
+| star_twinkle_period_min | float (s) | 1.0–4.0 (default 1.5) | data file | Shortest twinkle cycle of any star |
 | sky_share | float | 0–1 | calculated | Visible sky pixels over all frame pixels at the default battle camera |
 | sky_share_min | float | 0.15–0.30 (default 0.20) | data file | Smallest share of the frame the sky must cover on a boss stage |
 | flood_native_de_min | float (ΔE) | 10–20 (default 15) | data file | Smallest color difference between a flood swatch and the native sky of a stage it floods |
 
-**Output Range:** `C*_flood` is at most 70% of the signature chroma, and lower where dusk can't hold it. Every flood is dark (L\* ≤ `flood_l_max`), with a lighter horizon. The test fails a sky left at its native color, one flooded at full chroma, a flood that resembles the stage's own sky, and a stage that barely shows its sky.
+**Output Range:** `C*_flood` is at most 70% of the signature chroma, and lower where dusk can't hold it. Every flood is dark (mean sky L\* ≤ `flood_l_max`, and nothing lighter than the swatch outside the horizon band), with a lighter horizon and some stars. The test fails a sky left at its native color, one flooded at full chroma, a light sky with a dark horizon, a flood that resembles the stage's own sky, a starless flood, and a stage that barely shows its sky. With `flood_l_max` 35, a ring on the sky away from the horizon is at most L\* 35 (`Y ≤ 0.085`), so the read-order example above holds on every flood.
 **Example:**
 - **Stamp Red** (`#D23A2E`, L\* 48.2, C\* 72.1, h 35.9°): `0.65 × 72.1 = 46.9`, which sRGB can show at L\* 30 (`#81271E`), so `C*_flood = 46.9`. A sky pixel at C\* 50, hue 40°, matches (`3.1 ≤ 10`, `4.1 ≤ 8`); one at the full C\* 72 does not.
-- **Terminal Cyan** (`#19C2D6`, L\* 72.0, C\* 38.4, h 213.5°): `0.65 × 38.4 = 25.0`, but at L\* 30 sRGB holds only C\* 20.5 at that hue, so `C*_flood = 20.5` (`#0A535C` at L\* 32). Its lavishness comes from the gradient and the horizon glow, not chroma (Visual Requirements).
-- **Native-sky floor:** Canada's blue-white sky (L\* 80, C\* 20, h 240°) against Terminal Cyan's dusk swatch (L\* 32, C\* 20.5) is ΔE 45.3, which passes. A night stage's sky (L\* 22, C\* 30, h 265°) against Anthem Blue's dusk swatch (L\* 30, C\* 54.9, h 295.6°) is ΔE 12.2, which fails 15. That stage re-authors its sky, for example to a warm night (L\* 22, C\* 18, h 50°): ΔE 33.4, which passes.
+- **Terminal Cyan** (`#19C2D6`, L\* 72.0, C\* 38.4, h 213.5°): `0.65 × 38.4 = 25.0`, but at its `L*_mid` of 30 sRGB holds only C\* 20.5 at that hue, so `C*_flood = 20.5`, quoted at L\* 30. (Rule 6's "about 21" is this value.) Its lavishness comes from the gradient and the horizon glow, not chroma (Visual Requirements).
+- **Native-sky floor:** Canada's blue-white sky (L\* 80, C\* 20, h 240°) against Terminal Cyan's dusk swatch (L\* 32, C\* 20.5) is ΔE 45.3, which passes. A night stage's sky (L\* 22, C\* 24, h 265°, inside sRGB, whose limit there is about C\* 24.9) against Anthem Blue's dusk swatch (L\* 30, C\* 54.9, h 295.6°) is ΔE 10.5, which fails 15. That stage re-authors its sky, for example to a warm night (L\* 22, C\* 18, h 50°): ΔE 33.4, which passes.
 - **Sky share:** a 1920×1080 frame with 450,000 sky pixels has `sky_share = 0.217`, which passes.
+- **Horizon band and stars:** at 1080p the horizon band is `0.08 × 1080 = 86.4` rows above `y_h`. A cloud at L\* 40 on Stamp Red's ≤ 35 range fails if it sits above the band, and passes inside it (≤ 35 + 15). At `T = 3`, 16 stars are 144 px, 0.03% of a 450,000-pixel sky, far under `star_share_max` (2,250 px) and far under `flash_area_min`.
 
 ### follow_camera
 
@@ -624,7 +652,7 @@ press_effective = some time remains, in the entry in progress or the queue, whos
 - `dt_max < beat_min`;
 - `boss_retry_hold ≤ blend_boss + boss_hold`;
 - `blend_victory ≤ victory_hold` and `blend_defeat ≤ defeat_hold`;
-- `set_brightness_battle ≤ set_brightness_boss`, and `set_brightness_victory_settle ≤ set_brightness_victory`;
+- `set_brightness_battle ≤ set_brightness_boss`, `set_brightness_victory_settle ≤ set_brightness_victory`, and `set_brightness_victory ≥ set_brightness_boss + 0.05`;
 - `set_key_fill_ratio_boss` is greater than the set key:fill ratio of every non-boss lighting preset;
 - `flash_rate_max ≤ 3`, and the constants `flash_luma_delta = 0.10` and `flash_area_min = 0.25` (Formulas, `flash_gate`);
 - the overworld camera passes `pitch − F_v_eff(4:3)/2 ≥ horizon_margin`.
@@ -678,10 +706,16 @@ The set_brightness_and_blur formula is defined as:
 `B_set = B_native × k_state`, with `k_state` = `set_brightness_battle` (Battle), `set_brightness_boss` (Boss takeover), `set_brightness_defeat` (Defeat), the Victory curve below, and 1.0 elsewhere. `B_sky = B_sky_native × k_state` in every state except the boss takeover, where the sky's color and lightness come from the flood swatch (Formulas, `flood`). `B_fill_boss = B_set / set_key_fill_ratio_boss`, and `blur = blur_base × (reduce_blur ? reduce_blur_factor : 1.0)`.
 
 **The Victory curve**, with `t` the mode time since Victory began:
-- for `t ≤ blend_victory`: `k = lerp(set_brightness_battle, set_brightness_victory, smoothstep(t / blend_victory))`. The burst's peak is at `t = blend_victory`;
+- for `t ≤ blend_victory`: `k = lerp(k_from, set_brightness_victory, smoothstep(t / blend_victory))`. `k_from` is the set brightness captured on Victory's first frame: `set_brightness_battle` after an ordinary fight, `set_brightness_boss` after a boss fight (lighting_blend's captured `L_from`, so Victory never starts with a drop). The burst's peak is at `t = blend_victory`;
 - then `k = lerp(set_brightness_victory, set_brightness_victory_settle, smoothstep(min(1, (t − blend_victory) / victory_settle)))`, which stays at the settle level once it is reached.
 
-The actors' key and rim follow the same curve shape, from their Battle values up to the burst and back to their Battle values at the settle.
+Load-time rule: `set_brightness_victory ≥ set_brightness_boss + 0.05`, so the burst always rises, even after a boss.
+
+The actors' key and rim follow the same curve shape, from their Battle values up to the burst and back to their Battle values at the settle. They are therefore equal to their Battle values at `t = 0` and from the end of the settle on, and strictly above them in between.
+
+**After a boss fight**, the sky stays at the flood swatch through Victory and its results screen. Only the set, fill and actors follow the Victory curve. The stage's native sky comes back hidden behind the next transition (rule 5), so a dark flood never jumps to a light sky on screen.
+
+**The settle and the results screen.** `victory_hold` (0.40 s) is shorter than the burst plus settle (0.70 s at the defaults), on purpose: the fanfare poses are what the hold protects. The results screen opens over the settle, and whatever part of the battle stays visible behind it keeps settling on mode time. Nothing waits for the settle.
 
 Brightness scales the set light's **energy** and the sky card's energy, both linear (scene-referred) quantities. The art bible's "dimmed 30%" is read as linear energy × 0.70. The sky is part of the set for read order, so it follows `k_state`, except in the boss takeover, where the swatch alone sets its lightness (rule 6). In the takeover the flooded fill runs at `1 / set_key_fill_ratio_boss` of the set light, the lowest fill of any state, which is what gives the set its hard contrast.
 
@@ -690,9 +724,9 @@ Brightness scales the set light's **energy** and the sky card's energy, both lin
 |----------|------|-------|--------|-------------|
 | B_native, B_sky_native | float | per stage | data file (stage) | The set light's and the sky card's authored energy |
 | set_brightness_battle | float | 0.60–0.75 (default 0.70) | data file | Battle set brightness relative to native (art bible: "dimmed 30%") |
-| set_brightness_boss | float | 0.75–0.95 (default 0.85) | data file | Boss takeover set brightness; at least the Battle level and always below 1.0 |
+| set_brightness_boss | float | 0.75–0.85 (default 0.85) | data file | Boss takeover set brightness; at least the Battle level and always below 1.0 |
 | set_key_fill_ratio_boss | float | 4.0–6.0 (default 4.0) | data file | Set light energy over flooded fill energy in a boss takeover. Must be higher than every other preset's set key:fill ratio |
-| set_brightness_victory | float | 0.85–0.95 (default 0.90) | data file | Set brightness at the Victory burst's peak |
+| set_brightness_victory | float | 0.90–0.95 (default 0.90) | data file | Set brightness at the Victory burst's peak |
 | set_brightness_victory_settle | float | 0.75–0.85 (default 0.85) | data file | Set brightness the Victory light settles at |
 | victory_settle | float (s) | 0.30–0.50 (default 0.40) | data file | How long the Victory light takes to settle after the burst's peak |
 | set_brightness_defeat | float | 0.30–0.50 (default 0.40) | data file | Set brightness outside the Defeat spotlight |
@@ -704,6 +738,7 @@ Brightness scales the set light's **energy** and the sky card's energy, both lin
 - **Reduce Blur:** a background blur of strength 6 with Reduce Blur On gives 1.8; the set stays at 0.70 brightness.
 - **Boss takeover:** a set authored at energy 2.0 runs at `2.0 × 0.85 = 1.7`, and its flooded fill at `1.7 / 4.0 = 0.425`.
 - **Victory** at the defaults: `k` is 0.70 at `t = 0`, 0.80 at `t = 0.15`, and 0.90 at the peak (`t = 0.30`). It is 0.875 at `t = 0.50` and 0.85 from `t = 0.70` on.
+- **Victory after a boss fight:** `k_from = 0.85`, so `k` is 0.875 at `t = 0.15` and 0.90 at the peak: a smaller burst, but never a dip.
 
 ### flash_gate
 
@@ -716,10 +751,22 @@ A **transition** is one large-area luminance or red change, as WCAG 2.2 SC 2.3.1
 
 **Counting.** The gate keeps every booked transition at the real time it **lands** on screen. A booked transition counts as one flash if it opposes the booked transition before it. N alternating transitions are therefore N − 1 flashes: a conservative count, since WCAG pairs them.
 
+**Landing time.** A source declares each transition as an offset `o` on **its own clock** `c` (mode time, a replay clock, or real time for Game State's transitions). While that clock runs at rate `r` (1 at 1×, `battle_speed_mult` with Faster battle animations On, `ff_mult` when latched, 0 while the Menu freezes it), an unlanded transition is booked at
+
+`t_land = t_now + (o − c_now) / r`.
+
+When the rate is **scheduled** to change before `o` (a replay clock runs the wind-up at speed and the hold at 1×, rule 9), `t_land` integrates over that known schedule instead of assuming the current rate holds. Only **unscheduled** changes re-book.
+
+- **Unscheduled rate changes re-book.** Whenever a source's clock changes rate unexpectedly (the Menu freezes or resumes it, the latch engages or clears, a speed setting changes, or a frame is clamped to `dt_max`), the gate removes that source's unlanded transitions and books them again at their new `t_land`. A frozen clock (`r = 0`) holds its unlanded transitions unbooked until it resumes, but they still **count as pending at their resume-time landing** for any request evaluated during the freeze (the Menu's own close transition is judged with them in).
+- **A started flash always finishes.** A ↓ (or ↑) that closes an already-landed opposite transition of the same source is a **closing** transition. It is never dropped and, on re-booking, books with reserved priority, so a raised screen always returns to rest and the return never needs a capped form.
+- **If a re-booking would exceed the limit**, only the source's **not-yet-started** transitions (those with no landed partner) are dropped, and the source plays the rest of its effect in its capped variant from that frame. Its closing transitions still land. A reserved source keeps its bookings, and gated sources yield to it.
+- So the guarantee is about what lands on screen, at any clock speed and across any Menu pause.
+
 **Requests.**
-- **Gated sources.** A gated source requests the gate at real time `t_req`, declaring its transitions as offsets from its start. The request is allowed iff, with those transitions booked at `t_req + offset`, no closed one-second window holds more than `flash_rate_max` flashes. If it is allowed, they are booked and the full variant plays. If it is refused, nothing is booked and the capped variant plays.
+- **Gated sources.** A gated source requests the gate at real time `t_req`, declaring its transitions as offsets on its own clock. The request is allowed iff, with those transitions booked at their `t_land`, no closed one-second window holds more than `flash_rate_max` flashes. If it is allowed, they are booked and the full variant plays. If it is refused, nothing is booked and the capped variant plays.
 - **Reduce Flashing.** With it On, every gated request is refused.
-- **Reserved sources** (the boss flood) book unconditionally. Boot validation checks every scripted reserved sequence (a battle reveal, then the boss flood) on its own against the limit, so later gated sources simply yield to it.
+- **Reserved sources** (the boss flood) book unconditionally. Boot validation checks every scripted reserved sequence (a battle reveal, then the boss flood) on its own against the limit at every speed it can play at: 1×, the largest `battle_speed_mult`, and the largest `ff_mult` (with "Speed up boss entrances" On), so later gated sources simply yield to it.
+- **Capped variants** are checked at boot on their declared frames: no general transition **and** no red transition, or below `flash_area_min`. A luminance-only cap is not a cap.
 - **Area-exempt sources** start exempt only if `A_exempt + their declared area < flash_area_min`. Otherwise they request like a gated source.
 - **Swing-exempt sources** never request.
 
@@ -731,16 +778,19 @@ The gate never delays a source, so Game State's fixed-length retry flash and wip
 | flash_rate_max | float (flashes per s) | 1–3 (default 3) | data file | Most flashes in any one second, across all sources. A safety ceiling, validated `≤ 3` at load |
 | flash_luma_delta | float | 0.10 relative luminance | constant (validated at load) | A change at or above this is a general transition |
 | flash_area_min | float | 0.25 of a 10° window | constant (validated at load) | Smallest area that counts |
-| t_req, offset | float (s) | — | calculated / data file (source) | Request time, and each declared transition's offset from the source's start |
+| t_req, o | float (s) | — | calculated / data file (source) | Request time (real), and each declared transition's offset on the source's own clock |
+| c_now, r | float | c ≥ 0; r ∈ {0} ∪ [1, ff_mult] | calculated | The source's clock reading now, and its current rate against real time |
+| t_land | float (s) | ≥ t_now | calculated | Real time an unlanded transition is booked at; re-computed on every rate change |
 | A_exempt | float | 0–1 of a 10° window | calculated | Summed declared flashing area of the area-exempt effects currently playing |
 
-All times are **real** time, on purpose, so opening the Menu can't reset the gate.
+The window and the bookings are in **real** time, on purpose, so opening the Menu can't reset the gate. Only the offsets are on each source's own clock; `t_land` converts them.
 
 **Output Range:** at most `flash_rate_max` (3) flashes in any one-second window, counted at landing, from all sources together. Campfire flicker must keep its swing below `flash_luma_delta` at all times. It never counts, so it never uses up the budget.
 **Example:** three comedy stamps, each with an up transition at +0.05 s and a down one at +0.15 s, are requested at 0.00, 0.20 and 0.40 s.
 - The first two are allowed and book 0.05 ↑, 0.15 ↓, 0.25 ↑ and 0.35 ↓: flashes at 0.15, 0.25 and 0.35.
 - The third would add 0.45 ↑, a fourth flash inside the second [0.15, 0.45], so it is refused and plays capped.
-- A gate that booked flashes at request time instead would have seen only three requests in that second, allowed the third, and put four flashes on screen.
+- A gate that booked flashes at request time instead would have seen only three requests in that second, allowed the third, and put five flashes on screen by this gate's N − 1 count.
+- **Menu pause:** a stamp requested at mode time 0 with ↑ at +0.05 and ↓ at +0.15 is frozen by the Menu at mode time 0.10, real time 0.10. Its ↓ is unbooked. The Menu closes at real time 3.00, so the ↓ is re-booked at `3.00 + (0.15 − 0.10) / 1 = 3.05`, where the gate counts it against whatever else lands near 3.05, including the Menu's own close transition.
 
 ## Edge Cases
 
@@ -852,20 +902,22 @@ All knobs live in presentation data (the presentation settings and lighting pres
 | `actor_contrast_min` | 3.0 | 3.0–4.5 | Local, per-side actor-to-set contrast required (rule 1) | Dark costumes melt into dark sets | Sets must be so dark they stop reading as places |
 | `body_tx` / `ring_tx` | 2 / 3 texels | 1–3 / 2–4 | Size of the bands the contrast and color checks compare (the edge band is always 1 texel) | The checks sample noise | The ring reaches unrelated set areas; the costume band reaches the actor's interior detail |
 | `set_brightness_battle` | 0.70 | 0.60–0.75 | How far the battle set steps back | The set disappears, and the location stops reading | The set competes with actors (breaks Principle 2) |
-| `set_brightness_boss` | 0.85 | 0.75–0.95, always < 1.0 and ≥ the Battle level | How far the faction flood lifts the set | The takeover barely registers | The set rivals the actors; the flood reads as a wash |
+| `set_brightness_boss` | 0.85 | 0.75–0.85, always ≥ the Battle level and ≤ `set_brightness_victory` − 0.05 | How far the faction flood lifts the set | The takeover barely registers | The set rivals the actors; the flood reads as a wash |
 | `set_key_fill_ratio_boss` | 4.0 | 4.0–6.0, and above every non-boss preset's ratio (validated at load) | Set contrast in a boss takeover ("the hardest set contrast in the game") | The takeover set looks flat and washed | Shadows go black and the set stops reading as a place |
 | `flood_chroma_frac` | 0.65 | 0.60–0.70 | Flood saturation as a share of the faction's signature chroma, before the gamut cap | The flood reads as a tint, not a takeover | The sky out-saturates the actors; the boss disappears into its own flood |
 | `flood_l_max` | 35 L\* | 30–40 | The dusk ceiling for every flood swatch | Floods read as night, and the horizon glow carries everything | Floods lighten, and the squad's rim stops standing out against them |
 | `flood_hue_tol` / `flood_chroma_tol` / `sky_match_min` / `flood_l_gradient` | 8° / 10 / 0.90 / 15 L\* | 5–10° / 6–12 / 0.85–0.95 / 10–15 | How strictly the flooded sky must match its swatch (Formulas, `flood`) | Skies are forced into a flat card | Unflooded patches of sky pass |
+| `horizon_band_frac` | 0.08 | 0.05–0.12 | Height of the band above the horizon where the sky may glow lighter than the swatch | The neon horizon is a thin line | Half the sky glows and the flood stops reading as dusk |
+| `star_count_min` / `star_share_max` / `star_twinkle_period_min` | 16 / 0.005 / 1.5 s | 8–40 / 0.002–0.01 / 1.0–4.0 s | The dusk sky's stars (user condition on D1) | The sky reads starless | Stars crowd the flood; fast twinkle reads as shimmer |
 | `flood_native_de_min` | 15 ΔE | 10–20 | How different a flood must be from a boss stage's own sky | A takeover on a sky of similar color goes unnoticed | More boss stages must re-author their skies |
 | `sky_share_min` | 0.20 | 0.15–0.30 | How much of a boss stage's frame the sky must cover | The takeover happens off-screen | Battle stages lose their floor and set to the sky |
 | `enemy_flood_de_min` | 15 ΔE | 12–20 | How different an enemy's costume must be from the flood around it | A boss blends into its own flood | Faction costumes must stray far from their faction's own color |
-| `set_brightness_victory` | 0.90 | 0.85–0.95, always < 1.0 | Set peak during the Victory burst | The win feels muted | The set outshines the fanfare poses |
+| `set_brightness_victory` | 0.90 | 0.90–0.95, always < 1.0 and ≥ `set_brightness_boss` + 0.05 | Set peak during the Victory burst | The win feels muted | The set outshines the fanfare poses |
 | `set_brightness_victory_settle` | 0.85 | 0.75–0.85, so always ≤ `set_brightness_victory` | Set level the Victory light settles at | The results screen sits on a gloomy set | The set outshines the squad after the burst |
 | `set_brightness_defeat` | 0.40 | 0.30–0.50 | Set level outside the Defeat spotlight | Reads as a funeral | The loss doesn't register |
 | `shadow_offset` | set in Step 1 | 0–0.5 × the foot width | How far the blob shadow sits along the set light's direction | Shadows look pasted on | The shadow detaches from the feet |
 | `reduce_blur_factor` | 0.30 | 0.20–0.40 | Blur kept with Reduce Blur On | Battle depth separation is lost | The option fails players who need it |
-| `battle_draw_call_budget` | 150 (Pending, Open Question 13) | 100–300, always far below `project.yaml`'s 2000 project limit | Battle render cost across all passes, for 8 actors, the diorama, the sky card and VFX | Constrains set dressing | Leaves no headroom for the UI and later modes |
+| `battle_draw_call_budget` | 300 for all 3D passes (including `SetLight`'s shadow cascades) + 100 for canvas/HUD, counted separately (user decision 2026-10-22; Open Question 13 closed) | Fixed by `project.yaml` `performance.draw_call_limit` (400 = 300 + 100); changing it is a technical-director call | Battle render cost for 8 actors, the diorama, the sky card and VFX (3D), and the HUD (canvas) | Constrains set dressing | Leaves no headroom for later modes |
 
 **Camera and punch**
 
@@ -886,7 +938,7 @@ All knobs live in presentation data (the presentation settings and lighting pres
 | `boss_hold` | 0.90 s | 0.60–1.20 | Boss intro pose held in the new light before the first command menu, first encounter | The takeover blurs into the first turn | The fight start drags |
 | `boss_retry_hold` | 0.30 s | 0.20–0.40 | The Retry settle on the boss's intro pose | The retried fight starts with no beat to re-read the boss | Every Retry feels taxed |
 | `blend_victory` / `blend_defeat` | 0.30 s | 0.25–0.35 | End-of-fight beats | Reads as a pop | Taxes the retry loop |
-| `victory_settle` | 0.40 s | 0.30–0.50 | How long the Victory light takes to settle after the burst | The burst snaps off | The results screen opens over a still-moving light |
+| `victory_settle` | 0.40 s | 0.30–0.50 | How long the Victory light takes to settle after the burst | The burst snaps off | The settle drags on long after the results screen has covered the battle (it always opens over part of the settle; rule 6) |
 | `victory_hold` / `defeat_hold` | 0.40 s | 0.35–0.60, so always ≥ the matching blend | How long the fanfare or curtain-call poses are seen before the results screen or Defeat Prompt opens | The end of the fight is covered before it is seen | The retry loop feels taxed |
 | `input_guard` | 0.15 s | 0.10–0.20 | How long after a menu opens every menu action is refused, with feedback (rule 9) | A press already on its way lands on a menu the player hasn't seen | A deliberate quick press is refused and feels laggy |
 
@@ -1005,7 +1057,7 @@ This system draws no UI. These are the guarantees it gives the UI Framework, and
 - **An old number never covers a new reaction.** On a beat's impact, any number still showing over a combatant that reacts in that beat is removed on that frame.
 - **The command menu waits for the replay.** The squad's next command menu opens only when the replay releases the next turn (rule 9).
 - **Retry starts clean.** When the replay reports a resync (Retry), every number is cleared and the HUD shows the restored values, behind the retry flash.
-- **No press before the reveal, and none buffered.** Nothing accepts a press while the battle wipe or retry flash still covers the screen. During a replay, Confirm, `fast_forward` and a click on the replay indicator latch the speed-up, Cancel clears it, and nothing carries into the next menu. During the end-of-fight hold, presses do nothing (rule 9).
+- **No press before the reveal, and none buffered.** Nothing accepts a press while the battle wipe or retry flash still covers the screen. During a replay, Confirm, `fast_forward` and a click on the replay indicator latch the speed-up, Cancel clears it while any latch-dependent time remains (otherwise it is refused, and the latch ends with the replay), and nothing carries into the next menu. During the end-of-fight hold, presses do nothing (rule 9).
 - **Input guard with feedback.** The command menu, target selection, the Defeat Prompt and the results screen open with the default focus of rule 9 and nothing submitted.
   - For `input_guard` after opening, they refuse every menu action (Confirm, Cancel, directions, pointer clicks).
   - Each refused press gets a short visible pulse on the focused option and a soft tick. The UI Framework plays the tick in MVP.
@@ -1083,7 +1135,7 @@ All [L] and [I] tests follow P-02's conventions:
 - **AC-3 [L]** (P-06) GIVEN an animation flagged `no_mirror`, WHEN its sprite is placed on the mirrored side, THEN its authored opposite-direction art is used and it is not mirrored, while the same set's unflagged animations are mirrored. GIVEN an unflagged set, THEN mirroring follows formation side (Battle) or movement direction (Overworld).
 
 **Cameras (rule 4)**
-- **AC-4 [L]** (P-07) GIVEN a full battle with hit-punches, THEN the battle camera's position and rotation never change and its pitch is 0. Its field of view never changes. Only its lens shift changes, and on every frame it equals the stage's base shift plus the `hit_punch` offset.
+- **AC-4 [L]** (P-07) GIVEN a full battle with hit-punches, THEN the battle camera's position and rotation never change and its pitch is 0. Its `size`, `near` and `keep_aspect` (always `KEEP_HEIGHT`) never change except on a window resize. Only its lens shift changes, and on every frame it equals the stage's base shift plus the `hit_punch` offset.
 - **AC-5 [L]** (P-07) GIVEN Camp or Title, WHEN a hit resolves or the party moves, THEN the camera transform and lens shift are unchanged.
 
 **Lighting (rules 5–6)**
@@ -1103,7 +1155,7 @@ All [L] and [I] tests follow P-02's conventions:
 
 **Hit-punch (rule 8)**
 - **AC-10 [L]** (P-04) GIVEN a replay of N outcomes that lower HP, THEN exactly one punch starts per beat, on that beat's impact frame. A knockout beat, or a beat whose actor is the encounter's boss, uses the big amplitude. GIVEN a heal, Defend, Speak to the Manager, Viral Stunt or a 0-damage Attack, THEN no punch starts.
-- **AC-11 [L]** (P-04) GIVEN a hit during a boss-takeover blend or its hold, THEN no punch plays, then or later.
+- **AC-11 [L]** (P-04) GIVEN a punch requested directly (bypassing the replay, which never releases a beat before the takeover ends, AC-45) during a boss-takeover blend or its hold, THEN it is dropped: no punch plays, then or later, and nothing is deferred.
 - **AC-12 [L]** (P-04) GIVEN a punch, THEN every actor's world position (in metres) is unchanged on every frame.
 
 **Battle replay (rule 9)**
@@ -1126,8 +1178,8 @@ All [L] and [I] tests follow P-02's conventions:
   | Family Meal (3 living members including the healer, one at full HP) | its move-specific animation or `attack` | `heal` (or no change in pose) on each healed member other than the healer | one per healed member, the healer included; none for the one at full HP | no |
   | Appetizers (single heal) | its move-specific animation or `attack` | target `heal` (or no change in pose) | one, over the target | no |
   | Home Run (direct damage) | its move-specific animation or `attack` | target `hit`, or `knockout` if it fell | one, over the target | yes |
-  | Speak to the Manager | its move-specific animation or `attack` | target `status` (or `hit`) | none | no |
-  | Viral Stunt | its move-specific animation or `attack` | target `status` (or `hit`) | none | no |
+  | Speak to the Manager | its move-specific animation or `attack` | target `status`, or `hit` when the set has no `status` art | none | no |
+  | Viral Stunt | its move-specific animation or `attack` | target `status`, or `hit` when the set has no `status` art | none | no |
 
   No number anywhere reads "0".
 
@@ -1185,28 +1237,32 @@ All [L] and [I] tests follow P-02's conventions:
   - **Victory and Defeat** blends and holds play at 1× even when the replay ending the battle was latched.
 - **AC-24 [L]** (P-06) **set_brightness_and_blur**:
   - **Steady states:** set brightness equals `B_native × k_state` in Battle, Boss takeover and Defeat, with `k_state < 1.0` in all three.
-  - **Victory**, at the defaults with `dt = 1/60`:
-    - set brightness is `0.70 × B_native` at Victory's first frame, `0.90 ×` on frame 18 (the peak, `t = blend_victory`) and `0.85 ×` from frame 42 on (`t = blend_victory + victory_settle`);
+  - **Victory**, at the defaults with `dt = 1/60`, measured on the Battle stage's lighting state whether or not the results screen covers it (rule 6), with frames counted by P-02's convention:
+    - set brightness is `0.70 × B_native` on frame 0, `0.90 ×` on frame 18 (the peak, `t = blend_victory`) and `0.85 ×` from frame 42 on (`t = blend_victory + victory_settle`);
     - on every frame, it equals the Victory curve within 1e-4 and never exceeds `set_brightness_victory × B_native`;
-    - the actors' key and rim are above their Battle values on every frame from Victory's start until the settle completes.
+    - the actors' key and rim equal their Battle values within 1e-4 on frame 0 and from frame 42 on, and are strictly above them on every frame with `0 < t < blend_victory + victory_settle`.
+  - **Victory after a boss fight:** set brightness is `0.85 × B_native` on frame 0 and never below it before the peak; the sky's color equals the flood swatch's on every frame of Victory.
   - **Sky:** sky energy equals `B_sky_native × k_state` in every non-takeover battle-family state.
   - **Boss takeover:** the flooded fill's energy equals the set light's divided by `set_key_fill_ratio_boss`, and the set light's direction equals the stage's Battle preset's.
   - **Reduce Blur** scales blur only, never brightness, including the Menu backdrop's blur, and applies to the frozen frame while the Menu is open.
 - **AC-25 [L]** (P-05) **flash_gate**. The gate is driven with an injected real-time clock in integer microseconds, and transitions declared as offsets.
-  - **Landing, not request:** three stamps declaring ↑ +50,000 µs and ↓ +150,000 µs, requested at 0, 200,000 and 400,000 µs: the first two are allowed and the third is refused and plays capped. With `flash_rate_max = 4` in a test config, all three are allowed.
+  - **Landing, not request:** three stamps declaring ↑ +50,000 µs and ↓ +150,000 µs, requested at 0, 200,000 and 400,000 µs: the first two are allowed and the third is refused and plays capped. With a limit of 5 passed directly into the gate under test (not through the presentation config, whose load rule caps it at 3), all three are allowed.
   - **Counting:** a fixed sequence of one stamp every 100,000 µs for 10 s never books more than `flash_rate_max` flashes in any closed one-second window. N alternating booked transitions count as N − 1 flashes.
   - **Refusal:** a refused request books nothing and plays the capped variant. With Reduce Flashing On, every gated request is refused.
   - **Reserved:** a boss flood books its transition even when the gate would refuse a gated source. A gated source that would then exceed the limit is refused. A fixture reserved sequence that alone exceeds the limit fails boot validation.
-  - **Menu:** a request 200,000 µs after an allowed flash is refused, with the Menu opened and closed in between.
+  - **Menu:** with the one-second window already holding `flash_rate_max` booked flashes, a request 200,000 µs later that would add one more is refused, with the Menu opened and closed in between. The Menu's own open and close transitions are gated requests too; in this fixture they are refused, so they play capped and book nothing.
+  - **Frozen source:** a stamp is allowed and frozen by the Menu between its ↑ and its ↓. While frozen its ↓ is unbooked but counts as pending at its resume-time landing, so the Menu's close transition is judged with it in (and refused, playing capped, when the window would overflow). On resume the ↓ is re-booked with reserved priority and **always lands**: the screen returns to rest. Across the whole sequence (stamp, Menu open, Menu close, resume) no closed one-second window of the composite frame holds more than `flash_rate_max` flashes.
+  - **Clock rate:** a gated two-flash source (↑↓↑↓) allowed at 1× and latched after its first ↑ has its unlanded transitions re-booked at their compressed landing times on the latch frame. If that would exceed the limit, its first ↓ (a closing transition) still lands, and its second ↑↓ are dropped and play capped. A transition after a scheduled wind-up-to-hold rate change lands on the frame its schedule-integrated `t_land` predicts, within one frame step.
+  - **Capped means capped:** every source's capped variant, measured on its fixture frames, has no general transition (`< flash_luma_delta`) **and** no red transition, or stays below `flash_area_min`. A fixture whose capped variant is a saturated-red swing fails boot validation.
   - **Aggregation:** with two area-exempt sparks each declaring 10% of a window playing, a third declaring 10% goes through the gate. One declaring 4% starts exempt.
   - **Definitions**, on fixture frame pairs:
     - a 0.11 swing with the darker state at 0.78 is a transition, and a 0.09 swing is not;
     - a 0.11 swing with the darker state at 0.82 is not;
-    - a saturated-red pair, computed on linear R, G, B, is a transition, and the same pair computed on gamma-encoded values is classified as the linear one is;
+    - a saturated-red fixture pair chosen so the two encodings disagree (a pair that is a red transition on linear R, G, B and is not on gamma-encoded values) is classified as a transition;
     - a change over 26% of one 10° window counts, and over 24% it does not.
 
 **Edge cases**
-- **AC-26 [L]** (P-04) (Retry and cancel in a boss fight) GIVEN Retry in a boss fight with a full (uncapped) retry flash, THEN:
+- **AC-26 [L]** (P-04) (Retry and cancel in a boss fight) GIVEN Retry in a boss fight with a full (uncapped) retry flash, with Faster battle animations and Speed up boss entrances both Off (AC-45 covers the other speeds), THEN:
   - every lighting parameter equals the takeover's end-state preset within 1e-4 on every frame from the first frame the retry flash stops fully covering the screen;
   - the boss shows the last frame of its `intro` for `boss_retry_hold` before the first command menu opens.
 
@@ -1223,12 +1279,12 @@ All [L] and [I] tests follow P-02's conventions:
 - **AC-30 [I]** (P-06) (Content Data) GIVEN a Character record with an unknown `sprite_set_id`, THEN boot ends in Content Error. GIVEN the checkerboard placeholder ID, THEN boot reaches Title.
 
 **Performance**
-- **AC-31 [P]** (P-14) On the development PC, in a windowed release export, the battle benchmark (8 actors, a boss takeover restarted every 2.0 s of mode time, vsync off, 5 runs of 600 frames after a 120-frame warm-up) meets these:
-  - the median of the runs' median frame times is at most 16.0 ms;
-  - no frame in any run exceeds 33.3 ms;
-  - total draw calls per frame stay at or below `battle_draw_call_budget` on every measured frame.
+- **AC-31 [P]** (P-14) On each binding device, a GTX 1080-class desktop (8 GB RAM) at 1920×1080 and a Steam Deck at 1280×800 (native Linux export), in a windowed release export, the battle benchmark (8 actors, a boss takeover restarted every 2.0 s of mode time, vsync off, 5 runs of 600 frames after a 120-frame warm-up) meets these:
+  - the 99th-percentile frame time over all runs is at most 16.6 ms (`performance.frame_time_p99_ms`);
+  - no frame in any run exceeds 33 ms (`performance.frame_time_worst_ms`);
+  - on every measured frame, 3D draw calls stay at or below 300 and canvas draw calls at or below 100, counted separately (`battle_draw_call_budget`).
 
-  **Pending (Open Question 13):** the budget's value and counting rule, the 99th-percentile and worst-frame limits, and the target hardware are the technical-director's call. Until then, the median and 33.3 ms clauses gate, and the draw-call clause is recorded, not gated.
+  A failure on either device fails the criterion. A 3840×2160 run on the desktop is measured and reported, but doesn't gate. Peak RAM and VRAM are reported so a memory ceiling can be set. Limits and hardware: user decision 2026-10-22 (Open Question 13, closed), recorded in `project.yaml` and ADR-0005 Performance Implications.
 
 **Screens (capture-measured, then signed off)**
 - **AC-32 [C]+[VF]** (P-09, P-10, P-17) (Pending: capture tool) One capture per lighting state (Title, Overworld, Battle, each faction's boss takeover, Camp, the Victory burst's peak, Defeat) at 1920×1080. Battle and one boss takeover are also captured at 1280×720, 2560×1440 and 2560×1080 (21:9).
@@ -1245,10 +1301,12 @@ All [L] and [I] tests follow P-02's conventions:
     - every swatch's L\* range is at or below `flood_l_max`, and its chroma equals `min(flood_chroma_frac × C*_signature, C*_max)`.
   - **[C] the flooded sky:** on the ID pass's sky pixels, shrunk by 2 px at the sky's edges:
     - at least `sky_match_min` of them match the flood's hue and chroma;
-    - every sky pixel's L\* lies inside the swatch's range widened by `flood_l_gradient`;
+    - above the horizon band, no non-star sky pixel is lighter than the swatch's upper L\* bound; inside the band, none is lighter than that bound plus `flood_l_gradient`; nowhere is one darker than the lower bound minus `flood_l_gradient`;
+    - the mean L\* of the non-star sky pixels is at most `flood_l_max`;
     - the sky's L\* standard deviation is at least 2, so a flat card fails.
-  - **[C] the sky is seen and is not the stage's own:** `sky_share ≥ sky_share_min`, and the swatch is at least `flood_native_de_min` from the stage's native sky.
-  - **[C] enemy against flood:** every enemy's costume band is at least `enemy_flood_de_min` from its ring.
+  - **[C] stars:** at least `star_count_min` stars are visible above the horizon band, covering at most `star_share_max` of the sky, each exactly one texel (`T × T` px).
+  - **[C] the sky is seen and is not the stage's own:** `sky_share ≥ sky_share_min`, and the swatch at its `L*_mid` is at least `flood_native_de_min` from the stage's native sky.
+  - **[C] enemy against flood:** in every valid sector, every enemy's costume band is at least `enemy_flood_de_min` from its ring.
   - **[C] hardest set contrast** (Pending: the set-light shadow mask): the ratio of mean lit-set to mean shadowed-set luminance is higher in each boss takeover than in that stage's Battle capture.
   - **[C] cross-checks:** the faction shape is in view (AC-37); the squad is untinted (AC-67); the HUD is untinted (AC-53).
   - **[VF] side-by-side review:** the art director reviews all faction takeovers together. No faction's takeover is less lavish, uglier or villain-coded than another's (Pillar 2), the horizon glow reads, and the blob shadows match the specified look.
@@ -1329,7 +1387,7 @@ All [L] and [I] tests follow P-02's conventions:
   - Game State's retry flash, wipes and fades;
   - the Menu backdrop's open and close, the Defeat card's stamp, and the results screen's opening.
 
-  A fixture source declared exempt whose data exceeds its exemption fails boot validation. A gated source refused by the gate plays its capped variant, whose declared swing is below `flash_luma_delta`.
+  A fixture source declared exempt whose data exceeds its exemption fails boot validation. A gated source refused by the gate plays its capped variant, whose declared frames have no general transition and no red transition, or cover less than `flash_area_min`. Every source's transitions are declared on a named clock (mode, replay or real). A dusk-flood starfield is declared exempt-by-area, and its summed area is below `flash_area_min`.
 - **AC-55b [C]** (P-13) (composite frames; Pending: capture tool and flash analyser) The flash analyser runs on the final composited frames, world and UI together, of each scripted sequence in P-13 at 60 fps. Those include a boss battle's reveal and takeover; a Victory with confetti into the results screen; a Defeat, the stamp and a Retry; and a Menu opened and closed during a replay. Each sequence runs with Reduce Flashing Off and On. No one-second window holds more than `flash_rate_max` general or red flashes. With Reduce Flashing On, none holds a flash other than the reserved boss flood's.
 - **AC-56 [L]** (P-06) (config validation) Fixture configs, each breaking one load rule by a clear margin (at least 0.01), end boot in a content error naming that rule:
   - `battle_speed_mult > ff_mult − 0.25`;
@@ -1342,11 +1400,13 @@ All [L] and [I] tests follow P-02's conventions:
   - `defeat_hold < blend_defeat`;
   - `set_brightness_battle > set_brightness_boss`;
   - `set_brightness_victory_settle > set_brightness_victory`;
+  - `set_brightness_victory < set_brightness_boss + 0.05`;
+  - a capped variant with a red transition, or a reserved sequence over the limit at the largest `ff_mult`;
   - a `set_key_fill_ratio_boss` at or below a non-boss preset's ratio;
   - `flash_rate_max > 3`, or a `flash_luma_delta` or `flash_area_min` other than its constant;
   - an overworld camera failing the horizon check at 4:3.
 
-  A config exactly on each boundary passes. Every corner of the range-chained knobs passes, and so do one config with every knob at its minimum and one with every knob at its maximum.
+  A config exactly on each boundary passes. Every corner of the range-chained knobs passes, and so do one config with every knob at its minimum and one with every knob at its maximum. Those two leave out the two rules the ranges cannot guarantee (the set key:fill ratio against non-boss presets, and the overworld horizon check), which are tested by their own fixtures above.
 - **AC-57 [L]** (P-06) (boss intro required) GIVEN an encounter naming a boss whose sprite set has no `front` `intro`, THEN boot ends in a content error naming the set.
 - **AC-58 [L]** (P-03) (pixel snap in every mode) GIVEN a sprite whose foot anchor moves 0.37 screen pixels per frame for 120 frames, in the Overworld and in Battle, THEN its quad's bottom-centre is a whole pixel on every frame, and its size never changes.
 
@@ -1373,7 +1433,7 @@ All [L] and [I] tests follow P-02's conventions:
 **Added in revision 5**
 - **AC-64 [P]** (P-15) (nothing compiles in play) In a windowed release export on the development PC, after Boot's warm-up, from a freshly launched export with an empty shader cache:
   - the scripted state cycle (each mode's entry; Battle, every faction's boss takeover, Victory and Defeat; Camp; Menu open and close) leaves every `Performance.PIPELINE_COMPILATIONS_*` counter unchanged;
-  - no frame exceeds 33.3 ms.
+  - no frame exceeds 33 ms (`performance.frame_time_worst_ms`).
 
   A fixture preset that switches an un-warmed feature makes the counters rise, as a negative control.
 - **AC-65 [L]** (P-04) (outcome numbers and the round on the HUD) GIVEN the AC-14b moves resolved in one replay, THEN:
@@ -1389,8 +1449,10 @@ All [L] and [I] tests follow P-02's conventions:
 
 **Added in revision 6**
 - **AC-67 [C]** (P-09) (the squad is never tinted; Pending: capture tool) On each faction's boss takeover capture and the same stage's Battle capture, each squad member's actor pixels differ by at most ΔE 3 on average and ΔE 6 at the 95th percentile.
-- **AC-68 [L]** (P-03) (upright-card occlusion, pitched cameras) In the Overworld and Camp, for a sprite standing 0.5 m in front of a fixture wall, every sprite pixel's depth equals the depth of the upright card at its foot anchor along that pixel's view ray, within 1e-4. So the wall never hides the sprite's upper body, and a fixture prop placed in front of its feet does.
-- **AC-69 [UI]** (P-18) Retained screenshots of the replay indicator in its three states and of the refusal pulse on the command menu, at 1080p with keyboard and gamepad glyphs. Each is legible over Battle and over each faction's boss takeover.
+- **AC-68 [L]+[C]** (upright-card occlusion, pitched cameras), in the Overworld and Camp, for a sprite standing 0.5 m in front of a fixture wall:
+  - **[L]** (P-03): the pure card-depth function returns, for every fixture view ray through the sprite's pixel rectangle, the view-space depth (metres) of that ray's intersection with the upright card at the foot anchor, within 1e-4 of the analytic value.
+  - **[C]** (P-09; Pending: capture tool): on an Overworld capture of the fixture, every ID-pass pixel of the sprite's upper half is present in front of the wall, and every ID-pass pixel of its bottom `2` texels behind a fixture prop placed in front of its feet is absent.
+- **AC-69 [UI]** (P-18) Retained screenshots of the replay indicator in its three states and of the refusal pulse on the command menu, at 1080p with keyboard and gamepad glyphs. In each, the indicator's and the pulse's text and glyphs have a WCAG contrast of at least 4.5:1 against their own backing, over Battle and over each faction's boss takeover, and the ux-designer signs the set off.
 
 ## Open Questions
 
@@ -1410,11 +1472,11 @@ All [L] and [I] tests follow P-02's conventions:
 | 10 | **Art bible §5–§8 are unwritten** (character design, environment, UI, asset standards). Rule 10's required-animation set (including `victory` and `land_frame`) and fallback, and the per-animation mirroring exceptions, were proposed here and need art-director confirmation | art-director | `/art-bible` completion |
 | 11 | **Other-document follow-ups (revision 6).** The fifth review's gating split (ruling 6): this GDD gates on contradictions, guarantees, formulas, knobs and defective ACs; the ADRs gate on mechanism; stories gate on tools, budgets and test infrastructure.<br>**Done 2026-10-22:**<br>• Input GDD rule 3: focus follows the pointer only after `pointer_switch_px` of movement;<br>• ADR-0005 revision 2: the screen-aligned, constant-`T` sprite projection; upright-card depth; the level shift-lens camera on `PROJECTION_FRUSTUM` with the punch as extra lens shift; the sky card; a rim that excludes the outline; actors without ambient; the capture tool's build step (1c) and its own story; the ID pass's explicit `SubViewport` settings; the compile contract, its compiling-parameter list and same-config warm-up; the Vulkan pin; a uniform sink for the globals; actor shadows off; the `FlashGate` service with landing-time booking and reserved sources;<br>• ADR-0006 revision 3: snapshots at the turn and end markers, `display_resynced` and the Retry display reset, cancelling at `transition_started(BATTLE, BATTLE)`, the per-event tolerance, the knockout-keyed hold and the no-reactor hold, the speed rules of rulings 1–3 and `press_effective`, cancelling the end-of-fight hold on exit, clearing squad transients on first entry, the actor never in its own reactions, and the displayed round;<br>• art bible §2's boss row and §4's flood rule: dusk floods with a neon horizon, and swatch values at Step 1;<br>• the registry (`replay_time`, `flash_gate`);<br>• the test plan, `production/qa/test-plans/sprite-camera-presentation-test-plan.md`.<br>**Still open: the Game State GDD.** It must:<br>• route the retry flash, wipes and fades through the flash gate, declaring their transitions;<br>• open the Defeat Prompt and results screen when the Battle mode reports the outcome, after `defeat_hold` or `victory_hold`;<br>• give faction-tinted wipes the faction shape too.<br>No new announcement is needed: the Battle mode cancels on `transition_started(BATTLE, BATTLE)` and opens the gate on that row's `transition_finished(BATTLE)` | technical-director (ADRs); Game State owner | Game State: before its own stories |
 | 12 | **Should the player's own command beat's landing be protected?** In MVP no beat is protected, and only wind-ups ever speed up. If playtests show players miss their own gags, the beat's landing hold could lengthen (never its wind-up) | game-designer, from playtest | First playtest with the replay in place |
-| 13 | **Draw-call budget, counting rule and coverage.** `battle_draw_call_budget` (150) counts every pass. The value and the rule are the technical-director's call. Also open:<br>• a rough count gives ~190–275 calls for a 40-mesh diorama, plus the sky card, so measure a real Step 1 stage first;<br>• whether the counter includes canvas (HUD) draws;<br>• AC-31's 99th-percentile and worst-frame limits;<br>• a 3840×2160 run, since upscaling is banned;<br>• the Menu blur's cost;<br>• Overworld and Camp budgets;<br>• target hardware and a VRAM budget | technical-director | Before AC-31 is first run |
+| 13 | ~~**Draw-call budget, counting rule and coverage.**~~ **RESOLVED 2026-10-22 (user decision on the technical director's proposal).** 300 draw calls for all 3D passes (including `SetLight`'s cascades) + 100 for canvas/HUD, counted separately; p99 ≤ 16.6 ms and worst ≤ 33 ms; binding hardware a GTX 1080-class desktop at 1080p and Steam Deck at 1280×800; 2160p measured but not gating (AC-31, `project.yaml`, ADR-0005). Still open, not blocking AC-31: the Menu blur's cost, Overworld and Camp budgets (with the Overworld ADR), and a memory/VRAM ceiling (`memory_ceiling_mb`, set from P-14's measured peak) | technical-director | Closed (remainders tracked in ADR-0005) |
 | 14 | ~~**Overworld texel-row stability**~~ **Resolved in revision 6.** Constant `T` (rule 2) means a sprite's texel rows never change height as it walks, and the anchor snap fixes its phase | — | — |
 | 15 | ~~**Engine mechanisms to confirm**~~ **Moved in revision 6** to ADR-0005's Verification Required. Those items are the lens shift and the punch on `frustum_offset`, the constant-`T` quad and upright-card depth, the sky card under the lens shift, reading the glow input, manual sprite frames, flip mirroring through the shader, and which lighting parameters compile | godot-specialist + technical-artist | Step 1 |
 | 16 | **The automatic replay speed-up** (deferred by the fourth review's ruling 4). MVP has none: a replay plays at the speeds the player chose, however long it is. **Trigger:** bring it back if, in the first playtest with a full enemy phase of 4+ actors, the median enemy phase at the players' own settings runs over 8 s, or players say the phases drag. It would be one more term in the plain-beat speed (ADR-0006), computed once per replay, and never applied to protected content | game-designer + ux-designer, from playtest | First playtest with a full enemy phase of 4+ actors |
 | 17 | **Move-specific animations keyed by display name.** `BattleOutcome` carries `move_name`, not a move ID, so a move's own animation is looked up by its display name, with duplicates rejected at boot (rule 10). That breaks under localization or a renamed move. When ADR-0001's content migration gives moves IDs, switch the key | lead-programmer + Content Data owner | ADR-0001 move-record migration |
-| 18 | **Ratify the fifth review's art-direction rulings (D1–D4).** They were adopted in autonomous mode: dusk floods, a backdrop sky card, constant integer texels (`T = H/360`, so distance never changes a sprite's size), and a level shift-lens battle camera. The user may veto any of them. D3 changes the look most: back-row enemies are as big as the party | user, with art-director | Before ADR-0005 is Accepted |
+| 18 | ~~**Ratify the fifth review's art-direction rulings (D1–D4).**~~ **RESOLVED 2026-10-22: the user ratified all four.** D1 (dusk floods) on one condition: **every dusk sky shows some stars** (rule 6, Formulas `flood`, art bible §4). D2 (sky card), D3 (constant integer texels) and D4 (level shift-lens battle camera) are approved as written | user | Closed |
 | 19 | **Sprite size steps with `T` at in-between window heights.** At 900p (`T = 2`) a sprite is 80% of its 1080p size relative to the frame. Accept it, or render the world at the nearest multiple of 360 lines and scale by whole pixels | technical-artist + art-director | Step 1 |
 | 20 | **Recommended items from the fifth review, not adopted in revision 6:**<br>• a minimum on-screen time for a number when the same target is hit again quickly while latched;<br>• AccessKit labels and UI text contrast for the indicator and refusal pulse (UI Framework);<br>• effects for specials that change nothing | ux-designer + UI Framework owner | UI Framework GDD |

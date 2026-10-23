@@ -1,301 +1,429 @@
 # Go back to your planet! — Master Architecture
 
 ## Document Status
-- Version: 2 (revised after TD-ARCHITECTURE and LP-FEASIBILITY CONCERNS)
-- Last Updated: 2026-10-21
+- Version: 4 (synced to ADR-0007–0013 and `architecture-review-2026-10-22c.md`)
+- Last Updated: 2026-10-22
 - Engine: Godot 4.7.2
-- GDDs Covered: content-data-definitions.md, game-state-scene-flow.md, input-system.md, stats-damage-resolution.md, turn-battle-system.md, faction-rule-modifiers.md
-- ADRs Referenced: ADR-0001 (Accepted)
-- TD-ARCHITECTURE: 2026-10-21 — CONCERNS, REVISED after CONCERNS (see ADR Audit for the resolved items)
-- LP-FEASIBILITY: 2026-10-21 — CONCERNS, REVISED after CONCERNS (see ADR Audit and Module Ownership for the resolved items)
+- GDDs Covered: content-data-definitions.md, game-state-scene-flow.md, input-system.md, sprite-camera-presentation.md, stats-damage-resolution.md, turn-battle-system.md, faction-rule-modifiers.md
+- ADRs Referenced: ADR-0001 to ADR-0013. ADR-0001 was Accepted 2026-10-21; ADR-0002 to ADR-0011 and ADR-0013 were Accepted 2026-10-22. ADR-0012 is Proposed and waits for the Overworld GDD.
+- TD-ARCHITECTURE: 2026-10-21 — CONCERNS, REVISED after CONCERNS (v2)
+- LP-FEASIBILITY: 2026-10-21 — CONCERNS, REVISED after CONCERNS (v2)
+- v3 changes: the Architecture Document Coverage findings of `architecture-review-2026-10-22.md` (BattleReplayController and FlashGate added, the Sprite & Camera row rewritten for ADR-0005 rev 3, the enemy-phase replay data flow added, the TR baseline pointed at `tr-registry.yaml`), plus status updates for the five ADRs accepted today
+- v4 changes: the Architecture Document Coverage findings of `architecture-review-2026-10-22b.md` and `-22c.md`. Module rows rewritten for ADR-0007 (Stats), ADR-0008 (UI Framework), ADR-0009 (Save/Load & Settings), ADR-0010 (Turn Battle), ADR-0011 (Faction Rules) and ADR-0012 (Overworld, Proposed). New rows for Localization (ADR-0013) and Settings. Content Boot registrants updated. New data flows for damage resolution and settings delivery, and the save path rewritten. ADR Audit extended to 13 ADRs. TR baseline and Required ADRs brought up to date
 
 ## Engine Knowledge Gap Summary
 Engine: Godot 4.7.2 | LLM Training Covers: up to ~4.3 | Post-Cutoff: 4.4, 4.5, 4.6, 4.7
 
-- **HIGH RISK**: Input (device-ID constants, dual-focus 4.6 — not yet empirically verified in this project), UI (Control/accessibility changes, dual-focus — see Open Questions), Rendering (`AreaLight3D`, HDR, Compositor-based post-processing — relevant to the art bible's lit-diorama direction, not yet implemented or verified), Physics/Jolt (conditional — see Overworld's Open Question below; not relevant unless free-roam movement is chosen).
-- **MEDIUM RISK**: Animation (Tween/IK changes), Audio (one default flipped: `area_mask`).
-- **LOW RISK**: Core scripting fundamentals (`RefCounted`, `Resource`, signals, `RandomNumberGenerator`) — already exercised and empirically verified throughout the shipped battle code and ADR-0001's own verification.
+- **HIGH RISK**:
+  - **Rendering**: ADR-0005 pins the approach and probed most of it on 4.7.2 (`PROJECTION_FRUSTUM` + `frustum_offset`, the clip-space sprite quad, pipeline-compilation counters, runtime global uniforms, `SubViewport` defaults). The backend is pinned to **Vulkan with both fallbacks off** (Vulkan is the 4.7.2 default on Windows; the engine reference was corrected). `AreaLight3D` and HDR output are deliberately **not used**. Still open: ADR-0005 Verification Required items (12)–(16), measured in its Migration Step 1 spike, including on the Steam Deck.
+  - **UI**: 4.6 dual focus and AccessKit (4.5+). ADR-0003 fixes the input side (routed, then re-injected navigation). ADR-0008 (Accepted) fixes the UI side, with probes on 4.7.2: one focus owner plus hidden focus (`grab_focus(hide_focus)` stated per path), `canvas_items` integer stretch refit to the window size every frame the size changes, plain-`Control` roots for full-rect children, and AccessKit properties. Code-set text is translated exactly once (ADR-0013). Still open: font sharpness at 3× and 4×, and `get_final_transform()` mapping (ADR-0008 Verification items 9 and 10).
+  - **Input**: ADR-0003 verified the device-ID constants, `InputMap.action_erase_events()` and re-injection on 4.7.2. Still open: real pad names under SDL3, and Steam Input on the Deck ("Steam Virtual Gamepad").
+  - **Physics/Jolt**: not used. ADR-0012 (Proposed) moves the party with a pure `GroundMover` on a baked `WalkGrid`, with no physics engine for movement or triggers. The risk returns only if that ADR is rejected.
+- **MEDIUM RISK**: Animation (Tween/IK changes; `AnimatedSprite3D` `stop()` and `animation` both reset `frame` to 0, probed, ADR-0005 §1), Audio (one default flipped: `area_mask`).
+- **LOW RISK**: Core scripting fundamentals (`RefCounted`, `Resource`, signals, `RandomNumberGenerator`, typed `Dictionary[K, V]`): exercised in the shipped battle code and probed for the ADRs. Node lifecycle order was **measured**, not assumed (ADR-0004: an autoload's `_ready()` runs after the main scene's `_enter_tree()`).
 
-This project is already deep in post-cutoff territory. The working policy going
-forward: every API a story's implementation actually depends on gets empirically
-verified against this exact engine build (via a throwaway headless script,
-deleted after) before being trusted, rather than assumed from training data —
-this is how ADR-0001's `ResourceLoader.list_directory()` claim and every battle
-story's engine-specialist review were handled, and it should continue.
+This project is deep in post-cutoff territory. The working policy: every API a
+story's implementation depends on is verified against this exact engine build
+(a throwaway headless or windowed script, deleted after) before it is trusted,
+rather than assumed from training data. Every ADR to date has been handled this
+way, and the control manifest (`docs/architecture/control-manifest.md`) records
+the verified behaviours as rules.
 
 ## System Layer Map
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│ PRESENTATION  │ UI Framework (partial — battle HUD built),
-│               │ Audio Manager (not built), Onboarding & Tutorial (not built)
+│ PRESENTATION  │ UI Framework (ADR-0008 Accepted; battle HUD built, the
+│               │ framework not built), Audio Manager (not built),
+│               │ Onboarding & Tutorial (not built)
 ├─────────────────────────────────────────────────────────────────┤
-│ FEATURE       │ Turn Battle System (built), SquadSpecials (built — the
-│               │ squad's 4 specials, see Module Ownership), ChapterFlow (built
-│               │ — fight sequencing, see Module Ownership; overlap with Game
-│               │ State & Scene Flow is an Open Question), Faction Rule
-│               │ Modifiers (built, 2/4 factions), Quirk State System (not
-│               │ built), Combo System & Codex (not built), Enemy AI (collapses
-│               │ into Faction Rule Modifiers at MVP scope), Overworld
-│               │ Exploration & Encounters (not built — blocked on 3
-│               │ prerequisite ADRs, see Required ADRs), Camp & Party
+│ FEATURE       │ Turn Battle System (built; ADR-0010 Accepted, retroactive:
+│               │ check_command, BattleFactory and Flee not built),
+│               │ BattleReplayController (ADR-0006 Accepted, not built),
+│               │ SquadSpecials (built), ChapterFlow (built — becomes the
+│               │ interim Overworld under ADR-0002), Faction Rule Modifiers
+│               │ (built, 2/4 factions; ADR-0011 Accepted, retroactive),
+│               │ Quirk State System (not built), Combo System & Codex (not
+│               │ built), Enemy AI (collapses into Faction Rule Modifiers at
+│               │ MVP scope), Overworld Exploration & Encounters (not built —
+│               │ ADR-0012 Proposed, blocked on its GDD), Camp & Party
 │               │ Management (not built), Leveling & Loyalty (not built,
 │               │ Vertical Slice), Faction Reputation & Endings (not built,
 │               │ MVP-lite→Alpha), Items/Equipment & Shops (not built,
 │               │ Vertical Slice)
 ├─────────────────────────────────────────────────────────────────┤
-│ CORE          │ Sprite & Camera Presentation (not built — blocks Overworld),
-│               │ Stats & Damage Resolution (built), Squad Roster & Recruitment
-│               │ (not built), Dialogue/Banter & Quests (not built), Save/Load
-│               │ & Settings (not built, Vertical Slice)
+│ CORE          │ Sprite & Camera Presentation (ADR-0005 Accepted, not
+│               │ built), Stats & Damage Resolution (built; ADR-0007
+│               │ Accepted, retroactive: DamageResolver not built), Squad
+│               │ Roster & Recruitment (not built), Dialogue/Banter & Quests
+│               │ (not built), Save/Load & Settings (ADR-0009 Accepted, no
+│               │ GDD, not built, Vertical Slice)
 ├─────────────────────────────────────────────────────────────────┤
-│ FOUNDATION    │ Game State & Scene Flow (designed, not built — blocks
-│               │ Overworld), Input System (designed, not built — blocks
-│               │ Overworld), Content Data Definitions (designed, ADR-0001
-│               │ Accepted, implementation next)
+│ FOUNDATION    │ Game State & Scene Flow (ADR-0002 Accepted, not built),
+│               │ Input System (ADR-0003 Accepted, not built), Content Data
+│               │ Definitions (ADR-0001 + ADR-0004 Accepted, implementation
+│               │ next), Localization (ADR-0013 Accepted; a cross-cutting
+│               │ leaf utility, not built)
 ├─────────────────────────────────────────────────────────────────┤
 │ PLATFORM      │ Godot 4.7.2 engine/OS — no project code, no epic
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 Layer order reused from `design/gdd/systems-index.md`'s own dependency map.
-**Build-order note** (resolves TD item 2 / LP item 1): Overworld Exploration &
-Encounters is "the system requested next" only in the sense of *design*
-priority — it cannot actually be *built* until Game State & Scene Flow, Input
-System, and Sprite & Camera Presentation are all Accepted and implemented,
-since its own Module Ownership row consumes all three. See Required ADRs for
-the explicit ordering.
+**Build-order note**: Overworld Exploration & Encounters is "the system
+requested next" only in the sense of *design* priority. Its three prerequisite
+ADRs (Game State & Scene Flow, Input System, Sprite & Camera Presentation) are
+Accepted. Its own ADR-0012 is written but Proposed: it needs
+`design/gdd/overworld-exploration-encounters.md` first, then acceptance, then
+those three systems' implementation before its code can start. See Required ADRs.
 
 ## Module Ownership
 
 | System | Owns | Exposes | Consumes | Engine APIs (risk) |
 |---|---|---|---|---|
-| Content Data Definitions | Record catalog, ID/alias resolution, Ready/Failed state | `get_record`/`has_record`/`all_records`/`resolve_alias` | — (Foundation) | `Resource`, `ResourceLoader.load()`, `ResourceLoader.list_directory()` — 4.4+, post-cutoff, **empirically verified working in 4.7.2** (ADR-0001) |
-| Game State & Scene Flow | Current mode, overlay stack, transition lifecycle, detached Overworld instance (lifetime only — its contents are Overworld's), battle-start snapshot handle (contents are Battle mode's) | `request_transition(target_mode, payload)`, `open_overlay(kind, payload)`/`close_overlay()`; signals `transition_started(from, to)`, `mode_exited(from)`, `mode_entered(to)`, `transition_finished(to)`, `overlay_opened(kind)`, `overlay_closed(kind)` (named in `game-state-scene-flow.md` Rule 4) | Content Data (Ready/Failed), Input (routed actions) | Not yet implemented. Mechanism in **ADR-0002 (Proposed)**: `Node.add_child`/`remove_child`, `process_mode`, `PackedScene.instantiate()`, `ResourceLoader.load()` (pre-cutoff, detach and freeze behaviour empirically verified on 4.7.2), and `@abstract` (4.5). `ChapterFlow` overlap resolved there: Game State is the parent, and ChapterFlow is the interim Overworld |
-| Input System | Device state, active-device tracking, compiled bindings | **ADR-0003 (Proposed)**: `get_move_vector() -> Vector2`; signals `action_pressed(action)` (including derived `nav_*`), `action_released(action)`, `action_held(action)`, `device_lost()`, `device_restored()`, `focus_lost()`, `focus_gained()`, `active_device_changed(kind, pad_style)`, `pointer_confirm/cancel(position)`, `wheel_step(direction)`. The proposed `is_pressed`/`is_just_*` polling API was dropped | Content Data (`bindings_default` record, validated via ADR-0004's `register_record_validator`) | `InputEvent.DEVICE_ID_MOUSE/KEYBOARD` (4.7), SDL3 positional `JoyButton` (4.5), `InputMap.action_erase_events` + `Input.parse_input_event` on `ui_*`, `ignore_joypad_on_unfocused_application`: **empirically verified on 4.7.2**. Pad names under SDL3 still need real hardware |
-| Sprite & Camera Presentation | Per-mode lighting, sprite rendering, fixed battle camera | **ADR-0005 (Proposed)**: `PresentationDirector` applies `LightingProfile`s to the single in-tree `DioramaStage` on `mode_entered`; modes call `DioramaStage.request_profile(id)`; global shader uniform `mode_time` (stops under the Menu) | Game State (`mode_entered`, overlay signals, `mode_time`), Content Data (`sprite_set_id`, validated via ADR-0004) | `AnimatedSprite3D` + a per-sprite `ShaderMaterial` override (the shader owns texture, billboard and alpha scissor: an override gets nothing from SpriteBase3D on 4.7.2, verified), `DirectionalLight3D` `light_cull_mask`, global shader uniforms, `CameraAttributesPractical` DOF. `AreaLight3D` and HDR are **not used**. Sprite shadow shape still open. **No GDD yet** |
-| Stats & Damage Resolution | Nothing stateful — pure functions | `DamageCalculator.calculate_damage()` only (corrected — `calculate_heal()` is **not** here, see SquadSpecials below) | Content Data (stat_block, cost) | `RandomNumberGenerator` (injected) — **implemented**, LOW risk |
-| SquadSpecials | The squad's 4 named specials (stun, heal-party, heal-single, direct-damage) and their `calculate_heal()` (F4) | `make_speak_to_the_manager()`, `make_family_meal()`, `make_appetizer()`, `make_home_run()`, `calculate_heal(power, healer)` | Turn Battle System (the `Move`/`SpecialEffect` vocabulary it builds on) | **implemented** — `src/battle/squad/specials.gd`. No owning system in `systems-index.md` yet; closest fit is Turn Battle System or a future Quirk State System (see Open Questions) |
-| ChapterFlow | Multi-fight sequencing: constructs `BattleCore` instances, listens to `battle_ended`, carries squad HP/MP between fights, drives chapter-won | `fight_started`, `fight_lost`, `chapter_won` signals | Turn Battle System, Faction Rule Modifiers | **implemented** — `src/chapters/chapter_flow.gd`. Overlaps Game State & Scene Flow's designed scope (see that row); resolve ownership in Game State's own ADR, not here |
+| Content Data Definitions | Record catalog, ID/alias resolution, Ready/Failed state | `get_record`/`has_record`/`all_records`/`resolve_alias`, `register_known_effect_types`, `register_record_validator` (ADR-0004) | — (Foundation) | `Resource`, `ResourceLoader.load()`, `ResourceLoader.list_directory()` (4.4+, verified on 4.7.2 in the editor; re-verify on an export) |
+| Content Boot Ordering | The one list of every registrant | `ContentBootstrap.run(catalog)` (no-op unless `UNLOADED`); its boot result returns `PresentationConfig` and the `FactionRuleRegistry` to `GameRoot` | Content Data; every registrant: Turn Battle, Faction Rule Modifiers (`FactionRuleRegistry` and rule-record validators, ADR-0011), Stats range validators (ADR-0007 §7), Input bindings validator, presentation validators, `LocFieldsValidator` for every record type (ADR-0013) | Node lifecycle order, **measured on 4.7.2** (ADR-0004) |
+| Game State & Scene Flow | Current mode, overlay stack, transition lifecycle, input lock, detached Overworld instance (lifetime only), battle-start snapshot handle (contents are Battle mode's), `mode_time` | **ADR-0002 (Accepted)**: `request_transition(target, payload)`, `open_overlay(kind, payload)`/`close_overlay()`, `report_battle_outcome()`, `choose_retry()`/`choose_retreat()`, `get_move_vector(caller)`, `is_transition_flash_capped()`; signals `transition_started(from, to)`, `mode_exited(from)`, `mode_entered(to)`, `transition_finished(to)`, `overlay_opened(kind)`, `overlay_closed(kind)` | Content Data (Ready/Failed), Input (`ActionSource`), FlashGate (injected) | `Node.add_child`/`remove_child`, `process_mode`, `PackedScene.instantiate()`, `ResourceLoader.load()`; detach and freeze behaviour verified on 4.7.2; `@abstract` (4.5). Not yet implemented |
+| Input System | Device state, active-device tracking, compiled bindings | **ADR-0003 (Accepted)**: `get_move_vector() -> Vector2`; signals `action_pressed(action)` (including derived `nav_*`), `action_released(action)`, `action_held(action)`, `device_lost()`, `device_restored()`, `focus_lost()`, `focus_gained()`, `active_device_changed(kind, pad_style)`, `pointer_confirm/cancel(position)`, `wheel_step(direction)` | Content Data (`bindings_default` record, validated via ADR-0004's `register_record_validator`) | `InputEvent.DEVICE_ID_MOUSE/KEYBOARD` (4.7), SDL3 positional `JoyButton` (4.5), `InputMap.action_erase_events` + `Input.parse_input_event` on `ui_*`, `ignore_joypad_on_unfocused_application`: verified on 4.7.2. Pad names under SDL3 and Steam Input still need real hardware. Not yet implemented |
+| Sprite & Camera Presentation | Sprite rendering at one constant texel scale, per-mode cameras, per-state lighting, the sky card, global shader uniforms | **ADR-0005 (Accepted, rev 3)**: `CharacterSprite` (`show_frame`, `step_ambient`, `reset_to_idle`); `DioramaStage` (one per 3D mode scene: `request_profile(id, blend, clock)` for the owning mode, `bind_profiles`/`apply_profile`/`set_ambient_paused` for the Director only, `set_punch_offset_px`); `PresentationDirector` (applies the entry profile on `mode_entered`, skips same-mode rows, writes `mode_time` and the rim globals through `GlobalUniformSink`); `SpriteProjection` (pure, static) | Game State (`transition_started`, `mode_entered`, overlay signals, `mode_time`), Content Data (`sprite_set_id`, validated via ADR-0004), BattleReplayController clocks as injected `Callable`s (Core never imports the Feature type) | `AnimatedSprite3D` as frame source with a per-sprite `ShaderMaterial` writing a clip-space quad (verified pixel-exact); `Camera3D.PROJECTION_FRUSTUM` + `frustum_offset`, `KEEP_HEIGHT` only (verified); `DirectionalLight3D` cull masks; global shader uniforms (write-only); pipeline-compilation counters; Vulkan pinned, no fallback. `AreaLight3D`, HDR, FXAA/SMAA/TAA **not used**. Not yet implemented |
+| FlashGate | Every booked large-area luminance transition, against `flash_rate_max` | **ADR-0005 §12**: `request(source_id, clock, rate) -> handle` (`-1` = play the capped variant), `set_rate`, `book_reserved`, `cancel`, `begin_exempt`/`end_exempt` | A real-time clock and `FlashSettings` (injected); `FlashSourceDecl` data, validated at boot | None beyond GDScript. Consumers: Game State (retry flash, wipes, fades), the Battle mode (replay-clock sources), the UI Framework (Menu backdrop, Defeat card, results). Not yet implemented |
+| BattleReplayController | The replay queue (GATE, HOLD, OUTCOME, ROUND, TURN, END), display snapshots, the three beat clocks, the one-level latch | **ADR-0006 (Accepted)**: `enqueue_reveal_gate`/`open_reveal_gate`/`enqueue_takeover`, `advance(delta)`, `request_latch`/`clear_latch`/`set_speed_settings`, `get_display(c)`/`get_display_round()`, `get_windup_progress`/`get_post_impact_time`/`get_hold_time`, `cancel_pending_replay`/`resync`/`dispose`; 14 signals including the gated `turn_started_after_replay`, `round_advanced_after_replay`, `battle_ended_after_replay` and `display_resynced` | Turn Battle (`BattleCore`'s 4 signals, read-only), presentation's `windup`/`ko_landing` `Callable`s, `PresentationConfig` | `RefCounted` + typed signals; typed `Dictionary[Combatant, …]` (probed). LOW risk. One per Battle-mode instance, beside `BattleCore` in `src/battle/`. **Hard prerequisite:** ADR-0002 Migration Step 2. Not yet implemented |
+| Stats & Damage Resolution | Nothing stateful between attempts. Per attempt: the `ResolutionHooks` registry, rebuilt by `start_battle()`; `StatsConfig` tuning | **ADR-0007 (Accepted)**: `DamageResolver.resolve(request) -> ResolutionRecord` (pure, static, both `damage` and `heal`), `can_afford`, `effective_stat`; `ResolutionHooks` (`add_stat_modifier`/`add_amount_modifier`/`add_override`/`remove_source`); read-only `Combatant.hp` plus `restore_vitals`; Stats content validators | Content Data (stat blocks, costs, `StatsConfig`), RNG (injected) | `RandomNumberGenerator` (injected), LOW risk. **Partly implemented**: today's `DamageCalculator` has the F3–F7 math; the resolver, hooks, record and HP lint are ADR-0007's migration. `src/battle/stats/` imports no Feature type |
+| SquadSpecials | The squad's 4 named specials (stun, heal-party, heal-single, direct-damage) | `make_speak_to_the_manager()`, `make_family_meal()`, `make_appetizer()`, `make_home_run()`. `calculate_heal()` is replaced by `DamageResolver`'s `heal` kind (ADR-0007), and Defend/Viral Stunt become registered modifiers | Turn Battle System (`Move`/`SpecialEffect`), Stats & Damage (`DamageResolver`) | **Implemented** — `src/battle/squad/specials.gd`. No owning system in `systems-index.md` yet; closest fit is Turn Battle System or a future Quirk State System (see Open Questions) |
+| ChapterFlow | Today: multi-fight sequencing, `BattleCore` construction, retry. **After ADR-0002 Migration Step 2:** encounter sequencing only (which fight is next, its roster, boss detection, HP/MP carryover, `chapter_won`), inside a placeholder `ChapterMode` that fills the Overworld slot | Today: `fight_started`, `fight_lost`, `chapter_won`. After Step 2: an `EncounterDescriptor` per fight; `chapter_won` | Today: Turn Battle, Faction Rule Modifiers. After Step 2: Game State (`request_transition`, `on_thawed`) | **Implemented** — `src/chapters/chapter_flow.gd`. QQ-01 resolved by ADR-0002 §8; it stops constructing `BattleCore` at Step 2 and is deleted when Overworld Exploration ships |
 | Squad Roster & Recruitment | Join/leave state, active party | join/leave events | Content Data (Character records) | Not yet implemented |
 | Dialogue, Banter & Quests | Dialogue state, quest flags | overlay open/close | Game State, Input, Content Data | `RichTextLabel` — 4.7 image-sizing change if inline icons used |
-| Save/Load & Settings | Serialized state, binding overrides | `save()`/`load()` | Game State (safe moments), Content Data (IDs only) | `FileAccess`; format is an open ADR |
-| Turn Battle System | Battle state machine, outcome log | `submit_action(move, target) -> BattleOutcome`, `start_battle(reset_squad := true)`, `retry_battle()`, `BattleCore.new(squad, enemies, rng, faction_rule)`, `get_living_squad()`/`get_living_enemies()`/`get_active_combatant()`, 4 signals | Stats & Damage, Faction Rule Modifiers | **implemented**, LOW risk |
+| Save/Load & Settings | Save slots (hashed two-line JSON, atomic write), the participant registry, playtime; the settings file and service (binding overrides, Faster battle animations, Speed up boss entrances, Screen Shake, Reduce Blur/Flashing/Motion, text scale) | **ADR-0009 (Accepted)**: `SaveService` (`list_slots`, `save_to_slot`, `read_slot`, `preflight`, `commit_if_loaded` bound into ADR-0002's `SceneLoader.payload_commit`, `reset_all_to_new_game`); `SaveParticipant` (`save_key`, `schema_version`, `capture`, `migrate`, `stage`, `commit`); `SettingsService` (`get_value`, `value_changed`, `pending_notices`) with narrow per-consumer views (`FlashSettings`, `UiSettings`, `PresentationSettings`) built in the composition root | Game State (`is_save_safe()`, SWAP), Content Data (IDs only), Input (`apply_overrides`, capture mode via ADR-0008's `InputCapture`), UI Framework (`pre_setup`) | `FileAccess`, `JSON`; nothing from `user://` is loaded as a `Resource` or through the variant parser. Advisory before the first save story: fsync and `.bak` fallback on `CORRUPT`, `JSON.stringify(full_precision)`, RNG state as a string, Deck suspend notification (22b F6–F8). No GDD yet. Not yet implemented |
+| Turn Battle System | Battle state machine, outcome log | **ADR-0010 (Accepted, retroactive)**: `BattleCore.new(squad, enemies, rng, rule)`, `check_command(move, target) -> CommandCheck` (pure), `submit_action(move, target) -> BattleOutcome` (`null` on a failed check), `start_battle(false)` under Game State, `retry_battle()` (harness only), `clear_transients(party)`; 4 signals plus `battle_fled` (END-class in ADR-0006); `BattleFactory.build(payload, catalog, rules, …)` in the Battle mode | Stats & Damage (`DamageResolver`), Faction Rule Modifiers (`FactionRuleRegistry`, `EnemyAction`), Content Data | **Implemented** core, LOW risk. Not yet built: `check_command`, `BattleFactory`, Flee (its rules wait for a Flee section in the GDD). Presentation reads outcomes only through BattleReplayController (TR-turnbattle-005); only the Battle mode reports Victory/Fled/Defeat, after the replay |
 | Quirk State System | Active states per combatant | apply/consume, duration | Turn Battle, Stats & Damage | Not yet implemented — relationship to today's `SpecialEffect` enum (owned by `SquadSpecials`/Turn Battle System) is `INTENT UNKNOWN` |
 | Combo System & Codex | Combo matching, Codex unlocks | combo-fired event | Quirk State, Turn Battle | Not yet implemented |
-| Faction Rule Modifiers | Per-faction rule/AI/presentation | 9-method hook contract on `FactionRule` | Turn Battle (consulted by), Stats & Damage | **implemented** (Bureaucratia, MegaCorp), LOW risk. Retroactive ADR recommended before ADR-0001's migration touches it — see Required ADRs |
+| Faction Rule Modifiers | Per-faction rule/AI/presentation, stateless per battle | **ADR-0011 (Accepted, retroactive)**: 10-method `FactionRule` contract (`specials_allowed`, `move_allowed`, `apply_round_upkeep`, `register_resolution_hooks`, `choose_enemy_action -> EnemyAction`, banner/tooltip text, identity/banner colours); `FactionRuleRegistry` (`register`, `create`, `known_rule_classes`, `validator_for`); the `FactionRule` record type (`rule_class`, `params`, `texts`, `colors`, `ref_ids`) | Turn Battle (consulted by), Stats & Damage (hooks), Content Data, Localization (`texts` through `LocText`) | **Implemented** (Bureaucratia, MegaCorp), LOW risk. Not yet built: the registry, rule records, `Combatant.record_id` (MegaCorp's AI still tells enemies apart by name) |
 | Enemy AI | Collapses into Faction Rule Modifiers at MVP scope | — | — | — |
-| Overworld Exploration & Encounters | Map state, player position, encounters, camp spots | Encounter descriptors | Game State, Input, Content Data, Sprite/Camera, Dialogue | Not yet implemented — **blocked on 3 ADRs** (Game State, Input, Sprite & Camera), movement mechanism is its own open ADR |
+| Overworld Exploration & Encounters | Map state, the party's map and position (`WorldState`, single owner), encounters, camp spots | **ADR-0012 (Proposed)**: `GroundMover.step()` (pure) on a `WalkGrid` baked from a `TileMapLayer`; `OverworldMode` (`start_encounter`, `on_thawed`); injected `WorldState`; `map_`/`enc_` record types; `MapEntryPayload`, `CampEntryPayload` | Game State, Input (`get_move_vector()`), Content Data, Sprite & Camera (its diorama, `FollowCamera` from `WalkGrid.bounds()`, `occupied_*`/`dungeon` profiles), Save/Load (a participant), Dialogue | No physics engine. `TileMapLayer` read at load time only, LOW risk. Not yet implemented; ADR-0012 can't be Accepted until its GDD exists |
 | Camp & Party Management | Active squad at camp | swap-party hook | Squad Roster, Game State | Not yet implemented |
 | Leveling & Loyalty | XP/level, loyalty, unlocks | — | Stats & Damage, Squad Roster, Dialogue | Not yet implemented (Vertical Slice) |
 | Faction Reputation & Endings | Reputation counters, ending choice | — | Squad Roster, Dialogue | Not yet implemented (MVP-lite → Alpha) |
 | Items, Equipment & Shops | Inventory, shop stock | — | Content Data, Stats & Damage | Not yet implemented (Vertical Slice) |
-| UI Framework | Battle UI, menus, HUD, dialogue UI | — (leaf, mostly consumes) | nearly everything | `Control`, `Tween` — **partially implemented** (battle HUD); `AccessKit` — 4.5+, HIGH risk, untouched; dual-focus (4.6) untested — see Open Questions |
-| Audio Manager | Music/SFX bus state | cue reactions | Game State, Turn Battle, Combo, Faction Rules, Overworld | `AudioStreamPlayer`, bus API — 4.7 `area_mask` default flip, MEDIUM risk |
+| UI Framework | Battle UI, menus, HUD, dialogue UI; the `UiTransitionPresenter`; the overlay focus stack; the menu input guard (TR-presentation-012); the window stretch refit; the project `Theme` and live text scale; the replay indicator | **ADR-0008 (Accepted)**: `UiService` (under `GameRoot/Services`; the second and last resolver holder; `refit_canvas()`, `world_to_ui()`); `UiContext` handed to every mode and overlay through ADR-0002's `pre_setup` hook; components `FocusScope`, `MenuGuard`, `PointerFocusSync`; `UiNavigator` (the only `Input.parse_input_event` caller besides InputSystem); `PromptFacade`; `UiFeedback.refuse()`; `InputCapture` (for ADR-0009) | Input (`InputResolver`, polled), Game State (six announcements, `pre_setup`), FlashGate, BattleReplayController's displayed state and indicator signals, Settings (`UiSettings` view), Localization | `Control` focus with `grab_focus(hide_focus)` stated per path, `canvas_items` + `expand` + integer stretch refit on a per-frame window-size check (22c E1), `min_size` 640×360, AccessKit properties, `Theme.set_font_size()`; all probed on 4.7.2. **Partially implemented** (battle HUD only); the framework is not built |
+| Audio Manager | Music/SFX bus state | cue reactions | Game State, Turn Battle, BattleReplayController (`beat_impact` for the hit sound), Combo, Faction Rules, Overworld | `AudioStreamPlayer`, bus API — 4.7 `area_mask` default flip, MEDIUM risk |
 | Onboarding & Tutorial | Tutorial-step gating | — | Turn Battle, Quirk State, Combo, UI Framework | none beyond UI Framework's own |
+| Localization | The string-context convention, `LOC_FIELDS` per record type, the extraction and check tools | **ADR-0013 (Accepted)**: `LocText.of(record, field)`/`of_key`/`fmt` (leaf utility); `tr(source, context)` with `<screen>.<purpose>` contexts in code; `LocFieldsValidator` registered for every record type; `extract_records.gd`/`extract_scenes.gd` and a check tool (headless) | Content Data (record IDs and plain-text fields), Content Boot Ordering (validator registration) | `TranslationServer`, gettext `.po`/`.pot`, `Control.translation_context`, `auto_translate_mode` (DISABLED on the leaf control that shows code-set text; children inherit), pseudolocalization; probed on 4.7.2. POT generation is editor-only, hence the project tools. Locale list not decided. Not yet implemented |
 
 ## Data Flow
 
 1. **Input path** (event-driven, not per-frame simulation — a turn-based menu
-   game): device event → Input System (resolves an action) → Game State &
-   Scene Flow (routes to current mode/overlay, applies input lock) → the
-   owning system acts → signals fire → UI Framework redraws.
-2. **Signal path**: Turn Battle System's 4 signals and Game State & Scene
-   Flow's 6 named signals (see Module Ownership) are the established model —
-   Presentation listens, never calls back into mutating methods (verified of
-   `BattleHud` this session). All synchronous, same-thread — no threading
-   anywhere in this project.
-3. **Save/load path**: Save/Load & Settings (not built) owns serialization;
-   stores IDs plus runtime state only — the Content Data Definitions catalog
-   itself is never serialized (Rule 7, read-only). Game State & Scene Flow
-   defines the safe-save window.
-4. **Initialization order**: Boot → `ContentCatalog` autoload's `_ready()`
-   (guaranteed before the main scene, ADR-0001) → `load_all()` → Ready/Failed
-   → Game State & Scene Flow leaves Boot for Title only once Ready.
+   game): device event → `InputSystem` (the only engine-input reader) →
+   `InputResolver` (resolves an action) → `GameStateMachine` (routes to the top
+   overlay or the current mode via `handle_action()`, applies the input lock)
+   → the owning system acts → signals fire → UI Framework redraws. Menu
+   navigation is then re-injected into native `Control` focus by the UI
+   Framework's helper, focus-bounded and press-only (ADR-0003 §5).
+2. **Signal path**: Game State & Scene Flow's 6 named signals and the
+   Battle-side signals below are the established model. Presentation listens
+   and never calls back into mutating methods. All synchronous, same-thread:
+   no threading anywhere in this project.
+3. **Battle replay path** (ADR-0006): the player submits a command →
+   `BattleCore.submit_action()` resolves it **and every enemy action after
+   it** synchronously, emitting `action_resolved` per outcome, then
+   `round_advanced`, `turn_started` or `battle_ended`, all in one call stack →
+   `BattleReplayController` queues each signal with a display snapshot →
+   the Battle mode's `_process` calls `advance(delta)` on mode time →
+   per beat: `beat_started` → `beat_impact` (the hit sound, the punch) →
+   `beat_finished` (displayed HP/MP/status change) → `CharacterSprite`s,
+   `DioramaStage` and `BattleHud` read the three clocks and `get_display()` →
+   only after the last beat, the gated `turn_started_after_replay` opens the
+   command menu, or `battle_ended_after_replay` starts the end-of-fight light
+   and hold, then `report_battle_outcome()` to Game State. A reveal gate holds
+   everything until `transition_finished(BATTLE)`, and a boss fight's takeover
+   is a HOLD entry ahead of the first turn. The Menu freezes all of it, because
+   `ModeHost` is disabled and `advance()` is not called.
+4. **Flash path** (ADR-0005 §12): every large-area luminance source
+   (Game State's retry flash and wipes, replay beats, the UI's Menu backdrop
+   and Defeat card) books its transitions with `FlashGate` at their landing
+   time; a refused booking plays its capped variant, and its timing never
+   changes.
+5. **Save/load path** (ADR-0009): a save is taken only while
+   `is_save_safe()`. `SaveService` asks each registered `SaveParticipant` to
+   `capture()` its section, then writes the slot atomically. Sections store
+   catalog IDs plus runtime state only; the catalog itself is never serialized
+   (Rule 7, read-only). A load runs in two halves. First,
+   `read_slot()` → `preflight()` verify, migrate and `stage()` every section
+   with no side effects, before any transition starts. Then, during ADR-0002's
+   SWAP phase, `SceneLoader.payload_commit` calls `commit_if_loaded()`, and
+   each participant `commit()`s, before the target mode is instantiated. A
+   `false` there is a swap failure and rolls back.
+6. **Damage resolution path** (ADR-0007): `BattleCore` builds a
+   `ResolutionRequest` per effect → `DamageResolver.resolve()` reads
+   `effective_stat()` through the attempt's `ResolutionHooks` (modifiers and
+   overrides registered by squad passives and by `FactionRule.register_resolution_hooks()`
+   at `start_battle()`) and `StatsConfig` → the resolver alone writes HP → one
+   `ResolutionRecord` per effect is carried in `BattleOutcome` → the replay
+   path (3).
+7. **Settings delivery path** (ADR-0009 §7–§8): `SettingsService` is built
+   first in `GameRoot._ready()` and loads its file with no catalog dependency,
+   so it works on Content Error too. The composition root wraps it in narrow
+   views (`FlashSettings` for `FlashGate`, `UiSettings` for `UiService`,
+   `PresentationSettings` for the Battle mode through `pre_setup`, and the
+   replay speed settings for `BattleReplayController.set_speed_settings()`).
+   Each view relays `value_changed(key)` as its own `changed`, so a change
+   applies live. Binding overrides go to `InputResolver.apply_overrides()`.
+8. **Initialization order** (ADR-0004, measured on 4.7.2): engine start →
+   `ContentCatalog` autoload `_init()`/`_enter_tree()` (state `UNLOADED`) →
+   `GameRoot._enter_tree()` runs `ContentBootstrap.run()` (registers every
+   vocabulary and validator, then `load_all()` → `READY` | `FAILED`) →
+   children's `_enter_tree()` → the autoload's `_ready()` (which touches no
+   catalog state) → children's `_ready()` → `GameRoot._ready()` builds
+   `SettingsService` first (ADR-0009 §7), then the `InputResolver` (overrides
+   applied), `GameStateMachine`, `FlashGate`, `PresentationDirector` and
+   `UiService` (created after the resolver, machine and gate; it refits the
+   window, ADR-0008 §1, §9), plus `SaveService` → the first tick in Boot
+   reads the terminal state → Title or Content Error. Boot also runs the
+   presentation warm-up behind the Boot screen (ADR-0005 §11).
 
 ## API Boundaries
 
-- **`ContentCatalog`** (Foundation, ADR-0001): `get_record(type, id)`,
+- **`ContentCatalog`** (Foundation, ADR-0001 + ADR-0004): `get_record(type, id)`,
   `has_record(type, id)`, `all_records(type)` (ID-sorted), `resolve_alias(id)`,
-  `state`. Guarantee: `Ready` is terminal and immutable; a rejected lookup
-  never returns partial data. Invariant: callers never mutate a returned
+  `state`, `register_known_effect_types(...)`, `register_record_validator(type, validator)`.
+  Guarantee: `Ready` is terminal and immutable; a rejected lookup
+  never returns partial data; `load_all()` is called only by
+  `ContentBootstrap.run()`. Invariant: callers never mutate a returned
   `Resource`.
+- **`GameStateMachine`** (Foundation, ADR-0002): the one door in for mode
+  changes and overlays (`request_transition`, `open_overlay`/`close_overlay`,
+  `request_quit`), battle reporting (`report_battle_outcome`,
+  `report_results_done`, `choose_retry`, `choose_retreat`), and queries
+  (`get_move_vector(caller)`, `is_input_owner`, `is_save_safe`,
+  `is_transition_flash_capped`, `mode_time`). Guarantees: exactly one
+  transition at a time, rejected (`REJECTED_BUSY`, never queued) if one is
+  running; the four transition signals fire in a fixed order; input is locked
+  for the whole transition; never an autoload, injected through `setup()`.
+  `GameMode`/`GameOverlay` are the base classes modes and overlays extend.
+- **`InputResolver`** (Foundation, ADR-0003): fed raw events by an
+  `InputSystem` node under `GameRoot/Services`. It satisfies ADR-0002's
+  `ActionSource` (`action_pressed`/`action_released` including the derived
+  `nav_*` steps, `focus_lost`, `device_lost`, `get_move_vector()`), and also
+  emits `action_held`, `focus_gained`, `device_restored`,
+  `active_device_changed(kind, pad_style)` and the raw `pointer_*`/
+  `wheel_step`. Guarantees: no `InputMap` use for gameplay; the built-in
+  `ui_*` navigation actions carry no device events; the resolver is held only
+  by Game State and the UI Framework service; modes never poll Input.
 - **`BattleCore`** (Feature, implemented — `src/battle/battle_core.gd`):
   `BattleCore.new(squad, enemies, rng, faction_rule)`,
   `submit_action(move, target) -> BattleOutcome`,
   `start_battle(reset_squad := true)`, `retry_battle()`,
   `get_living_squad()`/`get_living_enemies()`/`get_active_combatant()`, 4
   signals (`turn_started`, `action_resolved`, `round_advanced`,
-  `battle_ended`). Guarantee: a rejected action changes no state, returns
-  `null`.
-- **`FactionRule`** (Feature, implemented — `src/battle/factions/faction_rule.gd`):
-  9-method hook contract, neutral defaults on the base class. Guarantee:
-  `BattleCore` never branches on which subclass is active.
+  `battle_ended`), plus ADR-0010's `check_command()`, `clear_transients()` and
+  a fifth signal, `battle_fled`. Guarantee: a rejected action changes no
+  state, returns `null`. Only BattleReplayController connects to its signals
+  in the Battle mode.
+- **`BattleReplayController`** (Feature, ADR-0006): see Module Ownership.
+  Guarantees: the command menu opens, and the outcome reaches Game State, only
+  after the replay's last beat; at most one timed entry finishes per
+  `advance()` and leftover `dt` is dropped, so a slow frame never skips a beat;
+  the displayed state equals the live state on every released TURN; Retry and
+  every exit cancel the replay; a replay never changes a result.
+- **Presentation** (Core, ADR-0005): `DioramaStage.request_profile()` is the
+  only call a mode makes into lighting; `PresentationDirector` is the only
+  writer of global shader uniforms (`mode_time`, `actor_rim_color`,
+  `actor_rim_strength`) and the only caller of `apply_profile()`.
+  Guarantees: one texel scale `T = max(1, floor(H/360))` for every sprite at
+  every depth; the battle camera never moves, rotates or zooms in a fight;
+  nothing compiles a rendering pipeline in play after Boot; Core never
+  references a Feature type.
+- **`FlashGate`** (Core service, ADR-0005 §12): `request`, `set_rate`,
+  `book_reserved`, `cancel`, `begin_exempt`/`end_exempt`. Guarantee: no closed
+  one-second window holds more than `flash_rate_max` flashes; the gate never
+  delays a source, it only caps it; closing transitions are never dropped.
+- **`FactionRule`** (Feature, implemented — `src/battle/factions/faction_rule.gd`;
+  ADR-0011): 10-method hook contract, neutral defaults on the base class, no
+  per-battle state; built only by `FactionRuleRegistry.create()` from a
+  `FactionRule` record. Guarantee: `BattleCore` never branches on which
+  subclass is active; fields are written only in `_configure()`.
 - **`SquadSpecials`** (Feature, implemented — `src/battle/squad/specials.gd`):
-  4 named-special factories plus `calculate_heal(power, healer)` (F4).
-  Guarantee: every special resolves through Turn Battle System's existing
-  `Move`/`SpecialEffect` dispatch — no parallel resolution path.
-- **`Game State & Scene Flow`** (Foundation, fully specified, not built):
-  `request_transition(target_mode, payload)`, `open_overlay(kind, payload)`/
-  `close_overlay()`; 6 named signals (Module Ownership). Guarantee: exactly
-  one transition at a time, rejected (never queued) if one is already
-  running; input locked for its duration. `Node`/`SceneTree` — LOW risk
-  (fundamental, pre-cutoff), but the exact scene-swap mechanism, and its
-  relationship to the already-shipped `ChapterFlow`, are undecided (Required
-  ADRs, below).
-- **`Input System`** (Foundation, **ADR-0003, Proposed**): the
-  `InputResolver` (`RefCounted`) is fed raw events by an `InputSystem` node
-  under `GameRoot/Services`. It satisfies ADR-0002's `ActionSource`
-  (`action_pressed`/`action_released` including the derived `nav_*` steps,
-  `focus_lost`, `device_lost`, `get_move_vector()`), and also emits
-  `action_held`, `focus_gained`, `device_restored`,
-  `active_device_changed(kind, pad_style)` and the raw `pointer_*`/
-  `wheel_step`. The proposed `is_pressed`/`is_just_*` polling API was
-  **dropped**: modes never poll Input. Guarantees: no `InputMap` use; the
-  built-in `ui_*` navigation actions carry no device events; the resolver is
-  held only by Game State and the UI Framework service.
+  4 named-special factories. Guarantee: every special resolves through Turn
+  Battle System's existing `Move`/`SpecialEffect` dispatch and, under ADR-0007,
+  through `DamageResolver` — no parallel resolution path.
+- **`DamageResolver`** (Core, ADR-0007): `resolve(request) -> ResolutionRecord`,
+  pure and static. Guarantees: the only code that changes HP during a battle
+  (`Combatant.hp` is read-only); one record per effect; RNG injected; hooks
+  rebuilt per attempt; `src/battle/stats/` never imports a Feature type.
+- **`BattleFactory`** (Feature, ADR-0010): the only production path from an
+  `EncounterDescriptor` plus the party to a `BattleCore`. `check_command()` is
+  the one legality check, shared by the HUD and `submit_action()`.
+- **`UiService` / `UiContext`** (Presentation, ADR-0008): the only UI owner;
+  every mode and overlay gets a `UiContext` through `pre_setup`. Guarantees:
+  Game State imports nothing from Presentation; every `grab_focus()` states
+  `hide_focus`; only `refit_canvas()` sets `content_scale_size`; no screen
+  reads a fixed 640×360.
+- **`SaveService` / `SaveParticipant` / `SettingsService`** (Core, ADR-0009):
+  one participant per persisting system. Guarantees: `stage()` has no side
+  effects and `commit()` cannot fail; saves hold IDs, never definitions;
+  nothing from `user://` is loaded as a `Resource`; Core sees settings only
+  through narrow views.
+- **`LocText`** (leaf, ADR-0013): `of(record, field)`, `of_key`, `fmt`.
+  Guarantees: English source text everywhere; each control is translated
+  exactly once; every record type declares its `LOC_FIELDS`, checked at boot.
 
 ## ADR Audit
 
-| ADR | Engine Compat | Version | GDD Linkage | Conflicts | Valid |
+| ADR | Layer | Status | Engine Compat | GDD Linkage | Conflicts |
 |---|---|---|---|---|---|
-| ADR-0001: Content Data Storage Format | ✅ | ✅ Godot 4.7.2 | ✅ | None | ✅ |
+| ADR-0001: Content Data Storage Format | Foundation | Accepted (amended by ADR-0004) | ✅ Godot 4.7.2 | ✅ | None |
+| ADR-0002: Game State & Scene Flow | Foundation | Accepted | ✅ | ✅ TR-gamestate-001..007 | None |
+| ADR-0003: Input System | Foundation | Accepted | ✅ | ✅ TR-input-001..009 (001, 006, 009 partial) | None |
+| ADR-0004: Content Boot Ordering | Foundation | Accepted | ✅ | ✅ | None |
+| ADR-0005: Sprite & Camera Presentation | Core | Accepted (rev 3) | ✅ | ✅ TR-presentation-001..008, 010, 014..024; TR-gamestate-007 | None |
+| ADR-0006: Battle Replay Ownership | Feature | Accepted (rev 4; amended by ADR-0010) | ✅ | ✅ TR-presentation-005, 009..011, 013, 021; TR-turnbattle-005 | None. The ADR-0005 ↔ ADR-0006 dependency cycle was cut on 2026-10-22 (ADR-0005 moved to ADR-0006's Enables row) |
+| ADR-0007: Stats & Damage Resolution | Core | Accepted (retroactive; amended by ADR-0011) | ✅ | ✅ TR-stats-001..005 (005 partial: `Enemy.reward`) | None |
+| ADR-0008: UI Framework | Presentation | Accepted (§9 refit trigger corrected after the 22c review) | ✅ | ✅ TR-presentation-012, 022 (UI); TR-input-006, 009 | None |
+| ADR-0009: Save/Load & Settings | Core | Accepted | ✅ (22b F6–F8 advisory) | ✅ TR-input-001 (persistence), TR-presentation-022 | None |
+| ADR-0010: Turn Battle System | Feature | Accepted (retroactive) | ✅ | ✅ TR-turnbattle-001..004 | None. Flee rules wait for a GDD section |
+| ADR-0011: Faction Rule Modifiers | Feature | Accepted (retroactive) | ✅ | ✅ TR-factionrules-001, 002 | None |
+| ADR-0012: Overworld Exploration & Encounters | Feature | **Proposed** | ✅ | ❌ no GDD, so no TR IDs | None. Blocked on its GDD |
+| ADR-0013: Localization | Foundation (cross-cutting) | Accepted | ✅ | ✅ TR-content-012 | None |
 
-### Technical Requirements Baseline — full list (resolves TD item 1)
+Dependency order (`.claude/scripts/adr-dep-graph.sh`, acyclic, 40 edges):
+ADR-0001 → ADR-0002 → ADR-0004 → ADR-0006 → ADR-0003 → ADR-0005 → ADR-0007 →
+ADR-0013 → ADR-0008 → ADR-0011 → ADR-0009 → ADR-0010, with ADR-0012
+(Proposed) after ADR-0001–0005. No Accepted ADR depends on a Proposed one.
 
-17 provisional requirements across 6 GDDs (TR registry is still empty — every
-ID below is provisional, assigned starting at 001 per system per
-`docs/architecture/tr-registry.yaml`'s own numbering rule):
+Open advisory items from the 2026-10-22 review, not yet folded into their
+ADRs: E5 (ADR-0005, `ALPHA_SCISSOR` and early-z), E6 (ADR-0006, the boss-light
+`clock` lambda outlives `dispose()`), E7 and E8 (ADR-0002, `AnimationPlayer`
+freeze item closed; free a detached Overworld on quit), E9 (ADR-0003, Steam
+Input `pad_style` row), E10 (ADR-0005, Shader Baker on a Linux export built
+from Windows). The control manifest lists each one.
 
-| Req ID | GDD | Requirement | ADR Coverage |
-|---|---|---|---|
-| TR-content-001 | content-data-definitions.md | 7 record types + reserved types, permanent snake_case IDs, alias chain=error | ADR-0001 ✅ |
-| TR-content-002 | content-data-definitions.md | Unloaded→Loading→Validating→Ready\|Failed state machine; Ready is terminal | ADR-0001 ✅ |
-| TR-content-003 | content-data-definitions.md | Validation reports every problem per load; standalone headless check | ADR-0001 ✅ |
-| TR-content-004 | content-data-definitions.md | `get_record`/`has_record`/`all_records`/`resolve_alias` lookup API | ADR-0001 ✅ |
-| TR-gamestate-001 | game-state-scene-flow.md | Single-mode + stacked-overlay state machine | ❌ No ADR |
-| TR-gamestate-002 | game-state-scene-flow.md | One transition at a time; input locked for its duration | ❌ No ADR |
-| TR-gamestate-003 | game-state-scene-flow.md | Overworld freeze/restore around Battle; Encounter descriptor contract | ❌ No ADR |
-| TR-gamestate-004 | game-state-scene-flow.md | Retry (no scene load) vs Retreat (to last camp) | ❌ No ADR (and overlaps `ChapterFlow`'s shipped retry/sequencing — see Module Ownership) |
-| TR-input-001 | input-system.md | 8-action set; data-driven default bindings | ❌ No ADR |
-| TR-input-002 | input-system.md | Radial deadzone + menu-repeat timing formulas | ❌ No ADR |
-| TR-input-003 | input-system.md | Device identity via Godot 4.7 `DEVICE_ID_*` constants | ❌ No ADR — HIGH RISK, post-cutoff, not yet empirically verified |
-| TR-input-004 | input-system.md | `device_lost`/`device_restored`/`focus_lost`/`focus_gained` broadcasts | ❌ No ADR |
-| TR-stats-001 | stats-damage-resolution.md | F3–F7 damage/heal pipeline | Implemented, no ADR (retroactive candidate) |
-| TR-stats-002 | stats-damage-resolution.md | RNG always injected, never global | Implemented, no ADR (retroactive candidate) |
-| TR-turnbattle-001 | turn-battle-system.md | Turn state machine, Attack/Defend/Special dispatch | Implemented, no ADR (retroactive candidate) |
-| TR-turnbattle-002 | turn-battle-system.md | MP gating + targeting + FactionRule hook consultation | Implemented, no ADR (retroactive candidate) |
-| TR-factionrules-001 | faction-rule-modifiers.md | 9-method FactionRule hook contract | Implemented, no ADR (retroactive candidate — **should have one before ADR-0001's migration touches it**, see Required ADRs) |
+### Technical Requirements Baseline
 
-**Count: 4 covered (TR-content-001–004), 13 gaps** (4 undecided-and-unbuilt in
-Game State, 4 undecided-and-unbuilt in Input, 5 implemented-without-a-
-retroactive-ADR in Stats & Damage/Turn Battle/Faction Rules).
+The baseline lives in **`docs/architecture/tr-registry.yaml`** (64 requirements
+across 7 GDDs as of 2026-10-22), with the GDD-to-ADR matrix in
+`docs/architecture/requirements-traceability.md`. This document no longer keeps
+its own copy: v2's 17-row table used provisional IDs from before the registry
+existed, and the registry is now the only source of IDs.
+
+Coverage at `architecture-review-2026-10-22c.md`: 60 of 64 covered by
+Accepted ADRs, 0 resting on Proposed ADRs, 4 partial, 0 gaps. The 4 partials:
+- TR-content-007/008/010 (Content Data, **Foundation**): immutability is
+  protected by discipline only; the report entry shape and `ERROR_SCREEN_CAP`
+  are in no ADR; there is no 500-record load benchmark. Close with an ADR-0001
+  amendment or catalog-story notes.
+- TR-stats-005 (Stats, Core): `Enemy.reward` ranges land with the
+  enemy-record migration.
+
+Not yet in the registry: Flee (needs a section in `turn-battle-system.md`) and
+every Overworld requirement (needs its GDD).
 
 ## Required ADRs
 
-**Must have before coding starts (Foundation & Core):**
-- Game State & Scene Flow — scene management/mode-transition implementation
-  strategy; must also resolve its overlap with the already-shipped
-  `ChapterFlow` (TR-gamestate-001 to 004) — **written: ADR-0002 (Proposed)**
-- Input System — concrete method/signal names for the proposed surface above
-  (TR-input-001 to 006) — **written: ADR-0003 (Proposed)**, with its
-  boot-ordering prerequisite split into **ADR-0004 Content Boot Ordering
-  (Proposed)**, which amends ADR-0001 and ADR-0002
-- Sprite & Camera Presentation — the lit-diorama rendering approach and fixed
-  battle-camera implementation (promoted here from "should have," since
-  Overworld depends on it directly — resolves TD item 2 / LP item 1) —
-  **written: ADR-0005 (Proposed)**. It cannot be Accepted until its GDD
-  (`design/gdd/sprite-camera-presentation.md`, not yet written) supplies TR IDs
+**Done (Accepted 2026-10-21/22):** ADR-0001 Content Data Storage, ADR-0002 Game
+State & Scene Flow, ADR-0003 Input System, ADR-0004 Content Boot Ordering,
+ADR-0005 Sprite & Camera Presentation, ADR-0006 Battle Replay Ownership,
+ADR-0007 Stats & Damage Resolution (retroactive), ADR-0008 UI Framework,
+ADR-0009 Save/Load & Settings, ADR-0010 Turn Battle System (retroactive),
+ADR-0011 Faction Rule Modifiers (retroactive), ADR-0013 Localization.
 
-**Explicit build order** (resolves TD item 2 / LP item 1): Overworld
-Exploration & Encounters cannot start until **all three** of the above are
-Accepted — its own Module Ownership row consumes all three directly. The
-"system requested next" phrasing elsewhere in this document is a *design*
-priority, not permission to start that code before its prerequisites land.
+**Proposed:** ADR-0012 Overworld Exploration & Encounters. It can't be Accepted
+until `design/gdd/overworld-exploration-encounters.md` exists and
+`/architecture-review` assigns its TR IDs. It needs no physics, so the Jolt
+question is closed once it is Accepted.
 
-**Should have before the relevant system is built:**
-- Overworld Exploration & Encounters — movement/map representation (grid,
-  `TileMapLayer`, or free-roam — see Open Questions for the free-roam/Jolt
-  interaction)
-- Save/Load & Settings — serialization format
-- **Retroactive ADR for Faction Rule Modifiers** (moved up from "can defer" —
-  resolves TD item 4): ADR-0001's migration gives this system's code
-  ownership of resolving `rule_id`, making its hook contract an interface
-  ADR-0001 now depends on. Write this retroactive ADR at the same time as
-  that migration, and do not start the migration's battle-factory changes
-  until ADR-0001's own Migration Plan Step 0 (characterization tests under
-  `tests/unit/battle/`, which do not exist yet) is in place.
+**Owed amendments (not new ADRs):** an ADR-0001 amendment for the
+TR-content-007/008/010 partials; ADR-0009's advisory F6–F8 before the first
+save story.
+
+**Next ADRs (none blocking the current milestone):** Audio Manager (bus layout,
+takes over the UI refusal tick), Quirk State / Combo System (blocked on QQ-02),
+Dialogue Banter & Quests (NPC payload, global story flags), Squad Roster
+(party source), Enemy AI (may move AI behind `Enemy.ai_profile_id`).
 
 **Can defer to implementation:**
-- Retroactive ADRs for Stats & Damage Resolution / Turn Battle System
-  (shipped, working, no interface changes pending — paperwork catch-up only,
-  via `/architecture-decision retrofit`)
 - Audio Manager bus architecture (Vertical Slice priority, not built)
 - Quirk State / Combo System architecture (blocked on the open design
   question already carried in `turn-battle-system.md`, not an architecture gap)
 
 ## Performance Budget
 
-`project.yaml` sets 60 fps / 16.6 ms frame budget. No per-system allocation
-exists yet — low urgency today (this is an event-driven, turn-based game with
-no continuous simulation loop), but the lit-diorama rendering direction
-(`AreaLight3D`, Compositor — both HIGH risk, unverified) is where real frame
-cost will land once Sprite & Camera Presentation is built. Its own ADR should
-include a frame-time acceptance criterion rather than deferring the question
-further.
+User decision 2026-10-22, recorded in `project.yaml` `performance` and `platform`:
+
+| Target | Value |
+|---|---|
+| Frame rate / frame budget | 60 fps / 16.6 ms |
+| Frame time over a scripted battle | p99 ≤ 16.6 ms, worst frame ≤ 33 ms |
+| Draw calls in a battle | ≤ 300 for all 3D passes (including `SetLight`'s shadow cascades) + ≤ 100 canvas/HUD, counted separately (`draw_call_limit: 400`) |
+| Binding hardware | a GTX 1080-class desktop GPU with 8 GB RAM at 1920×1080, and Steam Deck at 1280×800 (native Linux export) |
+| Memory ceiling | not set yet (`memory_ceiling_mb`); ADR-0005's P-14 reports peak RAM and VRAM so one can be chosen |
+
+The battle stage is where nearly all frame cost lands; the rest of the game is
+event-driven, with no continuous simulation loop. ADR-0005's Validation
+Criteria carry the acceptance test (P-14): a failure on either device blocks
+the story that ships the battle stage. Per-system costs: `GameStateMachine.tick()`,
+`InputResolver` and `BattleReplayController.advance()` each do constant,
+allocation-free work per frame (ADR-0002, ADR-0003, ADR-0006).
 
 ## Architecture Principles
 
 1. **Gameplay values are data, never hardcoded.** The coding standard this
-   project already states, now backed by ADR-0001's concrete mechanism.
+   project already states, now backed by ADR-0001's concrete mechanism, and
+   by `TransitionConfig`, `InputConfig`, `PresentationConfig` and
+   `LightingProfile` for tuning.
 2. **The joke is the mechanic** (Pillar 1). Satire is expressed through
    combat rules (Faction Rule Modifiers), not just text — already proven by
    Bureaucratia's permit ban and MegaCorp's billing.
 3. **Readable in One Turn** (Pillar 4). Every system's state is legible
    without a tutorial: Turn Battle System's full outcome log plus signals,
-   Game State & Scene Flow's single predictable transition door, are both
-   expressions of this.
+   the replay that shows every outcome beat by beat, and Game State & Scene
+   Flow's single predictable transition door are all expressions of this.
 4. **One door in, per system** — with one explicit, bounded exception.
    `request_transition()`/`open_overlay()`, `ContentCatalog`'s single lookup
-   API, `FactionRule`'s single hook contract — no system reaches around
-   another's owned state. **Exception**: `ContentCatalog` is a Godot autoload
-   singleton (ADR-0001), justified only because it is read-only after
-   `Ready`. This is not precedent for a *mutable* singleton anywhere else —
-   Game State & Scene Flow, the next system likely to face this same
-   DI-vs-singleton question, must not cite this exception without the same
-   read-only justification.
+   API, `FactionRule`'s single hook contract, `DioramaStage.request_profile()`
+   — no system reaches around another's owned state. **Exception**:
+   `ContentCatalog` is a Godot autoload singleton (ADR-0001), justified only
+   because it is read-only after `Ready`. This is not precedent for a
+   *mutable* singleton anywhere else: Game State (ADR-0002) and Input
+   (ADR-0003) both faced the same question and are injected through
+   `setup()`, not autoloads.
 5. **RNG is always injected, never global** (Stats & Damage F6). Already
    enforced throughout the shipped battle code; carries forward to every new
    system.
+6. **Logic cores are `RefCounted` and headless; scene-tree shells are thin.**
+   `GameStateMachine`, `InputResolver` and `BattleReplayController` never touch
+   the scene tree, an autoload by name, `Time` or `Engine`; time enters only
+   through `tick(delta)`/`advance(delta)`, collaborators only through
+   injection. Every test drives the core directly (ADR-0002, ADR-0003,
+   ADR-0006).
+7. **Lower layers never import higher ones.** Foundation's `src/data/` imports
+   nothing from `src/boot/` or Feature code (ADR-0004); Core presentation never
+   references the Feature-layer replay controller and takes its clocks as
+   `Callable`s (ADR-0005, ADR-0006).
 
 ## Open Questions
 
-- **Scene-transition implementation mechanism** (Game State & Scene Flow's own
-  Open Question #4): **answered, pending acceptance**, by ADR-0002 (Proposed
-  2026-10-21). It uses a `RefCounted` `GameStateMachine` driven by a persistent
-  `GameRoot` main scene and swaps modes as child nodes under `ModeHost`. The
-  Overworld is frozen by detaching its live instance, not by serializing it. The
-  `ChapterFlow` overlap is settled the same way: Game State becomes the parent,
-  and ChapterFlow stays as the stand-in Overworld until Overworld Exploration ships.
-- **Overworld movement/map representation**: undecided, blocks Overworld
-  Exploration & Encounters. **Choosing free-roam reopens the Physics/Jolt HIGH
-  risk rating** (Jolt is the default 3D physics engine since 4.6) — a
-  grid/`TileMapLayer` choice avoids it entirely.
+- ~~**Scene-transition implementation mechanism / ChapterFlow overlap
+  (QQ-01)**~~: **resolved** by ADR-0002 (Accepted 2026-10-22). A
+  `RefCounted` `GameStateMachine` driven by a persistent `GameRoot` swaps modes
+  as children of `ModeHost`; the Overworld is frozen by detaching it; Game
+  State becomes ChapterFlow's parent, and ChapterFlow stays as the interim
+  Overworld until Overworld Exploration ships.
+- **Overworld movement/map representation**: proposed by ADR-0012
+  (continuous movement on a logical ground plane, `GroundMover` on a
+  `WalkGrid` baked from a `TileMapLayer`, no physics). Settled when ADR-0012
+  is Accepted, after its GDD.
 - **Quirk State / Combo System's relationship to today's `SpecialEffect`
-  enum** (owned by `SquadSpecials`): `INTENT UNKNOWN`, carried from
-  `turn-battle-system.md`'s own Open Questions.
-- **UI focus handling under 4.6+ dual-focus, and AccessKit (4.5+)**: neither
-  is tracked by an ADR or a Required ADR entry yet, despite UI being rated
-  HIGH risk and the battle HUD already being built on `Control`. Coupled to
-  the Input System ADR (which owns the device/focus signals) — resolve there
-  or add a dedicated one before UI Framework work continues past the battle
-  HUD. **Partly addressed by ADR-0003 (Proposed):**
-  - keyboard and gamepad menu navigation is routed, then re-injected into native `Control` focus (focus-bounded, press-only);
-  - mouse stays native, with `MOUSE_FILTER_STOP` backdrops and a transition blocker;
-  - hover→focus sync is assigned to the UI Framework.
-
-  AccessKit and prompt key labels remain open for a UI Framework ADR.
-- **Save/Load serialization format**: undecided.
-- **Does randomness repeat on Retry?** (Game State & Scene Flow's own Open
-  Question #2) — Turn Battle System's `retry_battle()` exists; whether its
-  RNG state resets or continues is not yet decided.
+  enum (QQ-02)** (owned by `SquadSpecials`): `INTENT UNKNOWN`, carried from
+  `turn-battle-system.md`'s own Open Questions. ADR-0006 §10 leaves a slot for
+  combo protection and outcome grouping when `BattleOutcome` gains them.
+- ~~**UI focus under 4.6+ dual focus, and AccessKit (4.5+) (QQ-03)**~~:
+  **resolved** by ADR-0003 (input side) and ADR-0008 (Accepted 2026-10-22):
+  native focus with `FocusScope`, hidden focus per path, `MenuGuard`,
+  `PointerFocusSync` with `pointer_switch_px`, prompt labels through
+  `PromptFacade`, AccessKit properties. The screen-reader commitment is
+  still pending a user/CD decision.
+- ~~**Save/Load serialization format**~~: **resolved** by ADR-0009 (hashed
+  two-line JSON per slot, participants, preflight then SWAP commit).
+- **Does randomness repeat on Retry?** (Game State & Scene Flow's Open
+  Question #2): built as a fresh RNG on Retry. That was an autonomous pick
+  logged for the user's veto on 2026-10-22 and is not yet confirmed.
+- **Memory ceiling**: not set; waits for ADR-0005's P-14 measurement.

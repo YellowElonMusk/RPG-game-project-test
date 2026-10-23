@@ -255,3 +255,48 @@ Reviewed-Content-Hash: design/art/art-bible.md 5493bc58da41f223042b00adface6bd64
 Reviewed-Content-Hash: docs/architecture/adr-0005-sprite-camera-presentation.md 20764a52db5a975557d58becbc17a53d1cf1fbcc
 Reviewed-Content-Hash: docs/architecture/adr-0006-battle-replay-ownership.md c70e27e445be64fa80fdfa54037977f367d5fdbd
 Reviewed-Content-Hash: docs/architecture/adr-0002-game-state-scene-flow.md e9bc78265056b6bd35365b634dc3d3f1d16454ce
+
+## Review — 2026-10-22 — Verdict: NEEDS REVISION (targeted re-review of revision 6)
+Review mode: full · Workflow: full
+Scope signal: targeted (changed sections only, per the review-5 plan; not a full 8-specialist pass)
+Specialists: technical-artist (rules 1/2/4/6/12, visual formulas), systems-designer (rules 8/9/10/13, replay_time, hit_punch, flash_gate, knobs), qa-lead (ACs, header, test plan P-01..P-18). ADRs reviewed in parallel: godot-specialist (probed 4.7.2), technical-director (TD-ADR) — recorded in each ADR's Review History.
+Blocking items: 11 new (GDD), all text/formula/AC fixes; no mechanism blockers | Recommended: ~30
+Summary: Revision 6 closes review 5. Every worked example recomputes (CIEDE2000/gamut via script; replay_time, hit_punch, AC-61, chained knob corners). Speed rulings 1–3, KO holds, latch, input guard, Victory animation, blocked-hit/Family Meal precedence, header/AC-56, the visual restructure D1–D4 and all group-E AC defects are closed. Remaining defects are local: flash bookings vs paused/compressed clocks, formula holes in the dusk-flood and read_order rules, the Victory curve start, odd-width centring, and three ACs that fail a correct build.
+Prior verdict resolved: Yes, except the out-of-gamut night-sky example (L493, open) and the AC-22/AC-7 frame-0 convention (partial).
+Findings:
+- [BLOCKING] flash_gate (SD N1): bookings in real time but sources run on mode/replay clocks (Menu freeze, latch, Speed up boss entrances) → offsets on the source clock; re-book on any rate change; capped variant from that frame (reserved flood keeps priority); boot validation of reserved sequences at the speed corners; AC-25 frozen-stamp case.
+- [BLOCKING] flash_gate L309 / AC-55 (SD N2): capped variant bounded only on luminance → also below the red threshold (L714) or below flash_area_min; validate both.
+- [BLOCKING] AC-25 L1196 (SD N3): the limit-4 example yields five flashes and violates the flash_rate_max ≤ 3 load rule → limit 5 passed directly to the gate under test.
+- [BLOCKING] AC-25 Menu clause L1200 (QA B2): the refusal is unjustified → the window already holds flash_rate_max flashes; the Menu's own transitions are unbooked.
+- [BLOCKING] AC-24 L1191 (QA B1): "above Battle values on every frame" fails at t = 0 and at the settle → strictly above for 0 < t < blend_victory + victory_settle.
+- [BLOCKING] AC-68 L1392 (QA B3): [L] asserts rendered depth/occlusion → split: [L] card_depth vs the analytic ray–card intersection (1e-4), [C] P-09 ID-pass capture.
+- [BLOCKING] flood L468/L484 (TA1): any sky pixel may reach L* 50 → lighter-than-range only inside a horizon_band_frac band above y_h, plus mean visible sky L* ≤ flood_l_max.
+- [BLOCKING] read_order L432–435 (TA2): sector-exclusion order undefined; nullifies actor_visible_min → build the full ring after below-foot and other-actor removal; only emissive exclusions count toward the half rule; band_px_min skip first.
+- [BLOCKING] flood enemy test L439 (TA3): ΔE averaged over the whole perimeter → per valid sector.
+- [BLOCKING] set_brightness L681 (TA4): the Victory curve starts at set_brightness_battle, a visible drop after a boss fight → start at the captured k_from; load rule set_brightness_victory ≥ set_brightness_boss, or reword L127.
+- [BLOCKING] texel_scale L363/L84 (TA5): odd frame_w·T centres on a half pixel → x_left = round(x_anchor) − floor(frame_w·T/2), or boot-validate even frame_w (mirror in ADR-0005 L92).
+- [RECOMMENDED] Victory settle (0.70 s) outlasts victory_hold (0.40 s): add a load rule or state the results screen opens over the settle (SD N5, QA R13); L743 count is five; "Cancel clears it" vs ADR-0006 §6; input-system.md L183 hover wording; registry replay_time lacks hold_i/speed_p/press_effective; P-02 frame-0 convention; AC-34 retag + P-06 index; AC-4 assert size/near/keep_aspect; AC-67 test-plan step; P-08 world layer; AC-25 gamma/linear fixture pair; AC-11 rephrase; AC-14b wording; AC-38 fast_forward while latched; AC-52/62/65 tags; AC-69 legibility criterion; AC-56 min/max configs exclude the key:fill and horizon rules; AC-26 speeds Off; L413 binding case is 4:3 (visible_share 0.85); L493 in-gamut night sky (22, 24, 265°); L492 one L*_mid per swatch; L456 rim vs unlit sectors; band_px_min in texels; blob shadow as a T-scaled screen element; follow_camera dz definition and yaw alignment; Victory-after-boss sky return through the flash gate.
+- [TRACKED → ADR-0005/0006] see each ADR's Review History, 2026-10-22: KEEP_WIDTH under PROJECTION_FRUSTUM (probed wrong); stage → Director profile path; same-mode mode_entered overwriting the boss/Retry light; performance acceptance criterion; capped-retry-flash query.
+Reviewed-Content-Hash: design/gdd/sprite-camera-presentation.md 8573802992966e4521a51308a378bbe1d1477647
+Reviewed-Content-Hash: design/registry/entities.yaml 0f26adb4134703f927ad30cc2c8842ee8600fda5
+Reviewed-Content-Hash: production/qa/test-plans/sprite-camera-presentation-test-plan.md ac6077466d340092e6c822dd837a270351d630a5
+Reviewed-Content-Hash: design/art/art-bible.md df151dd89988e21e42dd3b79692b1ff481854ab9
+Reviewed-Content-Hash: design/gdd/input-system.md dd50f574ceed091337ad07073b7a79730a08d681
+Reviewed-Content-Hash: docs/architecture/adr-0005-sprite-camera-presentation.md ce9f7a133d31d9fe919cc67a711b2628e33c148d
+Reviewed-Content-Hash: docs/architecture/adr-0006-battle-replay-ownership.md 75f86668b8206442688065c2b37f2a0abd703f44
+
+## Review — 2026-10-22 — Verdict: APPROVED after in-pass fix (short re-review of revision 7)
+Review mode: full · Workflow: full
+Scope signal: short (changed sections only)
+Specialists: systems-designer (GDD, all review-6 items), technical-director (ADR-0005 rev 3, ADR-0006 rev 4, ADR-0002 amendment; recorded in each ADR's Review History)
+Blocking items: 1 new (fixed in the same pass) | Recommended: 5 (R1, R2, R3 and R5 applied; R4 deferred)
+Summary: All 11 review-6 blockers CLOSED with line evidence. Every changed number recomputes: the Victory curve after a boss, the flash_gate Menu example, the 86.4-row horizon band, the star share, the odd-width edge, and the brightness range chain. No stale references remain. The one new blocker, B-1 (a source capped mid-flash either strands a raised screen or makes an uncapped return swing), was fixed in this pass:
+- closing transitions are never dropped and re-book with reserved priority;
+- only not-yet-started transitions switch to the capped variant;
+- frozen transitions count as pending at their resume-time landing;
+- `t_land` integrates over the replay's known rate schedule, and only unscheduled changes (including a `dt_max` clamp) re-book.
+
+AC-25 and the registry are updated to match. Also applied: stars are removed in read_order step 1 (geometry), not with the lights; stars are T-scaled screen-space points with peak L* ≤ 80 (art bible matches); `H_screen` and a continuous horizon-band boundary; "example above".
+Deferred: R4 (the 5-sector floor vs a flat-based, side-occluded actor; report occlusion-skipped sectors separately), to be settled in the P-10 tool story.
+Prior verdict resolved: Yes
+Reviewed-Content-Hash: design/gdd/sprite-camera-presentation.md 415652405a2661ceee57442cc53da58855b55a11

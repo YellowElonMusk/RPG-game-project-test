@@ -156,7 +156,10 @@ SQUAD_TURN → (all squad acted) → ENEMY_TURN → (round tick) → SQUAD_TURN 
 
 **Dependencies**:
 - Stats & Damage Resolution (hard): `DamageCalculator.calculate_damage()` for
-  all Attack/Special direct-damage math.
+  all Attack/Special direct-damage math. *(ADR-0007, Proposed 2026-10-22:
+  becomes `DamageResolver.resolve()` for both damage and heals, with Defend and
+  Viral Stunt as registered modifiers and their magnitudes in `StatsConfig`.
+  Today's code is unchanged until ADR-0007's migration.)*
 - Faction Rule Modifiers (hard, documented alongside this GDD):
   `specials_allowed`, `choose_enemy_action`, `apply_round_upkeep`,
   `move_allowed`.
@@ -248,7 +251,7 @@ scene-tree dependency, matching every other battle class's convention).
 | Karen's *Speak to the Manager* MP cost | 4 | Story 003 starting estimate, no formal balance pass | ⚠️ |
 | Chef's *Family Meal* MP/power | 5 / 5 | Story 003 starting estimate | ⚠️ |
 | Chef's *Appetizer* MP/power | 3 / 10 | Story 003 starting estimate | ⚠️ |
-| Florida Man's *Viral Stunt* MP/rounds | 3 / 2 | Story 003 starting estimate; the +50% magnitude lives in the Faction Rule Modifiers GDD as a `DamageCalculator` constant | ⚠️ |
+| Florida Man's *Viral Stunt* MP/rounds | 3 / 2 | Story 003 starting estimate; the +50% magnitude lives in the Faction Rule Modifiers GDD as a `DamageCalculator` constant (ADR-0007, Proposed: moves to `StatsConfig.vulnerable_pct`) | ⚠️ |
 | Baguette Thrower's *Home Run* MP/power | 4 / 18 | Story 003 starting estimate | ⚠️ |
 
 **Balance Concerns Identified**:

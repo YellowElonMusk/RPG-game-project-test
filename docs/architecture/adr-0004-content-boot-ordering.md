@@ -1,7 +1,7 @@
 # ADR-0004: Content Boot Ordering — Registration Before Validation
 
 ## Status
-Proposed
+Accepted — amended by ADR-0013 (§1's registrant list gains the `LocFieldsValidator` registration, for every record type; Accepted 2026-10-22, amendment in effect, annotation only) and ADR-0011 (§1 step 2: `ContentBootstrap.run()` builds the `FactionRuleRegistry`, registers its record validators and returns it in its boot result for `GameRoot`, the same return path as `PresentationConfig`; Accepted 2026-10-22, amendment in effect, annotation only)
 
 ## Date
 2026-10-21
@@ -31,7 +31,7 @@ ADR-0001 runs `ContentCatalog.load_all()` in the catalog autoload's own `_ready(
 
 | Field | Value |
 |-------|-------|
-| **Depends On** | ADR-0001 (Content Data Definitions storage format) — **Accepted**: the catalog, its states, and `register_known_effect_types`. ADR-0002 (Game State & Scene Flow) — **Proposed**: `GameRoot` as the composition root and Boot as the consumer of the catalog's terminal state. ADR-0004 cannot be Accepted before ADR-0002 |
+| **Depends On** | ADR-0001 (Content Data Definitions storage format) — **Accepted**: the catalog, its states, and `register_known_effect_types`. ADR-0002 (Game State & Scene Flow) — **Accepted** 2026-10-22: `GameRoot` as the composition root and Boot as the consumer of the catalog's terminal state. ADR-0004 cannot be Accepted before ADR-0002 |
 | **Enables** | ADR-0003 (Input System) — its bindings validator registers through `register_record_validator()`; Turn Battle System and Faction Rule Modifiers vocabulary registration (ADR-0001's design, now with a place to run); `res://.claude/scripts/validate-content.gd` validating with full vocabularies |
 | **Blocks** | ContentCatalog implementation (ADR-0001's migration Steps 1+) — the load entry point must be built this way from the start; ADR-0003's acceptance |
 | **Ordering Note** | **Amends ADR-0001 and ADR-0002 additively.** The original text is annotated, not rewritten, and each amendment takes effect when ADR-0004 is Accepted.<br>**ADR-0001**, four passages: (a) the "Access pattern" paragraph's reason (3) and its closing sentences ("the autoload's own `_ready()` is the bootstrap"); (b) the Implementation Guideline saying "`ContentCatalog`'s `_ready()` load pass always sees registered record classes", since there is no longer a `_ready()` load pass; (c) Migration Step 1's "as the autoload described in Decision", for the load entry point only; (d) Key Interfaces, which gains `register_record_validator()`. The autoload stays the access pattern for read-only lookups.<br>**ADR-0002**, two passages: Decision §10's "the autoload has already run `load_all()` in its `_ready()`" becomes "`GameRoot._enter_tree()` has already run `ContentBootstrap.run()`"; and Decision §2's `GameRoot` description gains that `_enter_tree()` call. The machine is still built in `GameRoot._ready()` per its §9.<br>`ContentCatalog` is not implemented yet, so no shipped code changes |
@@ -71,7 +71,7 @@ The catalog's script carries `class_name ContentCatalogService`, which differs f
 `run()` does nothing unless `catalog.state == UNLOADED` (idempotency guard). Otherwise, in this order, it:
 1. calls Turn Battle System's registration (`register_known_effect_types(&"turn_battle", …)`, per ADR-0001);
 2. calls Faction Rule Modifiers' rule-class registration (per ADR-0001);
-3. calls every record-type validator registration, which today is only ADR-0003's `register_record_validator(&"bindings", InputBindingsValidator.validate)`;
+3. calls every record-type validator registration: ADR-0003's `register_record_validator(&"bindings", InputBindingsValidator.validate)`, and ADR-0007 §7's Stats validators (`StatsConfig.load_or_default()`, then `register_record_validator()` for `character`, `enemy` and `move` with `StatsValidators.*.bind(config)`);
 4. calls `catalog.load_all()`.
 
 The registration list is the one place that knows every registrant. That is why it lives under `src/boot/`, beside the composition root, and not in `src/data/`: the Foundation catalog still imports nothing from above it. Adding a registrant means adding a line here, and the ADR that introduces it names that line.
@@ -96,6 +96,7 @@ The registration list is the one place that knows every registrant. That is why 
                                            ├─ register_known_effect_types (Turn Battle)
                                            ├─ faction rule-class registration
                                            ├─ register_record_validator(&"bindings", …)  (ADR-0003)
+                                           ├─ register_record_validator(character/enemy/move, StatsValidators…)  (ADR-0007)
                                            └─ load_all() ─► LOADING ─► VALIDATING ─► READY | FAILED
                ─► GameRoot builds InputResolver, GameStateMachine
                ─► children _enter_tree
@@ -212,6 +213,7 @@ func register_record_validator(type: StringName, validator: Callable) -> void
 ## Review History
 - 2026-10-21 — **godot-specialist** (engine validation): BLOCKING on one premise, now revised. On 4.7.2 an autoload's `_ready()` runs after the main scene's `_enter_tree()`, and under `-s` after `_initialize()`. The rest was verified empirically (Engine Compatibility).
 - 2026-10-21 — **technical-director** (TD-ADR): CONCERNS, 5 text fixes, all applied: the full ADR-0001 amendment scope (4 passages, annotated, not rewritten); `_enter_tree()` runs only the bootstrap and everything else is built in `_ready()` (ADR-0002 §2/§9 consistency); the Layer field and the `src/boot/` reference rule; a registry Migration Step 0; `ContentCatalogService` typing made mandatory. TD confirmed the ADR-0003 split is clean.
-- Acceptance pending: ADR-0002 must be Accepted first. Then run `/architecture-review` in a fresh session, then `/architecture-decision accept ADR-0004`.
+- 2026-10-22 — `/architecture-review` (`architecture-review-2026-10-22.md`): nothing blocking for this ADR (godot-specialist: accept with or after ADR-0002).
+- 2026-10-22 — **Accepted** by the user, after ADR-0002 (explicit instruction: accept ADR-0002 → ADR-0004 → ADR-0003 → ADR-0006 → ADR-0005). The annotated amendments to ADR-0001 (four passages) and ADR-0002 (§2, §10) take effect now. No stories were Blocked on this ADR.
 - Enables: `docs/architecture/adr-0003-input-system.md` (bindings validator)
 - Design: `design/gdd/content-data-definitions.md`, `design/gdd/game-state-scene-flow.md`, `design/gdd/input-system.md`

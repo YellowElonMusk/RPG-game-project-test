@@ -65,6 +65,7 @@ entities:
     referenced_by:
       - design/art/art-bible.md
       - design/gdd/content-data-definitions.md
+      - design/gdd/overworld-exploration-encounters.md   # Compliance Clerks, occupation stages, checkpoints
     kind: alien
     signature_color: "#D23A2E"   # Stamp Red
     base_shape: square
@@ -279,11 +280,14 @@ formulas:
       - flash_luma_delta
       - flash_area_min       # added 2026-10-21 (design-review revision 2)
       - t_req                # added 2026-10-22 (revision 6): request time
-      - offset               # added 2026-10-22 (revision 6): declared transition offset from the source's start
+      - o                    # renamed 2026-10-22 (revision 7, was offset): declared transition offset on the source's own clock
+      - c_now                # added 2026-10-22 (revision 7): the source clock's reading now
+      - r                    # added 2026-10-22 (revision 7): the source clock's rate (0 frozen, 1, battle_speed_mult or ff_mult)
+      - t_land               # added 2026-10-22 (revision 7): t_now + (o - c_now) / r, re-booked on every rate change
       - A_exempt             # added 2026-10-22 (revision 4): summed declared area of concurrent area-exempt effects
       # removed 2026-10-22 (revision 6, landing-time booking): t_last_flash, flash_rate_reduced
     output_range: [0, 3]   # flashes in any closed one-second window, counted at landing, global across all sources
-    expression: "a gated request at real time t_req declaring transitions at offsets is allowed iff, with them booked at t_req + offset, no closed one-second window holds more than flash_rate_max flashes (a booked transition counts as one flash if it opposes the booked transition before it); allowed -> book and play full, refused -> book nothing and play capped; reduce_flashing -> every gated request refused; reserved sources (boss flood) book unconditionally, each scripted reserved sequence boot-validated alone; an area-exempt source starts exempt only if A_exempt + its declared area < flash_area_min, else it requests like a gated source; swing-exempt sources never request"
+    expression: "a gated request at real time t_req declaring transitions at offsets o on its own clock is allowed iff, with them booked at t_land = t_now + (o - c_now) / r, no closed one-second window holds more than flash_rate_max flashes (a booked transition counts as one flash if it opposes the booked transition before it); allowed -> book and play full, refused -> book nothing and play capped; t_land integrates over a known rate schedule (replay wind-up at speed, hold at 1x); any unscheduled rate change of a source clock (Menu freeze r = 0, resume, latch, speed setting, dt_max clamp) re-books its unlanded transitions (frozen ones count as pending at their resume-time landing); a closing transition (one that ends an already-landed opposite transition of the same source) is never dropped and re-books with reserved priority; if a re-booking would exceed the limit, only not-yet-started transitions are dropped and the source finishes in its capped variant; a capped variant has no general and no red transition, or covers < flash_area_min; reduce_flashing -> every gated request refused; reserved sources (boss flood) book unconditionally, each scripted reserved sequence boot-validated alone at 1x, max battle_speed_mult and max ff_mult; an area-exempt source starts exempt only if A_exempt + its declared area < flash_area_min, else it requests like a gated source; swing-exempt sources never request"
     notes: "Photosensitivity limit (WCAG 2.2 SC 2.3.1). A transition is a relative-luminance change >= flash_luma_delta (0.10) with the darker state below 0.80, or a saturated-red change (linear R/(R+G+B) >= 0.8, (R-G-B)*320 changing by > 20), covering >= flash_area_min (25%) of some 10-degree window ((4/9)H x (1/3)H px). Booking at landing time, not request time, so staggered requests cannot put four flashes in one second. Real time, so the Menu cannot reset the gate. The gate never delays a source (Game State's retry flash and wipes keep their timing). Covers the victory burst, the boss flood (reserved), attack and comedy VFX, and Game State's retry flash, wipes and fades. Campfire flicker must stay below flash_luma_delta and never counts. Load validation: flash_rate_max <= 3; flash_luma_delta = 0.10 and flash_area_min = 0.25 are constants."
     added: 2026-10-21
     revised: "2026-10-22"
@@ -313,6 +317,56 @@ formulas:
 
 
 # ─── CONSTANTS ───────────────────────────────────────────────────────────────
+  - name: chase_visibility
+    status: active
+    source: design/gdd/overworld-exploration-encounters.md
+    referenced_by:
+      - design/gdd/overworld-exploration-encounters.md
+      - design/gdd/sprite-camera-presentation.md   # binds the overworld follow_camera's h / pitch / F_v / dz / tau (Overworld OQ-1)
+    variables:
+      - symbol_chase_m
+      - body_radius
+      - walk_speed
+      - v_patrol
+      - see_lead_s
+      - a_near
+      - a_far
+      - w_far
+      - F_v_eff
+      - F_h
+      - h
+      - pitch
+      - dz_x
+      - dz_y
+      - tau
+      - f_patrol
+      - H_max
+      - dof_near_end
+      - dof_far_begin
+      - d_cam
+    output_range: [pass, fail]   # load-time validation (invariant I14) at 4:3, 16:9 and 21:9
+    expression: "see_m = symbol_chase_m + body_radius + (walk_speed + v_patrol) * see_lead_s; R_e = dist_e - (|n_e.x| * dz_x + |n_e.y| * dz_y) - walk_speed * tau for e in {near, far, side}; R_vis = min(R_e); s_blur = see_m + dz_y + walk_speed * tau; valid iff R_vis >= see_m at 4:3, 16:9 and 21:9 and dof_near_end <= d_cam(-s_blur) - H_max * sin(pitch) and dof_far_begin >= d_cam(+s_blur); d_cam = view-space depth"
+    notes: "A patrolling Compliance Clerk must be on screen before the leader can reach its notice radius. Per-edge form (rev 2, design review 2026-10-23). At presentation's example camera (pitch 30 deg, F_v 20 deg) this needs h >= 10.9 m at default dz/tau and h >= 11.6 m at their ceilings; 12.0 m proposed (Overworld OQ-1, owner Presentation). No sprite DOF exemption: blur bounds, measured from the leader (rev 3), keep see_m sharp. see_lead_s narrowed to 0.2-0.3 (rev 3): at h 12 m it may be at most about 0.34."
+    added: 2026-10-23
+    revised: 2026-10-23
+  - name: occupation_stage
+    status: active
+    source: design/gdd/overworld-exploration-encounters.md
+    referenced_by:
+      - design/gdd/overworld-exploration-encounters.md
+      - design/art/art-bible.md                      # occupation gradient (stages 1-3) and stage lighting
+      - design/gdd/sprite-camera-presentation.md     # faction x stage lighting profile (settles its OQ 6)
+    variables:
+      - base_stage
+      - stage_table
+      - flags
+      - stage_stored
+    output_range: [1, 3]   # 1 Contested, 2 Occupied, 3 Saturated; never decreases; maps without base_stage have no stage
+    expression: "stage_new = clamp(max({base_stage} union {s : (f, s) in stage_table, f in flags}), 1, 3); stage = max(stage_new, stage_stored); computed only on map load"
+    notes: "Raised only on the faction's schedule (ChapterFlow step changes, never a player Victory or map entry) and only before any step in which the raised map can be loaded, so the player never sees it at the lower stage (rev 3-4, Pillar 2); reachable stages are derived from the ChapterFlow step list; player victories clear clutter locally (liberated markers) but never change the stage. After region liberation a presentation override restores golden hour (rule 17) while the stage value stays. Paris (rev 4): Town 1; overworld segment base 1, always first loaded at 2 (permits_mandatory set on the chapter opening step); dungeon 3; Town stages 2-3 and segment stage 1 not authored in MVP."
+    added: 2026-10-23
+    revised: 2026-10-23
+
 # Named numerical values referenced across multiple systems.
 # Register a constant when it is defined in one GDD but another GDD must
 # agree with it (e.g., gold carry limit defined in economy but checked in
@@ -492,10 +546,10 @@ constants:
     source: design/gdd/sprite-camera-presentation.md
     referenced_by:
       - design/gdd/sprite-camera-presentation.md
-    value: 150
-    unit: draw calls   # Battle sub-budget inside project.yaml's 2000 limit
+    value: 300
+    unit: draw calls   # 3D passes incl. shadow cascades; canvas/HUD counted separately at <= 100; project.yaml performance.draw_call_limit 400 = 300 + 100
     added: 2026-10-21
-    revised: ""
+    revised: 2026-10-23   # was 150; synced to the presentation GDD (user decision 2026-10-22, OQ 13 closed)
 
 # Example:
 #
@@ -522,3 +576,23 @@ constants:
 #     unit: slots
 #     added: 2026-03-26
 #     revised: ""
+  - name: walk_speed
+    status: active
+    source: design/gdd/overworld-exploration-encounters.md
+    referenced_by:
+      - design/gdd/overworld-exploration-encounters.md
+      - design/gdd/sprite-camera-presentation.md   # follow-camera lag in chase_visibility
+    value: 3.5
+    unit: m/s   # the overworld leader's only speed (no run button); safe range 3.0-4.0
+    added: 2026-10-23
+    revised: ""
+  - name: symbol_chase_m
+    status: active
+    source: design/gdd/overworld-exploration-encounters.md
+    referenced_by:
+      - design/gdd/overworld-exploration-encounters.md
+      - design/gdd/sprite-camera-presentation.md   # chase_visibility binds the overworld camera
+    value: 3.0
+    unit: m   # centre-to-centre notice radius of a Compliance Clerk; safe range 2.5-3.5
+    added: 2026-10-23
+    revised: ""

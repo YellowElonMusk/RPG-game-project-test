@@ -30,7 +30,7 @@
 #   Superseded entries:     Grep pattern="status: superseded"
 
 version: 1
-last_updated: "2026-10-21"
+last_updated: "2026-10-22"
 
 # ─── STATE OWNERSHIP ─────────────────────────────────────────────────────────
 # Who is the authoritative owner of each piece of shared game state.
@@ -95,6 +95,50 @@ state_ownership:
       - docs/architecture/adr-0006-battle-replay-ownership.md
     added: 2026-10-21
     revised: "2026-10-22"
+  - state: combatant_hp
+    status: active
+    owner_system: stats-damage-resolution
+    adr: docs/architecture/adr-0007-stats-damage-resolution.md
+    interface: "Combatant.hp is a read-only property (its setter refuses writes); in battle it changes only through DamageResolver's Apply step (Combatant._apply_hp); the only other writers call Combatant.restore_vitals(hp, mp): reset_for_battle(), the Retry snapshot restore, Camp's restore, and debug tools behind OS.is_debug_build(), each in tools/ci/lint_hp_writes.sh's allowlist"
+    write_access: "damage-resolver Apply step; allowlisted restore_vitals() callers"
+    referenced_by:
+      - docs/architecture/adr-0007-stats-damage-resolution.md
+      - docs/architecture/adr-0002-game-state-scene-flow.md      # Retry snapshot restore uses restore_vitals()
+      - docs/architecture/adr-0006-battle-replay-ownership.md    # displayed HP is a snapshot of this state
+    added: 2026-10-22
+    revised: ""
+  - state: user_settings
+    status: active
+    owner_system: settings-service
+    adr: docs/architecture/adr-0009-save-load-settings.md   # Proposed
+    interface: "SettingsService.get_value(key) / set_value(key, value) -> bool / value_changed(key); consumers receive only composition-root view adapters (UiSettings, FlashSettings, PresentationSettings), never the service; GameRoot applies binding overrides to the resolver"
+    write_access: settings-service-only (user://settings.json)
+    referenced_by:
+      - docs/architecture/adr-0009-save-load-settings.md
+      - docs/architecture/adr-0008-ui-framework.md            # UiSettings view
+    added: 2026-10-22
+    revised: ""
+  - state: save_slots
+    status: active
+    owner_system: save-service
+    adr: docs/architecture/adr-0009-save-load-settings.md   # Proposed
+    interface: "SaveService.save_to_slot / read_slot / preflight / commit_if_loaded (SceneLoader.payload_commit in SWAP) / reset_all_to_new_game; each section owned by its registered SaveParticipant"
+    write_access: save-service-only (user://saves/)
+    referenced_by:
+      - docs/architecture/adr-0009-save-load-settings.md
+    added: 2026-10-22
+    revised: ""
+  - state: overworld_world_state
+    status: active
+    owner_system: overworld
+    adr: docs/architecture/adr-0012-overworld-exploration-encounters.md   # Proposed; acceptance blocked on its GDD
+    interface: "WorldState (RefCounted, injected by the composite pre_setup injector; never an autoload): single owner of map_id, party_pos, party_facing (written every frame), last_camp_return, per-map resolved symbols and opened interactables; saved by the overworld SaveParticipant"
+    write_access: overworld-only
+    referenced_by:
+      - docs/architecture/adr-0012-overworld-exploration-encounters.md
+      - docs/architecture/adr-0009-save-load-settings.md     # overworld section
+    added: 2026-10-22
+    revised: ""
 
 # Example:
 #
@@ -140,7 +184,8 @@ interfaces:
   - contract: content_record_validation
     status: active
     pattern: direct_call
-    producer: "record-type owners (Input System today), invoked via ContentBootstrap.run()"
+    # old producer (2026-10-21): "record-type owners (Input System today), invoked via ContentBootstrap.run()"
+    producer: "record-type owners (Input System, Sprite & Camera Presentation, Stats & Damage Resolution), invoked via ContentBootstrap.run()"
     consumers:
       - content-catalog
     adr: docs/architecture/adr-0004-content-boot-ordering.md
@@ -149,8 +194,9 @@ interfaces:
       - docs/architecture/adr-0004-content-boot-ordering.md
       - docs/architecture/adr-0003-input-system.md
       - docs/architecture/adr-0005-sprite-camera-presentation.md   # sprite_set_exists for character/enemy
+      - docs/architecture/adr-0007-stats-damage-resolution.md      # F1 stat ranges, move cost and power (config bound)
     added: 2026-10-21
-    revised: ""
+    revised: "2026-10-22"
   - contract: stage_profile_request
     status: active
     pattern: signal
@@ -231,6 +277,86 @@ interfaces:
       - docs/architecture/adr-0006-battle-replay-ownership.md
     added: 2026-10-21
     revised: "2026-10-22"
+  - contract: resolution_hooks
+    status: active
+    pattern: direct_call
+    producer: "turn-battle-system (built-in defend, viral_stunt), faction-rule-modifiers (via FactionRule.register_resolution_hooks), later quirk-state, combos, equipment"
+    consumers:
+      - stats-damage-resolution
+    adr: docs/architecture/adr-0007-stats-damage-resolution.md
+    signal_signature: "ResolutionHooks.add_stat_modifier(StatModifier) / add_amount_modifier(AmountModifier) / add_override(AmountOverride) / remove_source(source_id) / clear(); one registry per BattleCore, rebuilt by every start_battle() (clear, built-ins, then the faction hook); overrides run by ascending priority, then String(source_id), then registration index; entries are read-only during a resolution"
+    referenced_by:
+      - docs/architecture/adr-0007-stats-damage-resolution.md
+    added: 2026-10-22
+    revised: ""
+  - contract: mode_pre_setup_injection
+    status: active
+    pattern: direct_call
+    producer: "composition root (GameRoot): composite injector bound into SceneLoader and OverlayHost"
+    consumers:
+      - modes-and-overlays
+    adr: docs/architecture/adr-0008-ui-framework.md   # Proposed; extended by ADR-0009 (presentation_settings) and ADR-0012 (world_state)
+    signal_signature: "pre_setup: Callable(node: Node), called after instantiation and before setup(); assigns `ui: UiContext`, `presentation_settings`, `world_state` to concrete mode/overlay scripts that declare them. GameMode/GameOverlay (Foundation) declare none of them"
+    referenced_by:
+      - docs/architecture/adr-0008-ui-framework.md
+      - docs/architecture/adr-0009-save-load-settings.md
+      - docs/architecture/adr-0012-overworld-exploration-encounters.md
+    added: 2026-10-22
+    revised: ""
+  - contract: save_participant
+    status: active
+    pattern: direct_call
+    producer: "every system that persists state, registered in src/boot/save_bootstrap.gd"
+    consumers:
+      - save-service
+    adr: docs/architecture/adr-0009-save-load-settings.md   # Proposed
+    signal_signature: "SaveParticipant: save_key() (permanent), schema_version(), capture() -> JSON-safe Dictionary, migrate(data, from_version), stage(data, SaveReader) -> SaveStage (no side effects), commit(staged) (must not fail), reset_to_new_game(), summary_fields()"
+    referenced_by:
+      - docs/architecture/adr-0009-save-load-settings.md
+      - docs/architecture/adr-0012-overworld-exploration-encounters.md
+    added: 2026-10-22
+    revised: ""
+  - contract: faction_rule_contract
+    status: active
+    pattern: direct_call
+    producer: faction-rule-modifiers
+    consumers:
+      - turn-battle-system
+      - ui-framework          # BattleHud presentation getters
+    adr: docs/architecture/adr-0011-faction-rule-modifiers.md   # Proposed
+    signal_signature: "FactionRule (stateless; neutral base): specials_allowed / move_allowed (pure), apply_round_upkeep (MP only), register_resolution_hooks, choose_enemy_action -> Array[EnemyAction], get_banner_text / get_tooltip_text / get_combatant_tooltip_note / get_identity_color / get_banner_color; built by FactionRuleRegistry.create(faction, rule) from BattleFactory; registry returned by ContentBootstrap.run()"
+    referenced_by:
+      - docs/architecture/adr-0011-faction-rule-modifiers.md
+      - docs/architecture/adr-0010-turn-battle-system.md
+    added: 2026-10-22
+    revised: ""
+  - contract: battle_command_check
+    status: active
+    pattern: direct_call
+    producer: turn-battle-system
+    consumers:
+      - battle-mode           # command menu enables/disables options
+    adr: docs/architecture/adr-0010-turn-battle-system.md   # Proposed
+    signal_signature: "BattleCore.check_command(move, target) -> CommandCheck {ok, reason (first failing gate: NOT_SQUAD_TURN short-circuits, NO_MP, RULE_FORBIDS_MOVE, SPECIALS_BANNED, FLEE_NOT_ALLOWED, BAD_TARGET), failures bitset, resolved_target}; pure; submit_action() uses the same check"
+    referenced_by:
+      - docs/architecture/adr-0010-turn-battle-system.md
+    added: 2026-10-22
+    revised: ""
+  - contract: localized_record_text
+    status: active
+    pattern: direct_call
+    producer: localization
+    consumers:
+      - ui-framework
+      - faction-rule-modifiers
+    adr: docs/architecture/adr-0013-localization.md   # Proposed
+    signal_signature: "LocText.of(record, field) / of_key(record, field, key) / fmt(text, args): TranslationServer.translate(english, '<record_id>.<field>[.<key>]'); records declare LOC_FIELDS and NON_LOC_FIELDS (boot validator); code uses tr('English', &'<screen>.<purpose>')"
+    referenced_by:
+      - docs/architecture/adr-0013-localization.md
+      - docs/architecture/adr-0008-ui-framework.md
+      - docs/architecture/adr-0011-faction-rule-modifiers.md
+    added: 2026-10-22
+    revised: ""
 
 # Example:
 #
@@ -414,6 +540,46 @@ api_decisions:
       - docs/architecture/adr-0006-battle-replay-ownership.md
     added: 2026-10-21
     revised: "2026-10-22"
+  - purpose: ui_stretch_and_scale
+    status: active
+    api: "display/window/stretch mode=canvas_items, aspect=expand, scale_mode=integer, base 640x360 (factor floor(min(W/640, H/360)))"
+    not: "viewport stretch; fractional scaling from a 1920x1080 base"
+    adr: docs/architecture/adr-0008-ui-framework.md   # Proposed
+    reason: "Probed on 4.7.2: logical 640x360 at 1080p and 640x400 on Steam Deck with native-resolution 3D; integer factor matches ADR-0005's texel grid at 16:10 and wider; fonts stay sharp under canvas_items"
+    referenced_by:
+      - docs/architecture/adr-0008-ui-framework.md
+    added: 2026-10-22
+    revised: ""
+  - purpose: user_data_serialization
+    status: active
+    api: "JSON.parse_string / JSON.stringify; save = header line hashing the exact body bytes + body line"
+    not: "ResourceLoader/load(), str_to_var, ConfigFile, bytes_to_var_with_objects, FileAccess.get_var on user:// data"
+    adr: docs/architecture/adr-0009-save-load-settings.md   # Proposed
+    reason: "Inert by construction; probed on 4.7.2 that str_to_var follows Resource(\"...\") paths even with allow_objects=false; hashing re-serialized JSON fails because ints come back as floats"
+    referenced_by:
+      - docs/architecture/adr-0009-save-load-settings.md
+    added: 2026-10-22
+    revised: ""
+  - purpose: overworld_movement_and_collision
+    status: active
+    api: "Pure GroundMover.step() on a WalkGrid baked at map load from a hidden, collision-disabled TileMapLayer; contacts and zones as logic overlap tests; AStarGrid2D for symbol chase"
+    not: "CharacterBody2D/3D, Area2D/3D, RigidBody, collision shapes, Jolt in the Overworld"
+    adr: docs/architecture/adr-0012-overworld-exploration-encounters.md   # Proposed; acceptance blocked on its GDD
+    reason: "Keeps the Jolt (4.6+ 3D default) HIGH risk closed; headless-testable; continuous ground-plane positions for ADR-0005's follow camera"
+    referenced_by:
+      - docs/architecture/adr-0012-overworld-exploration-encounters.md
+    added: 2026-10-22
+    revised: ""
+  - purpose: translation_catalogs
+    status: active
+    api: "gettext .pot/.po with msgctxt derived from <record_id>.<field> or <screen>.<purpose>; English source text as msgid; headless GDScript extractors"
+    not: "String keys in records or code; CSV translation tables; the editor-only POT generator in CI"
+    adr: docs/architecture/adr-0013-localization.md   # Proposed
+    reason: "Probed on 4.7.2: msgctxt lookup with English fallback, fuzzy entries ignored (stale jokes never shown), plural forms with context; POT generation has no CLI"
+    referenced_by:
+      - docs/architecture/adr-0013-localization.md
+    added: 2026-10-22
+    revised: ""
 
 # Example:
 #
@@ -506,6 +672,36 @@ forbidden_patterns:
     why: "BattleCore emits these synchronously before any beat plays; listening directly opens the command menu, shows the result and reveals final HP ahead of the replay (sprite-camera-presentation.md rule 9)."
     adr: docs/architecture/adr-0006-battle-replay-ownership.md
     added: 2026-10-21
+  - pattern: direct_combatant_hp_write
+    status: active
+    description: "No code may assign Combatant.hp (=, compound assignment, set(&\"hp\")), call Combatant._apply_hp() outside DamageResolver, or call restore_vitals() outside tools/ci/lint_hp_writes.sh's allowlist. Damage and heals go through DamageResolver.resolve(); a new modifier or override is registered with ResolutionHooks, never added as a branch in the resolver."
+    why: "Every HP change must produce a resolution record and a number on screen (stats-damage-resolution.md Core Rules 10-11); a second writer bypasses modifiers, overrides and the record."
+    adr: docs/architecture/adr-0007-stats-damage-resolution.md
+    added: 2026-10-22
+  - pattern: user_data_loaded_as_resource_or_variant
+    status: active
+    description: "Nothing under user:// may be passed to ResourceLoader.load(), load(), str_to_var(), ConfigFile.load(), bytes_to_var_with_objects() or FileAccess.get_var(). Saves and settings are JSON only."
+    why: "Resources can embed scripts, and str_to_var follows Resource(\"...\") paths even with objects disallowed (probed 4.7.2); a downloaded save must be inert."
+    adr: docs/architecture/adr-0009-save-load-settings.md   # Proposed
+    added: 2026-10-22
+  - pattern: overworld_physics_nodes
+    status: active
+    description: "No CharacterBody, Area, RigidBody, StaticBody or CollisionShape (2D or 3D) in the Overworld or its map scenes; validate_maps.gd fails CI on any."
+    why: "Overworld movement and triggers are pure logic on a WalkGrid; physics would reopen the Jolt risk and break detach/headless tests."
+    adr: docs/architecture/adr-0012-overworld-exploration-encounters.md   # Proposed
+    added: 2026-10-22
+  - pattern: faction_subclass_or_name_branching
+    status: active
+    description: "Outside src/battle/factions/, no code may reference BureaucratiaRule./MegaCorpRule., test `is <RuleSubclass>`, compare faction IDs to change behaviour, or key gameplay on Combatant.display_name; use FactionRule hooks, record_id, is_boss or faction_id."
+    why: "TR-factionrules-001: BattleCore, the HUD and squad code stay faction-agnostic; display names are text and get translated."
+    adr: docs/architecture/adr-0011-faction-rule-modifiers.md   # Proposed
+    added: 2026-10-22
+  - pattern: display_text_keys_or_concatenation
+    status: active
+    description: "Player-visible text must not be a translation key, assembled by concatenation, or formatted with %s; it is English source text via LocText, tr(source, context) or scene auto-translation, with named {placeholders}."
+    why: "Keys reach players when a translation is missing; concatenation and positional formats can't be reordered by translators."
+    adr: docs/architecture/adr-0013-localization.md   # Proposed
+    added: 2026-10-22
 
 # Example:
 #

@@ -131,13 +131,14 @@ Stamp Red and Anthem Blue share a lightness band but stay apart: under protanopi
 - **Hue:** the faction's signature hue.
 - **Chroma:** `min(0.65 × signature chroma, the largest chroma sRGB can show at the swatch's L* midpoint and hue)`. Terminal Cyan is gamut-capped near C\* 21 at dusk, so its lavishness comes from the gradient and the neon horizon, not chroma.
 - **Lightness:** an L\* range at or below 35 (deep dusk). Only the neon horizon band may glow lighter, up to 15 L\* above the range, in the same hue.
+- **Stars (user condition on D1, 2026-10-22):** every dusk sky shows some stars: small, sparse points in the upper sky, clear of the neon horizon band. They are sky detail, not set lights, and follow the GDD's star rule (Formulas `flood`) for size (one texel), peak lightness (L* ≤ 80) and twinkle.
 - **Distance from the stage:** at least ΔE2000 15 from the native sky of every boss stage of that faction. A stage that fails re-authors its own sky; the swatch never moves.
 
 | Faction | Hue | Flood chroma | L\* range | Status |
 |---|---|---|---|---|
 | Bureaucratia | 35.9° (Stamp Red) | C\* 46.9 (e.g. #81271E at L\* 30) | ≤ 35 | Provisional; values set in the Step 1 capture tuning pass |
 | Influencia | Feed Magenta's | 0.65 × signature, gamut-capped | ≤ 35 | To tune at Step 1 |
-| MegaCorp | 213.5° (Terminal Cyan) | C\* 20.5, gamut-capped (e.g. #0A535C at L\* 32) | ≤ 35 | Provisional; values set in the Step 1 capture tuning pass |
+| MegaCorp | 213.5° (Terminal Cyan) | C\* 20.5, gamut-capped (quoted at its L\*_mid of 30) | ≤ 35 | Provisional; values set in the Step 1 capture tuning pass |
 | Liberty-7 | 295.6° (Anthem Blue) | C\* 54.9 at L\* 30 | ≤ 35 | To tune at Step 1 |
 
 **Semantic usage.** All semantic colors are neutral. Faction color means "a rule", never "a result".

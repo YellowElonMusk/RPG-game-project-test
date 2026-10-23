@@ -37,16 +37,16 @@
 #   its fields sit two columns past the dash. Quote a value that holds ": ". A
 #   line in any other shape is reported as unsupported layout, with its number.
 
-version: 1
-last_updated: "2026-10-21"
+version: 4
+last_updated: "2026-10-23"
 
 requirements:
 - id: TR-content-001
   system: content
   gdd: design/gdd/content-data-definitions.md
-  requirement: "7 record types plus reserved types; permanent lowercase snake_case IDs with type prefix, max 64 chars, unique; aliases resolve one hop only"
+  requirement: "8 record types (including InputBindings, prefix bindings_) plus reserved types; permanent lowercase snake_case IDs with type prefix, max 64 chars, unique; aliases resolve one hop only"
   created: 2026-10-21
-  revised: ""
+  revised: "2026-10-22"
   status: active
 - id: TR-content-002
   system: content
@@ -128,9 +128,9 @@ requirements:
 - id: TR-gamestate-001
   system: gamestate
   gdd: design/gdd/game-state-scene-flow.md
-  requirement: "One mode plus a stacked overlay set, changed only via request_transition, open_overlay and close_overlay; its 6 signals fire in a fixed order"
+  requirement: "One mode plus a stacked overlay set, changed only via request_transition, open_overlay and close_overlay, plus the Overworld-only in-mode fade (no mode change); its 6 signals fire in a fixed order, except the in-mode fade, which fires only transition_started and transition_finished"
   created: 2026-10-21
-  revised: ""
+  revised: "2026-10-23"
   status: active
 - id: TR-gamestate-002
   system: gamestate
@@ -149,9 +149,9 @@ requirements:
 - id: TR-gamestate-004
   system: gamestate
   gdd: design/gdd/game-state-scene-flow.md
-  requirement: "Retry restarts from the battle start snapshot with no scene load; Retreat goes to the last camp visited and drops the snapshot"
+  requirement: "Retry restarts from the battle start snapshot with no scene load; Retreat goes to the last camp registered (entered, or passed in the Overworld) and drops the snapshot"
   created: 2026-10-21
-  revised: ""
+  revised: "2026-10-23"
   status: active
 - id: TR-gamestate-005
   system: gamestate
@@ -165,6 +165,13 @@ requirements:
   gdd: design/gdd/game-state-scene-flow.md
   requirement: "Per-type transition timings and budgets come from data; clock and scene loader are injectable; Menu stops mode time; overruns are logged"
   created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-gamestate-007
+  system: gamestate
+  gdd: design/gdd/game-state-scene-flow.md
+  requirement: "Transition flashes (retry flash, battle wipes) are booked through the presentation flash gate; a refused flash plays its capped variant and its timing never changes"
+  created: 2026-10-22
   revised: ""
   status: active
 - id: TR-input-001
@@ -207,6 +214,27 @@ requirements:
   gdd: design/gdd/input-system.md
   requirement: "Input maps devices to actions only, knows no modes and never depends on Game State; raw pointer events go to UI, which syncs 4.6 dual focus"
   created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-input-007
+  system: input
+  gdd: design/gdd/input-system.md
+  requirement: "Exactly one pressed per physical press; held emits held; OS key-repeat echoes never produce a second pressed (rule 2, AC-2)"
+  created: 2026-10-22
+  revised: ""
+  status: active
+- id: TR-input-008
+  system: input
+  gdd: design/gdd/input-system.md
+  requirement: "Menu repeat steps are reported as derived actions nav_up, nav_down, nav_left, nav_right (never bound, pressed only, always emitted)"
+  created: 2026-10-22
+  revised: ""
+  status: active
+- id: TR-input-009
+  system: input
+  gdd: design/gdd/input-system.md
+  requirement: "Pointer hover moves keyboard and gamepad focus only after the pointer has moved pointer_switch_px since the screen opened"
+  created: 2026-10-22
   revised: ""
   status: active
 - id: TR-stats-001
@@ -272,18 +300,326 @@ requirements:
   created: 2026-10-21
   revised: ""
   status: active
+- id: TR-turnbattle-005
+  system: turnbattle
+  gdd: design/gdd/turn-battle-system.md
+  requirement: "Presentation consumes resolved outcomes only through BattleReplayController; the command menu opens and the outcome is reported to Game State only after the replay's last beat; a replay never changes a result"
+  created: 2026-10-22
+  revised: ""
+  status: active
 - id: TR-factionrules-001
   system: factionrules
   gdd: design/gdd/faction-rule-modifiers.md
-  requirement: "Stateless 9-method FactionRule contract with neutral defaults; BattleCore and HUD never branch on the subclass"
+  requirement: "Stateless 10-method FactionRule contract (the nine shipped methods plus register_resolution_hooks, added by ADR-0007) with neutral defaults; BattleCore and HUD never branch on the subclass"
   created: 2026-10-21
-  revised: ""
+  revised: "2026-10-22"
   status: active
 - id: TR-factionrules-002
   system: factionrules
   gdd: design/gdd/faction-rule-modifiers.md
   requirement: "Faction.rule_id maps to a FactionRule class through a registry owned by Faction Rule Modifiers code, not by the Foundation layer"
   created: 2026-10-21
+  revised: ""
+  status: active
+- id: TR-presentation-001
+  system: presentation
+  gdd: design/gdd/sprite-camera-presentation.md
+  requirement: "One on-screen texel scale T = max(1, floor(H/360)) for every sprite at every depth; screen-facing quads foot-anchored and snapped to whole pixels; nearest filtering; never rotated or rescaled"
+  created: 2026-10-22
+  revised: ""
+  status: active
+- id: TR-presentation-002
+  system: presentation
+  gdd: design/gdd/sprite-camera-presentation.md
+  requirement: "Occlusion as an upright card at the foot anchor under the pitched Overworld and Camp cameras; a level shift-lens battle camera that never moves, rotates, zooms or changes field of view"
+  created: 2026-10-22
+  revised: ""
+  status: active
+- id: TR-presentation-003
+  system: presentation
+  gdd: design/gdd/sprite-camera-presentation.md
+  requirement: "Actors lit only by their own key, a rim on the texel ring inside the outline, and tagged practicals; never ambient, fill or set light; per-sector local read_order contrast on reference captures"
+  created: 2026-10-22
+  revised: ""
+  status: active
+- id: TR-presentation-004
+  system: presentation
+  gdd: design/gdd/sprite-camera-presentation.md
+  requirement: "One lighting signature per state, already applied when the transition reveals the mode; in-mode blends via lighting_blend start from the captured current light and never pop"
+  created: 2026-10-22
+  revised: ""
+  status: active
+- id: TR-presentation-005
+  system: presentation
+  gdd: design/gdd/sprite-camera-presentation.md
+  requirement: "Boss takeover: faction dusk flood on a backdrop sky card (sky share, swatch match, neon horizon, stars), set_brightness_boss below 1.0, driven by the replay's takeover clock; a missing boss preset is a boot error"
+  created: 2026-10-22
+  revised: ""
+  status: active
+- id: TR-presentation-006
+  system: presentation
+  gdd: design/gdd/sprite-camera-presentation.md
+  requirement: "Fixed per-mode cameras: overworld follow camera with dead zone, tau, ground-footprint clamp, dt_max and snap on teleport; aspect rules (16:9 horizontal view kept below 16:9, more set at 21:9)"
+  created: 2026-10-22
+  revised: ""
+  status: active
+- id: TR-presentation-007
+  system: presentation
+  gdd: design/gdd/sprite-camera-presentation.md
+  requirement: "Hit-punch is a whole-pixel shift of every depth, scaled with window height, HUD never moves, at most one per beat, honours Screen Shake and Reduce Motion"
+  created: 2026-10-22
+  revised: ""
+  status: active
+- id: TR-presentation-008
+  system: presentation
+  gdd: design/gdd/sprite-camera-presentation.md
+  requirement: "The Menu freezes the world: sprite frames, blends, punch, ambient motion and the replay all run on Game State's mode time; no shader reads TIME"
+  created: 2026-10-22
+  revised: ""
+  status: active
+- id: TR-presentation-009
+  system: presentation
+  gdd: design/gdd/sprite-camera-presentation.md
+  requirement: "Battle outcomes replayed beat by beat (wind-up, impact, unscaled reaction hold, number); every beat lasts at least beat_min; no beat skipped on slow frames; end-of-fight holds before the outcome report"
+  created: 2026-10-22
+  revised: ""
+  status: active
+- id: TR-presentation-010
+  system: presentation
+  gdd: design/gdd/sprite-camera-presentation.md
+  requirement: "One beat clock drives beat-driven sprite frames, the hit-punch and beat-synced sound (beat_impact); no beat-driven animation runs on its own timer"
+  created: 2026-10-22
+  revised: ""
+  status: active
+- id: TR-presentation-011
+  system: presentation
+  gdd: design/gdd/sprite-camera-presentation.md
+  requirement: "One-level replay latch (Confirm, fast_forward or indicator click), Cancel clears; Faster battle animations and Speed up boss entrances settings; ineffective presses refused visibly; three-state replay indicator; no input buffering; presses count only after the reveal"
+  created: 2026-10-22
+  revised: ""
+  status: active
+- id: TR-presentation-012
+  system: presentation
+  gdd: design/gdd/sprite-camera-presentation.md
+  requirement: "Menu input guard: command menu, target selection, Defeat Prompt and results open with safe default focus and refuse every menu action for input_guard with visible and audible refusal; held inputs never carry in"
+  created: 2026-10-22
+  revised: ""
+  status: active
+- id: TR-presentation-013
+  system: presentation
+  gdd: design/gdd/sprite-camera-presentation.md
+  requirement: "HUD reads HP, MP, status, round and floating numbers only through the replay's displayed state; Retry, Retreat, Quit and freeing cancel the replay and resync a clean display"
+  created: 2026-10-22
+  revised: ""
+  status: active
+- id: TR-presentation-014
+  system: presentation
+  gdd: design/gdd/sprite-camera-presentation.md
+  requirement: "Boot validation of presentation content: sprite_set_id resolves, required animations per set and facing, impact_frame, land_frame, boss intro length, duplicate move keys, missing boss presets, chained knob ranges; battle stages validated on load"
+  created: 2026-10-22
+  revised: ""
+  status: active
+- id: TR-presentation-015
+  system: presentation
+  gdd: design/gdd/sprite-camera-presentation.md
+  requirement: "One global flash gate for every large-area luminance source (presentation, Game State, UI): gated, reserved, exempt-by-area and exempt-by-swing classes; landing-time booking on each source's own clock; capped variants; flash_rate_max at most 3 per second; reserved sequences proven at boot"
+  created: 2026-10-22
+  revised: ""
+  status: active
+- id: TR-presentation-016
+  system: presentation
+  gdd: design/gdd/sprite-camera-presentation.md
+  requirement: "Nothing compiles a rendering pipeline in play after Boot warm-up, measured on the engine's pipeline-compilation counters"
+  created: 2026-10-22
+  revised: ""
+  status: active
+- id: TR-presentation-017
+  system: presentation
+  gdd: design/gdd/sprite-camera-presentation.md
+  requirement: "Rendering constraints: native scale, SDR output, no screen-space AA, Vulkan pinned with no fallback on every target including a native Linux Steam Deck build"
+  created: 2026-10-22
+  revised: ""
+  status: active
+- id: TR-presentation-018
+  system: presentation
+  gdd: design/gdd/sprite-camera-presentation.md
+  requirement: "Battle performance: at most 300 3D plus 100 canvas draw calls; p99 frame at most 16.6 ms and worst at most 33 ms on a GTX 1080-class desktop at 1080p and on Steam Deck at 1280x800"
+  created: 2026-10-22
+  revised: ""
+  status: active
+- id: TR-presentation-019
+  system: presentation
+  gdd: design/gdd/sprite-camera-presentation.md
+  requirement: "Blob ground shadow per actor only; actors cast no light shadows; only the set light casts; blob colour from the lighting state, never faction colour"
+  created: 2026-10-22
+  revised: ""
+  status: active
+- id: TR-presentation-020
+  system: presentation
+  gdd: design/gdd/sprite-camera-presentation.md
+  requirement: "Two authored facings with mirroring; per-animation no_mirror; optional animations fall back in the same facing and never break no_mirror"
+  created: 2026-10-22
+  revised: ""
+  status: active
+- id: TR-presentation-021
+  system: presentation
+  gdd: design/gdd/sprite-camera-presentation.md
+  requirement: "All presentation knobs and lighting presets live in presentation data, never code, with load-time validation of chained ranges"
+  created: 2026-10-22
+  revised: ""
+  status: active
+- id: TR-presentation-022
+  system: presentation
+  gdd: design/gdd/sprite-camera-presentation.md
+  requirement: "Six comfort settings (Faster battle animations, Speed up boss entrances, Screen Shake, Reduce Blur, Reduce Flashing, Reduce Motion) read from the settings service and applied live"
+  created: 2026-10-22
+  revised: ""
+  status: active
+- id: TR-presentation-023
+  system: presentation
+  gdd: design/gdd/sprite-camera-presentation.md
+  requirement: "A deterministic capture tool for the [C] capture-measured acceptance criteria (explicit SubViewport settings, ID pass)"
+  created: 2026-10-22
+  revised: ""
+  status: active
+- id: TR-presentation-024
+  system: presentation
+  gdd: design/gdd/sprite-camera-presentation.md
+  requirement: "Faction colour only on the sky, set and fill during that faction's boss takeover (and future occupation stages); never on actors, neutral states, fades or UI; every boss stage frames a tagged faction shape"
+  created: 2026-10-22
+  revised: ""
+  status: active
+- id: TR-overworld-001
+  system: overworld
+  gdd: design/gdd/overworld-exploration-encounters.md
+  requirement: "Leader moves continuously on a 2D ground plane at walk_speed * min(1, |move|) with no run button and no physics engine; axis-separated collision against the baked walk grid with wall slide and corner assist; frame-rate independent on one overworld clock ow_dt = min(delta, dt_max) accumulated only in Exploring"
+  created: 2026-10-23
+  revised: ""
+  status: active
+- id: TR-overworld-002
+  system: overworld
+  gdd: design/gdd/overworld-exploration-encounters.md
+  requirement: "Walk grid baked once at map load from an editor TileMapLayer; SAFE cells rasterised conservatively from EntryPoints, MapExits, CampSpots (safe_radius_m) and return markers (return_safe_radius_m); a single batched set_blocked path for runtime blockers; 4-connected symbol-legal component labels relabelled once per frame"
+  created: 2026-10-23
+  revised: ""
+  status: active
+- id: TR-overworld-003
+  system: overworld
+  gdd: design/gdd/overworld-exploration-encounters.md
+  requirement: "Every MVP battle starts from contact with (or confirm at) a visible EncounterSymbol; zone encounters exist in code and data but zone_rate is 0 on every MVP map; each faction names a patrol_archetype_id"
+  created: 2026-10-23
+  revised: ""
+  status: active
+- id: TR-overworld-004
+  system: overworld
+  gdd: design/gdd/overworld-exploration-encounters.md
+  requirement: "Symbol sub-state machine Patrol / Noticing / Chasing / Returning / Stunned / Static with facing-weighted notice snapped to the displayed facing (hysteresis), turn pause, re-notice cooldown, path-distance give-up using an upper-bound path_dist, pending paths, final approach only over symbol-legal cells, contact pending, and Static start_on (contact_or_confirm | confirm)"
+  created: 2026-10-23
+  revised: ""
+  status: active
+- id: TR-overworld-005
+  system: overworld
+  gdd: design/gdd/overworld-exploration-encounters.md
+  requirement: "Deterministic grid pathing: AStarGrid2D pinned (diagonal only if no obstacles, octile, no jumping, allow_partial_path false), update() only at bake with region/cell_size/offset frozen, origins snapped to legal cells; bounded notice search; notice, repath and Returning queries share repath_per_frame_max through a round-robin cursor; symbol stepping plus queries <= 2 ms p99 on GTX 1080 and Steam Deck"
+  created: 2026-10-23
+  revised: ""
+  status: active
+- id: TR-overworld-006
+  system: overworld
+  gdd: design/gdd/overworld-exploration-encounters.md
+  requirement: "Leader-symbol contact is a swept circle test (closest approach over the frame <= 2 * body_radius) with no physics query; fixed per-frame order move -> exits -> symbols -> contact -> interaction; contact never counts in SAFE cells or during encounter grace"
+  created: 2026-10-23
+  revised: ""
+  status: active
+- id: TR-overworld-007
+  system: overworld
+  gdd: design/gdd/overworld-exploration-encounters.md
+  requirement: "Encounters start only through start_encounter from an enc_ record (EncounterDescriptor -> request_transition BATTLE); two-step thaw: all state changes in on_thawed under the wipe (resolve, payoff, liberation, stun/push or Static return), then grace, on-screen liberation and the payoff card on transition_finished"
+  created: 2026-10-23
+  revised: ""
+  status: active
+- id: TR-overworld-008
+  system: overworld
+  gdd: design/gdd/overworld-exploration-encounters.md
+  requirement: "First-Victory payoffs per enc_ record (clue with a distinct facet, open to an optional pocket or shortcut, item, or limited none) granted once and announced by a non-blocking payoff card"
+  created: 2026-10-23
+  revised: ""
+  status: active
+- id: TR-overworld-009
+  system: overworld
+  gdd: design/gdd/overworld-exploration-encounters.md
+  requirement: "Occupation stage per map from base_stage plus a flag-to-stage table, computed only on load and never decreasing (stage_stored); stage-raising flags set only on scheduled ChapterFlow steps before the raised map can be loaded; faction x stage records hold caps, civilian density, lighting profile, sky card, set kit and ambience; markers activate by min_stage and caps sorted by (min_stage, marker order)"
+  created: 2026-10-23
+  revised: ""
+  status: active
+- id: TR-overworld-010
+  system: overworld
+  gdd: design/gdd/overworld-exploration-encounters.md
+  requirement: "Local liberation of linked clutter markers (off-screen removal in on_thawed, on-screen removal after transition_finished, cells freed) saved per map; region liberation evaluated on every load applies the liberated profile and kit and deactivates every symbol"
+  created: 2026-10-23
+  revised: ""
+  status: active
+- id: TR-overworld-011
+  system: overworld
+  gdd: design/gdd/overworld-exploration-encounters.md
+  requirement: "Checkpoints with exactly one requirement whose obtained_at source is fight-free on the critical path; failure outcomes redirect / queue / encounter; the redirect is a same-instance Game State fade that keeps symbol state, locks input and emits transition_finished"
+  created: 2026-10-23
+  revised: ""
+  status: active
+- id: TR-overworld-012
+  system: overworld
+  gdd: design/gdd/overworld-exploration-encounters.md
+  requirement: "Maps are map_ records with scenes found by ID convention; critical-path legs end at an exit, a symbol or a camp and each ChapterFlow step names {map_id, leg_id}; map change swaps to a fresh OverworldMode instance with rollback; exits fire only on entering their rectangle and EntryPoints sit clear of them"
+  created: 2026-10-23
+  revised: ""
+  status: active
+- id: TR-overworld-013
+  system: overworld
+  gdd: design/gdd/overworld-exploration-encounters.md
+  requirement: "Passing a CampSpot's safe zone registers it as the Retreat target through Game State, which stays the only writer of last_camp_id; entering camp carries a CampEntryPayload; the region default camp ends the chapter through a P15 prompt on the final step"
+  created: 2026-10-23
+  revised: ""
+  status: active
+- id: TR-overworld-014
+  system: overworld
+  gdd: design/gdd/overworld-exploration-encounters.md
+  requirement: "An injected WorldState is the single owner of map, position and facing (written every frame) and of state that outlives a visit (resolved symbols, opened interactables, liberated markers, stage_stored, payoffs, interim story flags); saves happen only at Game State safe moments; Continue places from the save without on_map_reenter respawn and relocates a now-blocked position"
+  created: 2026-10-23
+  revised: ""
+  status: active
+- id: TR-overworld-015
+  system: overworld
+  gdd: design/gdd/overworld-exploration-encounters.md
+  requirement: "One probe() picks the nearest eligible target with a fixed tie order and drives both the interact prompt and confirm; no probe during transitions or overlays; the confirm that closes an overlay is consumed; pointer input is ignored on the map"
+  created: 2026-10-23
+  revised: ""
+  status: active
+- id: TR-overworld-016
+  system: overworld
+  gdd: design/gdd/overworld-exploration-encounters.md
+  requirement: "Load-time validation: OverworldConfig invariants I1-I18 at boot and in CI; validate_maps.gd checks every data criterion (no physics nodes by class, placement and safe zones, ordered bypass search, story encounter not routable round, beacon junction coverage, stage-raise rules, density and walk budgets, references)"
+  created: 2026-10-23
+  revised: ""
+  status: active
+- id: TR-overworld-017
+  system: overworld
+  gdd: design/gdd/overworld-exploration-encounters.md
+  requirement: "Presentation: the lighting profile is resolved per map x faction x stage, or the liberated profile, before the stage enters the tree; the overworld camera must satisfy chase_visibility at 4:3, 16:9 and 21:9 including tilt-shift blur bounds measured from the leader; followers are cosmetic trail sprites; sprite animation is driven by ow_dt; process_priority mode < camera < sprites"
+  created: 2026-10-23
+  revised: ""
+  status: active
+- id: TR-overworld-018
+  system: overworld
+  gdd: design/gdd/overworld-exploration-encounters.md
+  requirement: "All player-facing overworld text (posters, decrees, cards, barks, prompts) is LocText shown verbatim on confirm; timed non-blocking text holds by length (text_hold) and pauses under overlays"
+  created: 2026-10-23
+  revised: ""
+  status: active
+- id: TR-overworld-019
+  system: overworld
+  gdd: design/gdd/overworld-exploration-encounters.md
+  requirement: "Interim MVP story-flag registry: every flag a map, checkpoint, marker or Dialogue reads is registered and CI-checked; story flags live in WorldState until Dialogue, Banter & Quests claims them; no Engine.time_scale anywhere"
+  created: 2026-10-23
   revised: ""
   status: active
 

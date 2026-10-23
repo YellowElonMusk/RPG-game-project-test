@@ -1,7 +1,7 @@
 # ADR-0001: Content Data Definitions Storage & Loading Format
 
 ## Status
-Accepted — bootstrap amendment pending in ADR-0004 (Proposed 2026-10-21; takes effect when ADR-0004 is Accepted)
+Accepted — amended by ADR-0004 (bootstrap; Accepted 2026-10-22, amendment in effect) and ADR-0007 §7 (Stats range validators register through `ContentBootstrap`; Accepted 2026-10-22, amendment in effect, annotation only) and ADR-0011 §4–§5 (`rule_id` resolution no longer uses `ProjectSettings.get_global_class_list()`; the reserved `FactionRule` record type is defined; `Faction.rule_id` is an ordinary reference to a `faction_rule` record, checked by the generic reference pass; Accepted 2026-10-22, amendment in effect, annotation only) and ADR-0012 §3 (three record types `map` (`map_`), `encounter` (`enc_`) and `occupation_stage` (`ostage_`), plus `faction.patrol_archetype_id`; Accepted 2026-10-23, amendment in effect, annotation only)
 
 ## Date
 2026-10-21
@@ -211,6 +211,11 @@ not in `ClassDB`, so this lookup cannot live in the Foundation layer either).
 Stats & Damage Resolution's documented ranges (`max_hp` 1–999, etc.) are read
 by the catalog from a small shared constants reference that system owns, not
 duplicated as literals inside `ContentCatalog`.
+> **Amended by ADR-0007 §7 (Accepted 2026-10-22):** the catalog does not read
+> a Stats constants reference. Stats & Damage Resolution registers its range
+> validators (`StatsValidators`, bound to `StatsConfig`) through
+> `ContentBootstrap.run()` → `register_record_validator()` (ADR-0004 §4), so
+> `src/data/` imports nothing from Core.
 
 ### Architecture Diagram
 ```
@@ -507,3 +512,5 @@ data/items/*.tres       ─┘
   bootstrap sentence; the `_ready()` load-pass guideline; Migration Step 1's
   load entry point; Key Interfaces gains `register_record_validator()`). The
   original text is kept. The amendment takes effect when ADR-0004 is Accepted.
+- **2026-10-22 — ADR-0004 Accepted**: the bootstrap amendment above is now in
+  effect. Where the annotated passages and ADR-0004 differ, ADR-0004 governs.

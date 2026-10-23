@@ -1,10 +1,10 @@
 # ADR-0006: Battle Replay Ownership — Gating Turn Battle's Outcome Log Behind Presentation
 
 ## Status
-Proposed
+Accepted — amended by ADR-0010 (§5: a fifth `BattleCore` signal, `battle_fled`, handled as an END-class marker, and a `FLEE` action role; Accepted 2026-10-22, amendment in effect, annotation only)
 
 ## Date
-2026-10-21 (revision 2: 2026-10-22; revision 3: 2026-10-22)
+2026-10-21 (revision 2: 2026-10-22; revision 3: 2026-10-22; revision 4: 2026-10-22)
 
 ## Last Verified
 2026-10-22
@@ -60,16 +60,16 @@ The player's one-level speed-up latch, cancellation on every exit path, and the 
 | **Knowledge Risk** | LOW — no post-cutoff API is introduced. The only shipped precedent is `BattleCore` itself (`RefCounted` + typed signals); `GameStateMachine` (ADR-0002) and `PresentationDirector` (ADR-0005) use the same pattern but are not yet implemented |
 | **References Consulted** | `docs/engine-reference/godot/VERSION.md`; `breaking-changes.md` (no signal/`RefCounted`/typed-collection row for 4.5–4.7); `deprecated-apis.md` (`connect()` string form and `yield()` rows do not apply: typed `signal.connect(callable)` only); `current-best-practices.md` |
 | **Post-Cutoff APIs Used** | None |
-| **Verification Required** | None beyond the project's gdUnit4 headless pattern. Typed `Dictionary[K, V]` is NOT SOURCEABLE in the engine reference, so this ADR uses an untyped `Dictionary` (same choice as ADR-0005 §5). Every override with a typed return ends in an explicit `return` (4.7 typed-return inheritance) |
+| **Verification Required** | None beyond the project's gdUnit4 headless pattern. Typed `Dictionary[K, V]` is not in the engine reference, but it was **probed on 4.7.2** (compiles; review of revision 3), so `BeatPlan` uses `Dictionary[Combatant, …]` (§7, Key Interfaces), as ADR-0005 does with `Dictionary[StringName, FlashSourceDecl]`. Every override with a typed return ends in an explicit `return` (4.7 typed-return inheritance) |
 
 ## ADR Dependencies
 
 | Field | Value |
 |-------|-------|
-| **Depends On** | ADR-0002 (Game State & Scene Flow, Proposed). The controller depends on: §2 (Battle mode is a `GameMode`); §4 (only the Overworld is ever detached, so the Battle mode's `_exit_tree()` means it is being freed); §5 (`ModeHost` disabled under the Menu freezes `advance()`); §6 (actions reach the Battle mode through `handle_action()`); §7 (Retry calls `restore_start_snapshot()` on the same instance during SWAP; the Battle → Battle row emits `transition_finished(BATTLE)` at the end of the retry flash); and Migration Step 2 (the Battle mode, not `ChapterFlow`, constructs and starts `BattleCore`). ADR-0005 (Sprite & Camera Presentation, Proposed): its `CharacterSprite`, `DioramaStage` and `PresentationConfig` consume and configure this controller |
-| **Enables** | The GDD's rule 9 and rule 6 can be finalised (`sprite-camera-presentation.md` revision 6) |
+| **Depends On** | ADR-0002 (Game State & Scene Flow, Accepted 2026-10-22). The controller depends on: §2 (Battle mode is a `GameMode`); §4 (only the Overworld is ever detached, so the Battle mode's `_exit_tree()` means it is being freed); §5 (`ModeHost` disabled under the Menu freezes `advance()`); §6 (actions reach the Battle mode through `handle_action()`); §7 (Retry calls `restore_start_snapshot()` on the same instance during SWAP; the Battle → Battle row emits `transition_finished(BATTLE)` at the end of the retry flash); and Migration Step 2 (the Battle mode, not `ChapterFlow`, constructs and starts `BattleCore`) |
+| **Enables** | ADR-0005 (Sprite & Camera Presentation): its `CharacterSprite`, `DioramaStage` and `PresentationConfig` consume and configure this controller, taking the clocks as injected `Callable`s; this controller never references Core presentation code. The GDD's rule 9 and rule 6 (`sprite-camera-presentation.md` revision 6) |
 | **Blocks** | Any `/dev-story` for the Battle mode scene or `BattleHud` rewiring; acceptance of ADR-0005 (its sprite clock comes from §4 here) |
-| **Ordering Note** | Does not supersede ADR-0002 or ADR-0005. It fills a mechanism gap both leave to "the Battle mode". None of the three is independently implementable, so they reach Accepted together. **Hard prerequisite for implementation:** ADR-0002 Migration Step 2. Today `ChapterFlow._start_fight` constructs `BattleCore` and calls `start_battle()` before anyone can connect (`src/chapters/chapter_flow.gd:124-127`), and a loss builds a fresh `BattleCore` (`chapter_flow.gd:140`), so neither the gate nor a single connected controller is possible against today's code |
+| **Ordering Note** | Does not supersede ADR-0002 or ADR-0005. It fills a mechanism gap both leave to "the Battle mode". ADR-0005 was moved from Depends On to Enables on 2026-10-22 (`architecture-review-2026-10-22.md`, Cross-ADR Conflicts): the dependency only ever ran one way in code, so the graph is now 0006 → 0002 and 0005 → 0006, and this ADR is Accepted before ADR-0005. **Hard prerequisite for implementation:** ADR-0002 Migration Step 2. Today `ChapterFlow._start_fight` constructs `BattleCore` and calls `start_battle()` before anyone can connect (`src/chapters/chapter_flow.gd:124-127`), and a loss builds a fresh `BattleCore` (`chapter_flow.gd:140`), so neither the gate nor a single connected controller is possible against today's code |
 
 ## Context
 
@@ -220,13 +220,14 @@ Each event (impact, an entry finishing) therefore lands on the first frame at or
 8. `controller.resync()`, so the displayed state starts from the live state after `start_battle(false)`, exactly as on Retry. It emits `display_resynced`.
 9. Game State then calls `capture_start_snapshot()` (ADR-0002 §7). The handle holds the party's HP/MP, as `start_battle(false)` left them untouched.
 10. On `transition_finished(BATTLE)`: `controller.open_reveal_gate()`. The takeover, or the first command menu, starts on the first fully revealed frame.
+11. **The boss light.** The stage entered on `battle` (ADR-0005 §3: every battle stage does). On the controller's `hold_started(HoldKind.TAKEOVER_FULL)`, the **Battle mode** calls `stage.request_profile(&"boss_<faction>", blend_boss, func(): return controller.get_hold_time())`, so the takeover blend runs on the hold's own clock from the Battle light. The stage never sees the controller type; it gets a `Callable`.
 
 **Retry.** The Defeat Prompt calls `choose_retry()`, and Game State runs the Battle → Battle row: OUT (the retry flash), SWAP, IN.
 - **At the start of OUT**, on `transition_started(BATTLE, BATTLE)`, the Battle mode cancels: `controller.cancel_pending_replay()`, and it stops its own end-of-fight hold if one is running. Revision 2 cancelled only in SWAP, which let anything still queued play behind the retry flash.
 - **In SWAP** it calls `restore_start_snapshot(handle)` on the same Battle-mode instance, which runs, in this order:
 1. `controller.cancel_pending_replay()`, again and unconditionally. It is normally a no-op.
 2. Restore the party's HP/MP from the handle and clear per-fight transients (`is_defending`, `is_stunned`, `vulnerable_rounds_left`).
-3. Apply the Battle light, or, for a boss fight, the takeover's end-state light, hidden behind the retry flash (ADR-0005 `request_profile(..., blend 0)`). If the retry flash is playing its capped variant (the flash gate refused it, or Reduce Flashing is On), it no longer hides the change. Then the light is requested with `blend_defeat` instead, so it is a blend, never a pop (GDD States and Transitions).
+3. The **Battle mode** (never the Director) requests the light through `stage.request_profile()` (ADR-0005 §3): `battle` for an ordinary fight, `boss_<faction>` (the takeover's end state) for a boss fight. It asks `GameStateMachine.is_transition_flash_capped()` (ADR-0002 amendment), which reports the `FlashGate` result for this transition's retry flash. If the flash is uncapped, the light is requested with blend 0, hidden behind it. If it is capped (refused by the gate, or Reduce Flashing On), the flash no longer hides the change, so the light is requested with `blend_defeat`, a blend and never a pop (GDD States and Transitions). The Director's `mode_entered(BATTLE)` on this same-mode row does **not** re-apply the entry profile (ADR-0005 §4), so this light survives.
 4. `controller.enqueue_reveal_gate()`.
 5. If it is a boss fight: `controller.enqueue_takeover(boss_combatant, HoldKind.TAKEOVER_SETTLE)`.
 6. `battle.start_battle(false)`. This resets the enemies, round 1 and the outcome log, and queues `turn_started` behind the gate. **Never** `start_battle()` or `retry_battle()`: both full-heal the squad.
@@ -342,14 +343,15 @@ So Family Meal plans a `HEAL` with its own number over **each** healed member, f
 - **`get_display_round() -> int`** returns the `round_number` of the same released snapshot. The HUD reads the round only through it, never `BattleCore.round_number`, which is already the next round mid-replay.
 - **`cancel_pending_replay()`** clears the queue, any entry in progress and the latch. It emits `replay_cancelled` if anything was discarded, and returns to `IDLE`. It emits no beat, hold or gated signal for a discarded entry. Displayed state is left as it was, which is stale until `resync()`; exit paths don't need a resync. `boss_combatant` is kept.
 - **`resync()`** re-takes the settled snapshot from live `Combatant` state, makes it the displayed state, and emits **`display_resynced`**. GATE, HOLD and marker entries may be queued. A queued or in-progress OUTCOME is a programming error: `push_error`, and nothing changes.
-- **`dispose()`** calls `cancel_pending_replay()`, disconnects from all four `BattleCore` signals, drops the `windup` callable and enters `DISPOSED`. It is idempotent.
+- **`dispose()`** calls `cancel_pending_replay()`, disconnects from all four `BattleCore` signals, drops the `windup` and `ko_landing` callables and the `config` reference (so a lambda capturing the controller can't form a cycle) and enters `DISPOSED`. It is idempotent.
 
 ### 9. Configuration
 The controller reads these `PresentationConfig` knobs (ADR-0005; values and ranges are in the GDD's Tuning Knobs):
 - `dt_max`, `beat_min`;
 - `reaction_hold`, `ko_hold`;
 - `ff_mult`, `battle_speed_mult`;
-- `blend_boss`, `boss_hold`, `boss_retry_hold`.
+- `blend_boss`, `boss_hold`, `boss_retry_hold`;
+- `gate_stuck_warn_s` (debug only; default 2.0 s, range 1.0–5.0): how long the Battle mode waits in `GATED` before logging the soft-lock error (Risks).
 
 `PresentationConfig` load validation (a boot content error, each comparison with `ε` tolerance in the passing direction) includes these rules for the controller:
 - `battle_speed_mult ≤ ff_mult − 0.25`, so the latch always speeds a wind-up beyond Faster battle animations (ruling 3; revision 2 allowed equality, which made the latch a no-op);
@@ -420,7 +422,7 @@ signal battle_ended_after_replay(won: bool)
 
 ## windup(plan: BeatPlan) -> float: 1× wind-up seconds, or -1.0 if the actor has no action animation.
 ## ko_landing(combatant: Combatant) -> float: 1× seconds from knockout start to its land_frame.
-func _init(battle: BattleCore, windup: Callable, ko_landing: Callable, config: PresentationConfig) -> void: ...
+func _init(battle: BattleCore = null, windup: Callable = Callable(), ko_landing: Callable = Callable(), config: PresentationConfig = null) -> void: ...   # defaults only so gdUnit4 spy()/mock() can construct it; the Battle mode always passes all four, and advance() asserts they are set
 
 # Queue control (Battle mode only; order in Decision §5)
 func enqueue_reveal_gate() -> void: ...
@@ -462,8 +464,8 @@ var outcome: BattleOutcome
 var actor: Combatant
 var action_role: ActionRole
 var move_name: String
-var reactions: Dictionary      # Combatant -> Reaction; never the actor
-var hp_changes: Dictionary     # Combatant -> int (non-zero only; the actor included)
+var reactions: Dictionary[Combatant, Reaction]   # never the actor (typed Dictionary compiles on 4.7.2, probed)
+var hp_changes: Dictionary[Combatant, int]      # non-zero only; the actor included
 var punch: bool
 var big_punch: bool
 var knockout: bool
@@ -496,6 +498,8 @@ var vulnerable_rounds_left: int
 - During a replay, `confirm`, `fast_forward` and `cancel` presses **must** be consumed by the latch methods and **must never** be buffered or passed on.
 - The Battle mode **must** call `cancel_pending_replay()`, and stop its end-of-fight hold, on every `transition_started` from BATTLE (to another mode, or Battle → Battle for Retry), and again first thing in `restore_start_snapshot()`. It **must** call `dispose()` from `_exit_tree()`.
 - The controller's queue, snapshots and clocks are private. Its signals and public methods are its whole surface.
+- **Process order.** In its `_process`, the Battle mode calls `controller.advance(delta)` **first**, then pushes the results down: `stage.set_punch_offset_px()`, each `CharacterSprite.show_frame()`, and the HUD refresh. No reader polls the controller from its own `_process`, so nothing is a frame stale and no `process_priority` is needed.
+- **Re-entrancy.** Signals are emitted synchronously inside `advance()` and inside `BattleCore`'s own emission. A handler **must not** call `cancel_pending_replay()`, `dispose()`, `submit_action()` or any queue method directly; it uses `call_deferred()`. The controller enforces it: while it is emitting, those methods log an error in debug builds and are deferred to the end of the current `advance()` (or the current `BattleCore` emission). A test harness that auto-submits actions on `turn_started` must defer the submit, or the IDLE immediate-release path recurses into `BattleCore`.
 - **Hard prerequisite:** none of the above can be built until ADR-0002 Migration Step 2 has moved `BattleCore` construction out of `ChapterFlow`. Stories for the Battle mode and `BattleHud` rewiring are not Ready before it.
 
 ## Alternatives Considered
@@ -550,28 +554,29 @@ var vulnerable_rounds_left: int
 - **A story wires `BattleHud` to both the raw and the gated signals.** *Mitigation*: the Implementation Guidelines forbid it, a forbidden-pattern registry entry exists, and a unit test asserts `BattleHud` has no connection to `BattleCore.turn_started`.
 - **A missed call on a Retry or exit path.** *Mitigation*: every path is named in §5, and a spy-based integration test asserts the full order on first entry, Retry and each exit.
 - **`windup` returns a stale length** (for example, before a `SpriteFrames` is loaded). *Mitigation*: boot validation guarantees every action animation and `impact_frame` exists before any battle. `beat_min` floors every beat, and `-1.0` takes the debug path.
-- **The gate never opens** (a missed `transition_finished` handler), so the battle soft-locks on an empty screen. *Mitigation*: an integration test drives a stub Game State through both rows. In debug builds, the Battle mode logs an error if it is still `GATED` 2 s of mode time after `mode_entered(BATTLE)`.
+- **The gate never opens** (a missed `transition_finished` handler), so the battle soft-locks on an empty screen. *Mitigation*: an integration test drives a stub Game State through both rows. In debug builds, the Battle mode logs an error if it is still `GATED` `gate_stuck_warn_s` of mode time after `mode_entered(BATTLE)` (a `PresentationConfig` debug knob, default 2.0 s, range 1.0–5.0).
 - **`move_name` collides across moves**, or is localized. *Mitigation*: content validation rejects duplicate move display names per sprite set until moves have IDs.
 - **Snapshot cost grows with battle size.** About 8 records per entry at the GDD's 8 actors. Revisit above about 50 combatants.
 
 ## GDD Requirements Addressed
 
-No `TR-` IDs are registered yet for `sprite-camera-presentation.md` in `docs/architecture/tr-registry.yaml`. `/architecture-review` should assign them and backfill this table.
+TR IDs from `docs/architecture/tr-registry.yaml`, assigned by `/architecture-review` on 2026-10-22 (back-fill map in `architecture-review-2026-10-22.md`).
 
-| GDD System | Requirement | How This ADR Addresses It |
-|------------|-------------|--------------------------|
-| sprite-camera-presentation.md | Rule 9: the next command menu opens only when the replay has finished; Victory or Defeat only after the last beat | TURN and END markers are released only after every earlier entry finishes (§4 step 4) |
-| sprite-camera-presentation.md | Rule 9: wind-up → impact → hold → number; the hold never scales; every beat lasts at least `beat_min` | §4's two-phase beat: scaled wind-up, unscaled post-impact clock, end condition `hold ∧ beat_min`; displayed state changes at `beat_finished` |
-| sprite-camera-presentation.md | Rule 9: one clock drives sprite frames, the punch and sound | §4's three clocks and `beat_impact`; Implementation Guidelines forbid presentation's own timers |
-| sprite-camera-presentation.md | Rule 9: every outcome shape has a defined pose; no "0" numbers; per-member party-heal numbers | §7's map and snapshot-derived `hp_changes` |
-| sprite-camera-presentation.md | Rule 9: one-level latch over every wind-up; the boss entrance only with "Speed up boss entrances"; Cancel or a second indicator click clears; a press that changes nothing is refused; the passive indicator; no buffering; a press counts only after the full reveal | §6 (`request_latch`, `clear_latch`, `is_press_effective`) |
-| sprite-camera-presentation.md | Rule 9: a knockout holds until its slump has landed; a beat with no reactor has no hold; the actor never reacts to its own action | §7 `hold`, `reactions` |
-| sprite-camera-presentation.md | Rule 9: turn-start changes (a Defend wearing off, a stun clearing) and the round show when released, never stale; Retry starts clean | §2 TURN/END snapshots, §8 `get_display_round()`, `display_resynced` (§3, §5) |
-| sprite-camera-presentation.md | Rule 6: the boss takeover holds the first turn, starts on the first fully revealed frame, plays in full on first entry and settles on Retry | GATE + HOLD entries (§2, §5); `get_hold_time()` drives the blend |
-| sprite-camera-presentation.md | Rule 9 / Edge Cases: Retry, Retreat, Quit and freeing mid-replay drop everything; Menu freeze; slow frames never skip a beat | §5 exit order, §8 cancel/dispose, §4 clamp and drop-leftover rule |
-| sprite-camera-presentation.md | Interactions table: is-boss and faction come from the encounter descriptor; the boss actor is the `is_boss` enemy | §5 step 2, `boss_combatant` |
-| turn-battle-system.md | Synchronous resolution and the outcome log stay as built | `BattleCore` is not modified |
-| game-state-scene-flow.md / ADR-0002 §7 | Retry restores the start snapshot on the same instance; Defeat Prompt after the outcome is reported | §5 Retry order; end-of-fight holds before `report_battle_outcome()` |
+| TR-ID | GDD System | Requirement | How This ADR Addresses It |
+|-------|------------|-------------|--------------------------|
+| TR-presentation-009, TR-turnbattle-005 | sprite-camera-presentation.md, turn-battle-system.md | Rule 9: the next command menu opens only when the replay has finished; Victory or Defeat only after the last beat; outcomes reach presentation only through the controller | TURN and END markers are released only after every earlier entry finishes (§4 step 4) |
+| TR-presentation-009 | sprite-camera-presentation.md | Rule 9: wind-up → impact → hold → number; the hold never scales; every beat lasts at least `beat_min` | §4's two-phase beat: scaled wind-up, unscaled post-impact clock, end condition `hold ∧ beat_min`; displayed state changes at `beat_finished` |
+| TR-presentation-010 | sprite-camera-presentation.md | Rule 9: one clock drives sprite frames, the punch and sound | §4's three clocks and `beat_impact`; Implementation Guidelines forbid presentation's own timers. The frame-setting side is ADR-0005 §1 |
+| TR-presentation-009 | sprite-camera-presentation.md | Rule 9: every outcome shape has a defined pose; no "0" numbers; per-member party-heal numbers | §7's map and snapshot-derived `hp_changes` |
+| TR-presentation-011 | sprite-camera-presentation.md | Rule 9: one-level latch over every wind-up; the boss entrance only with "Speed up boss entrances"; Cancel or a second indicator click clears; a press that changes nothing is refused; the passive indicator; no buffering; a press counts only after the full reveal | §6 (`request_latch`, `clear_latch`, `is_press_effective`) |
+| TR-presentation-009 | sprite-camera-presentation.md | Rule 9: a knockout holds until its slump has landed; a beat with no reactor has no hold; the actor never reacts to its own action | §7 `hold`, `reactions` |
+| TR-presentation-013 | sprite-camera-presentation.md | Rule 9: turn-start changes (a Defend wearing off, a stun clearing) and the round show when released, never stale; Retry starts clean | §2 TURN/END snapshots, §8 `get_display_round()`, `display_resynced` (§3, §5) |
+| TR-presentation-005 | sprite-camera-presentation.md | Rule 6: the boss takeover holds the first turn, starts on the first fully revealed frame, plays in full on first entry and settles on Retry | GATE + HOLD entries (§2, §5); `get_hold_time()` drives the blend. The flood and sky are ADR-0005 §3 |
+| TR-presentation-009, TR-presentation-013 | sprite-camera-presentation.md | Rule 9 / Edge Cases: Retry, Retreat, Quit and freeing mid-replay drop everything; Menu freeze; slow frames never skip a beat | §5 exit order, §8 cancel/dispose, §4 clamp and drop-leftover rule |
+| TR-presentation-021 | sprite-camera-presentation.md | Replay knobs in presentation data, validated at load | §9 (`PresentationConfig` replay fields) |
+| — (no TR) | sprite-camera-presentation.md | Interactions table: is-boss and faction come from the encounter descriptor; the boss actor is the `is_boss` enemy | §5 step 2, `boss_combatant` |
+| TR-turnbattle-005 | turn-battle-system.md | Synchronous resolution and the outcome log stay as built; a replay never changes a result | `BattleCore` is not modified |
+| — (no TR) | game-state-scene-flow.md / ADR-0002 §7 | Retry restores the start snapshot on the same instance; Defeat Prompt after the outcome is reported | §5 Retry order; end-of-fight holds before `report_battle_outcome()` |
 
 ## Performance Implications
 - **CPU**: Negligible. One queue append, one plan and one snapshot of about 8 records per emitted signal; one `advance()` per frame doing constant work.
@@ -617,7 +622,7 @@ Integration (stub Game State, real `BattleCore`):
 A retained screenshot (Visual/UI evidence gate) shows the command menu closed until the last beat finishes, once the Battle mode story is built.
 
 ## Related
-- Extends ADR-0002 §2, §4–§8 and ADR-0005. Supersedes neither.
+- Extends ADR-0002 §2, §4–§8. Enables ADR-0005 (presentation consumes this controller's clocks and signals). Supersedes neither.
 - `design/gdd/sprite-camera-presentation.md` rules 6 and 9 (revision 6) state the player-facing guarantees and the `replay_time` formula this ADR implements.
 - `design/gdd/input-system.md` rule 2 and AC-2 (one `pressed` per physical press) are relied on by §6.
 - `design/gdd/turn-battle-system.md`: unaffected; `BattleCore`'s public contract is unchanged.
@@ -655,3 +660,24 @@ A retained screenshot (Visual/UI evidence gate) shows the command menu closed un
   - **Map:** the actor is never in `reactions`; a knockout's `hold` comes from the injected `ko_landing`; a plan with no reactors has `hold = 0`.
   - **Timing tolerance** is per event, not per beat.
   - **Pending:** a fresh godot-specialist and TD-ADR review of revisions 2 and 3 together.
+- 2026-10-22 — **Review of revision 3** (godot-specialist; technical-director TD-ADR). godot-specialist: APPROVED. TD-ADR: ACCEPT WITH CONDITIONS. All eight review-5 tracked items confirmed landed; `replay_time` matches the GDD line for line.
+  - **[BLOCKING — condition] §5 step 3 (L229):** name who requests `boss_<faction>` on `hold_started(TAKEOVER_FULL)` with the hold clock (align with the ADR-0005 fix), and how the Battle mode learns that the Retry flash played capped (e.g. a `GameStateMachine` query, or the `FlashGate` result passed with the transition).
+  - Recommended: process order (the Battle mode calls its readers after `advance()`, or pins `process_priority`); a re-entrancy rule for handlers that call `cancel_pending_replay()`, `dispose()` or `submit_action()` during emission; `dispose()` also drops `ko_landing` and `config`; typed `Dictionary[Combatant, int]` (compiles on 4.7.2); default `_init` arguments for gdUnit4 spies; the 2 s still-GATED debug literal becomes a data knob; this revision gets its own Review History line (the "Pending" note above is now resolved).
+  - Acceptance: together with ADR-0005, after ADR-0004 → ADR-0002 and after `/architecture-review` assigns TR IDs.
+- 2026-10-22 — **Revision 4**, answering the review of revision 3:
+  - **The condition:** §5 now names the Battle mode as the only caller of `request_profile()`. On first entry it requests `boss_<faction>` on `hold_started(TAKEOVER_FULL)` with a hold-clock `Callable` (step 11). On Retry, step 3 asks `GameStateMachine.is_transition_flash_capped()` (ADR-0002 amendment) and requests blend 0 or `blend_defeat`. The Director's same-mode `mode_entered` doesn't overwrite it (ADR-0005 §4).
+  - **Recommended items applied:**
+    - `dispose()` drops `ko_landing` and `config`;
+    - `gate_stuck_warn_s` is a debug knob;
+    - typed `Dictionary[Combatant, …]`;
+    - default `_init` arguments for gdUnit4 spies;
+    - process order: `advance()` first, then push down;
+    - the re-entrancy rule.
+  - **Pending:** a short re-review, together with ADR-0005 revision 3.
+- 2026-10-22 — **Short re-review of revision 4** (TD-ADR): **ACCEPT**. The condition is CLOSED and all six recommended items landed. Follow-up in ADR-0005 §12: the Battle mode calls `FlashGate.cancel()` on its replay-clock bookings next to each `cancel_pending_replay()`.
+- 2026-10-22 — **`/architecture-review` fixes** (`architecture-review-2026-10-22.md`), no decision change:
+  - **Dependency cycle cut:** ADR-0005 moved from Depends On to Enables. In code the edge only ran one way (Core takes the clocks as `Callable`s and never imports this Feature controller).
+  - **TR IDs back-filled** into GDD Requirements Addressed: TR-presentation-005, 009, 010, 011, 013, 021; TR-turnbattle-005.
+  - **Engine Compatibility:** the Verification Required row now matches §7 (typed `Dictionary[Combatant, …]`, probed on 4.7.2).
+  - Advisory E6 (the boss-light `clock` lambda outlives `dispose()`; the stage should drop it when the blend completes and on `_exit_tree`) is not yet folded in.
+- 2026-10-22 — **Accepted** by the user, after ADR-0002 → ADR-0004 → ADR-0003 (explicit instruction to accept in that order, then ADR-0006, then ADR-0005). No stories were Blocked on this ADR.

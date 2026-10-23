@@ -1,7 +1,7 @@
 # ADR-0003: Input System — Event Resolution, Bindings Data and GUI Integration
 
 ## Status
-Proposed
+Accepted — amended by ADR-0008 (§4: `InputResolver` gains the read-only `get_bindings(action, device_kind) -> PackedStringArray`; `UiService`, not each overlay, grabs focus on an overlay's behalf; Accepted 2026-10-22, amendment in effect, annotation only) and ADR-0009 (§7: `InputResolver` gains a capture mode, reached only through ADR-0008's `InputCapture` facade, and `InputBindingsValidator` gains a static `validate_bindings(triples)`; Accepted 2026-10-22, amendment in effect, annotation only)
 
 ## Date
 2026-10-21
@@ -31,7 +31,7 @@ The Input System needs a concrete Godot mechanism for turning keyboard, mouse an
 
 | Field | Value |
 |-------|-------|
-| **Depends On** | ADR-0001 (Content Data Definitions storage format) — **Accepted**: the bindings record follows its `Resource`/`.tres`, ID and validation rules. ADR-0002 (Game State & Scene Flow) — **Proposed**: defines the `ActionSource` contract this ADR satisfies, the `GameRoot`/`Services` layout Input lives in, and the ban on modes touching Input. ADR-0004 (Content Boot Ordering) — **Proposed**: provides `ContentBootstrap` and `ContentCatalog.register_record_validator()`, through which the bindings validator is registered before validation runs. ADR-0003 cannot be Accepted before ADR-0002 and ADR-0004 |
+| **Depends On** | ADR-0001 (Content Data Definitions storage format) — **Accepted**: the bindings record follows its `Resource`/`.tres`, ID and validation rules. ADR-0002 (Game State & Scene Flow) — **Accepted** 2026-10-22: defines the `ActionSource` contract this ADR satisfies, the `GameRoot`/`Services` layout Input lives in, and the ban on modes touching Input. ADR-0004 (Content Boot Ordering) — **Accepted** 2026-10-22: provides `ContentBootstrap` and `ContentCatalog.register_record_validator()`, through which the bindings validator is registered before validation runs. ADR-0003 cannot be Accepted before ADR-0002 and ADR-0004 |
 | **Enables** | UI Framework work past the battle HUD (prompt glyphs, focus sync, routed-then-injected navigation); Overworld Exploration & Encounters (`move` via `GameStateMachine.get_move_vector`); Save/Load & Settings ADR (player binding overrides, Vertical Slice) |
 | **Blocks** | Input System epic (all stories); Overworld Exploration & Encounters epic (one of its 3 prerequisite ADRs); any UI story that adds keyboard/gamepad menu navigation |
 | **Ordering Note** | The boot-ordering change this ADR needs (catalog load moved from the autoload's `_ready()` into a composition-root `ContentBootstrap`, plus `register_record_validator()`) is its own decision in ADR-0004, which amends ADR-0001 and ADR-0002. This ADR only adds one line to `ContentBootstrap`'s registration list (§6) |
@@ -47,7 +47,7 @@ The Input System needs a concrete Godot mechanism for turning keyboard, mouse an
 4. **What the concrete API is.** `architecture.md` lists a proposed surface for this ADR to confirm or change.
 
 ### Constraints
-- **Registry stances (ADR-0002, Proposed):** `mutable_autoload_singleton` is forbidden; `mode_direct_input_access` is forbidden; the `action_source` contract is registered. **ADR-0001:** bindings are a catalog record, so they hold IDs and plain values only, never `Resource` references.
+- **Registry stances (ADR-0002, Accepted):** `mutable_autoload_singleton` is forbidden; `mode_direct_input_access` is forbidden; the `action_source` contract is registered. **ADR-0001:** bindings are a catalog record, so they hold IDs and plain values only, never `Resource` references.
 - **GDD rule 2:** Input has no dependency on Game State, and never decides whether an action is used.
 - **GDD Acceptance Criteria harness:** synthetic device events (including a gamepad that reports device ID 0), an injectable clock with a fixed tick, a recorder, and no consumer attached. Expected values come from the config, never literals.
 - **GDD rule 11 / Godot 4.7:** keyboard and mouse are identified by `DEVICE_ID_KEYBOARD` / `DEVICE_ID_MOUSE`, never by device 0.
@@ -332,7 +332,7 @@ No Input code exists yet; the battle HUD and demos use mouse or direct calls.
 - A deliberately broken `bindings_default.tres` (an action with no gamepad binding) makes the game boot into Content Error, and Quit works there by keyboard.
 
 ## Related
-- Depends on: `docs/architecture/adr-0001-content-data-storage-format.md` (Accepted; bindings record format), `docs/architecture/adr-0002-game-state-scene-flow.md` (Proposed; `ActionSource` contract, `TransitionLayer`), `docs/architecture/adr-0004-content-boot-ordering.md` (Proposed; `ContentBootstrap`, `register_record_validator`)
+- Depends on: `docs/architecture/adr-0001-content-data-storage-format.md` (Accepted; bindings record format), `docs/architecture/adr-0002-game-state-scene-flow.md` (Accepted; `ActionSource` contract, `TransitionLayer`), `docs/architecture/adr-0004-content-boot-ordering.md` (Accepted; `ContentBootstrap`, `register_record_validator`)
 - Design: `design/gdd/input-system.md` (closes Open Question 4), `design/gdd/game-state-scene-flow.md`, `design/gdd/content-data-definitions.md` (new `bindings_` record type)
 - Architecture: `docs/architecture/architecture.md` — confirms and changes the proposed Input surface (drops the `is_pressed`/`is_just_*` polling API, adds `nav_*` actions); partly addresses QQ-03 (dual focus) by fixing the GUI routing contract
 - Upcoming: UI Framework ADR (re-injection helper, focus sync, prompt labels), Save/Load & Settings ADR (overrides, remap capture)
@@ -349,4 +349,5 @@ No Input code exists yet; the battle HUD and demos use mouse or direct calls.
   - a fallback for a bad `InputConfig`, plus a fallback-compiles test;
   - the Migration Plan fixed (spike results become regression tests) and the AC-22 wording reconciled;
   - `ui_*` erasure placed in `_enter_tree()`, and `ui_select` marked unverified.
-- Acceptance pending: ADR-0002 and ADR-0004 must be Accepted first. Then run `/architecture-review` in a fresh session, then `/architecture-decision accept ADR-0003`.
+- 2026-10-22 — `/architecture-review` (`architecture-review-2026-10-22.md`): nothing blocking for this ADR. Advisory godot-specialist item E9 (Steam Input on the native Linux Deck presents "Steam Virtual Gamepad", so `pad_style` needs a Deck/Steam row; `ui_select` exists with 2 events, closing the L28 caveat) is not yet folded in.
+- 2026-10-22 — **Accepted** by the user, after ADR-0002 and ADR-0004 (explicit instruction: accept ADR-0002 → ADR-0004 → ADR-0003 → ADR-0006 → ADR-0005). No stories were Blocked on this ADR.

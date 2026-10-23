@@ -269,7 +269,10 @@ Knobs) — currently in-code, migrating to data now.
 
 1. **Hook contract shape** `INTENT UNKNOWN`: keep the current nine-method
    contract as Influencia/Liberty-7 are added, or expect a reshuffle once
-   Quirk State System exists?
+   Quirk State System exists? *(ADR-0007, Proposed 2026-10-22, adds a tenth:
+   `register_resolution_hooks(hooks)`, through which a faction registers damage
+   and heal modifiers and overrides with Stats & Damage Resolution. The base is
+   a no-op, and neither shipped faction uses it.)*
    - Option A: keep it; new factions just add more overrides.
    - Option B: split presentation (banner/tooltip/color) out into its own
      interface once UI Framework is actually designed, so this GDD owns only

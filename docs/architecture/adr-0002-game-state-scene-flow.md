@@ -1,7 +1,7 @@
 # ADR-0002: Game State & Scene Flow — Scene Architecture and ChapterFlow Ownership
 
 ## Status
-Proposed
+Accepted. **Revised 2026-10-23:** §11 (`request_in_mode_fade`, `register_camp`, `is_in_mode_fade`) and the §8 step-list note, requested by ADR-0012 rev 3; **in effect** (ADR-0012 Accepted 2026-10-23). ADR-0012 also annotates §4 (fresh-instance map change, `CampEntryPayload`, composite injector), in effect. — Amended by ADR-0008 (§2: the production `SceneLoader` and the `OverlayHost` push take an injected `pre_setup: Callable(node)`, run after instantiation and before `setup()`; `GameMode`/`GameOverlay` unchanged; Accepted 2026-10-22, amendment in effect, annotation only) and ADR-0009 (§6: the production `SceneLoader` takes an injected `payload_commit: Callable(payload) -> bool`, called during SWAP before the target mode is instantiated, where `false` is a swap failure; `is_save_safe()` unchanged; Accepted 2026-10-22, amendment in effect, annotation only) and ADR-0010 (§7: clearing the party's per-fight transients moves from the requester, `ChapterFlow._clear_squad_transients()`, to the Battle mode through `BattleCore.clear_transients(party)`; no signal, field or call order changes; Accepted 2026-10-22, amendment in effect, annotation only)
 
 ## Date
 2026-10-21
@@ -92,17 +92,32 @@ GameRoot (Node, PROCESS_MODE_ALWAYS)        ← composition root; never freed
 
 **7. Retry = snapshot handed back, no load.** At battle entry the machine asks the Battle mode for `capture_start_snapshot() -> RefCounted` *after* the Battle mode has built its `BattleCore` from the descriptor, and stores the opaque handle. Defeat opens the Defeat Prompt; Retry runs the Battle → Battle row (flash, all four transition signals fire with `from == to == BATTLE`) and the swap phase calls `restore_start_snapshot(handle)` on the **same** Battle scene instance, with no loader call. The Battle mode (Turn Battle System's presentation side) owns what the snapshot contains (party stats, items, states, enemy group, and whether RNG state is included — GDD Open Question 2), which generalizes `ChapterFlow._fight_start_snapshot`. `BattleCore.retry_battle()` stays for the standalone debug harness but must not be used for Retry under Game State, because it full-heals the squad.
 
+*(Amendment, 2026-10-22, from ADR-0005 revision 3 and ADR-0006 revision 4; annotation only, pending acceptance.)* Two rules for the Battle → Battle row:
+- **The flash gate decides the retry flash at the start of OUT.** The **machine** (not the presenter) holds the `FlashGate` service, injected into `_init` (ADR-0005 §12). At the start of OUT of any transition whose type flashes (`retry_flash`, the wipes), it calls `flash_gate.request(<type's source id>, real clock, 1.0)`, keeps the result for the whole transition, and passes it to the presenter as `play_out(transition_type, duration, capped)` (and `play_in(..., capped)`), so the presenter plays the full or capped variant without knowing about the gate. `is_transition_flash_capped()` reports it, so the Battle mode can pick a hidden light change (uncapped) or a `blend_defeat` blend (capped) inside `restore_start_snapshot()`.
+- **`mode_entered(BATTLE)` still fires at the end of SWAP**, but on this same-mode row its listeners must not re-apply a mode's entry state over what `restore_start_snapshot()` set. `PresentationDirector` skips its entry-profile apply when `transition_started` reported `from == to` (ADR-0005 §4).
+
 A `null` snapshot returned at battle entry is a swap failure and triggers rollback (the base `GameMode.capture_start_snapshot()` returns `null`, so a Battle mode that forgets to override it fails loudly instead of losing Retry).
 
 **HP/MP carryover contract.** Under Game State the Battle mode always calls `BattleCore.start_battle(false)`, never the full-reset default. The `Combatant`s in `BattleEntryPayload.party` are the requester's own instances and are changed in place, so damage taken in a fight is still there after Victory or Fled. A full restore happens only on Retreat, which Camp performs on entry. Clearing per-fight transients (`is_defending`, `is_stunned`, `vulnerable_rounds_left`) stays with the requester: `ChapterFlow` keeps `_clear_squad_transients()` and runs it before building each descriptor.
 
 **8. `ChapterFlow` ownership (resolves QQ-01): Game State becomes the parent; ChapterFlow becomes the interim Overworld.** Until Overworld Exploration & Encounters ships, the Overworld mode slot is filled by a placeholder `ChapterMode` scene (extends `GameMode`) that holds a `ChapterFlow`. `ChapterFlow` keeps exactly the parts that are *encounter sequencing* — which fight comes next, its enemy roster, boss detection, HP/MP carryover between fights, `chapter_won`. It loses the parts that are Game State's or Battle's: it stops constructing `BattleCore`, stops listening to `battle_ended`, and loses `_fight_start_snapshot`/`_restore_squad_snapshot` and the `fight_lost` → retry loop. Instead it builds an `EncounterDescriptor` and the `ChapterMode` calls `machine.request_transition(Mode.BATTLE, BattleEntryPayload)`; when `on_thawed(encounter_id, outcome)` reports Victory, it advances. A Defeat never reaches it, since Retry/Retreat happen entirely inside Game State and Battle. Until Camp & Party Management exists, `ChapterMode` builds every descriptor with `retreat_allowed = false`, so the Defeat Prompt offers only Retry and no "no camp" content error is logged on each loss.
 
-Today the chapter's enemies come from code factories (`BureaucratiaRule.make_clerk()` etc.), not catalog records, so `has_record()` validation of `enemy_ids` would reject every chapter fight. Until ADR-0001's enemy-record migration lands, the production descriptor validator runs with a named interim flag, `TransitionConfig.validate_enemy_ids_against_catalog = false`. It still checks every other descriptor field (non-empty `encounter_id` and `enemy_ids`, known `faction_id`). The flag is deleted, and full validation becomes unconditional, in Migration Step 3 or when the enemy migration lands, whichever comes first. When Overworld Exploration ships, `ChapterMode` and `ChapterFlow` are deleted, and the fight sequence becomes encounter data. Replacing ChapterFlow outright now was rejected: it would leave the MVP with no playable loop until Overworld exists. Wrapping it unchanged was rejected because two systems would then construct battles and run retries.
+Today the chapter's enemies come from code factories (`BureaucratiaRule.make_clerk()` etc.), not catalog records, so `has_record()` validation of `enemy_ids` would reject every chapter fight. Until ADR-0001's enemy-record migration lands, the production descriptor validator runs with a named interim flag, `TransitionConfig.validate_enemy_ids_against_catalog = false`. It still checks every other descriptor field (non-empty `encounter_id` and `enemy_ids`, known `faction_id`). The flag is deleted, and full validation becomes unconditional, in Migration Step 3 or when the enemy migration lands, whichever comes first. When Overworld Exploration ships, `ChapterMode` and `ChapterFlow`'s fight sequencing are deleted, and the fight sequence becomes encounter data. *(Revision 2026-10-23, ADR-0012: the chapter's static **step list** — objective text, `{map_id, leg_id}`, scheduled flags — survives as interim data until Dialogue, Banter & Quests replaces it; the current step index lives in `WorldState`, written only by `OverworldMode`.)* Replacing ChapterFlow outright now was rejected: it would leave the MVP with no playable loop until Overworld exists. Wrapping it unchanged was rejected because two systems would then construct battles and run retries.
 
 **9. Transition timings are data.** A single `TransitionConfig` `Resource` (`data/config/transition_config.tres`, script `src/game_state/transition_config.gd`) holds, per transition type (`battle_wipe`, `battle_wipe_reverse`, `retry_flash`, `fade`, `none`), `t_out`, `t_in` and `transition_budget`, plus the mode → `PackedScene` path table and the overlay → path table. It follows ADR-0001's data-only rules (no logic, no `Resource`-typed exports: scene paths are `String`), but it is a **project config**, like Content Data's own `ERROR_SCREEN_CAP`, and not a catalog record type: it is loaded directly by `GameRoot._ready()` with `ResourceLoader.load()`, because the Boot → Title fade needs it before any catalog-dependent code runs. The transitions *table* (which from → to pairs are legal, and which transition type each uses) is a game rule from the GDD, not a tuning value, so it is a `const` in `GameStateMachine`.
 
 **10. Boot.** The machine starts in `BOOT`. On each tick in Boot it reads the injected catalog's `state`. By ADR-0001 the `ContentCatalog` autoload has already run `load_all()` in its `_ready()`, so this normally resolves on the first tick. *(Amendment pending, ADR-0004: replace with "`GameRoot._enter_tree()` has already run `ContentBootstrap.run()`, which registers every vocabulary and validator and then loads". Measured on 4.7.2, the autoload's `_ready()` runs after the main scene's `_enter_tree()`, so the original premise did not hold.)* `READY` triggers the Boot → Title fade and `FAILED` the instant Boot → Content Error. Content Error is terminal: every request except Quit returns `REJECTED_TERMINAL`. Reading the catalog's status here is internal to Boot and is not the presentation-polls-state pattern GDD rule 4 forbids.
+
+**11. Same-instance fade and camp registration** *(Revision 2026-10-23, requested by ADR-0012 rev 3 for the Overworld GDD's checkpoint redirect and camp registration. In effect: ADR-0012 Accepted 2026-10-23. TD-ADR and godot-specialist reviewed the request; this section carries their conditions.)*
+
+`request_in_mode_fade(callback: Callable) -> RequestResult` is the **fourth** entry point next to `request_transition`, `open_overlay` and `close_overlay`. It fades the current mode out and back in without a swap.
+- **Legal only** when `current_mode == OVERWORLD`, `phase == IDLE` and **no overlay is open**. Otherwise it returns `REJECTED_BUSY`, `REJECTED_INVALID_PAIR` or `REJECTED_OVERLAY_BLOCKS` and changes nothing. The caller closes its Dialogue first (`close_overlay()`), then requests the fade on the same frame after `overlay_closed`. A `callback` that is not `is_valid()` returns `REJECTED_INVALID_PAYLOAD`.
+- **Phases.** OUT (transition type `fade`, `t_out`), then a **zero-length SWAP** in which the machine calls `callback` exactly once, synchronously, with no `SceneLoader` call, then IN (`t_in`). The type `fade` never flashes, so `FlashGate` is not consulted.
+- **Signals.** `transition_started(mode, mode)` at the start of OUT and `transition_finished(mode)` at the end of IN. **`mode_exited` and `mode_entered` do not fire.** This is the one exception to the four-signal order (Implementation Guidelines). A query `is_in_mode_fade() -> bool` is true from `transition_started` to `transition_finished`, so a listener can tell it apart from a swap. Listeners keyed on `mode_entered` (PresentationDirector's entry profile, ADR-0005 §4) see nothing and rebind nothing.
+- **Everything else is the ordinary transition machinery:** input is locked (`get_move_vector` returns zero), `focus_lost`/`device_lost` and the Menu are deferred until `transition_finished`, `is_save_safe()` is false, and `request_quit()` waits for `transition_finished` as it does for any transition.
+- **No rollback.** The callback runs in-process and cannot fail as a swap can; an error inside it is logged, and IN still plays.
+
+`register_camp(camp_id: String) -> void` sets `last_camp_id` outside a camp entry. Only the current Overworld mode calls it, and only while `current_mode == OVERWORLD`. An empty `camp_id` is logged and ignored. It emits no signal, and it marks unsaved progress for ADR-0009 like any other save-participant change. The machine stays the **only writer** of `last_camp_id`; `CampEntryPayload` (ADR-0012) and `register_camp` are its two inputs.
 
 ### Architecture Diagram
 
@@ -151,13 +166,16 @@ signal overlay_opened(kind: OverlayKind)
 signal overlay_closed(kind: OverlayKind)
 
 func _init(loader: SceneLoader, presenter: TransitionPresenter, config: TransitionConfig,
-        catalog: Object, quit_hook: Callable, log: GameStateLog) -> void
+        catalog: Object, quit_hook: Callable, log: GameStateLog,
+        flash_gate: FlashGate = null) -> void   # (amendment) null in tests that don't exercise flashes = never capped
 
 # One door in (GDD Rule 2)
 func request_transition(target: Mode, payload: RefCounted = null) -> RequestResult
 func open_overlay(kind: OverlayKind, payload: RefCounted = null) -> RequestResult
 func close_overlay() -> RequestResult
 func request_quit() -> RequestResult          # waits for a running transition (Rule 12)
+func request_in_mode_fade(callback: Callable) -> RequestResult   # (revision 2026-10-23, §11; in effect) Overworld only, no overlay; no swap, no mode_exited/mode_entered
+func register_camp(camp_id: String) -> void   # (revision 2026-10-23, §11; in effect) second input to last_camp_id
 
 # Battle reporting (called by the Battle mode / Defeat Prompt)
 func report_battle_outcome(result: BattleResult) -> RequestResult
@@ -171,6 +189,8 @@ func bind_action_source(source: Object) -> void   # any Object meeting the Actio
 func is_input_owner(receiver: Object) -> bool
 func get_move_vector(caller: Object) -> Vector2   # Vector2.ZERO unless caller owns input
 func is_save_safe() -> bool                   # Overworld/Camp, no overlay but Menu, IDLE
+func is_in_mode_fade() -> bool               # (revision 2026-10-23, §11) true between transition_started and transition_finished of an in-mode fade
+func is_transition_flash_capped() -> bool     # (amendment, ADR-0005/0006 rev 3/4) true iff the current transition's flash plays its capped variant (FlashGate refused it, or Reduce Flashing On); false outside a transition
 var current_mode: Mode:            get
 var overlay_stack: Array[OverlayKind]: get    # copy; bottom first
 var phase: Phase:                  get
@@ -201,8 +221,8 @@ func rollback_swap() -> void                  # restore the source mode (AC-10)
 ## Fire-and-forget: the machine's tick timing is authoritative. The presenter never
 ## signals completion and never blocks or extends a phase.
 class_name TransitionPresenter extends RefCounted   # UI Framework implements the visuals
-func play_out(transition_type: StringName, duration: float) -> void
-func play_in(transition_type: StringName, duration: float) -> void
+func play_out(transition_type: StringName, duration: float, capped: bool = false) -> void   # (amendment) capped = the gate refused this flash
+func play_in(transition_type: StringName, duration: float, capped: bool = false) -> void
 
 ## ActionSource is a signal-and-method CONTRACT, not a required base class. The Input
 ## ADR may satisfy it directly or through an adapter in GameRoot (bind_action_source
@@ -237,7 +257,7 @@ var party: Array[Combatant]   # interim, until Squad Roster & Recruitment owns t
 - `SceneTree.change_scene_to_file()`, `change_scene_to_packed()` and `reload_current_scene()` must never be called anywhere in the project. `GameRoot` is the only main scene.
 - `SceneTree.paused` must never be used to implement the Menu's time stop; disable `ModeHost` instead.
 - A transition request while `phase != IDLE` must return `REJECTED_BUSY` and change no state, except `request_quit()`, which sets a flag that fires the quit hook once, after `transition_finished`.
-- Signals must fire in exactly this order for a transition: `transition_started` (start of OUT), `mode_exited` (start of SWAP), `mode_entered` (end of SWAP), `transition_finished` (end of IN). Input unlocks after `transition_finished` is emitted, so the first action after it is delivered (AC-8).
+- Signals must fire in exactly this order for a transition: `transition_started` (start of OUT), `mode_exited` (start of SWAP), `mode_entered` (end of SWAP), `transition_finished` (end of IN). The one exception is the in-mode fade (§11), which fires only `transition_started` and `transition_finished`. Input unlocks after `transition_finished` is emitted, so the first action after it is delivered (AC-8).
 - When `t_swap` runs past `transition_budget - t_out - t_in`, the IN phase must still wait for the swap to finish, and the machine must log a performance warning with the transition type and measured `t_swap`. A budget is never enforced by skipping work.
 - A swap failure (`poll_swap() == FAILED`, or descriptor validation failing) must call `rollback_swap()`, re-attach any detached Overworld, play IN back into the source mode, unlock input and log an error. Validating the descriptor before any detach is preferred, so most failures never need a rollback.
 - A detached Overworld must be freed explicitly on Retreat, on Quit to Title and in `GameRoot._exit_tree()`; tests must assert no orphan nodes (gdUnit4 exit 101 is a failure for this system).
@@ -356,4 +376,5 @@ var party: Array[Combatant]   # interim, until Squad Roster & Recruitment owns t
 - 2026-10-21 — **amendments proposed** while this ADR is still Proposed, as annotations only:
   - ADR-0004 (Content Boot Ordering) changes §2 (`GameRoot._enter_tree()` runs `ContentBootstrap.run()`) and §10 (the catalog load timing premise).
   - ADR-0003 (Input System) implements the `ActionSource` contract unchanged. It adds the `nav_*` derived actions routed through `action_pressed`, and the `TransitionLayer` `MOUSE_FILTER_STOP` blocker during transitions.
-- Acceptance pending: run `/architecture-review` in a fresh session, then `/architecture-decision accept ADR-0002`. ADR-0003 and ADR-0004 both depend on it.
+- 2026-10-22 — `/architecture-review` (`architecture-review-2026-10-22.md`): nothing blocking for this ADR. Advisory godot-specialist items E7 (open item (3) closed: an `AnimationPlayer` under a disabled `ModeHost` holds and resumes, probed) and E8 (free a detached Overworld on `NOTIFICATION_PREDELETE` / `WM_CLOSE_REQUEST`) are not yet folded in.
+- 2026-10-22 — **Accepted** by the user (explicit instruction: accept ADR-0002 → ADR-0004 → ADR-0003 → ADR-0006 → ADR-0005 in that order). The annotated amendments from ADR-0004 (§2, §10) and from ADR-0005 rev 3 / ADR-0006 rev 4 (Battle → Battle row, `is_transition_flash_capped()`) take effect as those ADRs are Accepted the same day. No stories were Blocked on this ADR.

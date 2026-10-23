@@ -17,7 +17,7 @@
 | P-06 | Lighting, data and validation suite | [L]/[I] | AC-1, AC-3, AC-6, AC-7, AC-9, AC-15–17, AC-22, AC-24, AC-28, AC-30, AC-44, AC-47, AC-49, AC-56, AC-57, AC-61, AC-63 |
 | P-07 | Camera and stage suite | [L]/[I] | AC-4, AC-5, AC-19, AC-20, AC-27, AC-37, AC-40, AC-42, AC-43, AC-46, AC-50, AC-51 |
 | P-08 | Live Menu-freeze capture | [C] | AC-8 |
-| P-09 | Capture tool | [C] tool | AC-21b, AC-32, AC-34, AC-35, AC-48, AC-53, AC-67 |
+| P-09 | Capture tool | [C] tool | AC-21b, AC-32, AC-34, AC-35, AC-48, AC-53, AC-67, AC-68 |
 | P-10 | Read-order measurement | [C] | AC-32, AC-48 |
 | P-11 | Flood measurement | [C] | AC-34 |
 | P-12 | Texel measurement | [C] | AC-35 |
@@ -48,6 +48,7 @@ All [L] and [I] tests drive the presentation stage through injected services and
 - **Determinism:** the battle RNG is seeded, and no test reads wall-clock time.
 - **Tolerances:** lighting values and metres 1e-4; pixel offsets exact; times within one frame step of the test's fixed `dt` (1/60 s) **per event**. A span covering N events (beats, impacts, holds) allows N steps, because the replay clock drops leftover `dt` at every event (ADR-0006).
 - **No assertion on a threshold frame:** wherever a test checks behaviour on either side of a time threshold, the config puts the threshold half a frame from any frame boundary (for example `input_guard = 9.5 / 60` s, a 26.5-frame blend, `D = 0.105` s). The test asserts the frames on each side of it.
+- **Frame numbering:** frame 0 is the frame on which the change is requested or the state begins, with elapsed time 0. Frame n has elapsed time `n · dt`. Every "frame N", "first frame" and "by frame N" in an AC uses this convention (AC-7, AC-20, AC-22, AC-24, AC-54).
 - **Ties are tested on the pure function:** a rounding tie (such as the hit-punch's 0.5 px) is checked by calling the formula's function with exact inputs, never by sampling frames.
 - **Test resolution:** unless stated, [C] and [VF] captures render at 1920×1080. Values given "in texels" scale with `T`, and values "at 1080p" scale with height.
 
@@ -55,7 +56,8 @@ All [L] and [I] tests drive the presentation stage through injected services and
 
 - The pure projection function (ADR-0005) is called with fixture anchors, cameras (the level battle camera with a lens shift; a pitched Overworld camera), frame sizes and viewport heights. Its quad size, bottom-centre rounding and `T` are compared with `texel_scale`.
 - Each `CharacterSprite`'s shader inputs are read from its material every frame and compared with the function's output.
-- **Upright-card depth (AC-68):** the depth function is called along fixture view rays through a sprite in front of a fixture wall, and compared with the analytic intersection of each ray with the upright card at the foot anchor.
+- **Upright-card depth (AC-68 [L]):** the depth function is called along fixture view rays through a sprite in front of a fixture wall, and its view-space depth in metres is compared with the analytic intersection of each ray with the upright card at the foot anchor. (The rendered occlusion half of AC-68 is a [C] capture on P-09.)
+- **Odd widths:** fixture frames with odd `frame_w` at `T = 3` give a whole-pixel left edge `x_a − floor(frame_w·T/2)` and columns of exactly `T` px.
 
 ## P-04 Replay suite
 
@@ -120,19 +122,24 @@ It needs a GPU and a windowed run (Godot's headless mode renders nothing), so [C
 
 For each actor in the ID pass:
 1. **Bands.** Take the rim band (1 texel inside the Outline Ink outline), the costume band (`body_tx` texels further in) and the ring (`ring_tx` texels outside the outline).
-2. **Exclusions.** Drop ring pixels below the foot anchor's row, and emissive pixels.
-3. **Sectors.** Split the edge band and the ring into 8 sectors around the quad's centre.
-4. **Contrast.** Compute WCAG relative luminance per pixel, and `C_s` per sector.
-5. **Report.** Report each sector as pass, fail, skipped (fewer than `band_px_min` pixels) or failed-for-emissive (less than half its ring remains). A capture with fewer than 6 valid sectors for any actor is invalid.
-6. **Boss takeovers.** Also compute the costume band's and ring's mean CIELAB and their ΔE2000.
+2. **Sectors.** Split the edge band, the costume band and the ring into 8 sectors around the quad's centre.
+3. **Geometry.** Drop ring pixels below the foot anchor's row, pixels of other actors, and star pixels. What remains is each sector's full ring.
+4. **Too small.** Skip a sector whose edge band or full ring holds fewer than `band_tx_min` texels (`band_tx_min · T²` pixels).
+5. **Lights.** Drop emissive pixels from the full ring. A sector with fewer than half of its full ring's pixels left is failed-for-light.
+6. **Contrast.** Compute WCAG relative luminance per pixel, and `C_s` per remaining sector.
+7. **Report.** Report each sector as pass, fail, skipped or failed-for-light. A capture with fewer than 5 valid sectors for any actor is invalid.
+8. **Boss takeovers.** Also compute, per valid sector, the costume band's and ring's mean CIELAB and their ΔE2000.
 
 ## P-11 Flood measurement
 
 1. **Sky pixels.** Take the ID pass's sky pixels, shrunk by 2 px at the sky's edges.
 2. **Match.** Convert to CIELAB LCh (D65), and count the pixels within `flood_hue_tol` and `flood_chroma_tol` of the swatch.
-3. **Lightness.** Check every pixel's L\* against the swatch range widened by `flood_l_gradient`, and the L\* standard deviation.
-4. **Share.** Compute `sky_share` over the whole frame.
-5. **Native sky.** Compute ΔE2000 between the swatch midpoint and the mean sky color of the same stage's Battle capture.
+3. **Stars.** Take the ID pass's star pixels apart from the rest of the sky. Count the stars above the horizon band (≥ `star_count_min`) and their share of the sky (≤ `star_share_max`). Every other step uses non-star sky pixels only.
+4. **Lightness.** Above the horizon band (`y < y_h − horizon_band_frac · H`), every pixel's L\* lies between the swatch's lower bound minus `flood_l_gradient` and its upper bound. Inside the band, within the range widened by `flood_l_gradient` on each side. The mean L\* is at most `flood_l_max`. Report the L\* standard deviation.
+5. **Share.** Compute `sky_share` over the whole frame.
+6. **Native sky.** Compute ΔE2000 between the swatch at its `L*_mid` and the mean sky color of the same stage's Battle capture.
+
+**AC-67 (squad untinted).** On each faction's boss-takeover capture and the same stage's Battle capture, taken at the same fixed mode time and animation frame, pair each squad member's actor ID-pass pixels by position and report the mean and 95th-percentile ΔE2000 per member.
 
 ## P-12 Texel measurement
 
@@ -157,15 +164,15 @@ For each actor in the ID pass:
 
 ## P-14 Battle benchmark
 
-**Setup.** On the development PC, in a windowed release export (not headless, not the editor), the benchmark scene runs a battle with 8 actors. A debug driver restarts the boss takeover every 2.0 s of mode time, so every measured window contains blends and holds.
+**Setup.** On each binding device, a GTX 1080-class desktop (8 GB RAM) and a Steam Deck (native Linux export), in a windowed release export (not headless, not the editor), the benchmark scene runs a battle with 8 actors. A debug driver restarts the boss takeover every 2.0 s of mode time, so every measured window contains blends and holds.
 
-**Runs.** 5 runs at 1920×1080, each of 600 measured frames after 120 warm-up frames, with vsync off.
+**Runs.** 5 runs per device, each of 600 measured frames after 120 warm-up frames, with vsync off: at 1920×1080 on the desktop, and at 1280×800 on the Deck.
 
-**Recorded per frame:** CPU and GPU frame times separately, and the larger of the two as the frame time. Also the engine's total draw calls per frame (`Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME`).
+**Recorded per frame:** CPU and GPU frame times separately, and the larger of the two as the frame time. Also draw calls, with 3D passes and canvas/HUD counted separately. The exact counters for that split are confirmed in ADR-0005 Migration Step 1; `Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME` alone is the total. Peak RAM and VRAM per run.
 
-**Information only, not a gate:** DOF and glow are each measured on and off, and recorded for the technical-director.
+**Gates (GDD AC-31; user decision 2026-10-22, GDD Open Question 13 closed):** p99 frame time ≤ 16.6 ms, no frame over 33 ms, ≤ 300 3D and ≤ 100 canvas draw calls on every frame, on both devices. A failure on either device fails.
 
-**Pending (GDD Open Question 13):** the draw-call budget and counting rule, the 99th-percentile and worst-frame limits, and the target hardware.
+**Information only, not a gate:** a 3840×2160 run on the desktop; DOF and glow each measured on and off; peak RAM and VRAM, so `memory_ceiling_mb` can be set. All recorded for the technical-director.
 
 ## P-15 Pipeline-compilation benchmark
 

@@ -2,7 +2,7 @@
 
 > **Status**: In Design
 > **Author**: user + agents
-> **Last Updated**: 2026-10-13
+> **Last Updated**: 2026-10-23 (rules 2, 4 and 9 synced to ADR-0002 §11 and Overworld GDD OQ-18)
 > **Last Verified**: 2026-10-13
 > **Implements Pillar**: Readable in One Turn (supports the 30-second and 5-minute loops)
 
@@ -24,11 +24,11 @@ The player never sees it as a feature, but feels it constantly. Every step of th
 
 **1. Modes and overlays.** At any moment the game is in exactly one **mode**: Boot, Content Error, Title, Overworld, Battle or Camp. On top of the current mode, zero or more **overlays** may be open, stacked: Dialogue, Menu (pause, party, Codex, settings) and Defeat Prompt. Only the top overlay receives input. With no overlay open, the mode receives input.
 
-**2. One door in.** No other system switches modes or opens overlays directly. They call `request_transition(target_mode, payload)` or `open_overlay(kind, payload)` / `close_overlay()`. This system is the only place a mode changes, so every change can be logged, tested and restored.
+**2. One door in.** No other system switches modes or opens overlays directly. They call `request_transition(target_mode, payload)` or `open_overlay(kind, payload)` / `close_overlay()`. This system is the only place a mode changes, so every change can be logged, tested and restored. *(2026-10-23, Overworld GDD OQ-18 and ADR-0002 §11, pending ADR-0012 acceptance:)* a fourth door, the **in-mode fade**, lets the Overworld fade out and back in without changing mode, for a checkpoint redirect. It is legal only in the Overworld with no overlay open, locks input and blocks saving like any transition, and announces only `transition_started` and `transition_finished`.
 
 **3. One transition at a time.** A transition runs in three phases: **out** (wipe or fade), **swap** (the old mode is frozen or released, the new one prepared), and **in** (reveal). Player input is locked from the start of *out* to the end of *in*. A transition request made while another is running is **rejected** with an error, not queued. The one exception is Quit (rule 12).
 
-**4. Announcements.** Every change broadcasts, in order: `transition_started(from, to)`, `mode_exited(from)`, `mode_entered(to)`, `transition_finished(to)`. Overlays broadcast `overlay_opened(kind)` and `overlay_closed(kind)`. Audio, Presentation and UI react to these announcements; they never poll.
+**4. Announcements.** Every change broadcasts, in order: `transition_started(from, to)`, `mode_exited(from)`, `mode_entered(to)`, `transition_finished(to)`. Overlays broadcast `overlay_opened(kind)` and `overlay_closed(kind)`. Audio, Presentation and UI react to these announcements; they never poll. The one exception is the in-mode fade (rule 2), which announces only `transition_started(from, from)` and `transition_finished(from)`, because no mode is exited or entered.
 
 **5. Overworld survives battles.** Entering Battle from the Overworld **freezes** the overworld rather than discarding it: party position and facing, current map, NPC and enemy states, and story flags. After a Victory or a successful Flee, the overworld is restored exactly as it was. The encounter that started the fight is then resolved according to Overworld's rules (e.g. that enemy is removed).
 
@@ -40,7 +40,7 @@ The player never sees it as a feature, but feels it constantly. Every step of th
 - **Retry** restarts the same battle from its exact starting snapshot, taken when the battle began: party stats, items and states, enemy group, and turn order inputs. Retry needs no new scene load, so it is the fastest transition in the game. Whether randomness repeats on retry is Turn Battle's decision.
 - **Retreat** (shown only when `retreat_allowed`) transitions to Camp at the **last camp the squad visited**, with the party fully restored. The frozen overworld snapshot from that battle is discarded. When the squad later leaves camp, they appear at that camp's overworld location. In MVP, retreat carries no penalty (see Open Questions).
 
-**9. Camp.** Entered from the Overworld at a camp spot (Overworld owns where those are) or by Retreat. Leaving camp always returns to the overworld at that camp's location. Entering camp records it as the "last camp visited".
+**9. Camp.** Entered from the Overworld at a camp spot (Overworld owns where those are) or by Retreat. Leaving camp always returns to the overworld at that camp's location. Entering camp records it as the **last camp registered**. *(2026-10-23, Overworld GDD OQ-18:)* the Overworld may also register a camp the squad merely walks past (its safe zone), through this system, which stays the only writer; Retreat goes to the last camp registered.
 
 **10. Menu overlay.** The player can open the Menu in Overworld, Camp and Battle (in Battle, only the system menu: settings and quit), but never during a transition, in Boot, or in Content Error. While the Menu is open, the underlying mode's time stops (animations, timers, ambient motion). Per the art bible, menus show the frozen, blurred diorama behind flat UI.
 
