@@ -1,7 +1,7 @@
 # Story 011: Two records sharing one ID produce exactly one error, located at the first file, with the other in `related_locations`
 
 > **Epic**: Content Catalog
-> **Status**: In Progress
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -83,7 +83,7 @@
 **Required evidence**:
 - Logic: `tests/unit/content_data/content_data_duplicate_id_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (see Completion Notes)
 
 ---
 
@@ -91,3 +91,12 @@
 
 - Depends on: `production/epics/content-catalog/story-010-id-format-validation.md`
 - Unlocks: `production/epics/content-catalog/story-013-alias-shadowing-and-double-declaration.md`, `story-017-overworld-uniqueness-and-faction-rule.md`, `story-023-deterministic-report-order.md` (all under `production/epics/content-catalog/`)
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-24
+**Criteria**: 1/1 passing (AC-10). None deferred.
+**Deviations**: None. The check runs first in the Validating pass, after every type has loaded, so the reported first location depends on sorted paths, never discovery order. Duplicated ids are also visited in sorted order, so several duplicates report in a stable order. `_id_locations` holds plain Arrays because nested typed collections do not parse on Godot 4.7.2; the check copies them into typed `Array[String]` locals. A second fixture, `duplicate_id_three_files/`, was added for the three-file QA edge case and is listed under Files. A cross-type collision is handled by the same code but not tested; the F1 prefix rule makes it unreachable while no type prefix starts another.
+**Test Evidence**: `tests/unit/content_data/content_data_duplicate_id_test.gd` (5 functions); suite 61/61, 0 orphans, exit 0 on Godot 4.7.2. Watched fail (gdUnit `-c` so every test runs): disabling the check failed all 5 tests; removing the path sort failed only the reversed-order test. Commit f1ffd41.
+**Reviewed by**: lead-programmer (LP-CODE-REVIEW APPROVE); QL-TEST-COVERAGE ADEQUATE
