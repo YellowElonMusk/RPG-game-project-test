@@ -1,7 +1,7 @@
 # Story 002: Load one record of each of the 12 types and get every field back deep-equal
 
 > **Epic**: Content Catalog
-> **Status**: In Progress
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: L
@@ -137,3 +137,12 @@
 
 - Depends on: `production/epics/content-catalog/story-001-install-gdunit4.md`
 - Unlocks: `production/epics/content-catalog/story-003-all-records-sorted-by-id.md`, `story-004-empty-catalog-ready.md`, `story-005-lookup-not-found-and-unknown-type.md`, `story-006-returned-records-are-deep-copies.md`, `story-007-lookups-error-before-ready.md`, `story-010-id-format-validation.md`, `story-014-reference-validation.md`, `story-015-structure-validation.md`, `story-018-faction-field-rules.md`, `story-021-effect-descriptor-passthrough.md`, `story-022-unparsable-file.md`, `story-030-exported-build-discovery.md` (all under `production/epics/content-catalog/`)
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-23
+**Criteria**: 1/1 passing (AC-1; T-LOC from TR-content-012 folded in and covered). None deferred.
+**Deviations**: (1) `ContentBootstrap.run(catalog, data_root)` — additive `data_root` parameter not yet in ADR-0004 Key Interfaces; owed to technical-director as an annotation. (2) Fixture `valid_one_of_each` has one faction, kind `alien`, and `Character.nation_id` points at it although the field documents a `human_nation` reference; type-correct, kind-incorrect, surfaces when story 018 adds the kind validator — add a human-nation faction or repoint then. (3) `all_records()` sorts per call; story 003's guardrail moves the sort to load time. Decisions recorded: QuirkState type `&"quirk_state"` (dir `quirks`); directories `encounters`, `occupation_stages`; `stat_block`/`reward` flattened to scalar exports; five uniform-shape Dictionaries typed `Dictionary[String, int]` / `[String, String]` per the control manifest (probed on 4.7.2). Combo and Item are GDD-exempt root types, so their lack of inbound references in the fixture is not a gap.
+**Test Evidence**: `tests/unit/content_data/content_data_load_test.gd` (10) and `content_data_loc_fields_test.gd` (7); suite 18/18, 0 orphans, exit 0 on Godot 4.7.2. Commits 4841164, 2cbbfc5.
+**Reviewed by**: lead-programmer (LP-CODE-REVIEW APPROVE); QL-TEST-COVERAGE ADEQUATE; `/code-review` APPROVED WITH SUGGESTIONS (1 and 2 applied, 3 to qa-lead/story 018)
