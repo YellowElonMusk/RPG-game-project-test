@@ -1,12 +1,12 @@
 # Story 011: Two records sharing one ID produce exactly one error, located at the first file, with the other in `related_locations`
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: In Progress
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-24
 
 ## Context
 
@@ -58,11 +58,10 @@
 
 ## Files
 
-- `src/data/content_catalog.gd` (uniqueness check; `related_locations`)
-- `tests/unit/content_data/fixtures/duplicate_id_two_files/`
-- `tests/unit/content_data/content_data_duplicate_id_test.gd`
-
----
+- `src/data/content_catalog.gd` (`_id_locations` catalog-wide id → paths map, filled in `_load_one()`; `_check_duplicate_ids()` runs first in the Validating pass)
+- `tests/unit/content_data/content_data_duplicate_id_test.gd` (5 test functions) and its `.uid`
+- `tests/unit/content_data/fixtures/duplicate_id_two_files/` (2 characters sharing `char_dup` in `a/` and `b/`, 1 faction)
+- `tests/unit/content_data/fixtures/duplicate_id_three_files/` (3 characters in `a/`, `b/`, `c/`, 1 faction; for the three-file edge case)
 
 ## QA Test Cases
 

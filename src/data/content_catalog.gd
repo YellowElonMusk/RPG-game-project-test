@@ -107,6 +107,12 @@ var _records: Dictionary = {}
 # _records' bucket; load_all()'s Validating pass reads it once to fill each
 # report entry's location, since validators no longer run inside _load_one().
 var _record_paths: Dictionary = {}
+# id String → Array of every res:// path that declared that id, across all
+# types (ADR-0001 Rule 2: ids are unique catalog-wide). Values are plain
+# Arrays of Strings: nested typed collections do not parse on 4.7.2. Filled in
+# _load_one() before the bucket write, which overwrites on a duplicate id, so no
+# location is lost; _check_duplicate_ids() reads it once Validating starts.
+var _id_locations: Dictionary[String, Array] = {}
 # alias String → live id String (one hop, GDD Rule 2).
 var _aliases: Dictionary[String, String] = {}
 # type StringName → Array of Callable(record) -> Array[Dictionary].
@@ -149,7 +155,8 @@ func register_record_validator(type: StringName, validator: Callable) -> void:
 ## Returns `OK` on READY, `FAILED` on FAILED, and `ERR_ALREADY_IN_USE`
 ## (changing nothing) on any call after the first. Never fails fast: every
 ## problem is collected into `report`. A missing type directory is not an
-## error. Validators run once Validating starts, over every stored record in
+## error. Once Validating starts, the catalog-wide duplicate-id check runs
+## first; then validators run over every stored record in
 ## TYPE_TABLE order and then each bucket's already-sorted id order (ADR-0004
 ## §4), so the report order stays deterministic. Only `ContentBootstrap.run()`
 ## calls this in production; the catalog's own unit tests call it on a
@@ -183,6 +190,7 @@ func load_all(data_root: String = "res://data") -> Error:
 		_records[type] = sorted_bucket
 
 	state = State.VALIDATING
+	_check_duplicate_ids()
 	_run_validators()
 
 	var error_count: int = 0
@@ -297,6 +305,31 @@ func _discover_tres_files(dir_path: String) -> PackedStringArray:
 	return out
 
 
+# Catalog-wide id uniqueness (ADR-0001 Rule 2), the first check of the
+# Validating pass. Each id held by more than one file is exactly one error,
+# never one per file and never "last one wins". Its location is the path that
+# sorts first (case-sensitive string order; record_index is always 0, one
+# record per file); every other path goes in related_locations in the same
+# order. Ids and paths are sorted here, so the result never depends on
+# discovery order.
+func _check_duplicate_ids() -> void:
+	var ids: Array[String] = _id_locations.keys()
+	ids.sort()
+	for id: String in ids:
+		# Nested typed collections do not parse on 4.7.2, so the map holds plain
+		# Arrays; assign() copies into a typed one and checks every element.
+		var paths: Array[String] = []
+		paths.assign(_id_locations[id])
+		if paths.size() < 2:
+			continue
+		paths.sort()
+		var related_locations: Array[Dictionary] = []
+		for other_path: String in paths.slice(1):
+			related_locations.append({"file_path": other_path, "record_index": 0})
+		_add_report_entry(&"error", id, &"id", paths[0],
+				"This id is declared by more than one record.", related_locations)
+
+
 # The Validating pass (ADR-0004 §4): runs every registered validator, in
 # registration order, over every stored record, after the generic checks in
 # _load_one(). Types go in TYPE_TABLE order and ids in each bucket's sorted
@@ -353,6 +386,9 @@ func _load_one(type: StringName, file_path: String, bucket: Dictionary) -> void:
 				"The id must be at most %d characters, match %s and start with %s." % [ID_MAX_LENGTH, ID_PATTERN, prefix], [])
 		return
 
+	if not _id_locations.has(record_id):
+		_id_locations[record_id] = []
+	_id_locations[record_id].append(file_path)
 	bucket[record_id] = record
 	if not _record_paths.has(type):
 		_record_paths[type] = {}
