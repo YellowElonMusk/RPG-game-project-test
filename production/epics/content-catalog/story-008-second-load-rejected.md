@@ -1,7 +1,7 @@
 # Story 008: A second load request on a Ready or Failed catalog is rejected and changes nothing
 
 > **Epic**: Content Catalog
-> **Status**: In Progress
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -82,7 +82,7 @@
 **Required evidence**:
 - Logic: `tests/unit/content_data/content_data_reload_rejected_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (see Completion Notes)
 
 ---
 
@@ -90,3 +90,12 @@
 
 - Depends on: `production/epics/content-catalog/story-007-lookups-error-before-ready.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-23
+**Criteria**: 1/1 passing (AC-7). None deferred.
+**Deviations**: None. Both guards already held (`load_all()` and `ContentBootstrap.run()`), so no production code changed. Built the `one_error_rest_valid` fixture to story 009's spec; probed to yield exactly one error, at the misnamed Move, so story 009 can reuse it as is.
+**Test Evidence**: `tests/unit/content_data/content_data_reload_rejected_test.gd` (4 functions) with `tests/unit/content_data/helpers/spy_content_catalog.gd`; suite 44/44, 0 orphans, exit 0 on Godot 4.7.2. Watched fail: disabling `run()`'s guard failed the bootstrap test; disabling `load_all()`'s guard failed the Ready test (13 assertions). Commit 0fdc60f.
+**Reviewed by**: lead-programmer (LP-CODE-REVIEW APPROVE); QL-TEST-COVERAGE ADEQUATE
