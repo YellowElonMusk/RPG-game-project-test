@@ -44,7 +44,7 @@ requirements:
 - id: TR-content-001
   system: content
   gdd: design/gdd/content-data-definitions.md
-  requirement: "11 record types (including InputBindings bindings_, and Map map_, Encounter enc_ and OccupationStage ostage_ from ADR-0012) plus reserved types; permanent lowercase snake_case IDs with type prefix, max 64 chars, unique; aliases resolve one hop only"
+  requirement: "12 record types (including InputBindings bindings_, FactionRule rule_ from ADR-0011, and Map map_, Encounter enc_ and OccupationStage ostage_ from ADR-0012) plus reserved types; permanent lowercase snake_case IDs with type prefix, max 64 chars, unique; aliases resolve one hop only"
   created: 2026-10-21
   revised: "2026-10-23"
   status: active

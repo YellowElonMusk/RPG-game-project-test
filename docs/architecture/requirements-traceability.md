@@ -15,7 +15,7 @@ Only **Accepted** ADRs count as covered. All 13 ADRs (ADR-0001 to ADR-0013) are 
 
 | Requirement ID | GDD | System | Requirement | ADR Coverage | Status |
 |---|---|---|---|---|---|
-| TR-content-001 | content-data-definitions.md | Content Data | 11 record types (incl. `bindings_`, `map_`, `enc_`, `ostage_`), permanent prefixed IDs, aliases | ADR-0001; ADR-0003 adds `bindings_`; ADR-0012 adds `map_`/`enc_`/`ostage_` | ✅ |
+| TR-content-001 | content-data-definitions.md | Content Data | 12 record types (incl. `bindings_`, `rule_`, `map_`, `enc_`, `ostage_`), permanent prefixed IDs, aliases | ADR-0001; ADR-0003 adds `bindings_`; ADR-0011 adds `rule_`; ADR-0012 adds `map_`/`enc_`/`ostage_` | ✅ |
 | TR-content-002 | content-data-definitions.md | Content Data | Unloaded → Loading → Validating → Ready \| Failed, terminal | ADR-0001 | ✅ |
 | TR-content-003 | content-data-definitions.md | Content Data | Full-set validation, two severities, headless check | ADR-0001 + ADR-0004 | ✅ |
 | TR-content-004 | content-data-definitions.md | Content Data | `get_record` / `has_record` / `all_records` / `resolve_alias` | ADR-0001 | ✅ |
