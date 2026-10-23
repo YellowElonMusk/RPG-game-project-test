@@ -19,7 +19,7 @@
 **ADR Version**: ADR-0001 2026-10-23; ADR-0004 2026-10-23
 
 **Engine**: Godot 4.7.2 | **Risk**: LOW
-**Engine Notes**: none.
+**Engine Notes**: The spy subclass overrides a typed method. On Godot 4.7 a typed override with no `return` on a path is a hard parse error that fails every dependent script (control manifest, Required Engine Patterns). Write `return super(data_root)`. (QL-STORY-READY GAPS fix, 2026-10-23.)
 
 **Control Manifest Rules (this layer)**:
 - Required: "The catalog loads once per session; `READY` is terminal. A second `load_all()` is rejected." "`ContentBootstrap.run(catalog)`... is a no-op unless `catalog.state == UNLOADED`."
@@ -42,7 +42,7 @@
 
 - `load_all()` checks `state != UNLOADED` first. If so, it returns `ERR_ALREADY_IN_USE` with no other effect: no state change, no re-read, no change to the report or to any record. Calling `push_error()` here is acceptable but optional (it is a programmer error).
 - `ContentBootstrap.run()` keeps its own guard. On a non-`UNLOADED` catalog it returns before any registrant runs, so a second `run()` neither registers twice nor calls `load_all()`.
-- The test for `run()` counts calls with a spy: a test-only subclass of `ContentCatalogService` (in the test directory) that overrides `load_all()` to increment a counter and call `super`. `run()` is typed against `ContentCatalogService`, so the subclass is accepted.
+- The test for `run()` counts calls with a spy: a test-only subclass of `ContentCatalogService` (in the test directory) that overrides `load_all()` to increment a counter and call `super`. `run()` is typed against `ContentCatalogService`, so the subclass is accepted. Give the spy no `class_name`: load it with `preload()` and instantiate it. It satisfies the `ContentCatalogService` type through `extends` alone, and a `class_name` would put a test-only class in the global registry. (QL-STORY-READY GAPS fix, 2026-10-23.)
 
 ---
 
