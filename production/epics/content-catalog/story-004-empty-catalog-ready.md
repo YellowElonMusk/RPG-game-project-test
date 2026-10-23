@@ -57,8 +57,8 @@
 
 ## Files
 
-- `tests/unit/content_data/fixtures/empty_catalog/` (every type directory present and empty, each with a `.gdkeep` so it is committed)
-- `tests/unit/content_data/fixtures/empty_catalog_absent/` (no type directories; a `.gdkeep` at the fixture root)
+- `tests/unit/content_data/fixtures/empty_catalog/` (every type directory present and empty, each with a `.gdignore_placeholder` so it is committed)
+- `tests/unit/content_data/fixtures/empty_catalog_absent/` (no type directories; a `.gdignore_placeholder` at the fixture root)
 - `tests/unit/content_data/content_data_empty_catalog_test.gd`
 - `src/data/content_catalog.gd` (only if a fix is needed for an absent directory)
 
@@ -72,7 +72,7 @@
   - Given: `fixtures/empty_catalog/` with every type subdirectory present and empty.
   - When: a fresh catalog runs `load_all(fixture_root)`.
   - Then: the return value is `OK`; `state == READY`; the report has 0 error entries; `all_records(t).size() == 0` for each of the 12 types, with `last_lookup_error == &""` after each call.
-  - Edge cases: a `.gdkeep` file in a type directory is not a resource and is not listed.
+  - Edge cases: a `.gdignore_placeholder` file in a type directory is not a resource and is not listed.
 - **AC-3 / T2**: Absent type directories load Ready.
   - Given: `fixtures/empty_catalog_absent/` with no type subdirectories at all.
   - When: loaded.
