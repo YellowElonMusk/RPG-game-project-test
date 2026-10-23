@@ -34,6 +34,12 @@ func _assert_one_id_error(sub_dir: String, expected_id: String) -> void:
 	assert_str(String(entry["severity"])).is_equal("error")
 	assert_str(entry["record_id"]).is_equal(expected_id)
 	assert_str(String(entry["field"])).is_equal("id")
+	# The filename = id check also reports on field id. Requiring the fixture's
+	# filename to equal its id rules that check out, so this entry can only
+	# come from the F1 format check.
+	var file_path: String = entry["location"]["file_path"]
+	assert_str(file_path.get_file().get_basename()).override_failure_message(
+			"%s fixture filename differs from its id; the filename check fired, not F1" % sub_dir).is_equal(expected_id)
 
 
 func test_boundary_ids_are_64_and_65_characters_long() -> void:

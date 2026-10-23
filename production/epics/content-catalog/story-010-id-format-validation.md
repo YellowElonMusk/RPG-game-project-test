@@ -1,12 +1,12 @@
 # Story 010: A malformed ID is an error naming it; 64 characters loads, 65 does not
 
 > **Epic**: Content Catalog
-> **Status**: In Progress
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-23
+> **Last Updated**: 2026-10-24
 
 ## Context
 
@@ -88,7 +88,7 @@
 **Required evidence**:
 - Logic: `tests/unit/content_data/content_data_id_format_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (see Completion Notes)
 
 ---
 
@@ -96,3 +96,12 @@
 
 - Depends on: `production/epics/content-catalog/story-002-load-one-of-each-type.md`
 - Unlocks: `production/epics/content-catalog/story-011-duplicate-id-one-error.md`, `production/epics/content-catalog/story-012-resolve-alias.md`, `production/epics/content-catalog/story-020-mixed-severity-report.md`, `production/epics/content-catalog/story-022-unparsable-file.md`, `production/epics/content-catalog/story-023-deterministic-report-order.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-24
+**Criteria**: 1/1 passing (AC-9). None deferred.
+**Deviations**: None outstanding. The F1 check sits in `_load_one()` beside the filename check; a record that fails it is not stored. `ResourceLoader.list_directory()` returns uppercase and space filenames unchanged on Windows, so the story's `field == &"id"` filter fallback was not needed. LP-CODE-REVIEW found that the `len_65` fixture's filename stem was 67 characters, so the filename = id check fired instead of F1 and the 65-character boundary was never exercised. Fixed by renaming the fixture to match its 65-character id, and by asserting in every failure test that the reported file's name equals the expected id, so only F1 can satisfy them. A specialist warning on the unchecked `RegEx.compile()` result was fixed with a `push_error()`. Open: the order of the filename and F1 checks on a record with both defects is unspecified (filename runs first).
+**Test Evidence**: `tests/unit/content_data/content_data_id_format_test.gd` (6 functions); suite 56/56, 0 orphans, exit 0 on Godot 4.7.2. Watched fail: the new tests failed before the F1 check existed; after the fixture fix, restoring the old 67-character filename failed the 65-character test (exit 100), then passed once renamed back.
+**Reviewed by**: lead-programmer (LP-CODE-REVIEW REJECT → revised, fix verified by watched fail); QL-TEST-COVERAGE ADEQUATE
