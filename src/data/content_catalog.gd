@@ -226,16 +226,49 @@ func register_acyclic_field(type: StringName, field: StringName) -> void:
 ## # cycles == [["node_a", "node_b"]]
 ## [/codeblock]
 static func find_reference_cycles(edges: Dictionary) -> Array:
+	# Iterative depth-first walk with an explicit stack: a recursive walk hits
+	# GDScript's call-stack limit on a chain of about 1,100 records and then
+	# returns no cycles at all, silently.
 	var visit_state: Dictionary = {}
-	var path: Array = []
-	var path_index: Dictionary = {}
 	var cycles: Array = []
 	var seen_keys: Dictionary = {}
 	var nodes: Array = edges.keys()
 	nodes.sort()
-	for node: String in nodes:
-		if not visit_state.has(node):
-			_cycle_dfs(node, edges, visit_state, path, path_index, cycles, seen_keys)
+	for root: String in nodes:
+		if visit_state.has(root):
+			continue
+		# path holds the nodes on the current walk; next_child[i] is the index of
+		# path[i]'s next target to visit; path_index maps a node to its slot.
+		var path: Array = [root]
+		var next_child: Array[int] = [0]
+		var path_index: Dictionary = {root: 0}
+		visit_state[root] = &"active"
+		while not path.is_empty():
+			var node: String = path[-1]
+			var targets: Array = edges.get(node, [])
+			var i: int = next_child[-1]
+			if i >= targets.size():
+				path.pop_back()
+				next_child.pop_back()
+				path_index.erase(node)
+				visit_state[node] = &"done"
+				continue
+			next_child[-1] = i + 1
+			var target: String = targets[i]
+			var target_state: StringName = visit_state.get(target, &"")
+			if target_state == &"":
+				visit_state[target] = &"active"
+				path_index[target] = path.size()
+				path.append(target)
+				next_child.append(0)
+			elif target_state == &"active":
+				# A target still on the walk closes a cycle; a done target is a
+				# branch already walked, never a new cycle.
+				var cycle: Array = _rotate_to_sorted_first(path.slice(path_index[target]))
+				var key: String = "|".join(PackedStringArray(cycle))
+				if not seen_keys.has(key):
+					seen_keys[key] = true
+					cycles.append(cycle)
 	return cycles
 
 
@@ -558,29 +591,6 @@ func _run_cycle_checks() -> void:
 func _record_path_of(id: String) -> String:
 	var type: StringName = _find_record_type(id)
 	return (_record_paths.get(type, {}) as Dictionary).get(id, "")
-
-
-# One DFS visit for find_reference_cycles(). &"active" while on the current
-# path, &"done" once every descendant is explored. A target seen active closes
-# a cycle; a done target is a branch already walked, never a new cycle.
-static func _cycle_dfs(node: String, edges: Dictionary, visit_state: Dictionary, path: Array,
-		path_index: Dictionary, cycles: Array, seen_keys: Dictionary) -> void:
-	visit_state[node] = &"active"
-	path_index[node] = path.size()
-	path.append(node)
-	for target: String in edges.get(node, []):
-		var target_state: StringName = visit_state.get(target, &"")
-		if target_state == &"":
-			_cycle_dfs(target, edges, visit_state, path, path_index, cycles, seen_keys)
-		elif target_state == &"active":
-			var cycle: Array = _rotate_to_sorted_first(path.slice(path_index[target]))
-			var key: String = "|".join(PackedStringArray(cycle))
-			if not seen_keys.has(key):
-				seen_keys[key] = true
-				cycles.append(cycle)
-	path.pop_back()
-	path_index.erase(node)
-	visit_state[node] = &"done"
 
 
 # Rotates a cycle, kept in edge order, to start at its member that sorts first.

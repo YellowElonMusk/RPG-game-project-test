@@ -100,6 +100,23 @@ func test_find_reference_cycles_cycle_entered_mid_way_starts_at_sorted_first() -
 	assert_array(cycles[0]).contains_exactly(["node_b", "node_c"])
 
 
+## Regression: a recursive walk overflowed GDScript's call stack on a chain of
+## about 1,100 records and silently returned no cycles. 3,000 is well past it.
+func test_find_reference_cycles_3000_record_chain_returns_one_full_cycle() -> void:
+	var edges: Dictionary = {}
+	var chain_length := 3000
+	for i in range(chain_length):
+		edges["node_%05d" % i] = ["node_%05d" % ((i + 1) % chain_length)]
+
+	var cycles: Array = ContentCatalogService.find_reference_cycles(edges)
+
+	assert_int(cycles.size()).is_equal(1)
+	if cycles.size() != 1:
+		return  # Indexing an empty result would abort the whole suite.
+	assert_int((cycles[0] as Array).size()).is_equal(chain_length)
+	assert_str(cycles[0][0]).is_equal("node_00000")
+
+
 ## T5: faction_a → rule_id → rule_a → ref_ids → enemy_a → faction_id → faction_a,
 ## with all three fields registered (test-only), is one error located at
 ## enemy_a (its path sorts first), field faction_id, the other two members in
