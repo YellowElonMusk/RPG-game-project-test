@@ -1176,8 +1176,9 @@ passes `/story-readiness`.
 
 **Tooling owed.** Some criteria need tools that do not exist yet. Each is a named story in the overworld test plan and must ship before its AC can be assessed; until then the AC reports **NOT ASSESSED**, never a pass:
 - the `perf_overworld` fixture map, debug no-contact and no-give-up flags, and a Performance monitor around symbol stepping (AC-46);
-- per-cue capture-ID tags in the presentation capture tool, an ADR-0005 §13 amendment (AC-44a/b, AC-32, AC-45e, AC-54);
+- per-cue capture-ID tags in the presentation capture tool, ADR-0005 §14 (AC-44a/b, AC-32, AC-45e, AC-54);
 - a level-review tool that lists each symbol's approaches and each leg's junction nodes, and places walk-in captures (AC-30i, AC-32, AC-45e).
+- a playtest logger (symbol engaged/bypassed when it comes within `see_m`, walking-time share) and a scripted hold before the player's first Bureaucratia battle for the AC-50b question (AC-47, AC-48, AC-50b; test plan OW-T04). Until it ships, AC-50b is asked at the first Bureaucratia battle's first command prompt.
 
 **Movement, party and interaction (rules 1–3)**
 - **AC-1a [L] (R1)** GIVEN `move` at full tilt for N frames, THEN the leader's displacement is `walk_speed · Σdt` (within 1e-4).
@@ -1315,10 +1316,10 @@ passes `/story-readiness`.
 
 **Accessibility, UI and navigation**
 - **AC-43 [L] (accessibility)** No overworld action requires a hold or a timed press (input-map audit). Every flow completes with discrete presses plus `move`.
-- **AC-44a [C] (accessibility)** Each cue node carries a capture-ID tag (Tooling owed: an ADR-0005 §13 capture-tool amendment). On grayscale conversions of the test plan's named capture poses (Town, overworld segment and dungeon, at every reachable stage, at 1080p), each of these cues has a luminance contrast of at least 3:1 against a ring formed by a 4 px dilation of its mask: the notice slip, the chase "!" tag, the stunned pose, the checkpoint open and closed states, the safe-zone paving edge, map exits with the beacon, and the camp sign.
+- **AC-44a [C] (accessibility)** Each cue node carries a capture-ID tag (Tooling owed: ADR-0005 §14 tags in the §13 capture tool). On grayscale conversions of the test plan's named capture poses (Town, overworld segment and dungeon, at every reachable stage, at 1080p), each of these cues has a luminance contrast of at least 3:1 against a ring formed by a 4 px dilation of its mask: the notice slip, the chase "!" tag, the stunned pose, the checkpoint open and closed states, the safe-zone paving edge, map exits with the beacon, and the camp sign.
 - **AC-44b [C] (accessibility)** On the same poses, the interact prompt's mask measures at least 3:1 contrast against its 4 px ring.
 - **AC-45 [UI]** Retained screenshots of:
-  - the interact prompt with each of its four kind icons, on keyboard, on one gamepad style, and on the Steam Deck with the "Steam Virtual Gamepad" `pad_style`, at the default and the largest text size;
+  - the interact prompt with each of its four kind icons, on keyboard, on one gamepad style, and on the Steam Deck (which reports `pad_style` `xbox`, `input-system.md` rule 4), at the default and the largest text size;
   - the map name card at a normal stage and with the liberated subtitle;
   - the payoff card, the bark window and a decree gag's text, each on the Steam Deck at text scale 1.0 and 1.5;
   - the camp prompt with Yes focused, and the chapter-end prompt with No focused;

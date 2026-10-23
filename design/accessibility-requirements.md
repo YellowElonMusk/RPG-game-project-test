@@ -149,11 +149,11 @@ symbol or zone based).
 | Full input remapping | Standard | All 8 actions, keyboard and gamepad | Designed (Vertical Slice) | `input-system.md` rule 8 + ADR-0003/0009: a remap screen edits overrides only, rejects conflicts with a clear message, offers "Restore defaults" and a confirm/cancel swap, and persists overrides in settings. Mouse buttons are fixed (pointer confirm/cancel); keyboard can do everything the mouse can. |
 | Input method switching | Standard | PC + Deck | Designed | `active_device_changed(kind, pad_style)` swaps prompts live (ADR-0003, ADR-0008 §4). No restart; any device works at any moment. |
 | One-hand mode | Standard | All actions | Designed (by construction) | No action requires two simultaneous inputs; every action is a single press. Keyboard-only and gamepad-only play are both complete. No dedicated mode is needed. |
-| Hold-to-press alternatives | Standard | `fast_forward` | Designed | The only hold-capable action, `fast_forward`, is a **tap latch**: one tap speeds the rest of the replay, and holding is never required (`input-system.md` amendment). |
-| Rapid input alternatives | Standard | — | N/A | Nothing requires rapid presses. Menu scrolling auto-repeats on a held direction (`repeat_delay` 0.40 s, `repeat_interval` 0.08 s, tunable data). |
+| Hold-to-press alternatives | Standard | `fast_forward` | Designed | The only hold-capable action, `fast_forward`, is a **tap latch**: one tap speeds the rest of the replay, and in Dialogue one tap latches fast text until the Dialogue closes or `cancel` (`input-system.md` rule 1, 2026-10-23). Holding is never required, and `inspect` is a toggle. |
+| Rapid input alternatives | Standard | Menu repeat | Designed (Vertical Slice) | Nothing requires rapid presses. Menu scrolling auto-repeats on a held direction (`repeat_delay` 0.40 s, `repeat_interval` 0.08 s). **Designed (Vertical Slice):** `repeat_delay`, `repeat_interval` and the stick `deadzone` become player settings on the remap/settings screen (`input-system.md` rule 8); MVP ships the defaults. |
 | Input timing adjustments | Standard | — | N/A | No timed input exists. **Commitment:** any future timed input must ship with a 0.5×–3.0× window multiplier, or be redesigned. |
 | Aim assist | Standard | — | N/A | No aiming. |
-| Auto-sprint / movement assists | Standard | Overworld movement | Not Started | Pending the Overworld GDD. Requirement: no held "run" button. If a run exists it is a toggle or the default speed. |
+| Auto-sprint / movement assists | Standard | Overworld movement | Not Started | The Overworld GDD (Approved 2026-10-23, rule 1) has one walking speed and no run button, held or toggled; a press-to-toggle "Fast Walk" is deferred to playtests (its OQ-9). |
 | Platforming / traversal assists | — | — | N/A | No platforming. |
 | HUD element repositioning | Comprehensive | — | Out of Scope | Known Intentional Limitations. |
 | Menu navigation without pointer precision | Standard | All menus | Designed | Every menu is fully navigable by keyboard / d-pad / stick (native focus + `FocusScope`, ADR-0008). Hover moves focus only after `pointer_switch_px` of movement, so a tremor never steals focus (`input-system.md` rule 3). |
@@ -220,7 +220,7 @@ outcome as a beat, the rule is cheap.
 |----------|---------------|-----------------|--------|-------|
 | Xbox (GDK) | XAG | — | N/A | No Xbox release. |
 | PlayStation 5 | Sony guidelines | — | N/A | No PlayStation release. |
-| Steam (PC) / Steam Deck | Steam Input, SteamOS | Controller remapping through Steam Input (system level), on top of in-game remapping; Deck controls work with no desktop mode | Not Started | ⚠️ Steam Input on the native Linux Deck reports "Steam Virtual Gamepad", so `pad_style` needs a Deck/Steam row (ADR-0003 advisory E9). In-game remapping is still required for keyboard. |
+| Steam (PC) / Steam Deck | Steam Input, SteamOS | Controller remapping through Steam Input (system level), on top of in-game remapping; Deck controls work with no desktop mode | Not Started | ⚠️ Steam Input on the native Linux Deck reports "Steam Virtual Gamepad"; it maps to `pad_style` `xbox` (`input-system.md` rule 4, 2026-10-23), closing ADR-0003 advisory E9. In-game remapping is still required for keyboard. |
 | iOS | VoiceOver | — | N/A | No mobile release. |
 | Android | TalkBack | — | N/A | No mobile release. |
 | PC (Screen Reader) | AccessKit (Godot 4.5+): Windows UIA / NVDA / Narrator; Linux AT-SPI / Orca | **Groundwork committed:** every interactive element is a native `Control` or sets `accessibility_name` (ADR-0008 §10). `accessibility_live` is set on changing text through `AccessibilityServer.AccessibilityLiveMode` (4.7). **Full menu screen-reader pass: undecided (OQ-1).** | Not Started | Native `Control`s expose names and roles through AccessKit (probed: `accessibility_name`, `accessibility_description`, `accessibility_live`, relations, ADR-0008 Verification item 7). Re-injected `ui_*` navigation keeps native focus, so AccessKit sees real focus changes. |
@@ -232,7 +232,7 @@ outcome as a beat, the rule is cheap.
 | System | Visual Concerns | Motor Concerns | Cognitive Concerns | Auditory Concerns | Addressed | Notes |
 |--------|----------------|---------------|-------------------|------------------|-----------|-------|
 | Game State & Scene Flow | Wipes and retry flash are large-area luminance | None | Transitions lock input briefly (≤ 1.5 s) | None | Yes | Flash gate covers transitions (TR-gamestate-007); pause via Menu. |
-| Input System | Prompt glyphs must match the device | Remapping, hold, repeat | None | None | Partial | Remap screen is Vertical Slice; Steam Input `pad_style` row owed (E9). |
+| Input System | Prompt glyphs must match the device | Remapping, hold, repeat | None | None | Partial | Remap screen is Vertical Slice; Steam Input and the Deck report `pad_style` `xbox` (rule 4; E9 closed). Dialogue fast-forward is a tap latch and `inspect` a toggle, so nothing is held. |
 | Content Data Definitions | — | — | — | — | N/A | No player-facing surface except via other systems; text is extractable for localization (ADR-0013). |
 | Sprite & Camera Presentation | Faction color vs. CVD; actor contrast; flashes; blur; shake | None | Readability of who acts | None | Yes | Shape backup, `actor_contrast_min` 3.0, flash gate, rule 13 comfort settings. |
 | Turn Battle System | Disabled options must not be grey-only | None (untimed) | Party HP/MP + rule + quirk states + combos: **> 4 tracked items** | None | Partial | `check_command()` reasons; one rule banner; HUD spec must keep the load legible. |
@@ -241,7 +241,7 @@ outcome as a beat, the rule is cheap.
 | Combo System & Codex | Combo banner legibility | None | Discovering combos; the Codex as memory aid | Combo fanfare | Not Started | Codex persists discoveries; visual banner for every fanfare. |
 | Faction Rule Modifiers | Rule UI faction color | None | Understanding the rule | None | Partial | Banner + tooltip text; shape icon; refusal reasons. |
 | Enemy AI | Telegraphed intent, if any | None | Predicting enemy behaviour | None | Not Started | Any intent tell must be visual, not audio-only. |
-| Overworld Exploration & Encounters | Encounter symbols vs. CVD | Continuous movement, no held run | Where to go next | None | Not Started | GDD not written; next-destination marker and no held run required. |
+| Overworld Exploration & Encounters | Encounter symbols vs. CVD | Continuous movement, no held run | Where to go next | None | Designed | GDD Approved 2026-10-23: no held run (rule 1); diegetic beacon chain plus an optional screen-edge arrow (rule 19); symbols read by shape and pose, never colour only. |
 | Squad Roster & Recruitment | — | None | Who is in the party | None | Not Started | — |
 | Camp & Party Management | Low-contrast firelit scene behind UI | None | Party composition choices | None | Not Started | UI over camp uses opaque windows. |
 | Leveling & Loyalty | — | None | Loyalty state visibility | None | Not Started | Vertical Slice. |
@@ -282,6 +282,8 @@ outcome as a beat, the rule is cheap.
 | Mono audio | Comprehensive | The Audio Manager is not designed | Players with single-sided deafness may miss stereo-panned cues | No information is audio-only (the visual-equivalent rule), so nothing is lost; add with the Audio Manager |
 | Full subtitle customization (font, color, position) | Exemplary | Scope; one pixel font and fixed window art | Players with dyslexia or specific legibility needs | Text scale up to 1.5; opaque high-contrast windows; revisit post-launch |
 | High contrast mode | Exemplary | Scope | Low-vision players on busy diorama scenes | Menus and dialogue are already opaque flat windows; actor contrast ≥ 3:1 is enforced |
+| Mouse-only overworld play | Standard (input) | The overworld has no click-to-move: movement is the `move` vector from keys, stick or d-pad (`input-system.md` rule 3; Overworld GDD) | A player who can only operate a pointer cannot walk the overworld | Menus, battle and dialogue are fully pointer-operable; keyboard-only and gamepad-only play are complete; a one-handed keyboard layout is considered at the Vertical Slice remap |
+| Nintendo confirm/cancel convention in MVP | Standard (input) | The "swap confirm/cancel" setting ships with the Vertical Slice remap screen (`input-system.md` rule 8) | Nintendo-pad players get south = confirm until then | Steam Input's "Nintendo button layout" option; the Vertical Slice swap defaults to on for Nintendo pads |
 | Haptic alternatives | Exemplary | Scope | Deaf players relying on rumble | No information is audio-only |
 | External accessibility audit | Exemplary | Budget (solo, premium indie) | Blind spots in self-auditing | Internal test plan plus the CVD and motor playtests above |
 | Independent HUD vs. menu scaling | Standard (UI scaling row) | A separate HUD scale would break the shared UI/sprite pixel grid (ADR-0008 §9) | Players who want only HUD text larger | A single text scale applies to both |

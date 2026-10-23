@@ -230,6 +230,8 @@ scene-tree dependency, matching every other battle class's convention).
 - Content Data Definitions (soft today — `Character`/`Enemy`/`Move` records
   are the designed replacement for today's hardcoded `Combatant`/`Move`
   construction; migration in progress at the user's request).
+- Input System (hard, via Game State routing; 2026-10-23 sync): `confirm`, `cancel`, `inspect`, `page_left/right` and `fast_forward` (the replay tap latch). `input-system.md` lists this system as a consumer.
+- Game State & Scene Flow (hard): battle entry and the outcome report, including **Fled** (`battle_fled`, ADR-0010 §5). *A Flee design section for this GDD is owed (game-designer follow-up from the 2026-10-23 Game State review): flee chance from `TurnBattleConfig`, `can_flee` from the Encounter descriptor, failure passes the turn.*
 
 **Content Dependencies**: none yet — all content is in-code (see Tuning Knobs).
 

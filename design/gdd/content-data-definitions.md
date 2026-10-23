@@ -1,6 +1,6 @@
 # Content Data Definitions
 
-> **Status**: In Design
+> **Status**: Approved (design review 2026-10-23, `reviews/content-data-definitions-review-log.md`)
 > **Author**: user + agents
 > **Last Updated**: 2026-10-21
 > **Last Verified**: 2026-10-13
@@ -52,7 +52,8 @@ Combo discovery ("the combo was always there", Pillar 3) is served by this catal
 | Map | `map_` | An overworld map (2026-10-23, ADR-0012) | `display_name`, `faction_id` (→ Faction, optional), `base_stage`, `stage_table` (flag → stage), `critical_path` (legs), `region_liberation_flag`, `liberated_profile_id`, `liberated_kit_id` (asset IDs), `encounter_zone_ids` (→ Encounter), `zone_rate`, `new_game_entry`. The scene path is derived from the ID, never stored (Rule 3) | Overworld Exploration & Encounters |
 | Encounter | `enc_` | One battle the overworld can start (2026-10-23, ADR-0012) | `enemy_ids` (→ Enemy), `battle_stage_id` (asset ID), `faction_id` (→ Faction), `is_boss`, `can_flee`, `retreat_allowed`, `respawn`, `victory_payoff` | Overworld (meaning; descriptor fields: Game State rule 6) |
 | OccupationStage | `ostage_` | Presentation and density parameters for one faction × stage (2026-10-23, ADR-0012) | `faction_id` (→ Faction), `stage` (1–3), clutter caps per kind (non-decreasing in stage), civilian density and pool, `lighting_profile_id`, `set_kit_id`, `ambience_bed_id`, name-card subtitle, `liberation_grumble_min`, `decree_gag_by_flag` | Overworld Exploration & Encounters |
-| *reserved* | | FactionRule, AIProfile, Region, Conversation, LoyaltyQuest, Ending | | Faction Rule Modifiers; Enemy AI; Overworld; Dialogue; Leveling & Loyalty; Faction Reputation |
+| FactionRule | `rule_` | A faction's battle-rule parameters (2026-10-22, ADR-0011 §5; record type `faction_rule`) | `rule_class` (one of the registered rule classes), `ref_ids` (record IDs the rule references), `params`, `texts` (`LocText`), `colors` | Faction Rule Modifiers |
+| *reserved* | | AIProfile, Region, Conversation, LoyaltyQuest, Ending | | Enemy AI; Overworld; Dialogue; Leveling & Loyalty; Faction Reputation |
 
 Character and Enemy are deliberately separate types: each has fields the other does not (loyalty data only on characters, AI profile and rewards only on enemies). To avoid duplicating shared definitions they reuse two sub-records, `stat_block` and `move_ids`, which are defined once.
 
@@ -68,7 +69,11 @@ Character and Enemy are deliberately separate types: each has fields the other d
 
 **7. Read-only at runtime.** After a successful load the catalog is immutable. Systems look definitions up by ID and keep their own runtime state (current HP, active quirk states, party membership) keyed by ID. Nothing writes back into the catalog, and save files store IDs plus runtime state only.
 
-**8. Validation.** Validation runs on every load and also as a standalone headless check, so tests and CI can run it. It checks that: required fields are present; field types and enums are valid; IDs are well-formed and unique (aliases included); every reference resolves to a record of the correct type; every EffectDescriptor `type` is known; `signature_color`, `backup_icon_id` and `rule_id` appear only on `alien` factions; Faction `base_shape` matches its `kind`; and `stat_block` fields and `reward` fields are within the ranges their owning GDD defines (Stats & Damage Resolution F1, Rule 12): `max_hp` 1–999, `max_mp` 0–99, `attack`/`speed` 1–99, `defense` 0–99, `reward.xp` and `reward.money` 0–9999. `Move.cost` is a non-negative integer. A value outside its range is an **error** naming the record and field. It reports **every** problem found, not just the first, in two severities. **Errors** block: any error puts the catalog in the Failed state, and the game does not start with partially loaded content in either debug or release builds. **Warnings** are reported but never block (see Edge Cases for which problems are which). Handling of invalid modded content is deferred to the post-launch mod feature.
+**8. Validation.** Validation runs on every load and also as a standalone headless check, so tests and CI can run it. It checks that: required fields are present; field types and enums are valid; IDs are well-formed and unique (aliases included); every reference resolves to a record of the correct type; every EffectDescriptor `type` is known; `signature_color`, `backup_icon_id`, `rule_id` and `patrol_archetype_id` appear only on `alien` factions; Faction `base_shape` matches its `kind`; `stat_block` fields and `reward` fields are within the ranges their owning GDD defines (Stats & Damage Resolution F1, Rule 12): `max_hp` 1–999, `max_mp` 0–99, `attack`/`speed` 1–99, `defense` 0–99, `reward.xp` and `reward.money` 0–9999; the Overworld's fields are within its ranges (F2 table): `OccupationStage.stage`, `Map.base_stage` and every `stage_table` value 1–3, `Map.zone_rate` 0–1, `liberation_grumble_min` 0.1–0.4; at most one Map sets `new_game_entry`; and no two OccupationStage records share a `(faction_id, stage)` pair. `Move.cost` is a non-negative integer. A value outside its range is an **error** naming the record and field. Cross-record invariants that belong to the Overworld (caps non-decreasing with stage, invariant I13) are checked by the Overworld's own validators, registered through `ContentBootstrap` (ADR-0004), not restated here. It reports **every** problem found, not just the first, in two severities. **Errors** block: any error puts the catalog in the Failed state, and the game does not start with partially loaded content in either debug or release builds. **Warnings** are reported but never block (see Edge Cases for which problems are which). Handling of invalid modded content is deferred to the post-launch mod feature.
+
+**The schema is the record class.** Each type's field set is exactly its `Resource` subclass's `@export` list (ADR-0001). Godot's `.tres` loader tolerates keys a script does not declare, so the validator reads each file's stored property keys and reports any key not in that list as an unknown field (Edge Cases). To add a field, add the `@export` to the record class and a row to Rule 1; to add a type, add its class, its Rule 1 row, its prefix to F1 and its row in Interactions.
+
+**Renamed IDs are caught in CI.** The build keeps a generated, checked-in ID manifest (every current ID and its aliases). CI fails when an ID in the previous manifest is neither a current ID nor an alias of one, so a rename without an alias can never ship. To rename, keep the record, change its `id` and add the old ID to its `aliases` (Rule 2).
 
 **9. Lookup.** Other systems read the catalog through four operations: `get_record(type, id)` returns a definition or an error, `has_record(type, id)`, `all_records(type)`, and `resolve_alias(id)`. `all_records(type)` returns records in a fixed order sorted by ID, so tests and saves behave identically on every run. (Named `get_record`/`has_record`/`all_records` rather than `get`/`exists`/`all` per ADR-0001: `get` collides with `Object`'s own built-in single-argument method, which every GDScript class inherits.)
 
@@ -93,12 +98,12 @@ Game State & Scene Flow must wait for Ready before leaving the boot state. Looku
 | Turn Battle System | Moves, enemies, characters | Owns `target_type` and move semantics |
 | Quirk State System | QuirkState records | Owns state semantics (duration, stacking, interaction) |
 | Combo System & Codex | Combo records; QuirkState and Character references | Owns combo matching rules and Codex behavior |
-| Faction Rule Modifiers | Alien Faction records → `rule_id` | Defines the FactionRule record type (reserved) |
+| Faction Rule Modifiers | Alien Faction records → `rule_id` | Defines the FactionRule record type (ADR-0011 §5) and registers its rule classes; `rule_id` resolves through the generic reference pass (ADR-0011 §4) |
 | Enemy AI | Enemy `ai_profile_id` | Defines the AIProfile record type (reserved) |
 | Squad Roster & Recruitment | Character records | Owns join/leave conditions; they are not stored on the record |
 | Items, Equipment & Shops | Item records | Vertical Slice |
 | Dialogue, Banter & Quests | Character IDs as speakers | Dialogue defines its own record types, following rules 2–8 |
-| Overworld Exploration & Encounters | Enemy IDs in encounter tables | Defines Encounter/Region types (reserved) |
+| Overworld Exploration & Encounters | Enemy IDs in encounter records | Defines the Map, Encounter and OccupationStage types (ADR-0012); Region stays reserved |
 | Sprite & Camera Presentation | `sprite_set_id`, `animation_id`, faction color and shape | Maps asset IDs to files |
 | UI Framework | Display names, icons, faction color/shape, backup icons | Reads, never hardcodes, faction color and shape |
 | Save/Load & Settings | IDs only | Stores IDs and runtime state, never definitions |
@@ -120,7 +125,7 @@ The id_valid formula is defined as:
 | id | string | 1+ characters | data file | The record's `id` field |
 | ID_MAX_LENGTH | int | 64 | constant | Maximum ID length (Rule 2). A constant, not a knob: IDs are permanent once shipped, so the limit cannot shrink later |
 | ID_PATTERN | regex | `^[a-z][a-z0-9_]*$` | constant | Lowercase ASCII snake_case (Rule 2) |
-| type_prefix | string | one per record type (`faction_`, `char_`, `enemy_`, `move_`, `quirk_`, `combo_`, `item_`, `bindings_`, `map_`, `enc_`, `ostage_`) | constant | Required prefix for the record's type (Rule 1 table) |
+| type_prefix | string | one per record type (`faction_`, `char_`, `enemy_`, `move_`, `quirk_`, `combo_`, `item_`, `bindings_`, `rule_`, `map_`, `enc_`, `ostage_`) | constant | Required prefix for the record's type (Rule 1 table) |
 | id_valid | bool | true / false | calculated | Whether the ID passes the identity rule; false is an error whose `record_id` is the ID |
 
 **Output Range:** Boolean. The 64-character boundary is inclusive: 64 loads, 65 is an error (AC-9).
@@ -132,14 +137,14 @@ Uniqueness (AC-10) and alias rules (AC-11, AC-12) are set checks across the cata
 
 The field_valid formula is defined as:
 
-`field_valid = (value ≥ min_bound) ∧ (value ≤ max_bound)`
+`field_valid = (value ≥ min_bound) ∧ (max_bound = none ∨ value ≤ max_bound)`
 
 **Variables:**
 | Variable | Type | Range | Source | Description |
 |----------|------|-------|--------|-------------|
-| value | int | any integer | data file | The authored field value |
-| min_bound | int | per field (table below) | constant (owned by the field's GDD) | Inclusive lower bound |
-| max_bound | int | per field, or none | constant (owned by the field's GDD) | Inclusive upper bound; "none" means unbounded above |
+| value | int or float | any number | data file | The authored field value (the Overworld rows are floats where the field is: `zone_rate`, `liberation_grumble_min`) |
+| min_bound | int or float | per field (table below) | constant (owned by the field's GDD) | Inclusive lower bound |
+| max_bound | int or float | per field, or none | constant (owned by the field's GDD) | Inclusive upper bound; "none" means unbounded above |
 | field_valid | bool | true / false | calculated | False is an error naming the record and field (AC-26) |
 
 | Field | min_bound | max_bound | Owner |
@@ -152,9 +157,13 @@ The field_valid formula is defined as:
 | `reward.xp` | 0 | 9999 | Stats & Damage Resolution (Rule 12) |
 | `reward.money` | 0 | 9999 | Stats & Damage Resolution (Rule 12) |
 | `Move.cost` | 0 | none | Stats & Damage Resolution (Rule 1 table) |
+| `OccupationStage.stage` | 1 | 3 | Overworld Exploration & Encounters (rule 8) |
+| `Map.base_stage`, each `Map.stage_table` value | 1 | 3 | Overworld Exploration & Encounters (`occupation_stage`) |
+| `Map.zone_rate` | 0 | 1 | Overworld Exploration & Encounters (rule 4; every MVP map must be 0, checked by its own validator) |
+| `OccupationStage.liberation_grumble_min` | 0.1 | 0.4 | Overworld Exploration & Encounters (Tuning Knobs) |
 
 **Output Range:** Boolean. The bounds are read from the owning system's constants (ADR-0001, vocabulary ownership), never written as literals inside the catalog's validator, so a range change happens in one place.
-**Example:** An enemy with `max_hp` 1000 → `1000 ≤ 999` is false → error on `stat_block.max_hp`. A recruit with `defense` 0 → `0 ≥ 0 ∧ 0 ≤ 99` → valid. A Move with `cost` −1 → error on `cost`.
+**Example:** An enemy with `max_hp` 1000 → `1000 ≤ 999` is false → error on `stat_block.max_hp`. A recruit with `defense` 0 → `0 ≥ 0 ∧ 0 ≤ 99` → valid. A Move with `cost` −1 → error on `cost`. A Map with `zone_rate` 1.01 → `1.01 ≤ 1` is false → error on `zone_rate` (a float field).
 
 **F3. Validation outcome**
 
@@ -172,7 +181,7 @@ The validation_outcome formula is defined as:
 **Output Range:** Two values, decided by `error_count` alone. A single error fails the whole catalog, including records that were valid themselves (AC-8).
 **Example:** 2 errors and 2 warnings → `Failed`, with all 4 entries in the report (AC-19). 0 errors and 3 warnings → `Ready` (AC-18).
 
-**Report order.** Entries are sorted ascending by the key `(location.file_path, location.record_index, field, severity)`, with an empty `field` sorting first. The key uses only fields every entry already carries, and it groups problems by file, which is how an author fixes them. File paths compare as plain strings, so the order does not depend on the order the filesystem lists files (AC-20). An error that names two locations (a duplicate ID, AC-10) sorts by its first location.
+**Report order.** Entries are sorted ascending by the key `(location.file_path, location.record_index, field, severity)`, with an empty `field` sorting first. The key uses only fields every entry already carries, and it groups problems by file, which is how an author fixes them. File paths are normalised to their `res://` form with forward slashes and compared as case-sensitive strings, so the order does not depend on the order the filesystem lists files or on the OS (AC-20). An error that names two locations (a duplicate ID, AC-10) sorts by its first location.
 
 **F4. Error-screen display count**
 
@@ -228,11 +237,13 @@ The performance_pass formula is defined as:
 - **If a record has a field the schema does not define** (e.g. a typo such as `stat_blok`): **error.** Silently ignoring unknown fields hides typos, so the schema is strict.
 - **If a required text field is empty or whitespace-only**: **error.** Optional text may be empty.
 - **If an EffectDescriptor has an unknown `type`**: **error.**
-- **If a `stat_block` or `reward` field is outside the range its owning GDD defines**: **error.**
+- **If a `stat_block`, `reward` or Overworld field (F2 table) is outside the range its owning GDD defines**: **error.**
+- **If two Map records set `new_game_entry`, or two OccupationStage records share a `(faction_id, stage)` pair**: **error** naming both records.
+- **If an ID in the previous build's ID manifest is neither a current ID nor an alias**: **error** in CI naming the missing ID (a rename without an alias). At runtime, a saved or referenced ID that is neither is an error naming it.
 - **If a type has zero records** (e.g. no Items at MVP): valid. A system that needs at least one record of a type reports that itself.
 
 **Faction rules (from the art bible)**
-- **If `signature_color`, `backup_icon_id` or `rule_id` is set on a `human_nation` faction, or `base_shape` does not match the faction's `kind`**: **error.**
+- **If `signature_color`, `backup_icon_id`, `rule_id` or `patrol_archetype_id` is set on a `human_nation` faction, or `base_shape` does not match the faction's `kind`**: **error.**
 - **If two alien factions share a `signature_color` or a `base_shape`**: **warning**, not error. The art bible gives every faction its own, but a fifth faction beyond the four base shapes is a design decision to make, not a crash.
 
 **Other warnings** (reported, never blocking)
@@ -327,7 +338,7 @@ Criteria come from Detailed Design, Formulas and Edge Cases. This system's Formu
 Evidence type: **[L]** Logic (automated gdUnit4 test under `tests/unit/content_data/`), **[I]** Integration, **[UI]** retained screenshot in `production/qa/evidence/`, **[P]** performance benchmark output.
 
 **Loading and lookup**
-- **AC-1 [L]** GIVEN the fixture `valid_one_of_each` (one record of each of the 7 types, including list fields and nested EffectDescriptors), WHEN the catalog loads, THEN the state is Ready and `get_record(type, id)` returns every record with every field deep-equal to the fixture.
+- **AC-1 [L]** GIVEN the fixture `valid_one_of_each` (one record of each of the 12 non-reserved types in Rule 1: Faction, Character, Enemy, Move, QuirkState, Combo, Item, InputBindings, FactionRule, Map, Encounter, OccupationStage, including list fields and nested EffectDescriptors), WHEN the catalog loads, THEN the state is Ready and `get_record(type, id)` returns every record with every field deep-equal to the fixture.
 - **AC-2 [L]** GIVEN a Ready catalog, WHEN `all_records(type)` is called on each type, THEN records come back sorted by ID, and the result is identical when the same files are loaded in a shuffled file order.
 - **AC-3 [L]** GIVEN a fixture with zero records of every type, WHEN it loads, THEN the state is Ready and `all_records(type)` returns an empty list for each type.
 - **AC-4 [L]** GIVEN a Ready catalog, WHEN `get_record` is called with a missing ID, THEN it returns a not-found result and no record. WHEN `all_records` is called with an unknown type, THEN it returns an error, not an empty list.
@@ -349,7 +360,9 @@ Evidence type: **[L]** Logic (automated gdUnit4 test under `tests/unit/content_d
 
 **Structure and content**
 - **AC-14 [L]** One test each: an unknown field, a missing required field, a wrong-typed required field, an empty required text field, a whitespace-only required text field, and an unknown EffectDescriptor `type`. Each produces an error naming the record and field.
-- **AC-26 [L]** One test per boundary: `stat_block.max_hp` 0 and 1000, `max_mp` −1 and 100, `attack`/`defense`/`speed` 0 (or −1 for `defense`) and 100, `Move.cost` −1, `reward.xp` −1 and 10000, `reward.money` −1 and 10000. Each produces an error naming the record and field. The matching minimum and maximum values each load.
+- **AC-26 [L]** One test per boundary: `stat_block.max_hp` 0 and 1000, `max_mp` −1 and 100, `attack`/`defense`/`speed` 0 (or −1 for `defense`) and 100, `Move.cost` −1, `reward.xp` −1 and 10000, `reward.money` −1 and 10000, `OccupationStage.stage` 0 and 4, `Map.base_stage` 0 and 4, a `stage_table` value 4, `Map.zone_rate` −0.01 and 1.01, `liberation_grumble_min` 0.09 and 0.41. Each produces an error naming the record and field. The matching minimum and maximum values each load.
+- **AC-27 [L]** GIVEN two Map records that both set `new_game_entry`, THEN an error names both. GIVEN two OccupationStage records with the same `(faction_id, stage)`, THEN an error names both. GIVEN a human_nation faction with `patrol_archetype_id` set, THEN an error names the record and field. GIVEN a `faction_rule` record `rule_ok` whose `rule_class` is registered, THEN it passes F1 and loads.
+- **AC-28 [I]** GIVEN a previous ID manifest containing `char_old` and a current catalog where that record's `id` is `char_new` with no alias, WHEN the CI check runs, THEN it fails naming `char_old`. With `aliases: ["char_old"]` added, it passes. A save referencing `char_old` loads through the alias.
 - **AC-15 [L]** GIVEN a Move whose effects use only known descriptor types, WHEN loaded, THEN `get_record` returns the descriptors deep-equal to the fixture and loading triggers no game effect.
 - **AC-16 [L]** GIVEN one data file that does not parse alongside valid files, WHEN loading, THEN there is one error naming that file, the state is Failed, and errors in the other files are still reported.
 
@@ -366,7 +379,7 @@ Evidence type: **[L]** Logic (automated gdUnit4 test under `tests/unit/content_d
 - **AC-24 [I]** GIVEN the standalone headless validation check, WHEN run on valid data (warnings allowed), THEN it exits with code 0. WHEN run on data with any error, THEN it exits with code 1 and prints the full report.
 
 **Performance**
-- **AC-25 [P]** GIVEN a generated catalog of 500 valid records, WHEN it is loaded and validated (file reading and validation, excluding engine startup) on the development PC, THEN the median of 10 runs is under 1 second. Run as a benchmark, not as a unit test. *Provisional: the target hardware is an Open Question.*
+- **AC-25 [P]** GIVEN a generated catalog of 500 valid records, WHEN it is loaded and validated (file reading and validation, excluding engine startup) on the machine named in the benchmark log (target: the `project.yaml` `min_spec` GTX 1080-class PC), THEN the median of 10 runs is under 1 second. ADVISORY until run on that machine. Run as a benchmark, not as a unit test. *Provisional: the target hardware is an Open Question.*
 
 ## Open Questions
 
@@ -375,6 +388,6 @@ Evidence type: **[L]** Logic (automated gdUnit4 test under `tests/unit/content_d
 | 1 | ~~**Storage format and loader**~~ **Resolved 2026-10-21 by ADR-0001** (Resource subclasses in `.tres`, ID-string references, autoload `ContentCatalog`). | — | Done |
 | 2 | **Localization**: are player-visible strings ever translated? If so, do records hold string keys instead of inline text? | user + localization-lead | Before Alpha |
 | 3 | **Mod content policy**: override rules for duplicate IDs, and whether invalid modded records are skipped rather than blocking boot. | user | When post-launch mod support is scheduled |
-| 4 | **Target hardware** for the AC-25 load-time budget (currently "the development PC"). | user + performance-analyst | Before Vertical Slice |
+| 4 | ~~**Target hardware** for the AC-25 load-time budget.~~ **Resolved 2026-10-23:** `project.yaml` `min_spec` (GTX 1080-class PC, user decision 2026-10-22). | user + performance-analyst | — |
 | 5 | **Provisional fields**: `stat_block`, `Move.cost` and `reward` are no longer provisional — Stats & Damage Resolution (Designed 2026-10-20) fixed their meaning and ranges (see rule 8 and Edge Cases). Still provisional: move `target_type` and semantics, quirk and combo rules, faction rules, AI profiles — each may change when its owning GDD is designed. | each remaining downstream GDD | As each remaining GDD is approved |
 | 6 | **Solo-triggerable combo warning** (CD-GDD-ALIGN, 2026-10-21): should validation warn when a single Character's moves can apply every quirk state a Combo requires, the "buff one character" outcome Pillar 3 rejects? It is deferred because the check must read `apply quirk` EffectDescriptor parameters, and Rule 4 says this catalog stores descriptors without interpreting them. It belongs either in the Combo System & Codex GDD's own content check or as a Rule 4 exception it requests. | Combo System & Codex GDD | When that GDD is designed |

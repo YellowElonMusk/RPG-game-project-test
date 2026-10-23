@@ -387,7 +387,7 @@ non-destructive option focused by default.
 
 **Specification**:
 - Default focus is the safe or most common choice (Retry on the Defeat Prompt; "No" on quit and overwrite).
-- `cancel` selects the safe option's effect, or closes without acting; the spec must say which.
+- `cancel` selects the safe option's effect, or closes without acting, or (only when a choice is required, as on the Defeat Prompt) does nothing; the spec must say which.
 - It is a P7 overlay. Its appearance (the Defeat card) is flash-gated.
 
 **Accessibility**: Guarded against carried-over presses (P2). The safe default limits the cost of a mistake.

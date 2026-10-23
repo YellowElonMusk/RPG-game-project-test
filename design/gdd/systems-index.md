@@ -26,9 +26,9 @@ A satirical turn-based RPG: the player recruits a squad of mismatched "misfit" h
 
 | # | System Name | Category | Priority | Status | Design Doc | Depends On |
 |---|-------------|----------|----------|--------|------------|------------|
-| 1 | Game State & Scene Flow (inferred) | Core | MVP | Designed | design/gdd/game-state-scene-flow.md | Content Data Definitions, Input System |
-| 2 | Input System (inferred) | Core | MVP | Designed | design/gdd/input-system.md | Content Data Definitions (soft — bindings data) |
-| 3 | Content Data Definitions (inferred) | Core | MVP | Designed | design/gdd/content-data-definitions.md | — |
+| 1 | Game State & Scene Flow (inferred) | Core | MVP | Approved | design/gdd/game-state-scene-flow.md | Content Data Definitions, Input System |
+| 2 | Input System (inferred) | Core | MVP | Approved | design/gdd/input-system.md | Content Data Definitions (soft — bindings data) |
+| 3 | Content Data Definitions (inferred) | Core | MVP | Approved | design/gdd/content-data-definitions.md | — |
 | 4 | Sprite & Camera Presentation (inferred) | Core | MVP | In Review | design/gdd/sprite-camera-presentation.md | Game State & Scene Flow, Content Data Definitions, Turn Battle System (hard, Battle only) |
 | 5 | Turn Battle System | Gameplay | MVP | Reverse-Documented | design/gdd/turn-battle-system.md | Game State & Scene Flow, Input System, Content Data Definitions, Stats & Damage Resolution |
 | 6 | Stats & Damage Resolution (inferred) | Gameplay | MVP | Designed | design/gdd/stats-damage-resolution.md | Content Data Definitions |

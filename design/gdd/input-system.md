@@ -1,11 +1,11 @@
 # Input System
 
-> **Status**: In Design
+> **Status**: Approved (design review 2026-10-23, `reviews/input-system-review-log.md`)
 > **Author**: user + agents
 > **Last Updated**: 2026-10-22
 > **Last Verified**: 2026-10-13
 > **Implements Pillar**: Readable in One Turn (via the `inspect` action and consistent, device-aware prompts)
-> **Amendment (2026-10-22)**: `fast_forward` is a button that may be tapped or held, not a hold-only action. In battle replays a tap latches fast-forward and Cancel clears it, per Sprite & Camera Presentation rule 9 (creative-director ruling of the 2026-10-22 `/design-review`); Dialogue may still use it as a hold. OS key-repeat echoes never produce a second `pressed` (rule 2). Input's own behavior is otherwise unchanged.
+> **Amendment (2026-10-22)**: `fast_forward` is a button that may be tapped or held, not a hold-only action; nothing ever requires holding it (2026-10-23: Dialogue uses the same tap latch). In battle replays a tap latches fast-forward and Cancel clears it, per Sprite & Camera Presentation rule 9 (creative-director ruling of the 2026-10-22 `/design-review`); OS key-repeat echoes never produce a second `pressed` (rule 2). Input's own behavior is otherwise unchanged.
 > **Follow-up (2026-10-22, fourth `/design-review` ruling 1)**: the battle-replay latch has one level. A `fast_forward` or `confirm` press (or a click on the replay prompt) speeds every beat's wind-up, knockouts included (the slump hold after a knockout always plays at normal speed). The first boss entrance is sped only with the opt-in "Speed up boss entrances" setting. (Updated 2026-10-22 to the presentation GDD revision 6 rulings: knockouts became plain beats, and the setting was renamed from "Speed up all replay beats".) Input's own behavior is unchanged.
 
 ## Summary
@@ -49,23 +49,23 @@ command the player meant is the command that happens, once. Its guardrails:
 | `confirm` | button | Enter, Space, Z | South face button | Left-click (via UI, rule 3) | Accept / advance text |
 | `cancel` | button | Esc, Backspace, X | East face button | Right-click (via UI, rule 3) | Back out of a menu or selection |
 | `menu` | button | Tab, M | Start | — | Open the Menu overlay |
-| `inspect` | button | I, Q | North face button | Hover (tooltip) | Show the full rule text of a hovered enemy, quirk state or faction rule (Pillar 4) |
+| `inspect` | button | I, Q | North face button | Hover (tooltip) | Show the full rule text of a hovered enemy, quirk state or faction rule (Pillar 4). It is a **toggle** (2026-10-23): a press shows the text, a second press or `cancel` hides it; with the mouse, hovering shows it and leaving hides it. Never a hold |
 | `page_left` / `page_right` | button | 1 / 3 | Left / right shoulder | Mouse wheel (in lists) | Switch party member, tab or list page |
-| `fast_forward` | button | Shift | West face button | — | Speed up battle replays and dialogue text. In a battle replay, a press latches a speed-up of the remaining plain beats and `cancel` clears it (Sprite & Camera Presentation rule 9); in Dialogue it speeds text while held. How much is decided by Turn Battle and Dialogue |
+| `fast_forward` | button | Shift | West face button | — | Speed up battle replays and dialogue text. In a battle replay, a press of `fast_forward` **or `confirm`** latches a speed-up of the remaining beats and `cancel` clears it (Sprite & Camera Presentation rule 9). In Dialogue it is the same **tap latch** (2026-10-23 design review): a press latches fast text for the current Dialogue, and `cancel` or the Dialogue closing clears it. Nothing is ever held. How much is decided by Turn Battle and Dialogue |
 
 **2. Device → action only.** Input reports actions as `pressed`, `released` and `held`, plus the current `move` vector. It has **no knowledge of modes, overlays or transitions** and never decides whether an action should be used. A button produces exactly one `pressed` per physical press: while it stays down, Input emits `held`, and the operating system's key-repeat echoes never produce another `pressed`. Receivers that guard against mashing (Sprite & Camera Presentation rule 9) rely on this. Game State & Scene Flow routes actions to the current mode or top overlay and applies the input lock. This rule is what prevents a dependency loop between the two systems.
 
 **3. Mouse scope.** The mouse provides raw pointer events: `pointer_position`, `pointer_confirm` (left-click), `pointer_cancel` (right-click) and wheel steps. Input always reports them, because it cannot know what is clickable. The **UI Framework** decides whether a click landed on an interactive element and, if so, turns it into `confirm` or `cancel` for that element. A click on empty space therefore does nothing. Only menus, battle command windows and other UI use the pointer. **Overworld movement is never driven by the mouse** (no click-to-move). Hovering a UI element moves keyboard/gamepad focus to it, but only once the pointer has moved at least `pointer_switch_px` (cumulative) since that menu opened, so a resting or bumped pointer never steals the default focus (Sprite & Camera Presentation rule 9), and the two never disagree about what is selected (Godot 4.6+ keeps mouse focus and keyboard/gamepad focus separate, so the UI Framework must sync them).
 
-**4. Active device.** Input tracks the **active device kind**: `keyboard_mouse` or `gamepad`. It switches to the kind of the last meaningful input: a key press, a mouse click or a mouse move of at least `pointer_switch_px` pixels; a gamepad button press; or a stick or trigger past its deadzone. It then broadcasts `active_device_changed(kind, pad_style)`, where `pad_style` (`xbox` | `playstation` | `nintendo` | `generic`) lets the UI show matching button prompts. Stick drift inside the deadzone never switches the device.
+**4. Active device.** Input tracks the **active device kind**: `keyboard_mouse` or `gamepad`. It switches to the kind of the last meaningful input: a key press, a mouse click or a mouse move of at least `pointer_switch_px` pixels; a gamepad button press; or a stick or trigger past its deadzone. It then broadcasts `active_device_changed(kind, pad_style)`, where `pad_style` (`xbox` | `playstation` | `nintendo` | `generic`) lets the UI show matching button prompts. **Steam Deck** (its built-in controls, or any pad behind the Steam Virtual Gamepad) reports `xbox`: the Deck's face buttons match Xbox labels and positions, and detecting the Deck by joy name behind the virtual pad is unreliable (2026-10-23 design review; Deck-specific glyphs are a Polish item). `pad_style` is chosen by matching the pad's joy name against ADR-0003's patterns; named styles on real hardware are a verification item (ADR-0003). Stick drift inside the deadzone never switches the device.
 
-**5. Menu navigation repeat.** When `move` drives a menu, holding a direction produces one navigation step immediately, then repeats after `repeat_delay` at every `repeat_interval` (Formulas) until released. Overworld walking uses the continuous `move` vector and has no repeat. Each step is reported as one of four **derived actions**, `nav_up`, `nav_down`, `nav_left` and `nav_right` (never bound, `pressed` only). They are always emitted, since Input knows no modes, and a receiver that doesn't navigate ignores them (ADR-0003). `move` is bound as four sub-actions (`move_up/down/left/right`) that only feed the vector.
+**5. Menu navigation repeat.** When `move` drives a menu, holding a direction produces one navigation step immediately, then repeats after `repeat_delay` at every `repeat_interval` (Formulas) until released. Overworld walking uses the continuous `move` vector and has no repeat. Each step is reported as one of four **derived actions**, `nav_up`, `nav_down`, `nav_left` and `nav_right` (never bound, `pressed` only). They are always emitted, since Input knows no modes, and a receiver that doesn't navigate ignores them (ADR-0003). **They reach native `Control` focus by re-injection:** Game State routes each `nav_*` step to its receiver, and the UI re-injects it as the matching built-in `ui_up/down/left/right` `InputEventAction`, so native focus moves and accessibility tools (AccessKit) see real focus changes (ADR-0003, ADR-0008). **Catch-up:** on a tick whose time span covers several due step times, every due step fires, in order, never merged, so scroll distance stays true under frame hitches. `move` is bound as four sub-actions (`move_up/down/left/right`) that only feed the vector.
 
 **6. Analog handling.** Sticks use a radial deadzone and rescale the remaining range to 0–1 (Formulas). For menu navigation, a stick counts as a direction once its magnitude passes `menu_stick_threshold` along that axis. The d-pad and keys are always full magnitude, and their diagonals are normalized to length 1, so walking diagonally is never faster than walking straight.
 
 **7. Bindings are data.** The default bindings are a data record following the Content Data Definitions rules (stable IDs, strict validation). Player overrides are stored by Save/Load & Settings (Vertical Slice). Validation requires every action to have at least one keyboard binding and at least one gamepad binding, and forbids the same key or button being bound to two actions on the same device. Mouse bindings are fixed and not remappable.
 
-**8. Remapping (Vertical Slice).** The MVP ships the defaults only. The remap screen arrives in the Vertical Slice and edits overrides only: the defaults can always be restored. A "swap confirm/cancel" setting (for Nintendo-style habits) is part of the same screen.
+**8. Remapping (Vertical Slice).** The MVP ships the defaults only. The remap screen arrives in the Vertical Slice and edits overrides only: the defaults can always be restored. A "swap confirm/cancel" setting (for Nintendo-style habits) is part of the same screen, and defaults to on when `pad_style` is `nintendo`. **Known MVP gap (2026-10-23):** until then Nintendo pads use position mapping (south = confirm); Steam Input's "Nintendo button layout" option covers Steam players meanwhile. The same Vertical Slice settings screen adds `deadzone`, `repeat_delay` and `repeat_interval` as player settings (accessibility: menu repeat is a protective timing); MVP ships the defaults.
 
 **9. Devices coming and going.** If the active gamepad disconnects, Input broadcasts `device_lost`. When any gamepad reconnects, it broadcasts `device_restored`. When the game window loses or regains focus, it broadcasts `focus_lost` / `focus_gained`. While the window is unfocused, gamepad input is ignored, so a pad on the desk doesn't play the game in the background.
 
@@ -193,8 +193,10 @@ All knobs are data (the `bindings_default` record and the input config, ADR-0003
 | `repeat_delay` | 0.40 s | 0.25–0.60 | One tap skips two menu entries | Long lists feel sticky | `menu_repeat_times` |
 | `repeat_interval` | 0.08 s | 0.05–0.15 | Held directions overshoot | Long lists drag | `menu_repeat_times` |
 | `menu_stick_threshold` | 0.60 | 0.40–0.80 | A diagonal nudge moves the menu | Menus need a hard push | Applied after the deadzone rescale |
-| `pointer_switch_px` | 8 px | 4–32 | A bumped mouse swaps every prompt to keyboard glyphs | Mouse users see pad prompts after moving the mouse | Device switching (rule 3) |
+| `pointer_switch_px` | 8 px | 4–32 | A bumped mouse swaps every prompt to keyboard glyphs, or steals menu focus | Mouse users see pad prompts after moving the mouse; hover focus feels late | One knob, two gestures: device switching (rule 4, distance since the last non-mouse input) and hover focus (rule 3, distance since the menu opened) |
 | Default bindings | `bindings_default` | Any conflict-free set | — | — | Validated at boot (ADR-0003, ADR-0004) |
+
+**Player settings (Vertical Slice).** `deadzone`, `repeat_delay` and `repeat_interval` become player settings on the remap/settings screen, within the safe ranges above (rule 8); MVP ships the defaults.
 
 **How the knobs interact.** `deadzone` rescales the stick before `menu_stick_threshold` is tested, so raising the deadzone also makes menu navigation by stick feel heavier. `repeat_delay` and `repeat_interval` together set how fast a held direction crosses a list (Formulas example: 9 steps in 1.0 s).
 
@@ -209,7 +211,7 @@ None of its own. Button-prompt art (keyboard keys, mouse, and Xbox / PlayStation
 - **Zero perceived lag:** an action is reported in the same frame the device reports it. Input adds no buffering or smoothing beyond the deadzone rescale.
 - **Menus fly but don't overshoot:** the 0.40 s repeat delay stops a single tap from skipping two entries, and the 0.08 s interval scrolls long lists quickly. Both are tuned by feel.
 - **Prompts never lie:** the moment the player touches a different device, every on-screen prompt matches it. A prompt showing the wrong device makes a turn-based game feel broken.
-- **Fast-forward never costs a punchline by accident.** In a battle replay, one tap of `fast_forward` or `confirm` speeds up the rest of that replay's beats, knockouts included, and `cancel` returns it to normal speed at once; the next replay always starts at normal speed. A knockout's slump hold always plays at normal speed, so the punchline still lands. No press ever speeds the first boss entrance unless the player has turned on "Speed up boss entrances" (Sprite & Camera Presentation rules 9 and 13). In Dialogue, holding `fast_forward` speeds text and letting go returns it to normal. That matters for a comedy game where players will want to see the punchlines.
+- **Fast-forward never costs a punchline by accident.** In a battle replay, one tap of `fast_forward` or `confirm` speeds up the rest of that replay's beats, knockouts included, and `cancel` returns it to normal speed at once; the next replay always starts at normal speed. A knockout's slump hold always plays at normal speed, so the punchline still lands. No press ever speeds the first boss entrance unless the player has turned on "Speed up boss entrances" (Sprite & Camera Presentation rules 9 and 13). In Dialogue, a tap of `fast_forward` latches fast text until the Dialogue closes or `cancel` is pressed. That matters for a comedy game where players will want to see the punchlines.
 
 ## UI Requirements
 
@@ -246,14 +248,14 @@ Evidence: **[L]** Logic (gdUnit4, `tests/unit/input/`). UI evidence for button p
 - **AC-6 [L]** Opposite directions held together give 0 on that axis. Stick and d-pad on the same axis: the larger magnitude wins. At equal magnitude, the d-pad wins.
 
 **Menu repeat**
-- **AC-7 [L]** A direction held for T seconds produces steps exactly at the times given by `step_time(k)` for every k with `step_time(k) ≤ T` (a step due exactly at T counts). Releasing stops further steps.
+- **AC-7 [L]** With the harness's fixed tick Δt = 1/60 s, a direction held for T seconds produces, for every k with `step_time(k) ≤ T`, one step on the first tick whose time is ≥ `step_time(k)`, never earlier (a step due exactly at T counts). Tick time is computed as n × Δt from the integer tick count n, never by summing floats, and `≥` compares with a tolerance of 1e-9 s. A second case uses a `repeat_interval` that is not a multiple of Δt. A third case uses one 0.25 s tick spanning several due times: every due step fires on that tick, in order, never merged. Releasing stops further steps.
 - **AC-8 [L]** Changing the held direction mid-repeat fires one immediate step and restarts the timer from `repeat_delay`.
-- **AC-9 [L]** A stick at `menu_stick_threshold − ε` along an axis produces no menu step; at `+ ε` it produces one.
+- **AC-9 [L]** A stick at `menu_stick_threshold − 1e-6` (after the deadzone rescale) along an axis produces no menu step; at `menu_stick_threshold + 1e-6` it produces one.
 
 **Active device**
 - **AC-10 [L]** Separate tests, each emitting exactly one `active_device_changed` with the expected kind: key press, then pad button (gamepad); stick past the deadzone (gamepad); mouse click (keyboard_mouse); cumulative mouse movement reaching `pointer_switch_px` (keyboard_mouse).
 - **AC-11 [L]** No `active_device_changed` fires for: stick movement inside the deadzone; cumulative mouse movement below `pointer_switch_px`; a second input from the already-active kind.
-- **AC-12 [L]** Each recognized pad type reports its `pad_style` (`xbox`, `playstation`, `nintendo`). An unrecognized pad reports `generic`.
+- **AC-12 [L]** Parametrized over synthetic device events carrying a joy name (no physical controller attached): a known Xbox name → `xbox`, a known PlayStation name → `playstation`, a known Nintendo name → `nintendo`, "Steam Virtual Gamepad" and a Steam Deck name → `xbox`, an unrecognized name → `generic`. Real-hardware names are a manual verification item (ADR-0003), not this AC.
 - **AC-13 [L]** A gamepad reporting device ID 0 makes the active device `gamepad`. A key press makes it `keyboard_mouse`, identified by the keyboard device-ID constant.
 
 **Devices and focus**
@@ -272,6 +274,12 @@ Evidence: **[L]** Logic (gdUnit4, `tests/unit/input/`). UI evidence for button p
 
 **Overrides (Vertical Slice)**
 - **AC-22 [L] [VS]** An invalid player override is discarded, defaults are active, and exactly one notice signal is emitted. On the next load, zero notices are emitted.
+- **AC-23 [L]** In Dialogue, one `fast_forward` press latches fast text: the text speed stays fast with the button released, until `cancel` is pressed or the Dialogue closes; the next Dialogue starts at normal speed. No Dialogue behaviour depends on a button being held.
+- **AC-24 [L]** `inspect` toggles: a press shows the rule text, a second press hides it, and `cancel` hides it. Holding `inspect` changes nothing after the first `pressed`. With the mouse, a synthetic pointer moving onto the element shows the text and moving off it hides it, with no button involved.
+- **AC-25 [L]** Each menu step is emitted as exactly one `nav_up`/`nav_down`/`nav_left`/`nav_right` with `pressed` only (never `held` or `released`), and the UI re-injects it as the matching `ui_*` `InputEventAction` (spy on the injected event).
+- **AC-26 [L]** With two pads connected, pad A (`xbox`) then pad B (`playstation`) send meaningful input: exactly one `active_device_changed(gamepad, xbox)` fires, and `pad_style` does not change on pad B's input (the first pad to send input sets the style; a second input of the same kind fires nothing, AC-11).
+- **AC-27 [L]** Pressing the same action on the keyboard and on a pad in one frame emits two `pressed`, and the active device is the kind of the later event.
+- **AC-28 [L]** Cumulative pointer movement below `pointer_switch_px`, then a pad press (active device → gamepad), then further mouse movement: the distance counts from zero after the switch, so the switch back to keyboard_mouse needs a full `pointer_switch_px` of new movement.
 
 ## Open Questions
 
