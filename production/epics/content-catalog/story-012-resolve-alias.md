@@ -1,12 +1,12 @@
 # Story 012: `resolve_alias` resolves a record's declared alias to its live ID
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: In Progress
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-24
 
 ## Context
 
@@ -59,12 +59,10 @@
 
 ## Files
 
-- `src/data/content_catalog.gd` (alias map, `resolve_alias`)
-- `tests/unit/content_data/fixtures/alias_basic/`
-- `tests/unit/content_data/fixtures/alias_format_defects/` (one subdirectory per defect, plus `len_64/`)
-- `tests/unit/content_data/content_data_alias_resolve_test.gd`
-
----
+- `src/data/content_catalog.gd` (`_load_one()` applies the F1 id format check to each declared alias; a malformed alias is one error on field `aliases` and is never added to the alias map)
+- `tests/unit/content_data/content_data_alias_resolve_test.gd` (10 test functions) and its `.uid`
+- `tests/unit/content_data/fixtures/alias_basic/` (`char_new` declaring `char_old` and `char_older`, plus its faction)
+- `tests/unit/content_data/fixtures/alias_format_defects/` (`uppercase/`, `space/`, `no_prefix/`, `len_65/`, `len_64/`, each a `char_new` with one alias plus its faction)
 
 ## QA Test Cases
 

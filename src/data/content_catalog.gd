@@ -358,7 +358,7 @@ func _compile_id_regex() -> RegEx:
 
 # Loads one record file: the null check, the filename = id check, the id
 # format check (GDD F1), then storage (with its source path) and alias
-# registration. Validators run
+# registration, which applies F1 to each alias. Validators run
 # later, in load_all()'s Validating pass (ADR-0004 §4), not here. A record
 # that fails a check is reported and not stored; loading continues.
 func _load_one(type: StringName, file_path: String, bucket: Dictionary) -> void:
@@ -393,7 +393,17 @@ func _load_one(type: StringName, file_path: String, bucket: Dictionary) -> void:
 	if not _record_paths.has(type):
 		_record_paths[type] = {}
 	(_record_paths[type] as Dictionary)[record_id] = file_path
+	# GDD Rule 8 / F1: an alias is validated as an id too. A malformed alias is
+	# one error on field "aliases" naming the declaring record, and it is not
+	# added to the map; several malformed aliases on one record give one entry
+	# each (never one naming all of them).
 	for alias: String in record.get("aliases"):
+		if alias.length() > ID_MAX_LENGTH or _id_regex.search(alias) == null \
+				or not alias.begins_with(prefix):
+			push_error("ContentCatalog: %s declares alias %s, which breaks the id format rule." % [file_path, alias])
+			_add_report_entry(&"error", record_id, &"aliases", file_path,
+					"The alias must be at most %d characters, match %s and start with %s." % [ID_MAX_LENGTH, ID_PATTERN, prefix], [])
+			continue
 		_aliases[alias] = record_id
 
 
