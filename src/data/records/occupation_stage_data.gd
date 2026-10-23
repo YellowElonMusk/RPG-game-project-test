@@ -20,7 +20,7 @@ extends Resource
 ## Occupation stage, 1–3.
 @export var stage: int = 1
 ## Clutter kind → cap (non-decreasing in stage; the Overworld checks it).
-@export var clutter_caps: Dictionary = {}
+@export var clutter_caps: Dictionary[String, int] = {}
 ## Civilian density, 0–1.
 @export var civilian_density: float = 0.0
 ## Civilian archetype asset IDs to draw from.
@@ -36,7 +36,7 @@ extends Resource
 ## Minimum liberation grumble, 0.1–0.4 (Overworld Tuning Knobs).
 @export var liberation_grumble_min: float = 0.1
 ## Story flag → decree gag asset ID.
-@export var decree_gag_by_flag: Dictionary = {}
+@export var decree_gag_by_flag: Dictionary[String, String] = {}
 
 ## Player-visible text exports (TR-content-012, ADR-0013 §4).
 const LOC_FIELDS: Array[StringName] = [&"name_card_subtitle"]

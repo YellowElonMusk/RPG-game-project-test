@@ -12,11 +12,11 @@ params = {
 "delay_turns": 1,
 "trigger_chance": 0.5
 }
-texts = {
+texts = Dictionary[String, String]({
 "banner": "Red Tape: specials are delayed one round.",
 "tooltip": "Every special needs a permit first."
-}
-colors = {
+})
+colors = Dictionary[String, String]({
 "banner": "#ffb347",
 "identity": "#ff6b00"
-}
+})

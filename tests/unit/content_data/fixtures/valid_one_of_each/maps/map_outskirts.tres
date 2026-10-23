@@ -9,9 +9,9 @@ aliases = PackedStringArray("map_outskirts_old")
 display_name = "The Outskirts"
 faction_id = "faction_tech_syndicate"
 base_stage = 1
-stage_table = {
+stage_table = Dictionary[String, int]({
 "flag_outskirts_checkpoint_cleared": 2
-}
+})
 critical_path = PackedStringArray("leg_entry", "leg_checkpoint", "leg_exit")
 region_liberation_flag = "flag_outskirts_liberated"
 liberated_profile_id = "profile_outskirts_liberated"

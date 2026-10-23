@@ -133,3 +133,20 @@ func test_bootstrap_run_on_fixture_root_reaches_ready() -> void:
 	ContentBootstrap.run(catalog, FIXTURE_ROOT)
 	assert_int(catalog.state).is_equal(ContentCatalogService.State.READY)
 	assert_object(catalog.get_record(&"faction", FIXTURE_IDS[&"faction"])).is_not_null()
+
+
+## The one validation rule this story implements beyond the null check: a
+## record whose filename differs from its `id` is an error naming the record
+## and the `id` field, the catalog settles FAILED, and the record is not stored.
+func test_load_all_filename_not_equal_to_id_fails_with_id_error() -> void:
+	var catalog: ContentCatalogService = auto_free(ContentCatalogService.new())
+	var result: Error = catalog.load_all("res://tests/unit/content_data/fixtures/filename_mismatch")
+	assert_int(result).is_equal(FAILED)
+	assert_int(catalog.state).is_equal(ContentCatalogService.State.FAILED)
+	assert_int(catalog.report.size()).is_equal(1)
+	var entry: Dictionary = catalog.report[0]
+	assert_str(String(entry["severity"])).is_equal("error")
+	assert_str(entry["record_id"]).is_equal("item_declared_id")
+	assert_str(String(entry["field"])).is_equal("id")
+	assert_str(entry["location"]["file_path"]).ends_with("items/item_wrong_filename.tres")
+	assert_int(entry["location"]["record_index"]).is_equal(0)

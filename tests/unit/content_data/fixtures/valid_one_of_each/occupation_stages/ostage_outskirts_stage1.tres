@@ -8,10 +8,10 @@ id = "ostage_outskirts_stage1"
 aliases = PackedStringArray("ostage_outskirts_old")
 faction_id = "faction_tech_syndicate"
 stage = 1
-clutter_caps = {
+clutter_caps = Dictionary[String, int]({
 "barricades": 2,
 "posters": 4
-}
+})
 civilian_density = 0.3
 civilian_pool = PackedStringArray("civilian_clerk", "civilian_courier")
 lighting_profile_id = "lighting_outskirts_occupied"
@@ -19,6 +19,6 @@ set_kit_id = "setkit_outskirts_occupied"
 ambience_bed_id = "ambience_outskirts_tense"
 name_card_subtitle = "Under Syndicate Management"
 liberation_grumble_min = 0.2
-decree_gag_by_flag = {
+decree_gag_by_flag = Dictionary[String, String]({
 "flag_outskirts_liberated": "gag_relief_poster"
-}
+})

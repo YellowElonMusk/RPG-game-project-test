@@ -23,9 +23,9 @@ extends Resource
 ## Rule parameters; the rule class owns their meaning and types.
 @export var params: Dictionary = {}
 ## Player-visible texts keyed by role (banner, tooltip, ...). LocText source.
-@export var texts: Dictionary = {}
+@export var texts: Dictionary[String, String] = {}
 ## Hex colours keyed by role (identity, banner, ...).
-@export var colors: Dictionary = {}
+@export var colors: Dictionary[String, String] = {}
 
 ## Player-visible text exports (TR-content-012, ADR-0013 §4). `texts` is a
 ## text-holding Dictionary and is listed here on purpose.

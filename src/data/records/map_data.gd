@@ -22,7 +22,7 @@ extends Resource
 ## Occupation stage when no `stage_table` flag is set (1–3).
 @export var base_stage: int = 1
 ## Story flag name → occupation stage (1–3).
-@export var stage_table: Dictionary = {}
+@export var stage_table: Dictionary[String, int] = {}
 ## Ordered leg IDs of the critical path.
 @export var critical_path: PackedStringArray = PackedStringArray()
 ## Story flag that marks the region liberated.
