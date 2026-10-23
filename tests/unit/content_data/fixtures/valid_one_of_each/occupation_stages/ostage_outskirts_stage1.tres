@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="OccupationStageData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/occupation_stage_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "ostage_outskirts_stage1"
+aliases = PackedStringArray("ostage_outskirts_old")
+faction_id = "faction_tech_syndicate"
+stage = 1
+clutter_caps = {
+"barricades": 2,
+"posters": 4
+}
+civilian_density = 0.3
+civilian_pool = PackedStringArray("civilian_clerk", "civilian_courier")
+lighting_profile_id = "lighting_outskirts_occupied"
+set_kit_id = "setkit_outskirts_occupied"
+ambience_bed_id = "ambience_outskirts_tense"
+name_card_subtitle = "Under Syndicate Management"
+liberation_grumble_min = 0.2
+decree_gag_by_flag = {
+"flag_outskirts_liberated": "gag_relief_poster"
+}

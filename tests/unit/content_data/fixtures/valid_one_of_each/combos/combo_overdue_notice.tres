@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ComboData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/combo_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "combo_overdue_notice"
+aliases = PackedStringArray("combo_overdue_old")
+display_name = "Overdue Notice"
+required_state_ids = PackedStringArray("quirk_complained")
+required_character_ids = PackedStringArray("char_baguette_thrower")
+effects = Array[Dictionary]([{
+"amount": 25,
+"type": "direct_damage"
+}, {
+"state_id": "quirk_complained",
+"type": "consume_quirk_state"
+}])
+punchline_text = "Your case has been escalated. Permanently."
+animation_id = "anim_overdue_notice"
+codex_text = "Fires when a Complained target is hit by the Baguette Thrower."

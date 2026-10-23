@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="InputBindings" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/input_bindings.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "bindings_default"
+aliases = PackedStringArray("bindings_legacy")
+bindings = Array[Dictionary]([{
+"action": "move_up",
+"device": "keyboard",
+"input": "W"
+}, {
+"action": "confirm",
+"device": "gamepad",
+"input": "button_south"
+}])
