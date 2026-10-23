@@ -33,6 +33,7 @@
 *From GDD `design/gdd/content-data-definitions.md`, scoped to this story:*
 
 - [ ] **AC-11** GIVEN `char_new` with `aliases: [char_old]`, WHEN `resolve_alias("char_old")` is called, THEN it returns `char_new`.
+- [ ] **AC-11b** GIVEN a record declaring an alias that fails F1 (pattern, type prefix, or over 64 characters), WHEN the catalog loads, THEN it produces one error entry with `field == "aliases"` and `record_id` equal to the declaring record's id. (GDD Rule 8: "IDs are well-formed and unique (aliases included)"; added at QL-STORY-READY GAPS fix, 2026-10-24.)
 
 ---
 
@@ -43,7 +44,7 @@
 - At the end of a successful load, build one `Dictionary` from alias to live ID across all types. `resolve_alias(id)` returns the mapped live ID when `id` is an alias.
 - For an ID that is neither live nor an alias, follow the lookup error channel (ADR-0001 amendment): return `""` and set `last_lookup_error = &"missing_id"`.
 - The live-ID passthrough (`resolve_alias(live_id) == live_id`) is AC-12's third case and is tested in story 013. Implement it here, because it shares the code path.
-- Aliases are validated as IDs too (F1 pattern and type prefix). An alias that fails F1 is an error on field `aliases`. This is covered by story 010's mechanism; no extra fixture is needed here.
+- **Alias format (AC-11b; QL-STORY-READY GAPS fix, 2026-10-24).** Aliases are validated as IDs too: the same F1 rule (length, `ID_PATTERN`, the declaring type's prefix). Story 010's check covers only the record's own `id`, so add the alias check in `_load_one()`, in the loop that fills the alias map. A malformed alias is one error on field `aliases` with `record_id` = the declaring record's id, and it is not added to the alias map. Several malformed aliases on one record give one entry each.
 
 ---
 
@@ -60,6 +61,7 @@
 
 - `src/data/content_catalog.gd` (alias map, `resolve_alias`)
 - `tests/unit/content_data/fixtures/alias_basic/`
+- `tests/unit/content_data/fixtures/alias_format_defects/` (one subdirectory per defect, plus `len_64/`)
 - `tests/unit/content_data/content_data_alias_resolve_test.gd`
 
 ---
@@ -73,6 +75,11 @@
   - When: loaded into a fresh catalog (`OK`, `READY`), and `resolve_alias("char_old")` is called.
   - Then: it returns `"char_new"`, with `last_lookup_error == &""`; `get_record(&"character", resolve_alias("char_old"))` is non-null.
   - Edge cases: a record with two aliases (`["char_old", "char_older"]`) resolves both. `resolve_alias("char_never_existed")` returns `""` with `&"missing_id"`.
+- **AC-11b**: A malformed declared alias is an error naming the declaring record on field `aliases`. (Added at QL-STORY-READY GAPS fix, 2026-10-24.)
+  - Given: `fixtures/alias_format_defects/`, one subdirectory per defect, each holding `characters/char_new.tres` (valid id) declaring one malformed alias, plus its faction: `Char_Old` (uppercase), `char old` (space), `bad_alias` (no type prefix), `char_` + 60 × `a` (65 characters).
+  - When: each subdirectory is loaded into a fresh catalog.
+  - Then: each returns `FAILED`, with exactly one error entry: `field == "aliases"`, `record_id == "char_new"`.
+  - Edge cases: `len_64/` declares an alias of `char_` + 59 × `a` (64 characters); it loads `READY` and `resolve_alias` on it returns `"char_new"`. A malformed alias is never added to the alias map: in the `uppercase` fixture, `resolve_alias("Char_Old")` is refused with `&"not_ready"`, because the catalog is `FAILED`.
 
 ---
 
