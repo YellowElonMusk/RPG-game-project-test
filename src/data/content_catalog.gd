@@ -79,11 +79,27 @@ var report: Array[Dictionary] = []
 ##     return reversed[/code]
 var discovery_order_transform: Callable = Callable()
 
+## Test seam only: production code never sets this. When it is a valid
+## (non-empty) `Callable`, `load_all()` calls it once after each file finishes
+## loading -- while `state == LOADING` -- passing the file path. It exists
+## because `load_all()` is synchronous (Engine Notes), so the Loading state
+## has no other seam to observe from outside the call. Never a signal: story
+## 021's monitor allows only the catalog's state-change signal during load.
+## Default: an empty `Callable()`, which is never called.
+## Example: [code]catalog.file_loaded_hook = func(file_path: String) -> void:
+##     print("loaded ", file_path)[/code]
+var file_loaded_hook: Callable = Callable()
+
 # type StringName → { id String → Resource }. Records are the shared, cached
 # instances; lookups hand out duplicate_deep() copies. load_all() rebuilds
 # each bucket keyed in ascending-id order once the type is fully loaded, so
 # iterating a bucket yields ids sorted without any per-lookup sort.
 var _records: Dictionary = {}
+# type StringName → { id String → file_path String }: the source file for
+# each stored record (ADR-0004 §4). Populated in _load_one() alongside
+# _records' bucket; load_all()'s Validating pass reads it once to fill each
+# report entry's location, since validators no longer run inside _load_one().
+var _record_paths: Dictionary = {}
 # alias String → live id String (one hop, GDD Rule 2).
 var _aliases: Dictionary[String, String] = {}
 # type StringName → Array of Callable(record) -> Array[Dictionary].
@@ -124,8 +140,11 @@ func register_record_validator(type: StringName, validator: Callable) -> void:
 ## Returns `OK` on READY, `FAILED` on FAILED, and `ERR_ALREADY_IN_USE`
 ## (changing nothing) on any call after the first. Never fails fast: every
 ## problem is collected into `report`. A missing type directory is not an
-## error. Only `ContentBootstrap.run()` calls this in production; the
-## catalog's own unit tests call it on a fixture root.
+## error. Validators run once Validating starts, over every stored record in
+## TYPE_TABLE order and then each bucket's already-sorted id order (ADR-0004
+## §4), so the report order stays deterministic. Only `ContentBootstrap.run()`
+## calls this in production; the catalog's own unit tests call it on a
+## fixture root.
 ## Example: [code]var err: Error = catalog.load_all("res://tests/unit/content_data/fixtures/valid_one_of_each")[/code]
 func load_all(data_root: String = "res://data") -> Error:
 	if state != State.UNLOADED:
@@ -140,6 +159,8 @@ func load_all(data_root: String = "res://data") -> Error:
 			listing = discovery_order_transform.call(listing)
 		for file_path: String in listing:
 			_load_one(type, file_path, bucket)
+			if file_loaded_hook.is_valid():
+				file_loaded_hook.call(file_path)
 
 		# Sort once per type here, never per lookup (TR-content-004; ADR-0001
 		# Rule 9). String `<` is a case-sensitive ordinal comparison, so the
@@ -153,6 +174,8 @@ func load_all(data_root: String = "res://data") -> Error:
 		_records[type] = sorted_bucket
 
 	state = State.VALIDATING
+	_run_validators()
+
 	var error_count: int = 0
 	for entry: Dictionary in report:
 		if entry["severity"] == &"error":
@@ -265,9 +288,26 @@ func _discover_tres_files(dir_path: String) -> PackedStringArray:
 	return out
 
 
-# Loads one record file: the null check, the filename = id check, the
-# registered per-type validators, then storage and alias registration. A
-# record that fails a check is reported and not stored; loading continues.
+# The Validating pass (ADR-0004 §4): runs every registered validator, in
+# registration order, over every stored record, after the generic checks in
+# _load_one(). Types go in TYPE_TABLE order and ids in each bucket's sorted
+# order, so the report order is deterministic. Each entry's location is the
+# record's source file from _record_paths, record_index 0.
+func _run_validators() -> void:
+	for type: StringName in TYPE_TABLE:
+		var sorted_bucket: Dictionary = _records[type]
+		var paths: Dictionary = _record_paths.get(type, {})
+		for id: String in sorted_bucket:
+			for validator: Callable in _validators.get(type, []):
+				for raw_entry: Dictionary in validator.call(sorted_bucket[id]):
+					_add_report_entry(raw_entry["severity"], id, raw_entry["field"],
+							paths.get(id, ""), raw_entry["message"], raw_entry.get("related_locations", []))
+
+
+# Loads one record file: the null check, the filename = id check, then
+# storage (with its source path) and alias registration. Validators run
+# later, in load_all()'s Validating pass (ADR-0004 §4), not here. A record
+# that fails a check is reported and not stored; loading continues.
 func _load_one(type: StringName, file_path: String, bucket: Dictionary) -> void:
 	var filename: String = file_path.get_file().get_basename()
 	var record: Resource = ResourceLoader.load(file_path, "", ResourceLoader.CACHE_MODE_IGNORE)
@@ -284,12 +324,10 @@ func _load_one(type: StringName, file_path: String, bucket: Dictionary) -> void:
 				"The filename without extension must equal the record's id.", [])
 		return
 
-	for validator: Callable in _validators.get(type, []):
-		for raw_entry: Dictionary in validator.call(record):
-			_add_report_entry(raw_entry["severity"], record_id, raw_entry["field"], file_path,
-					raw_entry["message"], raw_entry.get("related_locations", []))
-
 	bucket[record_id] = record
+	if not _record_paths.has(type):
+		_record_paths[type] = {}
+	(_record_paths[type] as Dictionary)[record_id] = file_path
 	for alias: String in record.get("aliases"):
 		_aliases[alias] = record_id
 

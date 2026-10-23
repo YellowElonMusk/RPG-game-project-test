@@ -1,12 +1,12 @@
 # Story 007: Any lookup during Unloaded, Loading or Validating returns an error
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-23
 
 ## Context
 
@@ -63,10 +63,8 @@
 
 ## Files
 
-- `src/data/content_catalog.gd` (`file_loaded_hook` seam; state guard on every lookup; validator pass moved into the Validating phase)
-- `tests/unit/content_data/content_data_state_guard_test.gd` (reuses `fixtures/valid_one_of_each/`)
-
----
+- `src/data/content_catalog.gd` (`file_loaded_hook` test seam; `_record_paths` source-path map; validators moved out of `_load_one()` into a new `_run_validators()` pass that runs after `state = VALIDATING`)
+- `tests/unit/content_data/content_data_state_guard_test.gd` (4 test functions; reuses `fixtures/valid_one_of_each/`) and its `.uid` sidecar
 
 ## QA Test Cases
 
@@ -89,7 +87,7 @@
 **Required evidence**:
 - Logic: `tests/unit/content_data/content_data_state_guard_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (see Completion Notes)
 
 ---
 
@@ -97,3 +95,12 @@
 
 - Depends on: `production/epics/content-catalog/story-002-load-one-of-each-type.md`
 - Unlocks: `production/epics/content-catalog/story-008-second-load-rejected.md`, `production/epics/content-catalog/story-009-one-error-fails-catalog.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-23
+**Criteria**: 1/1 passing (AC-6). None deferred.
+**Deviations**: None outstanding. This story corrected a latent defect from story 002: registered validators ran inside `_load_one()` while `state == LOADING`, contrary to ADR-0004 §4. They now run in `_run_validators()`, one pass after `state = VALIDATING`, in registration order, over types in `TYPE_TABLE` order and ids in sorted order; each entry's location comes from the new `_record_paths` map. The lookup state guard needed no change: it already rejected every state but READY. LP-CODE-REVIEW raised one concern, `load_all()` cyclomatic complexity 13 after the move; resolved by extracting `_run_validators()`, leaving `load_all()` at 10, the project maximum.
+**Test Evidence**: `tests/unit/content_data/content_data_state_guard_test.gd` (4 functions); suite 40/40, 0 orphans, exit 0 on Godot 4.7.2. Watched fail: the Validating test failed (exit 100) against a mutation with validators moved back into the Loading phase, then passed once restored.
+**Reviewed by**: lead-programmer (LP-CODE-REVIEW CONCERNS → revised); QL-TEST-COVERAGE ADEQUATE
