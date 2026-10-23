@@ -1,12 +1,12 @@
 # Story 004: A zero-record data set loads Ready with an empty list for every type
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: In Progress
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-23
 
 ## Context
 
@@ -57,12 +57,10 @@
 
 ## Files
 
-- `tests/unit/content_data/fixtures/empty_catalog/` (every type directory present and empty, each with a `.gdignore_placeholder` so it is committed)
+- `tests/unit/content_data/fixtures/empty_catalog/` (all 12 type directories present and empty, each with a `.gdignore_placeholder`)
 - `tests/unit/content_data/fixtures/empty_catalog_absent/` (no type directories; a `.gdignore_placeholder` at the fixture root)
-- `tests/unit/content_data/content_data_empty_catalog_test.gd`
-- `src/data/content_catalog.gd` (only if a fix is needed for an absent directory)
-
----
+- `tests/unit/content_data/content_data_empty_catalog_test.gd` (2 test functions, T1 and T2) and its `.uid` sidecar
+- `src/data/content_catalog.gd` — unchanged: `list_directory()` returns an empty array silently for empty and missing paths, so no fix was needed
 
 ## QA Test Cases
 
@@ -97,3 +95,31 @@
 
 - Depends on: `production/epics/content-catalog/story-002-load-one-of-each-type.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Engine Notes observed**: Probed on the pinned 4.7.2 install
+(`C:/Godot/Godot_v4.7.2-stable_win64.exe`) with a one-off `SceneTree` script
+calling `ResourceLoader.list_directory()` directly, then confirmed again
+inside the actual gdUnit4 run against the `empty_catalog_absent` fixture.
+Both an empty directory and a directory that does not exist at all return an
+empty `PackedStringArray` with **no engine error or warning pushed to the
+console** — not even a silent one visible in `--headless` output. The
+absent-path case is indistinguishable at the engine level from the
+present-but-empty case; both are plain `[]`. Nothing in `_discover_tres_files`
+or `load_all()` needed to change: `src/data/content_catalog.gd` was not
+touched. T2's fixture and assertions are identical to T1's for this reason —
+no error-expectation wrapper was needed around the absent-directory case.
+
+**Files**: `tests/unit/content_data/fixtures/empty_catalog/` (12 type
+directories, each with one `.gdignore_placeholder`),
+`tests/unit/content_data/fixtures/empty_catalog_absent/` (root-only
+`.gdignore_placeholder`, no type subdirectories),
+`tests/unit/content_data/content_data_empty_catalog_test.gd` (2 tests: T1
+`test_load_all_empty_type_directories_reaches_ready_with_no_records`, T2
+`test_load_all_absent_type_directories_reaches_ready_with_no_records`). Both
+pass: 2/2, 0 errors, 0 failures, 0 orphans
+(`godot --headless -s -d --remote-debug tcp://127.0.0.1:0 res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://tests/unit/content_data --ignoreHeadlessMode`,
+27/27 across the whole `content_data` suite with this test added).
