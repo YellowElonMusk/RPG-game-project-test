@@ -64,8 +64,25 @@ var last_lookup_error: StringName = &""
 ## Tests assert on the structured fields, never on `message`.
 var report: Array[Dictionary] = []
 
+## Test seam only: production code never sets this. When it is a valid
+## (non-empty) `Callable`, `load_all()` passes each type directory's file
+## listing (a `PackedStringArray` of `.tres` paths) through it and loads the
+## files in the returned order instead of discovery order. It exists because
+## load-order independence cannot be exercised any other way: filename must
+## equal `id` (a rename is a validation error) and the filesystem listing order
+## is not controllable. The transform must be a fixed permutation, never a
+## seeded shuffle (Determinism rule, coding-standards). Default: an empty
+## `Callable()`, which is never called.
+## Example: [code]catalog.discovery_order_transform = func(listing: PackedStringArray) -> PackedStringArray:
+##     var reversed := listing.duplicate()
+##     reversed.reverse()
+##     return reversed[/code]
+var discovery_order_transform: Callable = Callable()
+
 # type StringName → { id String → Resource }. Records are the shared, cached
-# instances; lookups hand out duplicate_deep() copies.
+# instances; lookups hand out duplicate_deep() copies. load_all() rebuilds
+# each bucket keyed in ascending-id order once the type is fully loaded, so
+# iterating a bucket yields ids sorted without any per-lookup sort.
 var _records: Dictionary = {}
 # alias String → live id String (one hop, GDD Rule 2).
 var _aliases: Dictionary[String, String] = {}
@@ -117,10 +134,23 @@ func load_all(data_root: String = "res://data") -> Error:
 
 	for type: StringName in TYPE_TABLE:
 		var bucket: Dictionary = {}
-		_records[type] = bucket
 		var type_dir: String = data_root.path_join(TYPE_TABLE[type]["dir"])
-		for file_path: String in _discover_tres_files(type_dir):
+		var listing: PackedStringArray = _discover_tres_files(type_dir)
+		if discovery_order_transform.is_valid():
+			listing = discovery_order_transform.call(listing)
+		for file_path: String in listing:
 			_load_one(type, file_path, bucket)
+
+		# Sort once per type here, never per lookup (TR-content-004; ADR-0001
+		# Rule 9). String `<` is a case-sensitive ordinal comparison, so the
+		# order is the same on every platform and never depends on the
+		# listing order above.
+		var ids: Array = bucket.keys()
+		ids.sort()
+		var sorted_bucket: Dictionary = {}
+		for id: String in ids:
+			sorted_bucket[id] = bucket[id]
+		_records[type] = sorted_bucket
 
 	state = State.VALIDATING
 	var error_count: int = 0
@@ -169,18 +199,18 @@ func has_record(type: StringName, id: String) -> bool:
 
 
 ## Every record of `type` as `duplicate_deep()` copies, sorted ascending by
-## `id` so every run sees the same order. `[]` with `last_lookup_error` set
-## and `push_error()` called when the catalog is not READY or the type is
-## unknown. A type with zero records returns `[]` successfully.
+## `id` so every run sees the same order whatever order the filesystem
+## listed the files in. The sort happened once in `load_all()`; this only
+## walks the bucket. `[]` with `last_lookup_error` set and `push_error()`
+## called when the catalog is not READY or the type is unknown. A type with
+## zero records returns `[]` successfully.
 ## Example: [code]for rec in catalog.all_records(&"character"): roster.add(rec)[/code]
 func all_records(type: StringName) -> Array[Resource]:
 	var out: Array[Resource] = []
 	if not _check_lookup(type, "all_records"):
 		return out
 	var bucket: Dictionary = _records[type]
-	var ids: Array = bucket.keys()
-	ids.sort()
-	for id: String in ids:
+	for id: String in bucket:
 		out.append((bucket[id] as Resource).duplicate_deep())
 	last_lookup_error = &""
 	return out

@@ -1,12 +1,12 @@
 # Story 003: `all_records(type)` returns records sorted by ID, whatever the discovery order
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: In Progress
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-23
 
 ## Context
 
@@ -59,11 +59,10 @@
 
 ## Files
 
-- `src/data/content_catalog.gd` (sort; `discovery_order_transform` seam)
-- `tests/unit/content_data/fixtures/sort_order/` (three or more records per type for at least `character`, `move` and `faction`, with IDs whose sorted order differs from their likely listing order, e.g. `char_b`, `char_a_two`, `char_a`)
-- `tests/unit/content_data/content_data_sort_order_test.gd`
-
----
+- `src/data/content_catalog.gd` (sort moved into `load_all()`, once per type; `discovery_order_transform` test seam; `all_records()` iterates the pre-sorted bucket)
+- `tests/unit/content_data/fixtures/sort_order/` (9 `.tres`: characters, moves, factions × {a, a_two, b})
+- `tests/unit/content_data/content_data_sort_order_test.gd` (7 test functions, AC-2)
+- `tests/unit/content_data/content_data_sort_order_test.gd.uid` (import-generated sidecar)
 
 ## QA Test Cases
 
