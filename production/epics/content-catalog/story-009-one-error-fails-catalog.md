@@ -1,12 +1,12 @@
 # Story 009: One error anywhere fails the whole catalog, even for records that were valid themselves
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: In Progress
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-23
 
 ## Context
 
@@ -59,11 +59,9 @@
 
 ## Files
 
-- `src/data/content_catalog.gd` (only if the Failed guard needs a fix)
-- `tests/unit/content_data/fixtures/one_error_rest_valid/`
-- `tests/unit/content_data/content_data_failed_state_test.gd`
-
----
+- `tests/unit/content_data/content_data_failed_state_test.gd` (6 test functions) and its `.uid`
+- `tests/unit/content_data/fixtures/one_error_rest_valid/` — reused unchanged (built in story 008 to this story's spec)
+- `src/data/content_catalog.gd` — unchanged: the existing guards already refuse lookups on a Failed catalog
 
 ## QA Test Cases
 
