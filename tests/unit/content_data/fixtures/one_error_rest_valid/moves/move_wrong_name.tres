@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="MoveData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/move_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "move_real_name"
+aliases = PackedStringArray()
+display_name = "Misfiled Move"
+target_type = "single_enemy"
+cost = 2
+effects = Array[Dictionary]([])
+animation_id = "anim_real_name"
+flavor_text = "Filed under the wrong name. Deliberately."

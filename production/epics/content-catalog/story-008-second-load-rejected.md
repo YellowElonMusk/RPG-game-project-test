@@ -1,12 +1,12 @@
 # Story 008: A second load request on a Ready or Failed catalog is rejected and changes nothing
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: In Progress
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-23
 
 ## Context
 
@@ -56,12 +56,10 @@
 
 ## Files
 
-- `src/data/content_catalog.gd`, `src/boot/content_bootstrap.gd` (only if story 002's guards need a fix)
-- `tests/unit/content_data/content_data_reload_rejected_test.gd`
-- `tests/unit/content_data/helpers/spy_content_catalog.gd` (test-only spy subclass)
-- Reuses `fixtures/valid_one_of_each/` and `fixtures/one_error_rest_valid/` (from story 009; create it here if 009 is not done yet)
-
----
+- `tests/unit/content_data/content_data_reload_rejected_test.gd` (4 test functions) and its `.uid`
+- `tests/unit/content_data/helpers/spy_content_catalog.gd` (test-only spy, no `class_name`) and its `.uid`
+- `tests/unit/content_data/fixtures/one_error_rest_valid/` (12 `.tres`: 1 human-nation faction, 5 characters, 5 moves, 1 misnamed move; built to story 009's spec, yields exactly one error)
+- `src/data/content_catalog.gd`, `src/boot/content_bootstrap.gd` — unchanged: both guards already held
 
 ## QA Test Cases
 
