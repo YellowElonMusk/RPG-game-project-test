@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/game-state-scene-flow.md
 > **Architecture Module**: Game State & Scene Flow (`GameStateMachine`, `GameRoot`, `ModeHost`, `OverlayHost`, the Content Error scene)
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories game-state-scene-flow`
+> **Stories**: 41 (36 Ready, 5 Blocked) — see the table below
 
 ## Overview
 
@@ -57,6 +57,55 @@ This epic follows ADR-0002's Migration Plan in three steps:
 | TR-gamestate-005 | Boot waits for the catalog; Failed → terminal Content Error | ADR-0002, ADR-0004 ✅ |
 | TR-gamestate-006 | Timings from data; injectable clock and loader; Menu stops mode time; overruns logged | ADR-0002 ✅ |
 | TR-gamestate-007 | Transition flashes booked through the flash gate | ADR-0002 §7, ADR-0005 §12, ADR-0008 §8 ✅ |
+
+## Stories
+
+| # | Story | Type | Status | ADR |
+|---|-------|------|--------|-----|
+| 001 | [Overworld → Battle fires exactly the four transition signals, once each, in order](story-001-overworld-to-battle-signal-order.md) | Logic | Ready | ADR-0002 |
+| 002 | [Every row of the Modes transitions table succeeds from its source mode](story-002-transition-table-rows-succeed.md) | Logic | Ready | ADR-0002, ADR-0012 |
+| 003 | [Every from → to pair not in the transitions table is rejected](story-003-invalid-pairs-rejected.md) | Logic | Ready | ADR-0002 |
+| 004 | [Boot goes to Title on a Ready catalog and to Content Error on a Failed one](story-004-boot-to-title-or-content-error.md) | Logic | Ready | ADR-0002, ADR-0004 |
+| 005 | [Content Error rejects every request except Quit and ignores focus loss](story-005-content-error-rejects-all-but-quit.md) | Logic | Ready | ADR-0002 |
+| 006 | [transition_time sums the three phases, and a budget below t_out + t_in logs an error](story-006-transition-time-and-budget-check.md) | Logic | Ready | ADR-0002 |
+| 007 | [A slow swap makes the in phase wait and logs a performance warning](story-007-slow-swap-waits-and-warns.md) | Logic | Ready | ADR-0002 |
+| 008 | [A running transition rejects any other transition or overlay request](story-008-busy-transition-rejects-requests.md) | Logic | Ready | ADR-0002 |
+| 009 | [Of two same-frame transition requests, the first is accepted and the second rejected](story-009-same-frame-requests-first-wins.md) | Logic | Ready | ADR-0002 |
+| 010 | [Input during out, swap and in reaches nobody; the first action after transition_finished is delivered](story-010-input-locked-during-transition.md) | Logic | Ready | ADR-0002, ADR-0003 |
+| 011 | [Quit during a transition calls the quit hook once, after transition_finished](story-011-quit-waits-for-transition.md) | Logic | Ready | ADR-0002 |
+| 012 | [A failed swap returns to the source mode with frozen state restored and input unlocked](story-012-failed-swap-rolls-back.md) | Logic | Ready | ADR-0002, ADR-0009, ADR-0010 |
+| 013 | [An invalid Encounter descriptor keeps the game in the Overworld and logs an error](story-013-invalid-descriptor-stays-in-overworld.md) | Logic | Ready | ADR-0002 |
+| 014 | [Overworld → Battle → Overworld restores every field of the Overworld snapshot](story-014-overworld-snapshot-exact-restore.md) | Logic | Ready | ADR-0002 |
+| 015 | [After Victory, the return to the Overworld starts only after the results screen is done](story-015-victory-waits-for-results.md) | Logic | Ready | ADR-0002, ADR-0010 |
+| 016 | [Fled on a descriptor with can_flee = false is rejected and the battle continues](story-016-fled-rejected-when-not-allowed.md) | Logic | Ready | ADR-0002, ADR-0010 |
+| 017 | [Defeat opens the Defeat Prompt, and Retry restores the starting snapshot with zero scene loads](story-017-defeat-prompt-and-retry-snapshot.md) | Logic | Ready | ADR-0002, ADR-0005 |
+| 018 | [The Defeat Prompt offers Retreat only when retreat_allowed, with no stale flag after Retry](story-018-retreat-offer-no-stale-flag.md) | Logic | Ready | ADR-0002 |
+| 019 | [Repeated Retry inputs during the Retry transition cause exactly one restart](story-019-repeated-retry-one-restart.md) | Logic | Ready | ADR-0002 |
+| 020 | [A camp registered by walking past becomes the last camp registered; outside writes are rejected](story-020-register-camp-and-retreat-to-it.md) | Logic | Ready | ADR-0002 §11, ADR-0012 |
+| 021 | [Retreat goes to the last camp registered, else the region default camp, else is not offered](story-021-retreat-region-default-and-no-camp.md) | Logic | Blocked | ADR-0002 (annotation owed) |
+| 022 | [With Dialogue then Menu stacked, only the Menu gets input, and signals fire in stack order](story-022-overlay-stack-input-and-order.md) | Logic | Ready | ADR-0002 |
+| 023 | [Dialogue cannot open over the Menu, but the Menu can open over Dialogue](story-023-dialogue-menu-precedence.md) | Logic | Ready | ADR-0002 |
+| 024 | [The Menu cannot be opened by input during a transition, in Boot or in Content Error](story-024-menu-input-gating.md) | Logic | Ready | ADR-0002 |
+| 025 | [The open Menu stops mode time and blocks transitions, but Quit to Title still works](story-025-menu-stops-time-quit-to-title.md) | Logic | Ready | ADR-0002 |
+| 026 | [Focus loss or device loss opens the Menu, deferred past a transition and ignored in Boot](story-026-focus-loss-opens-menu.md) | Logic | Ready | ADR-0002, ADR-0003 |
+| 027 | [A transition requested by a Dialogue line closes the Dialogue before transition_started](story-027-dialogue-closes-before-transition.md) | Logic | Ready | ADR-0002 §11 |
+| 028 | [The in-mode fade fires only transition_started and transition_finished, and is legal only in a bare Overworld](story-028-in-mode-fade.md) | Logic | Ready | ADR-0002 §11, ADR-0009 |
+| 029 | [In Battle the Menu offers only settings and quit](story-029-battle-menu-system-entries.md) | Logic | Ready | ADR-0002 |
+| 030 | [The Defeat Prompt opens on Retry, ignores cancel, and gets focus back after the Menu](story-030-defeat-prompt-focus-and-cancel.md) | Logic | Ready | ADR-0002, ADR-0008 |
+| 031 | [Title opens on New Game with Continue disabled, and Quit asks for confirmation with No focused](story-031-title-focus-and-quit-confirm.md) | Logic | Ready | ADR-0002, ADR-0008, ADR-0009 |
+| 032 | [Pin today's ChapterFlow behaviour in characterization tests](story-032-chapter-flow-characterization.md) | Logic | Ready | ADR-0002 (Step 0) |
+| 033 | [Strip ChapterFlow to encounter sequencing and host it in ChapterMode](story-033-strip-chapter-flow-chapter-mode.md) | Logic | Ready | ADR-0002, ADR-0010 |
+| 034 | [Battle mode wraps BattleCore and BattleHud and owns the start snapshot](story-034-battle-mode-wraps-battle-core.md) | Integration | Ready | ADR-0002, ADR-0006, ADR-0010 |
+| 035 | [GameRoot becomes the main scene, with Content Error, TransitionConfig data, and the demo running under Game State](story-035-game-root-main-scene.md) | Integration | Ready (waiting on dependencies) | ADR-0002, ADR-0004, ADR-0003 |
+| 036 | [A Victory that triggers story dialogue opens Dialogue only after transition_finished(Overworld)](story-036-victory-dialogue-after-transition.md) | Integration | Ready | ADR-0002 |
+| 037 | [Every transition type meets its budget over 30 runs on the min-spec PC and the Steam Deck](story-037-transition-budget-hardware-bench.md) | Integration | Blocked | ADR-0002 |
+| 038 | [Retained screenshots of Title, both Defeat Prompts, the Quit confirmation and Content Error](story-038-screenshots-title-prompts-error.md) | UI | Ready | ADR-0002, ADR-0008 |
+| 039 | [Retained screenshots of the system Menu over the Defeat Prompt, the Battle system menu, and the Menu over the live Overworld](story-039-screenshots-menus.md) | UI | Blocked | ADR-0002, ADR-0005, ADR-0008 |
+| 040 | [Retained screenshot of Camp](story-040-screenshot-camp.md) | UI | Blocked | ADR-0002 |
+| 041 | [Remove the interim validate_enemy_ids_against_catalog flag](story-041-remove-interim-enemy-validation-flag.md) | Logic | Blocked | ADR-0002 (Step 3), ADR-0010 |
+
+Stories 033–035 land in one commit (ADR-0002 Migration Step 2).
+Unblocks content-catalog 025 (after 004, 005, 035) and 026 (after 004, 035).
 
 ## Definition of Done
 

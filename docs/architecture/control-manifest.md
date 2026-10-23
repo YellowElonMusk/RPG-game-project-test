@@ -168,7 +168,7 @@ machine, and the Input System*
 - **Never use `SceneTree.paused`** to implement the Menu's time stop — source: ADR-0002
 - **No system other than `GameStateMachine` (through its `SceneLoader`) may add, remove or free children of `ModeHost`/`OverlayHost`**, or set their `process_mode` — source: ADR-0002
 - **Never call `BattleCore.retry_battle()` for Retry under Game State** — it full-heals the squad — source: ADR-0002
-- **After ADR-0001 Migration Step 2, `ChapterFlow` must not construct `BattleCore`**, connect to `battle_ended`, or hold a fight-start snapshot — source: ADR-0002
+- **After ADR-0002 Migration Step 2, `ChapterFlow` must not construct `BattleCore`**, connect to `battle_ended`, or hold a fight-start snapshot — source: ADR-0002
 
 **Input System (ADR-0003)**
 - **Never use Godot's `InputMap`/`Input` singleton for gameplay actions** — it merges devices and can't express the GDD's per-axis arbitration rules — source: ADR-0003

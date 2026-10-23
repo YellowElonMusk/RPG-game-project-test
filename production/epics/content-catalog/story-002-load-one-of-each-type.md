@@ -40,7 +40,7 @@
 
 *Derived from ADR-0001 (Decision, Key Interfaces, Amendment 2026-10-23), ADR-0004 §1–§5, ADR-0011 §5, ADR-0012 §3 and ADR-0013 §4:*
 
-**Record classes (`src/data/records/`).** Twelve scripts, one per type, each `class_name XxxData extends Resource`. Fields come from GDD Rule 1 and the ADRs that define each type:
+**Record classes (`src/data/records/`).** Twelve scripts, one per type, each `class_name XxxData extends Resource`, except the bindings record, which keeps the name ADR-0003 gives it: `class_name InputBindings` in `src/data/records/input_bindings.gd` (ruling 2026-10-23). Fields come from GDD Rule 1 and the ADRs that define each type:
 - Scalars and enums are typed `@export` vars. EffectDescriptor lists (`effects`) are `Array[Dictionary]`, the one non-scalar export. Cross-references are `String` / `PackedStringArray` ID fields (`nation_id`, `move_ids`, `faction_id`, `rule_id`, `ref_ids`, `encounter_zone_ids`, `enemy_ids`, `required_state_ids`, `required_character_ids`).
 - Every record exports `id: String`, plus `aliases: PackedStringArray` where Rule 2 applies (all twelve, so renames are possible for every type).
 - `FactionRuleData` follows ADR-0011 §5 exactly (`rule_class: StringName`, `ref_ids`, `params`, `texts`, `colors`). `MapData`, `EncounterData`, `OccupationStageData` follow ADR-0012 §3. `FactionData` includes `patrol_archetype_id`.
@@ -84,7 +84,7 @@
 ## Files
 
 - `src/data/content_catalog.gd` (`class_name ContentCatalogService`)
-- `src/data/records/faction_data.gd`, `character_data.gd`, `enemy_data.gd`, `move_data.gd`, `quirk_state_data.gd`, `combo_data.gd`, `item_data.gd`, `input_bindings_data.gd`, `faction_rule_data.gd`, `map_data.gd`, `encounter_data.gd`, `occupation_stage_data.gd`
+- `src/data/records/faction_data.gd`, `character_data.gd`, `enemy_data.gd`, `move_data.gd`, `quirk_state_data.gd`, `combo_data.gd`, `item_data.gd`, `input_bindings.gd` (class `InputBindings`, the ADR-0003 name), `faction_rule_data.gd`, `map_data.gd`, `encounter_data.gd`, `occupation_stage_data.gd`
 - `src/boot/content_bootstrap.gd`
 - `project.godot` (`[autoload]` entry `ContentCatalog`)
 - `tests/unit/content_data/fixtures/valid_one_of_each/` (12 `.tres` files, one per type directory)
