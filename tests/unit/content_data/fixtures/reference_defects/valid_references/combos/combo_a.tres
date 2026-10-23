@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ComboData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/combo_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "combo_a"
+display_name = "combo_a"
+required_state_ids = PackedStringArray("quirk_a")
+required_character_ids = PackedStringArray("char_a")

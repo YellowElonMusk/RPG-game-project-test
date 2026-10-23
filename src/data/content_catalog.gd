@@ -49,6 +49,49 @@ const TYPE_TABLE: Dictionary = {
 	&"occupation_stage": {"prefix": "ostage_", "dir": "occupation_stages"},
 }
 
+## Cross-reference schema (TR-content-005; ADR-0001 Rule 3; ADR-0011 §4–§5):
+## record type → reference field → `{target_types, list, kind_field?,
+## kind_value?}`. `target_types` lists every record type the field may name;
+## `kind_field`/`kind_value`, when present, constrain the target's kind.
+## `_run_reference_checks()` is the one generic pass that reads it; no field
+## gets its own check. Every target id goes through the alias map first.
+## Asset-ID fields (`sprite_set_id`, `ai_profile_id`, …) are not references
+## and are not listed. Fields are in name order within each type, so the
+## report order is deterministic.
+## Example: [code]var spec: Dictionary = ContentCatalogService.REFERENCE_SCHEMA[&"character"][&"nation_id"][/code]
+const REFERENCE_SCHEMA: Dictionary = {
+	&"character": {
+		&"move_ids": {"target_types": [&"move"], "list": true},
+		&"nation_id": {"target_types": [&"faction"], "list": false, "kind_field": &"kind", "kind_value": "human_nation"},
+		&"signature_move_id": {"target_types": [&"move"], "list": false},
+	},
+	&"enemy": {
+		&"faction_id": {"target_types": [&"faction"], "list": false, "kind_field": &"kind", "kind_value": "alien"},
+		&"move_ids": {"target_types": [&"move"], "list": true},
+	},
+	&"faction": {
+		&"rule_id": {"target_types": [&"faction_rule"], "list": false},
+	},
+	&"faction_rule": {
+		&"ref_ids": {"target_types": [&"move", &"enemy"], "list": true},
+	},
+	&"combo": {
+		&"required_character_ids": {"target_types": [&"character"], "list": true},
+		&"required_state_ids": {"target_types": [&"quirk_state"], "list": true},
+	},
+	&"map": {
+		&"encounter_zone_ids": {"target_types": [&"encounter"], "list": true},
+		&"faction_id": {"target_types": [&"faction"], "list": false},
+	},
+	&"encounter": {
+		&"enemy_ids": {"target_types": [&"enemy"], "list": true},
+		&"faction_id": {"target_types": [&"faction"], "list": false},
+	},
+	&"occupation_stage": {
+		&"faction_id": {"target_types": [&"faction"], "list": false},
+	},
+}
+
 ## Maximum length of a record `id`, in characters (GDD F1; ADR-0001). A fixed
 ## constant, deliberately not a tuning knob (GDD Tuning Knobs).
 const ID_MAX_LENGTH := 64
@@ -119,6 +162,10 @@ var _aliases: Dictionary[String, String] = {}
 var _validators: Dictionary = {}
 # system StringName → PackedStringArray of known EffectDescriptor types.
 var _known_effect_types: Dictionary = {}
+# type StringName → Array of StringName fields registered via
+# register_acyclic_field(). Production registers none: no real record type
+# references its own type (QL-STORY-READY, 2026-10-24).
+var _acyclic_fields: Dictionary = {}
 # ID_PATTERN compiled once at construction, never per record in _load_one().
 var _id_regex: RegEx = _compile_id_regex()
 
@@ -150,13 +197,56 @@ func register_record_validator(type: StringName, validator: Callable) -> void:
 	(_validators[type] as Array).append(validator)
 
 
+## Marks the reference field `field` of `type` (a key in
+## `REFERENCE_SCHEMA[type]`) as an edge the cycle walk follows (GDD Edge Cases
+## "References"; ADR-0001). Only registered fields are cycle-checked;
+## cross-type chains such as faction → rule_id → faction_rule → ref_ids →
+## enemy → faction_id → faction are legal unless an owner registers them. A
+## self-reference on any reference field is an error whether or not it is
+## registered. Must be called before `load_all()` starts; a later call is
+## rejected with `push_error()`.
+## Example: [code]catalog.register_acyclic_field(&"faction", &"rule_id")[/code]
+func register_acyclic_field(type: StringName, field: StringName) -> void:
+	if state != State.UNLOADED:
+		push_error("ContentCatalog.register_acyclic_field(%s, %s): rejected, load_all() has already started." % [type, field])
+		return
+	if not _acyclic_fields.has(type):
+		_acyclic_fields[type] = []
+	(_acyclic_fields[type] as Array).append(field)
+
+
+## Pure depth-first cycle detector over an edge map
+## `{record id: Array of target ids}`. Reads no catalog state. Returns each
+## cycle once, as an Array of member ids in edge order, rotated to start at the
+## member that sorts first (case-sensitive string order); a self-edge is a
+## cycle of one. load_all() calls it on the edges of the registered acyclic
+## fields, after alias resolution.
+## Example: [codeblock]
+## var cycles: Array = ContentCatalogService.find_reference_cycles({"node_a": ["node_b"], "node_b": ["node_a"]})
+## # cycles == [["node_a", "node_b"]]
+## [/codeblock]
+static func find_reference_cycles(edges: Dictionary) -> Array:
+	var visit_state: Dictionary = {}
+	var path: Array = []
+	var path_index: Dictionary = {}
+	var cycles: Array = []
+	var seen_keys: Dictionary = {}
+	var nodes: Array = edges.keys()
+	nodes.sort()
+	for node: String in nodes:
+		if not visit_state.has(node):
+			_cycle_dfs(node, edges, visit_state, path, path_index, cycles, seen_keys)
+	return cycles
+
+
 ## Loads every record under `data_root`'s type subdirectories (TYPE_TABLE),
 ## runs validation over the complete set, and settles in READY or FAILED.
 ## Returns `OK` on READY, `FAILED` on FAILED, and `ERR_ALREADY_IN_USE`
 ## (changing nothing) on any call after the first. Never fails fast: every
 ## problem is collected into `report`. A missing type directory is not an
 ## error. Once Validating starts, the catalog-wide duplicate-id check runs
-## first; then validators run over every stored record in
+## first; then the generic reference pass (REFERENCE_SCHEMA) and the cycle
+## walk over registered acyclic fields; then validators run over every stored record in
 ## TYPE_TABLE order and then each bucket's already-sorted id order (ADR-0004
 ## §4), so the report order stays deterministic. Only `ContentBootstrap.run()`
 ## calls this in production; the catalog's own unit tests call it on a
@@ -191,6 +281,8 @@ func load_all(data_root: String = "res://data") -> Error:
 
 	state = State.VALIDATING
 	_check_duplicate_ids()
+	_run_reference_checks()
+	_run_cycle_checks()
 	_run_validators()
 
 	var error_count: int = 0
@@ -344,6 +436,160 @@ func _run_validators() -> void:
 				for raw_entry: Dictionary in validator.call(sorted_bucket[id]):
 					_add_report_entry(raw_entry["severity"], id, raw_entry["field"],
 							paths.get(id, ""), raw_entry["message"], raw_entry.get("related_locations", []))
+
+
+# The generic reference pass (TR-content-005; ADR-0001 Rule 3): every field
+# in REFERENCE_SCHEMA on every stored record, types in TYPE_TABLE order and
+# ids in sorted order. An empty scalar field declares no reference. Linear in
+# the number of references.
+func _run_reference_checks() -> void:
+	for type: StringName in TYPE_TABLE:
+		var schema_for_type: Dictionary = REFERENCE_SCHEMA.get(type, {})
+		if schema_for_type.is_empty():
+			continue
+		var bucket: Dictionary = _records[type]
+		var paths: Dictionary = _record_paths.get(type, {})
+		for id: String in bucket:
+			var record: Resource = bucket[id]
+			var file_path: String = paths.get(id, "")
+			for field: StringName in schema_for_type:
+				var spec: Dictionary = schema_for_type[field]
+				if spec["list"]:
+					var values: PackedStringArray = record.get(field)
+					_check_list_reference_field(id, field, values, spec, file_path)
+				else:
+					var value: String = record.get(field)
+					if value != "":
+						_check_reference_value(id, field, value, spec, file_path)
+
+
+# Checks each distinct value of a list field once, then gives one duplicate
+# entry per value that appears more than once. The two checks are independent.
+func _check_list_reference_field(record_id: String, field: StringName,
+		values: PackedStringArray, spec: Dictionary, file_path: String) -> void:
+	var counts: Dictionary = {}
+	for value: String in values:
+		counts[value] = counts.get(value, 0) + 1
+	for value: String in counts:
+		_check_reference_value(record_id, field, value, spec, file_path)
+		if counts[value] > 1:
+			_add_report_entry(&"error", record_id, field, file_path,
+					"The value %s appears more than once in this list." % value, [])
+
+
+# One reference value, resolved through the alias map (one hop). A
+# self-reference gives exactly one entry and nothing else is checked for that
+# value (story 014 precedence note); otherwise a missing id, a wrong target
+# type, or a wrong target kind gives one entry.
+func _check_reference_value(record_id: String, field: StringName, value: String,
+		spec: Dictionary, file_path: String) -> void:
+	var resolved: String = _aliases.get(value, value)
+	if resolved == record_id:
+		_add_report_entry(&"error", record_id, field, file_path,
+				"This field references its own record.", [])
+		return
+	var target_type: StringName = _find_record_type(resolved)
+	if target_type == &"":
+		_add_report_entry(&"error", record_id, field, file_path,
+				"References %s, which is not a record id." % value, [])
+		return
+	if not (spec["target_types"] as Array).has(target_type):
+		_add_report_entry(&"error", record_id, field, file_path,
+				"References %s, a %s record, which is not a type this field may name." % [value, target_type], [])
+		return
+	if spec.has("kind_field"):
+		var target: Resource = (_records[target_type] as Dictionary)[resolved]
+		var kind: String = target.get(spec["kind_field"])
+		if kind != spec["kind_value"]:
+			_add_report_entry(&"error", record_id, field, file_path,
+					"References %s, whose kind is %s, not %s." % [value, kind, spec["kind_value"]], [])
+
+
+# The type holding `id` as a stored record, searched in TYPE_TABLE order;
+# &"" when no type holds it.
+func _find_record_type(id: String) -> StringName:
+	for type: StringName in TYPE_TABLE:
+		if (_records[type] as Dictionary).has(id):
+			return type
+	return &""
+
+
+# The cycle check: builds the edge map from the registered acyclic fields,
+# after alias resolution, and reports each cycle once. Self-edges are left
+# out because the reference pass already reports every self-reference. The
+# entry is located at the member that sorts first; its field is that member's
+# registered field whose name sorts first; the other members follow in
+# related_locations in cycle order.
+func _run_cycle_checks() -> void:
+	var edges: Dictionary = {}
+	var node_fields: Dictionary = {}
+	for type: StringName in _acyclic_fields:
+		var fields: Array = (_acyclic_fields[type] as Array).duplicate()
+		fields.sort()
+		var bucket: Dictionary = _records.get(type, {})
+		for id: String in bucket:
+			var record: Resource = bucket[id]
+			node_fields[id] = fields
+			var targets: Array = edges.get(id, [])
+			for field: StringName in fields:
+				var raw: Variant = record.get(field)
+				var values: Array = []
+				if raw is PackedStringArray:
+					values.assign(raw)
+				elif raw is String and raw != "":
+					values.append(raw)
+				for value: String in values:
+					var resolved: String = _aliases.get(value, value)
+					if resolved != id:
+						targets.append(resolved)
+			edges[id] = targets
+
+	for cycle: Array in find_reference_cycles(edges):
+		var first_id: String = cycle[0]
+		var first_fields: Array = node_fields[first_id]
+		var related_locations: Array[Dictionary] = []
+		for member: String in cycle.slice(1):
+			related_locations.append({"file_path": _record_path_of(member), "record_index": 0})
+		_add_report_entry(&"error", first_id, first_fields[0], _record_path_of(first_id),
+				"This record is part of a reference cycle.", related_locations)
+
+
+# Source file of a stored record of any type; "" when it is not stored.
+func _record_path_of(id: String) -> String:
+	var type: StringName = _find_record_type(id)
+	return (_record_paths.get(type, {}) as Dictionary).get(id, "")
+
+
+# One DFS visit for find_reference_cycles(). &"active" while on the current
+# path, &"done" once every descendant is explored. A target seen active closes
+# a cycle; a done target is a branch already walked, never a new cycle.
+static func _cycle_dfs(node: String, edges: Dictionary, visit_state: Dictionary, path: Array,
+		path_index: Dictionary, cycles: Array, seen_keys: Dictionary) -> void:
+	visit_state[node] = &"active"
+	path_index[node] = path.size()
+	path.append(node)
+	for target: String in edges.get(node, []):
+		var target_state: StringName = visit_state.get(target, &"")
+		if target_state == &"":
+			_cycle_dfs(target, edges, visit_state, path, path_index, cycles, seen_keys)
+		elif target_state == &"active":
+			var cycle: Array = _rotate_to_sorted_first(path.slice(path_index[target]))
+			var key: String = "|".join(PackedStringArray(cycle))
+			if not seen_keys.has(key):
+				seen_keys[key] = true
+				cycles.append(cycle)
+	path.pop_back()
+	path_index.erase(node)
+	visit_state[node] = &"done"
+
+
+# Rotates a cycle, kept in edge order, to start at its member that sorts first.
+static func _rotate_to_sorted_first(cycle: Array) -> Array:
+	var first := 0
+	for i in range(1, cycle.size()):
+		if cycle[i] < cycle[first]:
+			first = i
+	return cycle.slice(first) + cycle.slice(0, first)
 
 
 # Builds the RegEx for ID_PATTERN; called once from _id_regex's initializer.

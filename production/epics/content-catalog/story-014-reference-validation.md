@@ -1,12 +1,12 @@
 # Story 014: Missing, wrong-type, self- and cyclic references, and a duplicate list entry, each error
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: In Progress
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-24
 
 ## Context
 
@@ -61,11 +61,10 @@
 
 ## Files
 
-- `src/data/content_catalog.gd` (reference table, reference pass, cycle detector)
-- `tests/unit/content_data/fixtures/reference_defects/missing_id/`, `.../wrong_type_move_ids/`, `.../wrong_kind_nation_id/`, `.../cycle_3/`, `.../duplicate_list_entry/`, plus a valid control fixture (T3 and T4 use synthetic edge maps, no fixture)
-- `tests/unit/content_data/content_data_reference_test.gd`
-
----
+- `src/data/content_catalog.gd` (`REFERENCE_SCHEMA` with the 14 reference fields; `register_acyclic_field()`; the reference pass for missing, wrong-type, wrong-kind, self- and duplicate references; static `find_reference_cycles()` and the cycle check over registered acyclic fields)
+- `tests/unit/content_data/content_data_reference_test.gd` (11 test functions) and its `.uid`
+- `tests/unit/content_data/fixtures/reference_defects/` (`missing_id/`, `wrong_type_move_ids/`, `wrong_kind_nation_id/`, `cycle_3/`, `duplicate_list_entry/`, `alias_reference_ok/`, `valid_references/`)
+- `tests/unit/content_data/fixtures/valid_one_of_each/` (changed: `char_baguette_thrower.nation_id` now names a new `faction_human_republic`, because `nation_id` must name a `human_nation`)
 
 ## QA Test Cases
 
