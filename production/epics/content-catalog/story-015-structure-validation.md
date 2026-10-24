@@ -1,7 +1,7 @@
 # Story 015: Unknown, missing, wrong-typed, empty and whitespace-only fields, and an unknown descriptor type, each error naming record and field
 
 > **Epic**: Content Catalog
-> **Status**: In Progress
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: L
@@ -91,7 +91,7 @@ Each test asserts exactly one entry with `severity == &"error"`, the stated `rec
 **Required evidence**:
 - Logic: `tests/unit/content_data/content_data_structure_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (see Completion Notes)
 
 ---
 
@@ -99,3 +99,12 @@ Each test asserts exactly one entry with `severity == &"error"`, the stated `rec
 
 - Depends on: `production/epics/content-catalog/story-002-load-one-of-each-type.md`
 - Unlocks: `production/epics/content-catalog/story-016-field-range-validators.md`, `story-017-overworld-uniqueness-and-faction-rule.md`, `story-020-mixed-severity-report.md`, `story-021-effect-descriptor-passthrough.md`, `story-023-deterministic-report-order.md` (all under `production/epics/content-catalog/`)
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-24
+**Criteria**: 1/1 passing (AC-14). None deferred.
+**Deviations**: ADVISORY (technical-director): exported builds can convert `.tres` to binary, so the raw-text unknown-field scan would read nothing after export and stop detecting unknown fields; the required-field and effect checks are unaffected. ADR-0001 notes the conversion but was never amended to scope this scan to editor and CI, as the 2026-10-21 architecture review recommended (HIGH). No export preset exists yet. ADVISORY: the EffectDescriptor type check is skipped while no system has registered a vocabulary, which is true in production today; a system that forgets to register would pass every effect. Notes: `REQUIRED_FIELDS` is `[&"display_name"]` on faction, character, enemy, move, quirk_state, combo, item and map, and `[]` on encounter, occupation_stage, faction_rule and input_bindings, because the GDD marks no field required (QL-STORY-READY fix); widen only after a GDD edit. Godot 4.7.2 drops a wrong-typed value to the type's default, so a missing or wrong-typed `display_name` is caught by the empty-text check; a wrong-typed field whose default is valid (e.g. `defense`) is still not caught, as the story documents. The scanner tracks quoted strings across lines, since Godot writes a newline inside a String literally. Code review fixed the Object-export entry to name the file whose path sorts first instead of the first listed, and added `resource_name` and `metadata/` keys to a control fixture. Not done (code-review suggestions): a stricter section-header check, a CRLF fixture, tests for several unknown effects or several Object exports in one file.
+**Test Evidence**: `tests/unit/content_data/content_data_structure_test.gd` (13 functions); suite 111/111, 0 orphans, exit 0 on Godot 4.7.2. Watched fail (gdUnit `-c`): before the source change the 7 defect tests failed; turning off each of the unknown-field, required-field, effect-type, Object-export and quoted-string guards failed its tests; the reversed-order Object-export test failed on the order-dependent code; removing the `resource_name` or `metadata/` ignore rule fails the control test. Commits 8464714, 0b68e8f.
+**Reviewed by**: lead-programmer (LP-CODE-REVIEW APPROVE); QL-TEST-COVERAGE ADEQUATE; /code-review CHANGES REQUIRED (Object-export file depended on listing order; engine keys untested) → fixed
