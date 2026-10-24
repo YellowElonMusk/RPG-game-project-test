@@ -11,7 +11,7 @@ project:
   stage: Systems Design
 
 modes:
-  rigor: full
+  rigor: standard
   automation: autonomous
 
 engine:
