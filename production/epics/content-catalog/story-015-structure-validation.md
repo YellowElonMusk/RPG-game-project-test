@@ -62,7 +62,7 @@
 
 - `src/data/content_catalog.gd` (`_check_structure()` reads each file's raw text once and runs four checks: unknown fields, required text fields, unknown EffectDescriptor types while a vocabulary is registered, and Object-typed exports; `_scan_resource_keys()` reads only the [resource] section and skips lines inside quoted strings)
 - `src/data/records/*.gd` (all 12: `REQUIRED_FIELDS` is `[&"display_name"]` on 8 types and `[]` on encounter, occupation_stage, faction_rule and input_bindings)
-- `tests/unit/content_data/content_data_structure_test.gd` (12 test functions) and its `.uid`
+- `tests/unit/content_data/content_data_structure_test.gd` (13 test functions) and its `.uid`
 - `tests/unit/content_data/helpers/object_export_record.gd` (test-only record script with a Resource-typed export) and its `.uid`
 - `tests/unit/content_data/fixtures/structure_defects/` (the 8 named cases, plus `object_export/` and `multiline_string/`)
 

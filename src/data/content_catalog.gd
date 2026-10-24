@@ -179,9 +179,11 @@ var _acyclic_fields: Dictionary = {}
 const _IGNORED_RESOURCE_KEYS: Dictionary = {
 	"script": true, "resource_name": true, "resource_local_to_scene": true,
 }
-# type StringName → true once an Object/Resource-typed export has been
-# reported for that type: only the first offending file of a type reports it.
-var _object_export_reported: Dictionary = {}
+# type StringName → {file_path, record_id, names} for the file of that type
+# whose path sorts first among those declaring an Object/Resource-typed
+# export. Filled while loading; _report_object_typed_exports() reports it once
+# Validating starts, so the located file never depends on listing order.
+var _object_export_first: Dictionary = {}
 # ID_PATTERN compiled once at construction, never per record in _load_one().
 var _id_regex: RegEx = _compile_id_regex()
 # One top-level `key = ` line of a .tres [resource] section (ADR-0001
@@ -334,6 +336,7 @@ func load_all(data_root: String = "res://data") -> Error:
 
 	state = State.VALIDATING
 	_check_duplicate_ids()
+	_report_object_typed_exports()
 	_check_alias_shadowing()
 	_check_alias_double_declaration()
 	_run_reference_checks()
@@ -815,16 +818,32 @@ func _check_effect_types(record: Resource, exports: Dictionary, record_id: Strin
 
 
 # A record script may not declare an Object/Resource-typed export (ADR-0001
-# Implementation Guidelines). One error per such export, located at the first
-# file of `type` that has one; later files of that type are not reported again.
+# Implementation Guidelines). Records this file as the type's candidate when
+# its path sorts before the current one; _report_object_typed_exports()
+# reports only the sorted-first file of each type.
 func _check_object_typed_exports(type: StringName, exports: Dictionary, record_id: String,
 		file_path: String) -> void:
-	if _object_export_reported.has(type):
-		return
+	var names := PackedStringArray()
 	for name: String in exports:
 		if (exports[name] as Dictionary)["type"] == TYPE_OBJECT:
-			_object_export_reported[type] = true
-			_add_report_entry(&"error", record_id, StringName(name), file_path,
+			names.append(name)
+	if names.is_empty():
+		return
+	var first: Dictionary = _object_export_first.get(type, {})
+	if first.is_empty() or file_path < String(first["file_path"]):
+		_object_export_first[type] = {"file_path": file_path, "record_id": record_id, "names": names}
+
+
+# One error per Object-typed export, located at the file of each type whose
+# path sorts first (case-sensitive string order); later files of that type are
+# not reported again. Types go in TYPE_TABLE order.
+func _report_object_typed_exports() -> void:
+	for type: StringName in TYPE_TABLE:
+		if not _object_export_first.has(type):
+			continue
+		var first: Dictionary = _object_export_first[type]
+		for name: String in (first["names"] as PackedStringArray):
+			_add_report_entry(&"error", first["record_id"], StringName(name), first["file_path"],
 					"The export %s is Object-typed; records hold data only." % name, [])
 
 

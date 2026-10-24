@@ -12,3 +12,5 @@ cost = 2
 effects = Array[Dictionary]([])
 animation_id = "anim_move_optional_text_empty"
 flavor_text = ""
+resource_name = "Optional Text Empty"
+metadata/_edit_lock = true

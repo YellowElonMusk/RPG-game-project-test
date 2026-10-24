@@ -83,6 +83,8 @@ func test_unknown_effect_descriptor_type_reports_error_on_effects() -> void:
 
 
 ## Control: an optional text field (flavor_text) left empty is not an error.
+## The fixture also carries the engine-written `resource_name` and
+## `metadata/_edit_lock` keys, which are never reported as unknown fields.
 func test_optional_text_field_empty_loads_ready_with_no_entry() -> void:
 	var result: Error = _catalog.load_all(ROOT + "/optional_text_empty")
 
@@ -130,6 +132,21 @@ func test_quoted_string_spanning_lines_produces_no_false_unknown_field_entry() -
 ## Edge case (ADR-0001 Implementation Guidelines): a record script declaring
 ## an Object/Resource-typed export is one error naming that export.
 func test_object_typed_export_reports_error_naming_the_export() -> void:
+	var result: Error = _catalog.load_all(ROOT + "/object_export")
+
+	_assert_one_error(result, "move_object_export", "bad_field")
+
+
+## Code review regression: the Object-export entry is located at the file
+## whose path sorts first, never at whichever file the folder listed first, and
+## the second offending file of the type is not reported again. Reversing the
+## discovery order (story 003 seam) must not move the entry.
+func test_object_typed_export_reversed_discovery_order_reports_sorted_first_file() -> void:
+	_catalog.discovery_order_transform = func(listing: PackedStringArray) -> PackedStringArray:
+		var reversed: PackedStringArray = listing.duplicate()
+		reversed.reverse()
+		return reversed
+
 	var result: Error = _catalog.load_all(ROOT + "/object_export")
 
 	_assert_one_error(result, "move_object_export", "bad_field")
