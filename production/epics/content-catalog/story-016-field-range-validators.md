@@ -16,7 +16,7 @@
 
 **ADR Governing Implementation**: ADR-0001: Content Data Definitions Storage & Loading Format (as amended by ADR-0007 §7); ADR-0004: Content Boot Ordering (§4 `register_record_validator`, amended 2026-10-23); ADR-0012: Overworld Exploration & Encounters (§3 field bounds)
 **ADR Decision Summary**: Field ranges are owned by the system whose GDD defines the field, never written as literals in `ContentCatalog`. Owners register pure per-record validators through `ContentBootstrap` → `register_record_validator()`. A validator returns `Array[Dictionary]` entries (`severity`, `field`, `message`, optional `related_locations`), and the catalog fills `record_id` and `location`.
-**ADR Version**: ADR-0001 2026-10-23; ADR-0004 2026-10-23; ADR-0012 2026-10-23
+**ADR Version**: ADR-0001 2026-10-23; ADR-0004 2026-10-23; ADR-0007 2026-10-22; ADR-0012 2026-10-23
 
 **Engine**: Godot 4.7.2 | **Risk**: LOW
 **Engine Notes**: `zone_rate` and `liberation_grumble_min` are floats. Boundary values such as 0.1 and 0.4 must compare inclusively without float drift: the test validator compares the authored value directly against the constant, and the fixture stores the exact literal.
@@ -47,21 +47,21 @@
 
 | Field | Invalid (error) | Valid (loads) |
 |---|---|---|
-| `stat_block.max_hp` | 0, 1000 | 1, 999 |
-| `stat_block.max_mp` | −1, 100 | 0, 99 |
-| `stat_block.attack` | 0, 100 | 1, 99 |
-| `stat_block.defense` | −1, 100 | 0, 99 |
-| `stat_block.speed` | 0, 100 | 1, 99 |
+| `max_hp` | 0, 1000 | 1, 999 |
+| `max_mp` | −1, 100 | 0, 99 |
+| `attack` | 0, 100 | 1, 99 |
+| `defense` | −1, 100 | 0, 99 |
+| `speed` | 0, 100 | 1, 99 |
 | `Move.cost` | −1 | 0 (no maximum) |
-| `reward.xp` | −1, 10000 | 0, 9999 |
-| `reward.money` | −1, 10000 | 0, 9999 |
+| `reward_xp` | −1, 10000 | 0, 9999 |
+| `reward_money` | −1, 10000 | 0, 9999 |
 | `OccupationStage.stage` | 0, 4 | 1, 3 |
 | `Map.base_stage` | 0, 4 | 1, 3 |
 | `Map.stage_table` value | 4 | 1, 3 |
 | `Map.zone_rate` | −0.01, 1.01 | 0, 1 |
 | `OccupationStage.liberation_grumble_min` | 0.09, 0.41 | 0.1, 0.4 |
 
-- The `field` for a sub-record value is the dotted path (`stat_block.max_hp`, `reward.xp`); for a `stage_table` entry it is `stage_table`.
+- **Field names (QL-STORY-READY GAPS fix, 2026-10-24).** The reported `field` is the record's flat export name: `max_hp`, `max_mp`, `attack`, `defense`, `speed`, `reward_xp`, `reward_money`. These match the flattened exports in `character_data.gd` and `enemy_data.gd` (ADR-0001) and every other check in `content_catalog.gd`. The GDD's `stat_block.` and `reward.` grouping (as in AC-26's wording) is notation only, never the reported field name. For a `stage_table` entry the field is `stage_table`.
 
 ---
 
@@ -89,9 +89,9 @@
 *Written by qa-lead at story creation (QL-STORY-READY, 2026-10-23; GAPS resolved: RC-D structured validators, boundary list, re-scope). The developer implements against these — do not invent new test cases during implementation.*
 
 - **AC-26 / invalid values**: Each out-of-range value errors, naming record and field.
-  - Given: the F2 test validators registered for `character`, `enemy`, `move`, `map` and `occupation_stage` before `load_all()`; one fixture record per invalid value in the table.
+  - Given: the F2 test validators registered for `character`, `enemy`, `move`, `map` and `occupation_stage` before `load_all()`; one fixture record per invalid value in the table, each satisfying story 015's required-field rule (a non-empty `display_name` on `character`, `enemy`, `move` and `map` records) so the range violation is the only error. (QL-STORY-READY GAPS fix, 2026-10-24.)
   - When: each is loaded into a fresh catalog.
-  - Then: `FAILED`, and exactly one error entry with `record_id` = that record's ID and `field` = the dotted field name in the table.
+  - Then: `FAILED`, and exactly one error entry with `record_id` = that record's ID and `field` = the record's flat export name from the table (e.g. `max_hp`, `reward_xp`), never the GDD's dotted path.
   - Edge cases: `Move.cost` has no upper bound, so a very large cost (e.g. 100000) loads.
 - **AC-26 / valid boundaries**: Each min and max value loads.
   - Given: one fixture record per valid value in the table.
@@ -99,7 +99,7 @@
   - Then: `OK`, `READY`, and no entry names that record.
 - **Mechanism checks** (same file):
   - A validator returning `[{severity = &"warning", field = "x", message = "m"}]` adds one warning entry with `record_id` and `location` filled in, and the catalog stays `READY`.
-  - `register_record_validator()` called after a load has finished is rejected: the late validator never runs (its call counter stays 0).
+  - `register_record_validator()` is rejected whenever `state != UNLOADED`: once called from inside a running validator during a load, and once called after a load has finished. Each time `push_error()` fires, nothing else changes, and the late validator's call counter stays 0. (QL-STORY-READY GAPS fix, 2026-10-24: the mid-load case added.)
   - A validator returning entries without `field` produces an error entry naming the validator's type.
 
 ---
