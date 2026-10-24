@@ -12,6 +12,8 @@ project:
 
 modes:
   rigor: standard
+  # Explicit: the remaining stories were written at full rigor with one AC each.
+  story_granularity: fine
   automation: autonomous
 
 engine:
