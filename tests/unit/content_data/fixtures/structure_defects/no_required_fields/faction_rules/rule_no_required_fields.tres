@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="FactionRuleData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/faction_rule_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "rule_no_required_fields"
+aliases = PackedStringArray()
+rule_class = &"delay_rule"
+ref_ids = PackedStringArray()
+params = {}

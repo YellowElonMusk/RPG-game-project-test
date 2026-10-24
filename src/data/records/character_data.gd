@@ -43,3 +43,6 @@ const NON_LOC_FIELDS: Array[StringName] = [
 	&"id", &"aliases", &"nation_id", &"move_ids", &"signature_move_id",
 	&"sprite_set_id", &"portrait_id",
 ]
+## Required fields (story 015, QL-STORY-READY GAPS fix 2026-10-24): empty or
+## whitespace-only text is an error. Widen only after a GDD edit marks more.
+const REQUIRED_FIELDS: Array[StringName] = [&"display_name"]

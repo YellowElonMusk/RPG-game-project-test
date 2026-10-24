@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="CharacterData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/character_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "char_structure_unknown"
+aliases = PackedStringArray()
+display_name = "Typo Clerk"
+nation_id = "faction_human_republic"
+archetype_line = "Filed a stat block under a misspelled heading."
+stat_blok = {
+"attack": 10,
+"defense": 5
+}
+max_hp = 20
+max_mp = 5
+attack = 10
+defense = 5
+speed = 5
+move_ids = PackedStringArray()
+signature_move_id = ""
+sprite_set_id = "sprite_set_placeholder"
+portrait_id = "portrait_placeholder"

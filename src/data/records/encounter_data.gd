@@ -38,3 +38,6 @@ const LOC_FIELDS: Array[StringName] = []
 const NON_LOC_FIELDS: Array[StringName] = [
 	&"id", &"aliases", &"enemy_ids", &"battle_stage_id", &"faction_id",
 ]
+## Required fields (story 015, QL-STORY-READY GAPS fix 2026-10-24): none yet.
+## The GDD marks no field required on this type.
+const REQUIRED_FIELDS: Array[StringName] = []

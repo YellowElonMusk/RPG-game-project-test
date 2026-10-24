@@ -32,3 +32,6 @@ extends Resource
 const LOC_FIELDS: Array[StringName] = [&"texts"]
 ## IDs and enum-like strings (ADR-0013 §4).
 const NON_LOC_FIELDS: Array[StringName] = [&"id", &"aliases", &"rule_class", &"ref_ids"]
+## Required fields (story 015, QL-STORY-READY GAPS fix 2026-10-24): none yet.
+## The GDD marks no field required on this type.
+const REQUIRED_FIELDS: Array[StringName] = []

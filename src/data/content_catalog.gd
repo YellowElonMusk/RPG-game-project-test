@@ -174,8 +174,19 @@ var _known_effect_types: Dictionary = {}
 # register_acyclic_field(). Production registers none: no real record type
 # references its own type (QL-STORY-READY, 2026-10-24).
 var _acyclic_fields: Dictionary = {}
+# Engine-written .tres keys the unknown-field scan never reports: they are not
+# script exports. Any metadata/* key is skipped by prefix.
+const _IGNORED_RESOURCE_KEYS: Dictionary = {
+	"script": true, "resource_name": true, "resource_local_to_scene": true,
+}
+# type StringName → true once an Object/Resource-typed export has been
+# reported for that type: only the first offending file of a type reports it.
+var _object_export_reported: Dictionary = {}
 # ID_PATTERN compiled once at construction, never per record in _load_one().
 var _id_regex: RegEx = _compile_id_regex()
+# One top-level `key = ` line of a .tres [resource] section (ADR-0001
+# Validation mechanism). Compiled once, like _id_regex.
+var _resource_key_regex: RegEx = _compile_resource_key_regex()
 
 
 ## Registers the EffectDescriptor `type` vocabulary an owning system
@@ -685,6 +696,16 @@ func _compile_id_regex() -> RegEx:
 	return regex
 
 
+# Builds the RegEx for one top-level .tres key; called once from
+# _resource_key_regex's initializer.
+func _compile_resource_key_regex() -> RegEx:
+	var regex := RegEx.new()
+	var err: Error = regex.compile("^([A-Za-z_][A-Za-z0-9_/]*) = ")
+	if err != OK:
+		push_error("ContentCatalog: the .tres key pattern does not compile (error %d)." % err)
+	return regex
+
+
 # Loads one record file: the null check, the filename = id check, the id
 # format check (GDD F1), then storage (with its source path) and alias
 # registration, which applies F1 to each alias. Validators run
@@ -722,6 +743,130 @@ func _load_one(type: StringName, file_path: String, bucket: Dictionary) -> void:
 		_record_paths[type] = {}
 	(_record_paths[type] as Dictionary)[record_id] = file_path
 	_register_aliases(record_id, record.get("aliases"), prefix, file_path)
+	_check_structure(type, record_id, record, file_path)
+
+
+# The structure checks of ADR-0001's Validation mechanism, run per stored
+# record at load: unknown fields, required fields, EffectDescriptor types and
+# Object-typed exports. The file's raw text is read here, once (Guardrail: one
+# FileAccess read per file, at load only). The vocabulary is complete by now:
+# register_known_effect_types() is rejected once load_all() has started.
+func _check_structure(type: StringName, record_id: String, record: Resource,
+		file_path: String) -> void:
+	var text: String = FileAccess.get_file_as_string(file_path)
+	# A script's own exports carry both bits; inherited engine properties
+	# (`script`, `resource_name`, ...) lack PROPERTY_USAGE_SCRIPT_VARIABLE.
+	var export_mask: int = PROPERTY_USAGE_SCRIPT_VARIABLE | PROPERTY_USAGE_STORAGE
+	var exports: Dictionary = {}
+	for prop: Dictionary in record.get_property_list():
+		if (prop["usage"] & export_mask) == export_mask:
+			exports[prop["name"]] = prop
+	_check_unknown_fields(text, exports, record_id, file_path)
+	_check_required_fields(record, record_id, file_path)
+	_check_effect_types(record, exports, record_id, file_path)
+	_check_object_typed_exports(type, exports, record_id, file_path)
+
+
+# Godot drops unknown .tres properties silently, so the raw text is diffed
+# against the script's exports: one error per extra top-level key. Engine-written
+# keys (`script`, `resource_name`, `resource_local_to_scene`, `metadata/*`) are
+# never reported.
+func _check_unknown_fields(text: String, exports: Dictionary, record_id: String,
+		file_path: String) -> void:
+	for key: String in _scan_resource_keys(text):
+		if _IGNORED_RESOURCE_KEYS.has(key) or key.begins_with("metadata/"):
+			continue
+		if not exports.has(key):
+			_add_report_entry(&"error", record_id, StringName(key), file_path,
+					"The field %s is not declared by the record's script." % key, [])
+
+
+# Every field in the record script's REQUIRED_FIELDS whose text is empty or
+# whitespace-only is one error. A missing key and a wrong-typed value both
+# leave the export's default "", so they collapse into this one condition
+# (ADR-0001). A script without the constant requires nothing.
+func _check_required_fields(record: Resource, record_id: String, file_path: String) -> void:
+	var required: Array = (record.get_script() as Script).get_script_constant_map().get("REQUIRED_FIELDS", [])
+	for field: StringName in required:
+		var value: Variant = record.get(field)
+		if value is String and (value as String).strip_edges().is_empty():
+			_add_report_entry(&"error", record_id, field, file_path,
+					"The required field %s is empty." % field, [])
+
+
+# Every `effects` entry's `type` must be in the union of the vocabularies
+# registered through register_known_effect_types(); each one that is not is an
+# error on `effects`. While no system has registered a vocabulary the check is
+# skipped: descriptors stay uninterpreted until an owner claims them
+# (TR-content-006), so an empty registry cannot judge any type unknown.
+func _check_effect_types(record: Resource, exports: Dictionary, record_id: String,
+		file_path: String) -> void:
+	if _known_effect_types.is_empty() or not exports.has("effects"):
+		return
+	var known: Dictionary = {}
+	for system: StringName in _known_effect_types:
+		for effect_type: String in (_known_effect_types[system] as PackedStringArray):
+			known[effect_type] = true
+	for effect: Dictionary in record.get("effects"):
+		var effect_type: String = str(effect.get("type", ""))
+		if not known.has(effect_type):
+			_add_report_entry(&"error", record_id, &"effects", file_path,
+					"The effect type %s is not registered by any owning system." % effect_type, [])
+
+
+# A record script may not declare an Object/Resource-typed export (ADR-0001
+# Implementation Guidelines). One error per such export, located at the first
+# file of `type` that has one; later files of that type are not reported again.
+func _check_object_typed_exports(type: StringName, exports: Dictionary, record_id: String,
+		file_path: String) -> void:
+	if _object_export_reported.has(type):
+		return
+	for name: String in exports:
+		if (exports[name] as Dictionary)["type"] == TYPE_OBJECT:
+			_object_export_reported[type] = true
+			_add_report_entry(&"error", record_id, StringName(name), file_path,
+					"The export %s is Object-typed; records hold data only." % name, [])
+
+
+# The top-level keys of a .tres file's [resource] section: each line matching
+# _resource_key_regex. Continuation lines of a multi-line Array or Dictionary
+# never match (Godot 4.7.2 writes them as `"key": value` or brackets). A String
+# holding a newline is written with a literal line break inside the quotes, so
+# the scan tracks whether a line starts inside a quoted string (counting
+# unescaped `"`) and skips such lines.
+func _scan_resource_keys(text: String) -> PackedStringArray:
+	var keys := PackedStringArray()
+	var in_resource := false
+	var in_string := false
+	for line: String in text.split("\n"):
+		var starts_in_string: bool = in_string
+		in_string = _ends_inside_string(line, in_string)
+		if starts_in_string:
+			continue
+		if line.begins_with("["):
+			in_resource = line.strip_edges() == "[resource]"
+			continue
+		if not in_resource:
+			continue
+		var found: RegExMatch = _resource_key_regex.search(line)
+		if found != null:
+			keys.append(found.get_string(1))
+	return keys
+
+
+# Whether a quoted string is still open at the end of `line`, given whether it
+# was open at its start. A backslash escapes the next character.
+static func _ends_inside_string(line: String, open: bool) -> bool:
+	var i := 0
+	while i < line.length():
+		var c: String = line[i]
+		if c == "\\" and open:
+			i += 2
+			continue
+		if c == "\"":
+			open = not open
+		i += 1
+	return open
 
 
 # Registers one stored record's aliases. GDD Rule 8 / F1: an alias is

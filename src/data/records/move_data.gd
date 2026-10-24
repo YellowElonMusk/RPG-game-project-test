@@ -33,3 +33,6 @@ extends Resource
 const LOC_FIELDS: Array[StringName] = [&"display_name", &"flavor_text"]
 ## IDs, asset IDs and enum-like strings (ADR-0013 §4).
 const NON_LOC_FIELDS: Array[StringName] = [&"id", &"aliases", &"target_type", &"animation_id"]
+## Required fields (story 015, QL-STORY-READY GAPS fix 2026-10-24): empty or
+## whitespace-only text is an error. Widen only after a GDD edit marks more.
+const REQUIRED_FIELDS: Array[StringName] = [&"display_name"]

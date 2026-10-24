@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="MoveData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/move_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "move_unknown_effect_type"
+aliases = PackedStringArray()
+display_name = "Unknown Effect"
+target_type = "single_enemy"
+cost = 2
+effects = Array[Dictionary]([{
+"amount": 5,
+"type": "not_a_type"
+}])
+animation_id = "anim_move_unknown_effect_type"
+flavor_text = "Carries an unregistered effect type."

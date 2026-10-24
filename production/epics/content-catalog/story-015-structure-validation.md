@@ -1,12 +1,12 @@
 # Story 015: Unknown, missing, wrong-typed, empty and whitespace-only fields, and an unknown descriptor type, each error naming record and field
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: In Progress
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-24
 
 ## Context
 
@@ -60,12 +60,11 @@
 
 ## Files
 
-- `src/data/content_catalog.gd` (raw-text key scan, required-field checks, descriptor-type check)
-- `src/data/records/*.gd` (`REQUIRED_FIELDS` constants)
-- `tests/unit/content_data/fixtures/structure_defects/unknown_field/`, `.../missing_required/`, `.../wrong_typed_required/`, `.../empty_required_text/`, `.../whitespace_required_text/`, `.../unknown_effect_type/`, `.../optional_text_empty/`, `.../no_required_fields/`
-- `tests/unit/content_data/content_data_structure_test.gd`
-
----
+- `src/data/content_catalog.gd` (`_check_structure()` reads each file's raw text once and runs four checks: unknown fields, required text fields, unknown EffectDescriptor types while a vocabulary is registered, and Object-typed exports; `_scan_resource_keys()` reads only the [resource] section and skips lines inside quoted strings)
+- `src/data/records/*.gd` (all 12: `REQUIRED_FIELDS` is `[&"display_name"]` on 8 types and `[]` on encounter, occupation_stage, faction_rule and input_bindings)
+- `tests/unit/content_data/content_data_structure_test.gd` (12 test functions) and its `.uid`
+- `tests/unit/content_data/helpers/object_export_record.gd` (test-only record script with a Resource-typed export) and its `.uid`
+- `tests/unit/content_data/fixtures/structure_defects/` (the 8 named cases, plus `object_export/` and `multiline_string/`)
 
 ## QA Test Cases
 
