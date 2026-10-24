@@ -1,7 +1,7 @@
 # Story 014: Missing, wrong-type, self- and cyclic references, and a duplicate list entry, each error
 
 > **Epic**: Content Catalog
-> **Status**: In Progress
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: L
@@ -90,7 +90,7 @@ Each test loads one fixture into a fresh catalog and asserts `FAILED` plus exact
 **Required evidence**:
 - Logic: `tests/unit/content_data/content_data_reference_test.gd` — must exist and pass, including T3–T5. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (see Completion Notes)
 
 ---
 
@@ -98,3 +98,12 @@ Each test loads one fixture into a fresh catalog and asserts `FAILED` plus exact
 
 - Depends on: `production/epics/content-catalog/story-002-load-one-of-each-type.md`
 - Unlocks: `production/epics/content-catalog/story-013-alias-shadowing-and-double-declaration.md`, `production/epics/content-catalog/story-019-warning-cases.md`, `production/epics/content-catalog/story-023-deterministic-report-order.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-24
+**Criteria**: 1/1 passing (AC-13). None deferred.
+**Deviations**: ADVISORY: a cycle entry is located at the member whose id sorts first; the T5 text says the member whose path sorts first. They agree on the `cycle_3` fixture but can differ when members sit in different type folders. ADVISORY: the missing-id branch cannot fail a test on its own; without it a missing id falls through to a wrong-type entry with the same structured fields, and tests never assert on messages. Notes: `valid_one_of_each/` changed because `nation_id` must now name a `human_nation`: the character points at a new `faction_human_republic` (no assertion changed). The cycle walk is iterative: the first, recursive version overflowed GDScript's call stack at about 1,100 chained records and returned no cycles. Code review split the edge-map building into `_build_acyclic_edge_map()` (complexity 9) to bring `_run_cycle_checks()` under the limit, and added end-to-end self-reference and repeated-missing-value tests.
+**Test Evidence**: `tests/unit/content_data/content_data_reference_test.gd` (14 functions); suite 86/86, 0 orphans, exit 0 on Godot 4.7.2. Watched fail (gdUnit `-c`): turning off the wrong-type, kind, duplicate, cycle-closing and rotation guards each failed a test; the 3,000-record chain test failed on the recursive walk; letting a self-reference fall through failed the end-to-end self-reference test. Commits 2c23269, ac45c17, ef0c73a.
+**Reviewed by**: lead-programmer (LP-CODE-REVIEW APPROVE); QL-TEST-COVERAGE ADEQUATE; /code-review CHANGES REQUIRED (complexity 11) → fixed
