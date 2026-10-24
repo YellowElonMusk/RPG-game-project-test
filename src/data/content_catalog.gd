@@ -158,6 +158,14 @@ var _record_paths: Dictionary = {}
 var _id_locations: Dictionary[String, Array] = {}
 # alias String → live id String (one hop, GDD Rule 2).
 var _aliases: Dictionary[String, String] = {}
+# alias String → Array of {record_id: String, file_path: String} — every
+# record that declared that alias, across all types (ADR-0001: an alias
+# belongs to exactly one record and can never shadow a live id). Filled in
+# _load_one() for every alias that passes the id-format check; the Validating
+# pass's two alias checks each read it once and erase any alias they flag from
+# _aliases, so a bad mapping can never reach resolve_alias() or the reference
+# pass, even unreachably.
+var _alias_locations: Dictionary[String, Array] = {}
 # type StringName → Array of Callable(record) -> Array[Dictionary].
 var _validators: Dictionary = {}
 # system StringName → PackedStringArray of known EffectDescriptor types.
@@ -278,8 +286,9 @@ static func find_reference_cycles(edges: Dictionary) -> Array:
 ## (changing nothing) on any call after the first. Never fails fast: every
 ## problem is collected into `report`. A missing type directory is not an
 ## error. Once Validating starts, the catalog-wide duplicate-id check runs
-## first; then the generic reference pass (REFERENCE_SCHEMA) and the cycle
-## walk over registered acyclic fields; then validators run over every stored record in
+## first; then the two alias checks (a shadowing alias, a doubly-declared
+## alias — ADR-0001); then the generic reference pass (REFERENCE_SCHEMA) and
+## the cycle walk over registered acyclic fields; then validators run over every stored record in
 ## TYPE_TABLE order and then each bucket's already-sorted id order (ADR-0004
 ## §4), so the report order stays deterministic. Only `ContentBootstrap.run()`
 ## calls this in production; the catalog's own unit tests call it on a
@@ -314,6 +323,8 @@ func load_all(data_root: String = "res://data") -> Error:
 
 	state = State.VALIDATING
 	_check_duplicate_ids()
+	_check_alias_shadowing()
+	_check_alias_double_declaration()
 	_run_reference_checks()
 	_run_cycle_checks()
 	_run_validators()
@@ -453,6 +464,62 @@ func _check_duplicate_ids() -> void:
 			related_locations.append({"file_path": other_path, "record_index": 0})
 		_add_report_entry(&"error", id, &"id", paths[0],
 				"This id is declared by more than one record.", related_locations)
+
+
+# Catalog-wide alias/live-id shadowing (ADR-0001: an alias can never shadow a
+# live id). One entry per declaring record -- "it does not matter which
+# record sorts first, the declaring record owns the entry" (story 013): unlike
+# a duplicate id or a doubly-declared alias, this is not a fact shared equally
+# between two records that did the same thing; only the declaring record
+# misdeclared anything. A flagged alias is erased from _aliases so it can
+# never resolve to the wrong record.
+func _check_alias_shadowing() -> void:
+	var aliases: Array[String] = _alias_locations.keys()
+	aliases.sort()
+	for alias: String in aliases:
+		if _find_record_type(alias) == &"":
+			continue
+		var live_path: String = _record_path_of(alias)
+		var path_to_record: Dictionary = {}
+		var paths: Array[String] = []
+		for raw_decl: Variant in (_alias_locations[alias] as Array):
+			var decl: Dictionary = raw_decl
+			paths.append(decl["file_path"])
+			path_to_record[decl["file_path"]] = decl["record_id"]
+		paths.sort()
+		for declaring_path: String in paths:
+			_add_report_entry(&"error", path_to_record[declaring_path], &"aliases", declaring_path,
+					"This alias is the same as a live record's id.",
+					[{"file_path": live_path, "record_index": 0}])
+		_aliases.erase(alias)
+
+
+# Catalog-wide alias double-declaration (ADR-0001: an alias belongs to
+# exactly one record). Same shape as _check_duplicate_ids(): one entry located
+# at the first-sorting declaring path, every other declaring path in
+# related_locations, sorted. Independent of the shadowing check above -- an
+# alias can be both doubly-declared and shadow a live id, and both checks fire
+# on it.
+func _check_alias_double_declaration() -> void:
+	var aliases: Array[String] = _alias_locations.keys()
+	aliases.sort()
+	for alias: String in aliases:
+		var declarations: Array = _alias_locations[alias]
+		if declarations.size() < 2:
+			continue
+		var path_to_record: Dictionary = {}
+		var paths: Array[String] = []
+		for raw_decl: Variant in declarations:
+			var decl: Dictionary = raw_decl
+			paths.append(decl["file_path"])
+			path_to_record[decl["file_path"]] = decl["record_id"]
+		paths.sort()
+		var related_locations: Array[Dictionary] = []
+		for other_path: String in paths.slice(1):
+			related_locations.append({"file_path": other_path, "record_index": 0})
+		_add_report_entry(&"error", path_to_record[paths[0]], &"aliases", paths[0],
+				"This alias is declared by more than one record.", related_locations)
+		_aliases.erase(alias)
 
 
 # The Validating pass (ADR-0004 §4): runs every registered validator, in
@@ -664,6 +731,9 @@ func _load_one(type: StringName, file_path: String, bucket: Dictionary) -> void:
 			_add_report_entry(&"error", record_id, &"aliases", file_path,
 					"The alias must be at most %d characters, match %s and start with %s." % [ID_MAX_LENGTH, ID_PATTERN, prefix], [])
 			continue
+		if not _alias_locations.has(alias):
+			_alias_locations[alias] = []
+		_alias_locations[alias].append({"record_id": record_id, "file_path": file_path})
 		_aliases[alias] = record_id
 
 

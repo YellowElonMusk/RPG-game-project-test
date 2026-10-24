@@ -1,12 +1,12 @@
 # Story 013: Alias rules: a shadowing alias and a doubly declared alias each error; an alias reference resolves in one hop
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: In Progress
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-24
 
 ## Context
 
@@ -62,11 +62,9 @@
 
 ## Files
 
-- `src/data/content_catalog.gd` (alias uniqueness and shadowing checks; alias-aware reference resolution)
-- `tests/unit/content_data/fixtures/alias_rules/shadowing/`, `.../declared_twice/`, `.../alias_reference/`
-- `tests/unit/content_data/content_data_alias_rules_test.gd`
-
----
+- `src/data/content_catalog.gd` (`_alias_locations` records each alias declaration; `_check_alias_shadowing()` and `_check_alias_double_declaration()` run in the Validating pass right after the duplicate-id check, and drop every flagged alias from the alias map)
+- `tests/unit/content_data/content_data_alias_rules_test.gd` (10 test functions) and its `.uid`
+- `tests/unit/content_data/fixtures/alias_rules/` (`shadowing/`, `declared_twice/`, `alias_reference/`)
 
 ## QA Test Cases
 
