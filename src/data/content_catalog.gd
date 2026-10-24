@@ -721,16 +721,30 @@ func _load_one(type: StringName, file_path: String, bucket: Dictionary) -> void:
 	if not _record_paths.has(type):
 		_record_paths[type] = {}
 	(_record_paths[type] as Dictionary)[record_id] = file_path
-	# GDD Rule 8 / F1: an alias is validated as an id too. A malformed alias is
-	# one error on field "aliases" naming the declaring record, and it is not
-	# added to the map; several malformed aliases on one record give one entry
-	# each (never one naming all of them).
-	for alias: String in record.get("aliases"):
+	_register_aliases(record_id, record.get("aliases"), prefix, file_path)
+
+
+# Registers one stored record's aliases. GDD Rule 8 / F1: an alias is
+# validated as an id too. A malformed alias is one error on field "aliases"
+# naming the declaring record, and it is not added to the map; several
+# malformed aliases on one record give one entry each (never one naming all
+# of them). An alias the record already listed is one duplicate-entry error
+# and is not recorded again, so the alias checks in the Validating pass see
+# each record at most once per alias.
+func _register_aliases(record_id: String, aliases: PackedStringArray, prefix: String,
+		file_path: String) -> void:
+	var seen_aliases: Dictionary = {}
+	for alias: String in aliases:
 		if _breaks_id_format(alias, prefix):
 			push_error("ContentCatalog: %s declares alias %s, which breaks the id format rule." % [file_path, alias])
 			_add_report_entry(&"error", record_id, &"aliases", file_path,
 					"The alias must be at most %d characters, match %s and start with %s." % [ID_MAX_LENGTH, ID_PATTERN, prefix], [])
 			continue
+		if seen_aliases.has(alias):
+			_add_report_entry(&"error", record_id, &"aliases", file_path,
+					"The alias %s appears more than once in this list." % alias, [])
+			continue
+		seen_aliases[alias] = true
 		if not _alias_locations.has(alias):
 			_alias_locations[alias] = []
 		_alias_locations[alias].append({"record_id": record_id, "file_path": file_path})

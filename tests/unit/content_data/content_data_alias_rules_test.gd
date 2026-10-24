@@ -169,3 +169,41 @@ func test_resolve_alias_live_id_returns_itself_unchanged() -> void:
 
 	assert_str(resolved).is_equal("move_new")
 	assert_str(String(catalog.last_lookup_error)).is_equal("")
+
+
+## Regression (code review): char_e lists "char_same" twice in its own
+## aliases. That is one duplicate-entry error on char_e, never a
+## double-declaration naming char_e's own file as the other record.
+func test_alias_listed_twice_in_one_record_reports_one_duplicate_error() -> void:
+	var catalog: ContentCatalogService = auto_free(ContentCatalogService.new())
+
+	var result: Error = catalog.load_all(ROOT + "/listed_twice")
+
+	assert_int(result).is_equal(FAILED)
+	var errors: Array[Dictionary] = _errors(catalog)
+	assert_int(errors.size()).is_equal(1)
+	if errors.size() != 1:
+		return  # Indexing an empty report would abort the whole suite.
+	assert_str(errors[0]["record_id"]).is_equal("char_e")
+	assert_str(String(errors[0]["field"])).is_equal("aliases")
+	assert_int((errors[0]["related_locations"] as Array).size()).is_equal(0)
+
+
+## Regression (code review): char_b lists "char_a", a live id, twice. That is
+## one duplicate-entry error plus one shadowing error, never the shadowing
+## error twice and never a double-declaration.
+func test_shadowing_alias_listed_twice_reports_duplicate_and_one_shadowing_error() -> void:
+	var catalog: ContentCatalogService = auto_free(ContentCatalogService.new())
+
+	catalog.load_all(ROOT + "/listed_twice_shadowing")
+
+	var errors: Array[Dictionary] = _errors(catalog)
+	assert_int(errors.size()).is_equal(2)
+	var with_related := 0
+	for entry: Dictionary in errors:
+		assert_str(entry["record_id"]).is_equal("char_b")
+		assert_str(String(entry["field"])).is_equal("aliases")
+		if not (entry["related_locations"] as Array).is_empty():
+			with_related += 1
+	# Only the shadowing entry names another record (char_a).
+	assert_int(with_related).is_equal(1)

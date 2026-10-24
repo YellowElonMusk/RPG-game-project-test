@@ -62,9 +62,9 @@
 
 ## Files
 
-- `src/data/content_catalog.gd` (`_alias_locations` records each alias declaration; `_check_alias_shadowing()` and `_check_alias_double_declaration()` run in the Validating pass right after the duplicate-id check, and drop every flagged alias from the alias map)
-- `tests/unit/content_data/content_data_alias_rules_test.gd` (10 test functions) and its `.uid`
-- `tests/unit/content_data/fixtures/alias_rules/` (`shadowing/`, `declared_twice/`, `alias_reference/`)
+- `src/data/content_catalog.gd` (`_alias_locations` records each alias declaration; `_register_aliases()` validates and registers a record's aliases, reporting an alias listed twice in one record as a duplicate entry; `_check_alias_shadowing()` and `_check_alias_double_declaration()` run in the Validating pass right after the duplicate-id check, and drop every flagged alias from the alias map)
+- `tests/unit/content_data/content_data_alias_rules_test.gd` (12 test functions) and its `.uid`
+- `tests/unit/content_data/fixtures/alias_rules/` (`shadowing/`, `declared_twice/`, `alias_reference/`, `listed_twice/`, `listed_twice_shadowing/`)
 
 ## QA Test Cases
 
