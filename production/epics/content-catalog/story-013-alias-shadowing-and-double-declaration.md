@@ -1,7 +1,7 @@
 # Story 013: Alias rules: a shadowing alias and a doubly declared alias each error; an alias reference resolves in one hop
 
 > **Epic**: Content Catalog
-> **Status**: In Progress
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
@@ -96,7 +96,7 @@
 **Required evidence**:
 - Logic: `tests/unit/content_data/content_data_alias_rules_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (see Completion Notes)
 
 ---
 
@@ -104,3 +104,12 @@
 
 - Depends on: `production/epics/content-catalog/story-011-duplicate-id-one-error.md`, `production/epics/content-catalog/story-012-resolve-alias.md`, `production/epics/content-catalog/story-014-reference-validation.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-24
+**Criteria**: 1/1 passing (AC-12). None deferred.
+**Deviations**: ADVISORY: the GDD's Edge Cases ("Identity and aliases") still say "If an alias points at another alias (a chain): error", which this story's notes say was dropped because the data model cannot build it; game-designer should prune or annotate that line. Notes: the two alias checks run in the Validating pass right after the duplicate-id check, and each removes a flagged alias from the alias map. T3 (one-hop reference, live-id passthrough) needed no new code; stories 012 and 014 already provide it. Code review found that a record listing the same alias twice was recorded twice, so the double-declaration check named the record's own file as the other declarer and a shadowing alias was reported twice; fixed by making the repeat one duplicate-entry error, with two regression tests. Alias registration moved to `_register_aliases()` to keep `_load_one()` under the complexity limit. Removing a flagged alias is unobservable through lookups, because a FAILED catalog refuses them.
+**Test Evidence**: `tests/unit/content_data/content_data_alias_rules_test.gd` (12 functions); suite 98/98, 0 orphans, exit 0 on Godot 4.7.2. Watched fail (gdUnit `-c`): before the source change the 7 shadowing and double-declaration tests failed; turning off each alias check failed its tests; the two listed-twice regression tests failed before the fix and fail again when the repeat check is turned off. Commits 02568a7, b47ae05.
+**Reviewed by**: lead-programmer (LP-CODE-REVIEW APPROVE); QL-TEST-COVERAGE ADEQUATE; /code-review CHANGES REQUIRED (alias listed twice) → fixed
