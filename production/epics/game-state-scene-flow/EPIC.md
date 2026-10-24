@@ -82,13 +82,13 @@ This epic follows ADR-0002's Migration Plan in three steps:
 | 018 | [The Defeat Prompt offers Retreat only when retreat_allowed, with no stale flag after Retry](story-018-retreat-offer-no-stale-flag.md) | Logic | Ready | ADR-0002 |
 | 019 | [Repeated Retry inputs during the Retry transition cause exactly one restart](story-019-repeated-retry-one-restart.md) | Logic | Ready | ADR-0002 |
 | 020 | [A camp registered by walking past becomes the last camp registered; outside writes are rejected](story-020-register-camp-and-retreat-to-it.md) | Logic | Ready | ADR-0002 §11, ADR-0012 |
-| 021 | [Retreat goes to the last camp registered, else the region default camp, else is not offered](story-021-retreat-region-default-and-no-camp.md) | Logic | Blocked | ADR-0002 (annotation owed) |
+| 021 | [Retreat goes to the last camp registered, else the region default camp, else is not offered](story-021-retreat-region-default-and-no-camp.md) | Logic | Deferred | ADR-0002 (annotation owed) |
 | 022 | [With Dialogue then Menu stacked, only the Menu gets input, and signals fire in stack order](story-022-overlay-stack-input-and-order.md) | Logic | Ready | ADR-0002 |
-| 023 | [Dialogue cannot open over the Menu, but the Menu can open over Dialogue](story-023-dialogue-menu-precedence.md) | Logic | Ready | ADR-0002 |
+| 023 | [Dialogue cannot open over the Menu, but the Menu can open over Dialogue](story-023-dialogue-menu-precedence.md) | Logic | Deferred | ADR-0002 |
 | 024 | [The Menu cannot be opened by input during a transition, in Boot or in Content Error](story-024-menu-input-gating.md) | Logic | Ready | ADR-0002 |
 | 025 | [The open Menu stops mode time and blocks transitions, but Quit to Title still works](story-025-menu-stops-time-quit-to-title.md) | Logic | Ready | ADR-0002 |
 | 026 | [Focus loss or device loss opens the Menu, deferred past a transition and ignored in Boot](story-026-focus-loss-opens-menu.md) | Logic | Ready | ADR-0002, ADR-0003 |
-| 027 | [A transition requested by a Dialogue line closes the Dialogue before transition_started](story-027-dialogue-closes-before-transition.md) | Logic | Ready | ADR-0002 §11 |
+| 027 | [A transition requested by a Dialogue line closes the Dialogue before transition_started](story-027-dialogue-closes-before-transition.md) | Logic | Deferred | ADR-0002 §11 |
 | 028 | [The in-mode fade fires only transition_started and transition_finished, and is legal only in a bare Overworld](story-028-in-mode-fade.md) | Logic | Ready | ADR-0002 §11, ADR-0009 |
 | 029 | [In Battle the Menu offers only settings and quit](story-029-battle-menu-system-entries.md) | Logic | Ready | ADR-0002 |
 | 030 | [The Defeat Prompt opens on Retry, ignores cancel, and gets focus back after the Menu](story-030-defeat-prompt-focus-and-cancel.md) | Logic | Ready | ADR-0002, ADR-0008 |
@@ -97,11 +97,11 @@ This epic follows ADR-0002's Migration Plan in three steps:
 | 033 | [Strip ChapterFlow to encounter sequencing and host it in ChapterMode](story-033-strip-chapter-flow-chapter-mode.md) | Logic | Ready | ADR-0002, ADR-0010 |
 | 034 | [Battle mode wraps BattleCore and BattleHud and owns the start snapshot](story-034-battle-mode-wraps-battle-core.md) | Integration | Ready | ADR-0002, ADR-0006, ADR-0010 |
 | 035 | [GameRoot becomes the main scene, with Content Error, TransitionConfig data, and the demo running under Game State](story-035-game-root-main-scene.md) | Integration | Ready (waiting on dependencies) | ADR-0002, ADR-0004, ADR-0003 |
-| 036 | [A Victory that triggers story dialogue opens Dialogue only after transition_finished(Overworld)](story-036-victory-dialogue-after-transition.md) | Integration | Ready | ADR-0002 |
+| 036 | [A Victory that triggers story dialogue opens Dialogue only after transition_finished(Overworld)](story-036-victory-dialogue-after-transition.md) | Integration | Deferred | ADR-0002 |
 | 037 | [Every transition type meets its budget over 30 runs on the min-spec PC and the Steam Deck](story-037-transition-budget-hardware-bench.md) | Integration | Blocked | ADR-0002 |
 | 038 | [Retained screenshots of Title, both Defeat Prompts, the Quit confirmation and Content Error](story-038-screenshots-title-prompts-error.md) | UI | Ready | ADR-0002, ADR-0008 |
 | 039 | [Retained screenshots of the system Menu over the Defeat Prompt, the Battle system menu, and the Menu over the live Overworld](story-039-screenshots-menus.md) | UI | Blocked | ADR-0002, ADR-0005, ADR-0008 |
-| 040 | [Retained screenshot of Camp](story-040-screenshot-camp.md) | UI | Blocked | ADR-0002 |
+| 040 | [Retained screenshot of Camp](story-040-screenshot-camp.md) | UI | Deferred | ADR-0002 |
 | 041 | [Remove the interim validate_enemy_ids_against_catalog flag](story-041-remove-interim-enemy-validation-flag.md) | Logic | Blocked | ADR-0002 (Step 3), ADR-0010 |
 
 Stories 033–035 land in one commit (ADR-0002 Migration Step 2).

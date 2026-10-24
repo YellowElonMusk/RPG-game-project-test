@@ -95,5 +95,5 @@
 
 ## Dependencies
 
-- Depends on: `production/epics/content-migration/story-022-migrated-records-no-paths.md`, `story-030-delete-bureaucratia-constants.md`, `story-031-delete-megacorp-constants.md`, `story-032-delete-squad-special-constants.md`, `story-033-delete-is-manager.md`, `story-034-delete-roster-factories.md`
+- Depends on: `production/epics/content-migration/story-022-migrated-records-no-paths.md`, `story-030-delete-bureaucratia-constants.md`, `story-033-delete-is-manager.md`, `story-034-delete-roster-factories.md`
 - Unlocks: epic close (`/story-done` on the last story → EPIC DoD review)

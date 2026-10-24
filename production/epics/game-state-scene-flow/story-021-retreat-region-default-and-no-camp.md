@@ -1,7 +1,7 @@
 # Story 021: Retreat goes to the last camp registered, else the region default camp, else is not offered
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Blocked — BLOCKED: ADR-0002 names no source for "the region's default camp". Recommended fix: a technical-director annotation to ADR-0002 adding `GameMode.get_region_default_camp_id() -> String` (Overworld only; base returns `""`), read from the frozen Overworld at Retreat and at Defeat Prompt open, together with `CampEntryPayload.full_restore: bool` (QA fix, same batched annotation). Becomes Ready once annotated.
+> **Status**: Deferred (2026-10-24): needs the Camp, which does not exist yet; build with the Camp epic
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S (shrank from M: the registered-camp Retreat path moved to story 020)

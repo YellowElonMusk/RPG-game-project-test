@@ -1,7 +1,7 @@
 # Story 041: Remove the interim validate_enemy_ids_against_catalog flag
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Blocked — BLOCKED: depends on content-migration's enemy-record migration (ADR-0001 enemy records: `production/epics/content-migration/story-015-author-bureaucratia-enemies.md`, `production/epics/content-migration/story-016-author-megacorp-enemies.md`, and the factory adapter `production/epics/content-migration/story-029-battle-factory-reads-enemy-records.md`), none Done yet.
+> **Status**: Blocked — BLOCKED: depends on content-migration's enemy-record migration (ADR-0001 enemy records: `production/epics/content-migration/story-015-author-bureaucratia-enemies.md`, `production/epics/content-migration/story-015-author-bureaucratia-enemies.md`, and the factory adapter `production/epics/content-migration/story-029-battle-factory-reads-enemy-records.md`), none Done yet.
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -102,5 +102,5 @@
 
 ## Dependencies
 
-- Depends on: `production/epics/game-state-scene-flow/story-013-invalid-descriptor-stays-in-overworld.md`, `production/epics/game-state-scene-flow/story-034-battle-mode-wraps-battle-core.md`, `production/epics/game-state-scene-flow/story-035-game-root-main-scene.md`; `production/epics/content-migration/story-015-author-bureaucratia-enemies.md`, `production/epics/content-migration/story-016-author-megacorp-enemies.md`, `production/epics/content-migration/story-029-battle-factory-reads-enemy-records.md`
+- Depends on: `production/epics/game-state-scene-flow/story-013-invalid-descriptor-stays-in-overworld.md`, `production/epics/game-state-scene-flow/story-034-battle-mode-wraps-battle-core.md`, `production/epics/game-state-scene-flow/story-035-game-root-main-scene.md`; `production/epics/content-migration/story-015-author-bureaucratia-enemies.md`, `production/epics/content-migration/story-029-battle-factory-reads-enemy-records.md`
 - Unlocks: ADR-0002 Migration Step 4 (retire `ChapterMode` when the Overworld ships; Overworld epic)

@@ -1,10 +1,10 @@
-# Story 024: `make_clerk()` and `make_supervisor()` build their Combatants from the `enemy_clerk` and `enemy_supervisor` records, and the Step 0 suite passes unchanged
+# Story 024: `make_clerk()` and `make_supervisor()` build their Combatants from the `enemy_clerk` and `enemy_supervisor` records, and the Step 0 suite passes unchanged (merged with story 025)
 
 > **Epic**: Content Migration
 > **Status**: Ready
 > **Layer**: Foundation
 > **Type**: Logic
-> **Estimate**: S
+> **Estimate**: M
 > **Manifest Version**: 2026-10-23
 > **Last Updated**: Not started (set by /dev-story)
 
@@ -35,6 +35,12 @@
 
 - [ ] GIVEN the catalog READY on `res://data`, WHEN `BureaucratiaRule.make_clerk()` and `make_supervisor()` run, THEN each returns a new `Combatant` copied from its Enemy record with `record_id` set to the record ID, and story 009's gate passes (003, 006 and 008 green, unchanged).
 
+*Merged from story 025, 2026-10-24:*
+
+*Migration criterion from ADR-0001 Migration Step 3, scoped to this story:*
+
+- [ ] GIVEN the catalog READY, WHEN the three `MegaCorpRule` factories run, THEN each returns a new `Combatant` copied from its Enemy record through `EnemyAdapter`, with `record_id` set, and story 009's gate passes (004, 006 and 008 green, unchanged).
+
 ---
 
 ## Implementation Notes
@@ -48,6 +54,15 @@
 - **Seam edit:** add `BattleContentSeam.ensure_catalog()` (unless story 023 already did): it runs `ContentBootstrap.run(ContentCatalog)` once per test process (a no-op once not UNLOADED), and every seam builder calls it first. It is a test-harness call, not production lazy-loading ("Never lazy-load the catalog on the first lookup"); production factories never trigger a load and fail loudly if the catalog isn't READY.
 - **Closing condition:** story 009's gate passes, the Step 0 suite green and its files' hashes unchanged. Editing a characterization test or the frozen fixture is never the fix. Re-run in a fresh process.
 - Content is moved as-is: the Supervisor stays 110/15/10/9.
+
+*Merged from story 025, 2026-10-24:*
+
+*Derived from ADR-0001 Migration Step 3; same rules as story 024:*
+
+- Reuse `EnemyAdapter` from story 024. No fallback to the constants; an unknown ID fails loudly (`push_error`, `null`).
+- After this story, MegaCorp's AI still branches on `display_name`, and it still works because the record's display name is unchanged. Story 026 moves the branch to `record_id`.
+- The constants stay until story 031 deletes them.
+- **Closing condition:** story 009's gate passes, the Step 0 suite green and its files' hashes unchanged; editing a characterization test or the frozen fixture is never the fix. Re-run in a fresh process.
 
 ---
 
@@ -69,6 +84,11 @@
 - `tests/unit/battle/helpers/battle_content_seam.gd` (seam edit: `ensure_catalog()`)
 - `tests/unit/battle/battle_enemy_adapter_test.gd`
 
+*Merged from story 025, 2026-10-24:*
+
+- `src/battle/factions/megacorp.gd` (factory bodies)
+- `tests/unit/battle/battle_enemy_adapter_test.gd` (MegaCorp cases)
+
 ---
 
 ## QA Test Cases
@@ -80,6 +100,16 @@
   - When: `make_clerk()` / `make_supervisor()`.
   - Then: new Combatants whose fields equal the records, with `record_id` `enemy_clerk` / `enemy_supervisor`.
   - Edge cases: `EnemyAdapter.from_record(null)` and an unknown ID give `push_error` + `null` and never fall back to the constants. Two calls are not the same instance. Story 009's gate passes (003, 006, 008).
+
+*Merged from story 025, 2026-10-24:*
+
+*Written by qa-lead at story creation (QL-STORY-READY, 2026-10-23; verdict ADEQUATE). The developer implements against these — do not invent new test cases during implementation.*
+
+- **AC-1**: Three factories read records; the gate passes.
+  - Given: the catalog READY on `res://data`.
+  - When: each of the three factories runs.
+  - Then: as story 024, for the Drone, Middle Manager and CEO, with `record_id` set.
+  - Edge cases: the Middle Manager's AI branch still works (006 green) because the display name is unchanged. Story 009's gate passes (004, 006, 008).
 
 ---
 
@@ -93,9 +123,19 @@
 
 **Status**: [ ] Not yet created
 
+*Merged from story 025, 2026-10-24:*
+
+*Governed by `qa.level`: at `qa.level: minimal` tests are **waived** (advisory, never "must exist and pass"), but a Visual/Feel or UI story's retained screenshot is not.*
+
+**Story Type**: Logic
+**Required evidence**:
+- Logic: `tests/unit/battle/battle_enemy_adapter_test.gd` (MegaCorp cases) — must exist and pass, and story 009's gate passes. Gate level: BLOCKING.
+
+**Status**: [ ] Not yet created
+
 ---
 
 ## Dependencies
 
 - Depends on: `production/epics/content-migration/story-009-characterization-regression-gate.md`, `story-015-author-bureaucratia-enemies.md`, `story-021-migrated-set-validates-clean.md`
-- Unlocks: `production/epics/content-migration/story-025-megacorp-roster-adapter.md`, `story-030-delete-bureaucratia-constants.md`, `story-034-delete-roster-factories.md`
+- Unlocks: `story-030-delete-bureaucratia-constants.md`, `story-034-delete-roster-factories.md`, `production/epics/content-migration/story-026-faction-rule-decisions-from-records.md`

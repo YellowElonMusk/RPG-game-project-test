@@ -103,5 +103,5 @@
 
 ## Dependencies
 
-- Depends on: `production/epics/content-migration/story-009-characterization-regression-gate.md`, `story-024-bureaucratia-roster-adapter.md`, `story-025-megacorp-roster-adapter.md`, `story-026-faction-rule-decisions-from-records.md`, `story-029-battle-factory-reads-enemy-records.md`; game-state-scene-flow Step 2 ChapterFlow and demo stories (`production/epics/game-state-scene-flow/story-033-strip-chapter-flow-chapter-mode.md`, `production/epics/game-state-scene-flow/story-034-battle-mode-wraps-battle-core.md`, `production/epics/game-state-scene-flow/story-035-game-root-main-scene.md`; not yet created)
+- Depends on: `production/epics/content-migration/story-009-characterization-regression-gate.md`, `story-024-bureaucratia-roster-adapter.md`, `story-026-faction-rule-decisions-from-records.md`, `story-029-battle-factory-reads-enemy-records.md`; game-state-scene-flow Step 2 ChapterFlow and demo stories (`production/epics/game-state-scene-flow/story-033-strip-chapter-flow-chapter-mode.md`, `production/epics/game-state-scene-flow/story-034-battle-mode-wraps-battle-core.md`, `production/epics/game-state-scene-flow/story-035-game-root-main-scene.md`; not yet created)
 - Unlocks: `production/epics/content-migration/story-035-no-hardcoded-battle-content-lint.md`

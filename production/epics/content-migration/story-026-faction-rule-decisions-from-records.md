@@ -109,5 +109,5 @@
 
 ## Dependencies
 
-- Depends on: `production/epics/content-migration/story-009-characterization-regression-gate.md`, `story-011-register-shipped-rule-classes.md`, `story-017-author-faction-rule-records.md`, `story-023-move-record-adapter.md`, `story-025-megacorp-roster-adapter.md`; ADR-0011 Migration Step 2 (no story path yet)
-- Unlocks: `production/epics/content-migration/story-027-faction-rule-presentation-from-records.md`, `story-029-battle-factory-reads-enemy-records.md`, `story-030-delete-bureaucratia-constants.md`, `story-031-delete-megacorp-constants.md`, `story-033-delete-is-manager.md`, `story-034-delete-roster-factories.md`
+- Depends on: `production/epics/content-migration/story-009-characterization-regression-gate.md`, `story-011-register-shipped-rule-classes.md`, `story-017-author-faction-rule-records.md`, `story-023-move-record-adapter.md`, `story-024-bureaucratia-roster-adapter.md`; ADR-0011 Migration Step 2 (no story path yet)
+- Unlocks: `production/epics/content-migration/story-027-faction-rule-presentation-from-records.md`, `story-029-battle-factory-reads-enemy-records.md`, `story-030-delete-bureaucratia-constants.md`, `story-033-delete-is-manager.md`, `story-034-delete-roster-factories.md`

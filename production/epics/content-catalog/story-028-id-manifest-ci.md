@@ -1,7 +1,7 @@
 # Story 028: CI fails on an ID that vanished without an alias, passes once it is aliased, and the old ID resolves through the alias
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: Deferred (2026-10-24): save-file ID check; build with Save/Load
 > **Layer**: Foundation
 > **Type**: Integration
 > **Estimate**: M

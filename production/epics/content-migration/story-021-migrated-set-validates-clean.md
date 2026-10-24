@@ -92,5 +92,5 @@
 
 ## Dependencies
 
-- Depends on: `production/epics/content-migration/story-013-author-faction-records.md`, `story-014-author-enemy-named-attack-moves.md`, `story-015-author-bureaucratia-enemies.md`, `story-016-author-megacorp-enemies.md`, `story-017-author-faction-rule-records.md`, `story-018-author-squad-special-moves.md`; `production/epics/content-catalog/story-027-headless-validate-content.md`; for Done: `production/epics/content-migration/story-012-register-stats-validators.md`, `story-020-enemy-reward-range-validation.md`
+- Depends on: `production/epics/content-migration/story-013-author-faction-records.md`, `story-014-author-enemy-named-attack-moves.md`, `story-015-author-bureaucratia-enemies.md`, `story-017-author-faction-rule-records.md`, `story-018-author-squad-special-moves.md`; `production/epics/content-catalog/story-027-headless-validate-content.md`; for Done: `production/epics/content-migration/story-012-register-stats-validators.md`, `story-020-enemy-reward-range-validation.md`
 - Unlocks: `production/epics/content-migration/story-023-move-record-adapter.md`, `story-024-bureaucratia-roster-adapter.md` (and through them 025–029)

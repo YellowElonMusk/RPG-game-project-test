@@ -1,7 +1,7 @@
 # Story 022: The active pad disconnecting while `fast_forward` is held emits `released(fast_forward)` and then `device_lost`
 
 > **Epic**: Input System
-> **Status**: Ready
+> **Status**: Deferred (2026-10-24): controller polish, not needed for a playable build; build before release
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M

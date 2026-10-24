@@ -120,4 +120,4 @@
 ## Dependencies
 
 - Depends on: `production/epics/content-catalog/story-001-install-gdunit4.md`
-- Unlocks: `production/epics/content-migration/story-002-characterize-squad-specials.md`, `story-003-characterize-bureaucratia-roster.md`, `story-004-characterize-megacorp-roster.md`, `story-005-characterize-moves-damage.md`, `story-006-characterize-faction-rule-decisions.md`, `story-007-characterize-faction-rule-presentation.md`, `story-008-characterize-scripted-fights.md` (all in `production/epics/content-migration/`)
+- Unlocks: `production/epics/content-migration/story-002-characterize-squad-specials.md`, `story-003-characterize-bureaucratia-roster.md`, `story-005-characterize-moves-damage.md`, `story-006-characterize-faction-rule-decisions.md`, `story-007-characterize-faction-rule-presentation.md`, `story-008-characterize-scripted-fights.md` (all in `production/epics/content-migration/`)

@@ -98,4 +98,4 @@
 ## Dependencies
 
 - Depends on: `production/epics/content-catalog/story-002-load-one-of-each-type.md`, `production/epics/content-catalog/story-017-overworld-uniqueness-and-faction-rule.md`
-- Unlocks: `production/epics/content-migration/story-015-author-bureaucratia-enemies.md`, `story-016-author-megacorp-enemies.md`, `story-017-author-faction-rule-records.md`, `story-027-faction-rule-presentation-from-records.md`
+- Unlocks: `production/epics/content-migration/story-015-author-bureaucratia-enemies.md`, `story-017-author-faction-rule-records.md`, `story-027-faction-rule-presentation-from-records.md`

@@ -90,5 +90,5 @@
 
 ## Dependencies
 
-- Depends on: `production/epics/content-migration/story-013-author-faction-records.md`, `story-014-author-enemy-named-attack-moves.md`, `story-015-author-bureaucratia-enemies.md`, `story-016-author-megacorp-enemies.md`, `story-017-author-faction-rule-records.md`, `story-018-author-squad-special-moves.md`
+- Depends on: `production/epics/content-migration/story-013-author-faction-records.md`, `story-014-author-enemy-named-attack-moves.md`, `story-015-author-bureaucratia-enemies.md`, `story-017-author-faction-rule-records.md`, `story-018-author-squad-special-moves.md`
 - Unlocks: `production/epics/content-migration/story-035-no-hardcoded-battle-content-lint.md`

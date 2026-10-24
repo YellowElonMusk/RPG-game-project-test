@@ -1,7 +1,7 @@
 # Story 025: Focus loss emits `released` before `focus_lost`, pad input is ignored while unfocused, and a key still held after `focus_gained` needs a fresh press
 
 > **Epic**: Input System
-> **Status**: Ready
+> **Status**: Deferred (2026-10-24): controller polish, not needed for a playable build; build before release
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: L

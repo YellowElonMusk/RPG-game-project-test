@@ -96,4 +96,4 @@
 ## Dependencies
 
 - Depends on: `production/epics/content-migration/story-009-characterization-regression-gate.md`, `story-013-author-faction-records.md`, `story-017-author-faction-rule-records.md`, `story-026-faction-rule-decisions-from-records.md`
-- Unlocks: `production/epics/content-migration/story-030-delete-bureaucratia-constants.md`, `story-031-delete-megacorp-constants.md`
+- Unlocks: `production/epics/content-migration/story-030-delete-bureaucratia-constants.md`

@@ -1,7 +1,7 @@
 # Story 018: A held direction steps exactly at `step_time(k)` on a fixed tick, including a non-multiple interval and every due step in order during a hitch, and stops on release
 
 > **Epic**: Input System
-> **Status**: Ready
+> **Status**: Deferred (2026-10-24): controller polish, not needed for a playable build; build before release
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: L

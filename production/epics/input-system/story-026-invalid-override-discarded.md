@@ -1,7 +1,7 @@
 # Story 026: An invalid player override is discarded, defaults stay active, and exactly one notice fires; the next load fires none
 
 > **Epic**: Input System
-> **Status**: Ready
+> **Status**: Deferred (2026-10-24): controller polish, not needed for a playable build; build before release
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M

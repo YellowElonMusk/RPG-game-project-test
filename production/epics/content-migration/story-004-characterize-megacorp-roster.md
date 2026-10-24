@@ -1,7 +1,7 @@
 # Story 004: The Security Drone, Middle Manager and CEO stat blocks and flags are pinned against today's `MegaCorpRule` factories
 
 > **Epic**: Content Migration
-> **Status**: Ready
+> **Status**: Merged into story 003 (2026-10-24)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -91,4 +91,4 @@
 ## Dependencies
 
 - Depends on: `production/epics/content-migration/story-001-characterization-seam.md`
-- Unlocks: `production/epics/content-migration/story-009-characterization-regression-gate.md`, `story-016-author-megacorp-enemies.md`, `story-025-megacorp-roster-adapter.md`
+- Unlocks: `production/epics/content-migration/story-009-characterization-regression-gate.md`, `story-015-author-bureaucratia-enemies.md`, `story-024-bureaucratia-roster-adapter.md`

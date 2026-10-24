@@ -1,7 +1,7 @@
 # Story 019: The four squad misfits exist as Character records whose stat blocks and move lists equal the agreed source, unretuned
 
 > **Epic**: Content Migration
-> **Status**: Blocked — BLOCKED: user decision Q1 — migrate the prototype's iteration-3 squad stat blocks unretuned, or drop this story; criteria to be revised (QA: INADEQUATE as drafted) once decided
+> **Status**: Merged into story 018 (2026-10-24)
 > **Layer**: Foundation
 > **Type**: Config/Data
 > **Estimate**: S

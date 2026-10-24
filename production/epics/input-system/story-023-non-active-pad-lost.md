@@ -1,7 +1,7 @@
 # Story 023: A non-active pad disconnecting emits no `device_lost`, and its held actions release only if no other device holds them
 
 > **Epic**: Input System
-> **Status**: Ready
+> **Status**: Deferred (2026-10-24): controller polish, not needed for a playable build; build before release
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S

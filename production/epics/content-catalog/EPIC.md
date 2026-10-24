@@ -94,9 +94,9 @@ tests) can run alongside it. `input-system` and `game-state-scene-flow` Step 1 f
 | 025 | On launch with 30 errors, the player sees the plain-text error screen, never a crash or blank screen | UI | Blocked (needs game-state-scene-flow) | ADR-0001 |
 | 026 | A Failed catalog keeps Game State in its boot state, never reaching overworld or battle | Integration | Blocked (needs game-state-scene-flow) | ADR-0001 |
 | 027 | The headless validation check exits 0 on valid data, and 1 with the full report on any error | Integration | Ready | ADR-0001 |
-| 028 | CI fails on an ID that vanished without an alias, passes once it is aliased, and the old ID resolves through the alias | Integration | Ready | ADR-0001 |
-| 029 | 500 generated records load and validate with a median under 1.0 s over 10 runs (advisory) | Config/Data | Ready | ADR-0001 |
-| 030 | In an exported Windows build, `ResourceLoader.list_directory()` finds every record | Integration | Ready | ADR-0001 |
+| 028 | CI fails on an ID that vanished without an alias, passes once it is aliased, and the old ID resolves through the alias | Integration | Deferred | ADR-0001 |
+| 029 | 500 generated records load and validate with a median under 1.0 s over 10 runs (advisory) | Config/Data | Deferred | ADR-0001 |
+| 030 | In an exported Windows build, `ResourceLoader.list_directory()` finds every record | Integration | Deferred | ADR-0001 |
 ## Definition of Done
 
 - Every story implemented, reviewed and closed with `/story-done`

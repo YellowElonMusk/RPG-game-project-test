@@ -1,7 +1,7 @@
 # Story 031: `MegaCorpRule` declares no stat, power, tuning, colour or display-string constant and compares no `display_name`, and the Step 0 suite passes unchanged
 
 > **Epic**: Content Migration
-> **Status**: Ready
+> **Status**: Merged into story 030 (2026-10-24)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -89,5 +89,5 @@
 
 ## Dependencies
 
-- Depends on: `production/epics/content-migration/story-009-characterization-regression-gate.md`, `story-025-megacorp-roster-adapter.md`, `story-026-faction-rule-decisions-from-records.md`, `story-027-faction-rule-presentation-from-records.md`
+- Depends on: `production/epics/content-migration/story-009-characterization-regression-gate.md`, `story-024-bureaucratia-roster-adapter.md`, `story-026-faction-rule-decisions-from-records.md`, `story-027-faction-rule-presentation-from-records.md`
 - Unlocks: `production/epics/content-migration/story-035-no-hardcoded-battle-content-lint.md`

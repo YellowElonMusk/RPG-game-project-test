@@ -52,7 +52,7 @@ unblocks `game-state-scene-flow` Step 3, which deletes the interim
 | 001 | [Characterization seam builds every shipped enemy, move and rule by record ID](story-001-characterization-seam.md) | Logic | Ready | ADR-0001, ADR-0011 |
 | 002 | [Squad specials' fields and effects pinned](story-002-characterize-squad-specials.md) | Logic | Ready | ADR-0001, ADR-0007 |
 | 003 | [Clerk and Supervisor stat blocks pinned](story-003-characterize-bureaucratia-roster.md) | Logic | Ready | ADR-0001 |
-| 004 | [Security Drone, Middle Manager and CEO stat blocks pinned](story-004-characterize-megacorp-roster.md) | Logic | Ready | ADR-0001 |
+| 004 | [Security Drone, Middle Manager and CEO stat blocks pinned](story-004-characterize-megacorp-roster.md) | Logic | Merged into 003 | ADR-0001 |
 | 005 | [Named attacks, Attack and Home Run damage matrix pinned](story-005-characterize-moves-damage.md) | Logic | Ready | ADR-0001, ADR-0007 |
 | 006 | [Both faction rules' decisions pinned](story-006-characterize-faction-rule-decisions.md) | Logic | Ready | ADR-0011 |
 | 007 | [Both faction rules' presentation pinned](story-007-characterize-faction-rule-presentation.md) | Logic | Ready | ADR-0011 |
@@ -64,23 +64,23 @@ unblocks `game-state-scene-flow` Step 3, which deletes the interim
 | 013 | [Faction records](story-013-author-faction-records.md) | Config/Data | Ready | ADR-0001 |
 | 014 | [Enemy named-attack Move records](story-014-author-enemy-named-attack-moves.md) | Config/Data | Ready | ADR-0001, ADR-0011 |
 | 015 | [Bureaucratia Enemy records](story-015-author-bureaucratia-enemies.md) | Config/Data | Ready | ADR-0001, ADR-0011 |
-| 016 | [MegaCorp Enemy records](story-016-author-megacorp-enemies.md) | Config/Data | Ready | ADR-0001, ADR-0011 |
+| 016 | [MegaCorp Enemy records](story-016-author-megacorp-enemies.md) | Config/Data | Merged into 015 | ADR-0001, ADR-0011 |
 | 017 | [`faction_rule` records](story-017-author-faction-rule-records.md) | Config/Data | Ready | ADR-0011 |
 | 018 | [Squad-special Move records (provisional)](story-018-author-squad-special-moves.md) | Config/Data | Ready | ADR-0001 |
-| 019 | [Squad Character records](story-019-author-squad-character-records.md) | Config/Data | Blocked | ADR-0001 |
+| 019 | [Squad Character records](story-019-author-squad-character-records.md) | Config/Data | Merged into 018 | ADR-0001 |
 | 020 | [Enemy reward range validation](story-020-enemy-reward-range-validation.md) | Logic | Blocked | ADR-0007 |
 | 021 | [Migrated set validates clean](story-021-migrated-set-validates-clean.md) | Integration | Ready | ADR-0001 |
 | 022 | [No file paths in migrated records](story-022-migrated-records-no-paths.md) | Logic | Ready | ADR-0001 |
 | 023 | [Move record adapter](story-023-move-record-adapter.md) | Logic | Ready | ADR-0001, ADR-0010 |
 | 024 | [Bureaucratia roster adapter](story-024-bureaucratia-roster-adapter.md) | Logic | Ready | ADR-0001, ADR-0011 |
-| 025 | [MegaCorp roster adapter](story-025-megacorp-roster-adapter.md) | Logic | Ready | ADR-0001, ADR-0011 |
+| 025 | [MegaCorp roster adapter](story-025-megacorp-roster-adapter.md) | Logic | Merged into 024 | ADR-0001, ADR-0011 |
 | 026 | [Rule decisions from records](story-026-faction-rule-decisions-from-records.md) | Logic | Blocked | ADR-0011 |
 | 027 | [Rule presentation from records](story-027-faction-rule-presentation-from-records.md) | Logic | Blocked | ADR-0011, ADR-0013 |
 | 028 | [Squad specials adapter](story-028-squad-specials-adapter.md) | Logic | Ready | ADR-0001 |
 | 029 | [BattleFactory reads enemy records](story-029-battle-factory-reads-enemy-records.md) | Integration | Blocked | ADR-0010, ADR-0011 |
 | 030 | [Delete Bureaucratia constants](story-030-delete-bureaucratia-constants.md) | Logic | Ready | ADR-0011 |
-| 031 | [Delete MegaCorp constants](story-031-delete-megacorp-constants.md) | Logic | Ready | ADR-0011 |
-| 032 | [Delete squad-special constants](story-032-delete-squad-special-constants.md) | Logic | Ready | ADR-0001 |
+| 031 | [Delete MegaCorp constants](story-031-delete-megacorp-constants.md) | Logic | Merged into 030 | ADR-0011 |
+| 032 | [Delete squad-special constants](story-032-delete-squad-special-constants.md) | Logic | Merged into 030 | ADR-0001 |
 | 033 | [Delete `is_manager()`](story-033-delete-is-manager.md) | Logic | Blocked | ADR-0011 |
 | 034 | [Delete the roster factories](story-034-delete-roster-factories.md) | Integration | Blocked | ADR-0011 |
 | 035 | [Battle content CI lint](story-035-no-hardcoded-battle-content-lint.md) | Logic | Blocked | ADR-0011 |

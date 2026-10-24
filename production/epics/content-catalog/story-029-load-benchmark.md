@@ -1,7 +1,7 @@
 # Story 029: 500 generated records load and validate with a median under 1.0 s over 10 runs (advisory)
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: Deferred (2026-10-24): load-time benchmark; build when content volume grows
 > **Layer**: Foundation
 > **Type**: Config/Data
 > **Estimate**: M

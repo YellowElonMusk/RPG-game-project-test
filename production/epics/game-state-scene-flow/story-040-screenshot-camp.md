@@ -1,7 +1,7 @@
 # Story 040: Retained screenshot of Camp
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Blocked — BLOCKED: no Camp mode scene exists (Camp & Party Management has no epic), and story 021 is blocked.
+> **Status**: Deferred (2026-10-24): needs the Camp, which does not exist yet; build with the Camp epic
 > **Layer**: Foundation
 > **Type**: UI
 > **Estimate**: S

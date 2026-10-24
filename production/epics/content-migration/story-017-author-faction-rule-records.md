@@ -113,5 +113,5 @@
 
 ## Dependencies
 
-- Depends on: `production/epics/content-migration/story-006-characterize-faction-rule-decisions.md`, `story-007-characterize-faction-rule-presentation.md`, `story-011-register-shipped-rule-classes.md`, `story-013-author-faction-records.md`, `story-014-author-enemy-named-attack-moves.md`, `story-015-author-bureaucratia-enemies.md`, `story-016-author-megacorp-enemies.md`
+- Depends on: `production/epics/content-migration/story-006-characterize-faction-rule-decisions.md`, `story-007-characterize-faction-rule-presentation.md`, `story-011-register-shipped-rule-classes.md`, `story-013-author-faction-records.md`, `story-014-author-enemy-named-attack-moves.md`, `story-015-author-bureaucratia-enemies.md`
 - Unlocks: `production/epics/content-migration/story-021-migrated-set-validates-clean.md`, `story-026-faction-rule-decisions-from-records.md`, `story-027-faction-rule-presentation-from-records.md`

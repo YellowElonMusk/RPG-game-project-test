@@ -1,7 +1,7 @@
 # Story 030: In an exported Windows build, `ResourceLoader.list_directory()` finds every record
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: Deferred (2026-10-24): exported-build check; build before the first export (pairs with the ADR-0001 editor/CI scan question)
 > **Layer**: Foundation
 > **Type**: Integration
 > **Estimate**: M

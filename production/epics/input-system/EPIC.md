@@ -68,19 +68,19 @@ Only the `GameRoot._ready()` wiring needs the real resolver.
 | 011 | [A gamepad reporting device ID 0 makes the active device `gamepad`; a key press makes it `keyboard_mouse`](story-011-device-id-zero-pad.md) | Logic | Ready | ADR-0003 |
 | 012 | [Each meaningful input emits exactly one `active_device_changed` of the right kind](story-012-active-device-changed.md) | Logic | Ready | ADR-0003, ADR-0008 |
 | 013 | [No `active_device_changed` for stick drift, sub-threshold mouse movement, or a second input of the active kind](story-013-no-device-change.md) | Logic | Ready | ADR-0003 |
-| 014 | [Synthetic joy names map to `xbox`, `playstation`, `nintendo`, `xbox` (Steam), and `generic` otherwise](story-014-pad-style-from-joy-name.md) | Logic | Ready | ADR-0003, ADR-0008 |
-| 015 | [With two pads, the first pad's input sets `pad_style` and the second pad's input fires nothing](story-015-first-pad-sets-style.md) | Logic | Ready | ADR-0003 |
+| 014 | [Synthetic joy names map to `xbox`, `playstation`, `nintendo`, `xbox` (Steam), and `generic` otherwise](story-014-pad-style-from-joy-name.md) | Logic | Deferred | ADR-0003, ADR-0008 |
+| 015 | [With two pads, the first pad's input sets `pad_style` and the second pad's input fires nothing](story-015-first-pad-sets-style.md) | Logic | Deferred | ADR-0003 |
 | 016 | [The same action on keyboard and pad in one frame emits two `pressed`; the later event's kind is active](story-016-keyboard-and-pad-same-frame.md) | Logic | Ready | ADR-0003 |
 | 017 | [The pointer distance restarts from zero after a switch to gamepad](story-017-pointer-distance-reset.md) | Logic | Ready | ADR-0003 |
-| 018 | [A held direction steps exactly at `step_time(k)` on a fixed tick, catches up in order, and stops on release](story-018-menu-repeat-timing.md) | Logic | Ready | ADR-0003 |
-| 019 | [Changing the held direction mid-repeat fires one immediate step and restarts from `repeat_delay`](story-019-direction-change-restart.md) | Logic | Ready | ADR-0003 |
+| 018 | [A held direction steps exactly at `step_time(k)` on a fixed tick, catches up in order, and stops on release](story-018-menu-repeat-timing.md) | Logic | Deferred | ADR-0003 |
+| 019 | [Changing the held direction mid-repeat fires one immediate step and restarts from `repeat_delay`](story-019-direction-change-restart.md) | Logic | Deferred | ADR-0003 |
 | 020 | [A stick just under `menu_stick_threshold` gives no menu step; just over gives one](story-020-menu-stick-threshold.md) | Logic | Ready | ADR-0003, ADR-0008 |
 | 021 | [Each menu step is one `nav_*` `pressed`, re-injected by the UI as the matching `ui_*` action](story-021-nav-pressed-only-reinjection.md) | Logic | Blocked (UI Framework epic: UiNavigator, ADR-0008 §3) | ADR-0003, ADR-0008 |
-| 022 | [The active pad disconnecting while `fast_forward` is held emits `released(fast_forward)` then `device_lost`](story-022-active-pad-lost.md) | Logic | Ready | ADR-0003 |
-| 023 | [A non-active pad disconnecting emits no `device_lost`; its held actions release only if no other device holds them](story-023-non-active-pad-lost.md) | Logic | Ready | ADR-0003 |
-| 024 | [A pad reconnecting emits `device_restored`, also while unfocused](story-024-device-restored.md) | Logic | Ready | ADR-0003 |
-| 025 | [Focus loss releases before `focus_lost`, pad input is ignored while unfocused, held keys need a fresh press (+ `InputSystem` shell)](story-025-focus-lost-and-gained.md) | Logic (+ integration) | Ready | ADR-0003 |
-| 026 | [An invalid player override is discarded, defaults stay active, one notice fires; the next load fires none](story-026-invalid-override-discarded.md) | Logic | Ready | ADR-0003, ADR-0009 |
+| 022 | [The active pad disconnecting while `fast_forward` is held emits `released(fast_forward)` then `device_lost`](story-022-active-pad-lost.md) | Logic | Deferred | ADR-0003 |
+| 023 | [A non-active pad disconnecting emits no `device_lost`; its held actions release only if no other device holds them](story-023-non-active-pad-lost.md) | Logic | Deferred | ADR-0003 |
+| 024 | [A pad reconnecting emits `device_restored`, also while unfocused](story-024-device-restored.md) | Logic | Deferred | ADR-0003 |
+| 025 | [Focus loss releases before `focus_lost`, pad input is ignored while unfocused, held keys need a fresh press (+ `InputSystem` shell)](story-025-focus-lost-and-gained.md) | Logic (+ integration) | Deferred | ADR-0003 |
+| 026 | [An invalid player override is discarded, defaults stay active, one notice fires; the next load fires none](story-026-invalid-override-discarded.md) | Logic | Deferred | ADR-0003, ADR-0009 |
 
 **Not covered by a story here:**
 - **AC-23** (Dialogue `fast_forward` tap latch) and **AC-24** (`inspect` toggle and hover rule text) test consumer state, not Input. They are verified by the Dialogue, Turn Battle and UI Framework epics. Input's part (one `pressed` per tap, nothing held) is proven by story 002.

@@ -93,4 +93,4 @@
 ## Dependencies
 
 - Depends on: `production/epics/content-migration/story-009-characterization-regression-gate.md`, `story-018-author-squad-special-moves.md`, `story-023-move-record-adapter.md`
-- Unlocks: `production/epics/content-migration/story-032-delete-squad-special-constants.md`
+- Unlocks: `production/epics/content-migration/story-030-delete-bureaucratia-constants.md`

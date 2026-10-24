@@ -1,7 +1,7 @@
 # Story 036: A Victory that triggers story dialogue opens Dialogue only after transition_finished(Overworld)
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Deferred (2026-10-24): needs Dialogue, which does not exist yet; build with the Dialogue epic
 > **Layer**: Foundation
 > **Type**: Integration
 > **Estimate**: M

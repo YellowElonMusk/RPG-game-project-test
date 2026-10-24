@@ -1,7 +1,7 @@
 # Story 027: A transition requested by a Dialogue line closes the Dialogue before transition_started
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Deferred (2026-10-24): needs Dialogue, which does not exist yet; build with the Dialogue epic
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S

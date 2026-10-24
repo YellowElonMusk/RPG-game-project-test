@@ -1,10 +1,10 @@
-# Story 003: The Clerk and Supervisor stat blocks and flags are pinned against today's `BureaucratiaRule` factories
+# Story 003: The Clerk and Supervisor stat blocks and flags are pinned against today's `BureaucratiaRule` factories (merged with story 004)
 
 > **Epic**: Content Migration
 > **Status**: Ready
 > **Layer**: Foundation
 > **Type**: Logic
-> **Estimate**: S
+> **Estimate**: M
 > **Manifest Version**: 2026-10-23
 > **Last Updated**: Not started (set by /dev-story)
 
@@ -34,6 +34,12 @@
 
 - [ ] GIVEN `seam.enemy("enemy_clerk")` and `seam.enemy("enemy_supervisor")`, THEN `display_name`, `max_hp`, `max_mp`, `attack`, `defense`, `speed`, `is_enemy`, `is_boss`, and the post-`reset_for_battle()` `hp`/`mp` equal the pinned values (Clerk 40/0/11/6/8, not boss; Supervisor 110/0/15/10/9, boss), and two calls return distinct instances.
 
+*Merged from story 004, 2026-10-24:*
+
+*Migration criterion from ADR-0001 Migration Step 0, scoped to this story:*
+
+- [ ] GIVEN `seam.enemy()` for `enemy_security_drone`, `enemy_middle_manager` and `enemy_ceo`, THEN every stat, `is_enemy`, `is_boss`, and the post-reset `hp`/`mp` equal the pins (36/0/12/8/10; 44/0/10/6/8; 120/0/15/10/9, boss), and repeated calls return distinct instances.
+
 ---
 
 ## Implementation Notes
@@ -44,6 +50,14 @@
 - **The Supervisor's numbers are pinned exactly as shipped** (110 HP, 15 ATK, 10 DEF, 9 SPD). The open balance question (the naive autoplay bot can't beat him) stays open; this test is the guard that it isn't "fixed" in passing.
 - After ADR-0011 adds `record_id`, this test does **not** assert it: a Step 0 file can't name a field that doesn't exist yet. Story 024 adds the `record_id` check in its own test file.
 - Epic-wide rules: values pinned in `CharacterizationExpected` by running today's code once, never read from `BureaucratiaRule` constants. Seed nothing that isn't needed; nothing time-dependent. **Watch it fail:** change Clerk HP 40 → 41 locally, see the test fail, revert, record it in the Completion Notes.
+
+*Merged from story 004, 2026-10-24:*
+
+*Derived from ADR-0001 Migration Step 0:*
+
+- Same shape as story 003.
+- `display_name` is pinned, and it matters here: today the MegaCorp AI branches on `enemy.display_name == "Middle Manager"`. Story 026 moves the branch to `record_id`, and story 006's AI pins prove the result is the same.
+- Epic-wide rules: values pinned in `CharacterizationExpected` by running today's code once, never read from `MegaCorpRule` constants. **Watch it fail:** change one pinned production value locally, see the test fail, revert, record it in the Completion Notes. Content is never retuned.
 
 ---
 
@@ -62,6 +76,11 @@
 - `tests/unit/battle/battle_bureaucratia_roster_characterization_test.gd`
 - `tests/unit/battle/fixtures/characterization_expected.gd` (Bureaucratia roster block)
 
+*Merged from story 004, 2026-10-24:*
+
+- `tests/unit/battle/battle_megacorp_roster_characterization_test.gd`
+- `tests/unit/battle/fixtures/characterization_expected.gd` (MegaCorp roster block)
+
 ---
 
 ## QA Test Cases
@@ -74,6 +93,16 @@
   - Then: name, `max_hp`, `max_mp`, `attack`, `defense`, `speed`, `is_enemy`, `is_boss`, `hp` and `mp` equal the fixture (40/0/11/6/8, not boss; 110/0/15/10/9, boss).
   - Edge cases: two calls are `is_not_same`. Damaging one instance (through `seam.arrange_vitals`) leaves the other at full HP.
 
+*Merged from story 004, 2026-10-24:*
+
+*Written by qa-lead at story creation (QL-STORY-READY, 2026-10-23; verdict ADEQUATE). The developer implements against these — do not invent new test cases during implementation.*
+
+- **AC-1**: Three stat blocks.
+  - Given: `seam.enemy(id)` for the three IDs.
+  - When: `reset_for_battle()`.
+  - Then: as story 003, for Drone 36/0/12/8/10, Middle Manager 44/0/10/6/8 and CEO 120/0/15/10/9 (boss).
+  - Edge cases: `display_name == "Middle Manager"` is pinned exactly. Repeated calls return distinct instances.
+
 ---
 
 ## Test Evidence
@@ -83,6 +112,16 @@
 **Story Type**: Logic
 **Required evidence**:
 - Logic: `tests/unit/battle/battle_bureaucratia_roster_characterization_test.gd` — must exist and pass. Gate level: BLOCKING.
+
+**Status**: [ ] Not yet created
+
+*Merged from story 004, 2026-10-24:*
+
+*Governed by `qa.level`: at `qa.level: minimal` tests are **waived** (advisory, never "must exist and pass"), but a Visual/Feel or UI story's retained screenshot is not.*
+
+**Story Type**: Logic
+**Required evidence**:
+- Logic: `tests/unit/battle/battle_megacorp_roster_characterization_test.gd` — must exist and pass. Gate level: BLOCKING.
 
 **Status**: [ ] Not yet created
 

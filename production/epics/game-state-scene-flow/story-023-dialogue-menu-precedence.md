@@ -1,7 +1,7 @@
 # Story 023: Dialogue cannot open over the Menu, but the Menu can open over Dialogue
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Deferred (2026-10-24): needs Dialogue, which does not exist yet; build with the Dialogue epic
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S

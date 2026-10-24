@@ -100,4 +100,4 @@
 ## Dependencies
 
 - Depends on: `production/epics/content-migration/story-005-characterize-moves-damage.md`, `story-010-register-migrated-effect-types.md`; `production/epics/content-catalog/story-015-structure-validation.md`
-- Unlocks: `production/epics/content-migration/story-015-author-bureaucratia-enemies.md`, `story-016-author-megacorp-enemies.md`, `story-017-author-faction-rule-records.md`, `story-023-move-record-adapter.md`
+- Unlocks: `production/epics/content-migration/story-015-author-bureaucratia-enemies.md`, `story-017-author-faction-rule-records.md`, `story-023-move-record-adapter.md`

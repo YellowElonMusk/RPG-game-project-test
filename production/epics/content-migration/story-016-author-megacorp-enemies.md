@@ -1,7 +1,7 @@
 # Story 016: `enemy_security_drone`, `enemy_middle_manager` and `enemy_ceo` exist as Enemy records whose stat blocks, boss flag, faction and named attacks equal the shipped MegaCorp roster
 
 > **Epic**: Content Migration
-> **Status**: Ready
+> **Status**: Merged into story 015 (2026-10-24)
 > **Layer**: Foundation
 > **Type**: Config/Data
 > **Estimate**: S
@@ -96,5 +96,5 @@
 
 ## Dependencies
 
-- Depends on: `production/epics/content-migration/story-004-characterize-megacorp-roster.md`, `story-013-author-faction-records.md`, `story-014-author-enemy-named-attack-moves.md`
-- Unlocks: `production/epics/content-migration/story-017-author-faction-rule-records.md`, `story-020-enemy-reward-range-validation.md`, `story-021-migrated-set-validates-clean.md`, `story-025-megacorp-roster-adapter.md`
+- Depends on: `production/epics/content-migration/story-003-characterize-bureaucratia-roster.md`, `story-013-author-faction-records.md`, `story-014-author-enemy-named-attack-moves.md`
+- Unlocks: `production/epics/content-migration/story-017-author-faction-rule-records.md`, `story-020-enemy-reward-range-validation.md`, `story-021-migrated-set-validates-clean.md`, `story-024-bureaucratia-roster-adapter.md`

@@ -108,5 +108,5 @@
 
 ## Dependencies
 
-- Depends on: `production/epics/content-migration/story-002-characterize-squad-specials.md`, `story-003-characterize-bureaucratia-roster.md`, `story-004-characterize-megacorp-roster.md`, `story-005-characterize-moves-damage.md`, `story-006-characterize-faction-rule-decisions.md`, `story-007-characterize-faction-rule-presentation.md`, `story-008-characterize-scripted-fights.md`
+- Depends on: `production/epics/content-migration/story-002-characterize-squad-specials.md`, `story-003-characterize-bureaucratia-roster.md`, `story-005-characterize-moves-damage.md`, `story-006-characterize-faction-rule-decisions.md`, `story-007-characterize-faction-rule-presentation.md`, `story-008-characterize-scripted-fights.md`
 - Unlocks: stories 023–035 in `production/epics/content-migration/` (each closes on this gate): `story-023-move-record-adapter.md` through `story-035-no-hardcoded-battle-content-lint.md`

@@ -94,5 +94,5 @@
 
 ## Dependencies
 
-- Depends on: `production/epics/content-migration/story-012-register-stats-validators.md`, `story-015-author-bureaucratia-enemies.md`, `story-016-author-megacorp-enemies.md`; `production/epics/content-catalog/story-016-field-range-validators.md`
+- Depends on: `production/epics/content-migration/story-012-register-stats-validators.md`, `story-015-author-bureaucratia-enemies.md`
 - Unlocks: `production/epics/content-migration/story-021-migrated-set-validates-clean.md` (its Done)

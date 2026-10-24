@@ -1,7 +1,7 @@
 # Story 032: `SquadSpecials` declares no MP-cost, power or rounds constant for any special, and the Step 0 suite passes unchanged
 
 > **Epic**: Content Migration
-> **Status**: Ready
+> **Status**: Merged into story 030 (2026-10-24)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S

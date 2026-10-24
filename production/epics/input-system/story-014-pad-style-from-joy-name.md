@@ -1,7 +1,7 @@
 # Story 014: Synthetic joy names map to `xbox`, `playstation`, `nintendo`, `xbox` for Steam Virtual Gamepad and Steam Deck, and `generic` otherwise
 
 > **Epic**: Input System
-> **Status**: Ready
+> **Status**: Deferred (2026-10-24): controller polish, not needed for a playable build; build before release
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
