@@ -1,12 +1,12 @@
 # Story 018: An alien-only field on a human nation, and a `base_shape` that does not match `kind`, each error
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-27
 
 ## Context
 
@@ -57,11 +57,9 @@
 
 ## Files
 
-- `src/data/content_catalog.gd` (alien-only field list, shape table)
-- `tests/unit/content_data/fixtures/faction_rules/human_signature_color/`, `.../alien_organic_shape/`, `.../human_square_shape/`
-- `tests/unit/content_data/content_data_faction_fields_test.gd`
-
----
+- `src/data/content_catalog.gd` — modified (`_ALIEN_ONLY_FIELDS` extended to all four alien-only fields; new `_SHAPES_BY_KIND` and `_check_faction_shapes()`)
+- `tests/unit/content_data/fixtures/faction_rules/` — created (`human_signature_color/`, `alien_organic_shape/`, `human_square_shape/`, plus `human_two_alien_fields/` and `unknown_kind/` from the /code-review suggestions)
+- `tests/unit/content_data/content_data_faction_fields_test.gd` — created (6 test functions)
 
 ## QA Test Cases
 
@@ -90,3 +88,12 @@
 
 - Depends on: `production/epics/content-catalog/story-002-load-one-of-each-type.md`
 - Unlocks: `production/epics/content-catalog/story-019-warning-cases.md`, `production/epics/content-catalog/story-023-deterministic-report-order.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-27
+**Criteria**: 1/1 passing (AC-17)
+**Deviations**: Advisory only — (1) an empty `base_shape` is not flagged, since only `display_name` is required on a Faction today and ~20 existing fixtures leave `base_shape` empty; game-designer should decide whether `base_shape` becomes required. (2) no `kind` enum check exists anywhere in the codebase (the story assumed one from story 015); an unrecognized `kind` causes no shape error today.
+**Test Evidence**: `tests/unit/content_data/content_data_faction_fields_test.gd` — 6/6 passing; full `tests/unit/content_data` suite 178/178, 0 errors/failures/orphans
+**Reviewed by**: `/code-review` (APPROVED WITH SUGGESTIONS; both suggestions — a two-field human_nation test and an unknown-kind test — applied and re-verified before close)

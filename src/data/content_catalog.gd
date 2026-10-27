@@ -179,9 +179,16 @@ var _acyclic_fields: Dictionary = {}
 const _IGNORED_RESOURCE_KEYS: Dictionary = {
 	"script": true, "resource_name": true, "resource_local_to_scene": true,
 }
-# Faction fields an alien faction may set but a human_nation may not (ADR-0012;
-# story 018 adds signature_color, backup_icon_id and rule_id to this list).
-const _ALIEN_ONLY_FIELDS: Array[StringName] = [&"patrol_archetype_id"]
+# Faction fields an alien faction may set but a human_nation may not (GDD Rule
+# 8 "Faction rules"; ADR-0012 adds patrol_archetype_id).
+const _ALIEN_ONLY_FIELDS: Array[StringName] = [
+	&"signature_color", &"backup_icon_id", &"rule_id", &"patrol_archetype_id",
+]
+# Faction kind → the base_shape values it allows (GDD Rule 8 "Faction rules").
+const _SHAPES_BY_KIND: Dictionary = {
+	"human_nation": ["organic"],
+	"alien": ["square", "circle", "wedge", "star"],
+}
 # type StringName → {file_path, record_id, names} for the file of that type
 # whose path sorts first among those declaring an Object/Resource-typed
 # export. Filled while loading; _report_object_typed_exports() reports it once
@@ -305,8 +312,9 @@ static func find_reference_cycles(edges: Dictionary) -> Array:
 ## first; then the two alias checks (a shadowing alias, a doubly-declared
 ## alias — ADR-0001); then the generic reference pass (REFERENCE_SCHEMA) and
 ## the cycle walk over registered acyclic fields; then the Overworld checks
-## (one new_game_entry Map, unique (faction_id, stage), alien-only faction
-## fields — ADR-0012); then validators run over every stored record in
+## (one new_game_entry Map, unique (faction_id, stage) — ADR-0012); then the
+## faction rules (alien-only fields, base_shape matching kind — GDD Rule 8);
+## then validators run over every stored record in
 ## TYPE_TABLE order and then each bucket's already-sorted id order (ADR-0004
 ## §4), so the report order stays deterministic. Only `ContentBootstrap.run()`
 ## calls this in production; the catalog's own unit tests call it on a
@@ -349,6 +357,7 @@ func load_all(data_root: String = "res://data") -> Error:
 	_check_new_game_entry_uniqueness()
 	_check_occupation_stage_uniqueness()
 	_check_alien_only_fields()
+	_check_faction_shapes()
 	_run_validators()
 
 	var error_count: int = 0
@@ -601,9 +610,9 @@ func _check_occupation_stage_uniqueness() -> void:
 				related_locations)
 
 
-# Alien-only fields (ADR-0012; story 018 extends _ALIEN_ONLY_FIELDS): a
-# human_nation Faction that sets any of them gets one error per field, at its
-# own file.
+# Alien-only fields (GDD Rule 8; stories 017, 018): a human_nation Faction
+# that sets any of _ALIEN_ONLY_FIELDS gets one error per field, at its own
+# file.
 func _check_alien_only_fields() -> void:
 	var bucket: Dictionary = _records.get(&"faction", {})
 	var paths_by_id: Dictionary = _record_paths.get(&"faction", {})
@@ -615,6 +624,23 @@ func _check_alien_only_fields() -> void:
 			if String(record.get(field)) != "":
 				_add_report_entry(&"error", id, field, paths_by_id.get(id, ""),
 						"The field %s is alien-only; this faction is a human_nation." % field, [])
+
+
+# Faction shape rule (GDD Rule 8; story 018): a set base_shape must be one
+# _SHAPES_BY_KIND allows for the faction's kind. An empty base_shape is not
+# set (the field is not required), and a kind outside the table is left to
+# kind validation, so neither is a shape error.
+func _check_faction_shapes() -> void:
+	var bucket: Dictionary = _records.get(&"faction", {})
+	var paths_by_id: Dictionary = _record_paths.get(&"faction", {})
+	for id: String in bucket:
+		var record: Resource = bucket[id]
+		var shape: String = record.get("base_shape")
+		var allowed: Array = _SHAPES_BY_KIND.get(record.get("kind"), [])
+		if shape == "" or allowed.is_empty() or allowed.has(shape):
+			continue
+		_add_report_entry(&"error", id, &"base_shape", paths_by_id.get(id, ""),
+				"base_shape %s does not match kind %s." % [shape, record.get("kind")], [])
 
 
 # The Validating pass (ADR-0004 §4): runs every registered validator, in
