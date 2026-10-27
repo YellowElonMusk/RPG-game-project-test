@@ -1,12 +1,12 @@
 # Story 019: A shared alien colour, a shared alien shape, a duplicated signature move and an unreferenced record each warn, and the catalog stays Ready
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-27
 
 ## Context
 
@@ -58,11 +58,11 @@
 
 ## Files
 
-- `src/data/content_catalog.gd` (four warning checks; root-type exemption constant)
-- `tests/unit/content_data/fixtures/warnings/shared_color/`, `.../shared_shape/`, `.../signature_in_move_ids/`, `.../unreferenced/`
-- `tests/unit/content_data/content_data_warnings_test.gd`
-
----
+- `src/data/content_catalog.gd` — modified (`_ROOT_TYPES`, `_ALIEN_DISTINCT_FIELDS`; new `_check_shared_alien_values()`, `_check_signature_in_move_ids()`, `_check_unreferenced_records()`, `_collect_strings()`)
+- `tests/unit/content_data/fixtures/warnings/` — created (`shared_color/`, `shared_shape/`, `signature_in_move_ids/`, `unreferenced/`, plus `only_roots/`, `alias_referenced/`, `effect_referenced/`, `shared_both/`)
+- `tests/unit/content_data/content_data_warnings_test.gd` — created (8 test functions)
+- `tests/unit/content_data/helpers/report_filters.gd` — created (error-only report filter)
+- 8 existing `tests/unit/content_data/*_test.gd` files — exact-count and clean-load assertions now count error entries only (unreferenced-record warnings now appear in older fixtures)
 
 ## QA Test Cases
 
@@ -93,3 +93,12 @@ Each test loads one fixture into a fresh catalog and asserts `OK`, `state == REA
 
 - Depends on: `production/epics/content-catalog/story-009-one-error-fails-catalog.md`, `production/epics/content-catalog/story-014-reference-validation.md`, `production/epics/content-catalog/story-018-faction-field-rules.md`
 - Unlocks: `production/epics/content-catalog/story-020-mixed-severity-report.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-27
+**Criteria**: 1/1 passing (AC-18)
+**Deviations**: Out of scope but needed — 8 existing content_data test files changed to count error-severity entries only (the new unreferenced-record warning now appears in their older fixtures; pass/fail is unaffected since warnings never change the load outcome). Advisory — unreferenced counting treats any string inside a record's `effects` as a reference, without reading effect-type vocabulary. Advisory, untested — three aliens sharing one colour, and a record referenced only by itself.
+**Test Evidence**: `tests/unit/content_data/content_data_warnings_test.gd` — 8/8 passing; full `tests/unit/content_data` suite 186/186, 0 errors/failures/orphans
+**Reviewed by**: `/code-review` (first pass: CHANGES REQUIRED — an unreferenced record used only through a Move's effects wrongly warned, contradicting the GDD's own worked example; fixed, with a regression test watched failing against the unfixed code first, then re-verified before close)

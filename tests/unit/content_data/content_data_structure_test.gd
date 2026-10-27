@@ -10,6 +10,8 @@
 ## autoload) and loads its own fixture root under `structure_defects/`.
 extends GdUnitTestSuite
 
+const ReportFilters := preload("res://tests/unit/content_data/helpers/report_filters.gd")
+
 const ROOT := "res://tests/unit/content_data/fixtures/structure_defects"
 const VALID_ONE_OF_EACH := "res://tests/unit/content_data/fixtures/valid_one_of_each"
 
@@ -28,10 +30,10 @@ func before_test() -> void:
 func _assert_one_error(result: Error, record_id: String, field: String) -> void:
 	assert_int(result).is_equal(FAILED)
 	assert_int(_catalog.state).is_equal(ContentCatalogService.State.FAILED)
-	assert_int(_catalog.report.size()).is_equal(1)
-	if _catalog.report.size() != 1:
+	assert_int(ReportFilters.errors(_catalog.report).size()).is_equal(1)
+	if ReportFilters.errors(_catalog.report).size() != 1:
 		return  # Indexing an empty report would abort the whole suite.
-	var entry: Dictionary = _catalog.report[0]
+	var entry: Dictionary = ReportFilters.errors(_catalog.report)[0]
 	assert_str(String(entry["severity"])).is_equal("error")
 	assert_str(entry["record_id"]).is_equal(record_id)
 	assert_str(String(entry["field"])).is_equal(field)
@@ -41,7 +43,7 @@ func _assert_one_error(result: Error, record_id: String, field: String) -> void:
 func _assert_ready_and_clean(result: Error) -> void:
 	assert_int(result).is_equal(OK)
 	assert_int(_catalog.state).is_equal(ContentCatalogService.State.READY)
-	assert_array(_catalog.report).is_empty()
+	assert_array(ReportFilters.errors(_catalog.report)).is_empty()
 
 
 func test_unknown_field_reports_error_naming_the_field() -> void:
@@ -107,7 +109,7 @@ func test_multiline_values_produce_no_false_unknown_field_entries() -> void:
 	var result: Error = _catalog.load_all(VALID_ONE_OF_EACH)
 
 	assert_int(result).is_equal(OK)
-	assert_array(_catalog.report).is_empty()
+	assert_array(ReportFilters.errors(_catalog.report)).is_empty()
 
 
 ## Edge case: every fixture file carries `script = ExtResource(...)`, which is
@@ -117,7 +119,7 @@ func test_script_key_is_never_reported() -> void:
 
 	for entry: Dictionary in _catalog.report:
 		assert_str(String(entry["field"])).is_not_equal("script")
-	assert_array(_catalog.report).is_empty()
+	assert_array(ReportFilters.errors(_catalog.report)).is_empty()
 
 
 ## Edge case (Engine Notes): Godot 4.7.2 writes a String holding a newline

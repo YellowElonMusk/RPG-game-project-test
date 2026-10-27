@@ -9,6 +9,8 @@
 ## Each test builds a fresh ContentCatalogService (never the autoload).
 extends GdUnitTestSuite
 
+const ReportFilters := preload("res://tests/unit/content_data/helpers/report_filters.gd")
+
 const ROOT := "res://tests/unit/content_data/fixtures/overworld_and_rules"
 
 var _catalog: ContentCatalogService
@@ -36,11 +38,11 @@ func _register_stub_faction_rule_validator(validator_entries: Array[Dictionary] 
 func _assert_one_error(result: Error, record_id: String, field: String) -> Dictionary:
 	assert_int(result).is_equal(FAILED)
 	assert_int(_catalog.state).is_equal(ContentCatalogService.State.FAILED)
-	assert_int(_catalog.report.size()).override_failure_message(
+	assert_int(ReportFilters.errors(_catalog.report).size()).override_failure_message(
 			"report: %s" % [_catalog.report]).is_equal(1)
-	if _catalog.report.size() != 1:
+	if ReportFilters.errors(_catalog.report).size() != 1:
 		return {}  # Indexing an empty report would abort the whole suite.
-	var entry: Dictionary = _catalog.report[0]
+	var entry: Dictionary = ReportFilters.errors(_catalog.report)[0]
 	assert_str(String(entry["severity"])).is_equal("error")
 	assert_str(entry["record_id"]).is_equal(record_id)
 	assert_str(String(entry["field"])).is_equal(field)
@@ -74,7 +76,7 @@ func test_two_maps_without_new_game_entry_loads_ready() -> void:
 
 	assert_int(result).is_equal(OK)
 	assert_int(_catalog.state).is_equal(ContentCatalogService.State.READY)
-	assert_array(_catalog.report).override_failure_message(
+	assert_array(ReportFilters.errors(_catalog.report)).override_failure_message(
 			"report: %s" % [_catalog.report]).is_empty()
 
 
@@ -106,7 +108,7 @@ func test_registered_rule_class_loads_ready() -> void:
 
 	assert_int(result).is_equal(OK)
 	assert_int(_catalog.state).is_equal(ContentCatalogService.State.READY)
-	assert_array(_catalog.report).override_failure_message(
+	assert_array(ReportFilters.errors(_catalog.report)).override_failure_message(
 			"report: %s" % [_catalog.report]).is_empty()
 	assert_object(_catalog.get_record(&"faction_rule", "rule_ok")).is_not_null()
 

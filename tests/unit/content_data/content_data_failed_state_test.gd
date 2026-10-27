@@ -12,6 +12,8 @@
 ## loads the fixture root directly.
 extends GdUnitTestSuite
 
+const ReportFilters := preload("res://tests/unit/content_data/helpers/report_filters.gd")
+
 const FIXTURE_ROOT := "res://tests/unit/content_data/fixtures/one_error_rest_valid"
 const MISMATCHED_FILE_PATH := "res://tests/unit/content_data/fixtures/one_error_rest_valid/moves/move_wrong_name.tres"
 
@@ -30,9 +32,9 @@ func test_load_all_with_one_error_returns_failed() -> void:
 
 
 func test_report_holds_exactly_the_one_filename_mismatch_error() -> void:
-	assert_int(_catalog.report.size()).is_equal(1)
+	assert_int(ReportFilters.errors(_catalog.report).size()).is_equal(1)
 
-	var entry: Dictionary = _catalog.report[0]
+	var entry: Dictionary = ReportFilters.errors(_catalog.report)[0]
 	assert_str(String(entry["severity"])).is_equal("error")
 	assert_str(entry["record_id"]).is_equal("move_real_name")
 	assert_str(String(entry["field"])).is_equal("id")

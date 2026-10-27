@@ -184,6 +184,14 @@ const _IGNORED_RESOURCE_KEYS: Dictionary = {
 const _ALIEN_ONLY_FIELDS: Array[StringName] = [
 	&"signature_color", &"backup_icon_id", &"rule_id", &"patrol_archetype_id",
 ]
+# Root record types: never warned as unreferenced, since nothing needs to
+# point at them (GDD Edge Cases "Other warnings", root-type exemption).
+const _ROOT_TYPES: Array[StringName] = [
+	&"character", &"map", &"occupation_stage", &"bindings", &"combo", &"item",
+]
+# Alien faction fields two factions should not share (GDD Edge Cases "Faction
+# rules"): a shared value is a warning, not an error.
+const _ALIEN_DISTINCT_FIELDS: Array[StringName] = [&"signature_color", &"base_shape"]
 # Faction kind → the base_shape values it allows (GDD Rule 8 "Faction rules").
 const _SHAPES_BY_KIND: Dictionary = {
 	"human_nation": ["organic"],
@@ -358,6 +366,9 @@ func load_all(data_root: String = "res://data") -> Error:
 	_check_occupation_stage_uniqueness()
 	_check_alien_only_fields()
 	_check_faction_shapes()
+	_check_shared_alien_values()
+	_check_signature_in_move_ids()
+	_check_unreferenced_records()
 	_run_validators()
 
 	var error_count: int = 0
@@ -641,6 +652,104 @@ func _check_faction_shapes() -> void:
 			continue
 		_add_report_entry(&"error", id, &"base_shape", paths_by_id.get(id, ""),
 				"base_shape %s does not match kind %s." % [shape, record.get("kind")], [])
+
+
+# Shared alien identity (GDD Edge Cases "Faction rules"; story 019): alien
+# factions sharing a non-empty value of a _ALIEN_DISTINCT_FIELDS field give
+# one warning per shared value. Same shape as _check_duplicate_ids(): the
+# faction whose path sorts first owns it, the others go in related_locations.
+func _check_shared_alien_values() -> void:
+	var bucket: Dictionary = _records.get(&"faction", {})
+	var paths_by_id: Dictionary = _record_paths.get(&"faction", {})
+	for field: StringName in _ALIEN_DISTINCT_FIELDS:
+		# value → plain Array of paths (nested typed collections do not parse on 4.7.2).
+		var groups: Dictionary = {}
+		var path_to_id: Dictionary = {}
+		for id: String in bucket:
+			var record: Resource = bucket[id]
+			var value: String = record.get(field)
+			if record.get("kind") != "alien" or value == "":
+				continue
+			var path: String = paths_by_id.get(id, "")
+			if not groups.has(value):
+				groups[value] = []
+			(groups[value] as Array).append(path)
+			path_to_id[path] = id
+		var values: Array = groups.keys()
+		values.sort()
+		for value: String in values:
+			var paths: Array[String] = []
+			paths.assign(groups[value])
+			if paths.size() < 2:
+				continue
+			paths.sort()
+			var related_locations: Array[Dictionary] = []
+			for other_path: String in paths.slice(1):
+				related_locations.append({"file_path": other_path, "record_index": 0})
+			_add_report_entry(&"warning", path_to_id[paths[0]], field, paths[0],
+					"%s %s is shared by more than one alien faction." % [field, value], related_locations)
+
+
+# A Character whose signature_move_id is also in its move_ids gives one
+# warning (GDD Edge Cases "Other warnings"; story 019).
+func _check_signature_in_move_ids() -> void:
+	var bucket: Dictionary = _records.get(&"character", {})
+	var paths_by_id: Dictionary = _record_paths.get(&"character", {})
+	for id: String in bucket:
+		var record: Resource = bucket[id]
+		var signature: String = record.get("signature_move_id")
+		if signature != "" and (record.get("move_ids") as PackedStringArray).has(signature):
+			_add_report_entry(&"warning", id, &"signature_move_id", paths_by_id.get(id, ""),
+					"signature_move_id %s is also listed in move_ids." % signature, [])
+
+
+# Unreferenced records (GDD Edge Cases "Other warnings"; story 019): a record
+# of a non-root type that no other record names gives one warning on the whole
+# record. A record is named by a REFERENCE_SCHEMA field, or by any string
+# inside another record's `effects` (e.g. a Move applying a QuirkState),
+# resolved through the alias map (one hop). Effect strings are matched against
+# stored ids without reading descriptor types, which belong to Turn Battle.
+func _check_unreferenced_records() -> void:
+	var referenced: Dictionary = {}
+	for type: StringName in TYPE_TABLE:
+		var schema_for_type: Dictionary = REFERENCE_SCHEMA.get(type, {})
+		var bucket: Dictionary = _records[type]
+		for id: String in bucket:
+			var record: Resource = bucket[id]
+			var values := PackedStringArray()
+			for field: StringName in schema_for_type:
+				if schema_for_type[field]["list"]:
+					values.append_array(record.get(field))
+				else:
+					values.append(record.get(field))
+			if "effects" in record:
+				_collect_strings(record.get("effects"), values)
+			for value: String in values:
+				var resolved: String = _aliases.get(value, value)
+				if value != "" and resolved != id:
+					referenced[resolved] = true
+	for type: StringName in TYPE_TABLE:
+		if _ROOT_TYPES.has(type):
+			continue
+		var bucket: Dictionary = _records[type]
+		var paths_by_id: Dictionary = _record_paths.get(type, {})
+		for id: String in bucket:
+			if not referenced.has(id):
+				_add_report_entry(&"warning", id, &"", paths_by_id.get(id, ""),
+						"Nothing references this record.", [])
+
+
+# Appends every String/StringName found in `value` (nested Arrays and
+# Dictionary values) to `out`. Used on EffectDescriptor arrays.
+func _collect_strings(value: Variant, out: PackedStringArray) -> void:
+	if value is String or value is StringName:
+		out.append(String(value))
+	elif value is Array:
+		for item: Variant in value:
+			_collect_strings(item, out)
+	elif value is Dictionary:
+		for item: Variant in (value as Dictionary).values():
+			_collect_strings(item, out)
 
 
 # The Validating pass (ADR-0004 §4): runs every registered validator, in

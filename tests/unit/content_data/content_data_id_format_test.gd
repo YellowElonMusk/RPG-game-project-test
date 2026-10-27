@@ -9,6 +9,8 @@
 ## and the story's `field == &"id"` filter fallback is not used.
 extends GdUnitTestSuite
 
+const ReportFilters := preload("res://tests/unit/content_data/helpers/report_filters.gd")
+
 const FIXTURE_ROOT := "res://tests/unit/content_data/fixtures/id_defects"
 
 
@@ -29,8 +31,8 @@ func _assert_one_id_error(sub_dir: String, expected_id: String) -> void:
 	var result: Error = catalog.load_all(FIXTURE_ROOT.path_join(sub_dir))
 	assert_int(result).is_equal(FAILED)
 	assert_int(catalog.state).is_equal(ContentCatalogService.State.FAILED)
-	assert_int(catalog.report.size()).is_equal(1)
-	var entry: Dictionary = catalog.report[0]
+	assert_int(ReportFilters.errors(catalog.report).size()).is_equal(1)
+	var entry: Dictionary = ReportFilters.errors(catalog.report)[0]
 	assert_str(String(entry["severity"])).is_equal("error")
 	assert_str(entry["record_id"]).is_equal(expected_id)
 	assert_str(String(entry["field"])).is_equal("id")

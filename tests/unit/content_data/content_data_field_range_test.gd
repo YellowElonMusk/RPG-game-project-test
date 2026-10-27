@@ -12,6 +12,8 @@
 ## lambda lives in an Array, never a bare int.
 extends GdUnitTestSuite
 
+const ReportFilters := preload("res://tests/unit/content_data/helpers/report_filters.gd")
+
 const ROOT := "res://tests/unit/content_data/fixtures/range_boundaries"
 const VALID_ONE_OF_EACH := "res://tests/unit/content_data/fixtures/valid_one_of_each"
 ## The one character record in valid_one_of_each.
@@ -45,11 +47,11 @@ func _assert_invalid(dir: String, record_id: String, field: String) -> void:
 
 	assert_int(result).is_equal(FAILED)
 	assert_int(_catalog.state).is_equal(ContentCatalogService.State.FAILED)
-	assert_int(_catalog.report.size()).override_failure_message(
+	assert_int(ReportFilters.errors(_catalog.report).size()).override_failure_message(
 			"report: %s" % [_catalog.report]).is_equal(1)
-	if _catalog.report.size() != 1:
+	if ReportFilters.errors(_catalog.report).size() != 1:
 		return  # Indexing an empty report would abort the whole suite.
-	var entry: Dictionary = _catalog.report[0]
+	var entry: Dictionary = ReportFilters.errors(_catalog.report)[0]
 	assert_str(String(entry["severity"])).is_equal("error")
 	assert_str(entry["record_id"]).is_equal(record_id)
 	assert_str(String(entry["field"])).is_equal(field)
@@ -64,7 +66,7 @@ func _assert_valid(dir: String) -> void:
 
 	assert_int(result).is_equal(OK)
 	assert_int(_catalog.state).is_equal(ContentCatalogService.State.READY)
-	assert_array(_catalog.report).override_failure_message(
+	assert_array(ReportFilters.errors(_catalog.report)).override_failure_message(
 			"report: %s" % [_catalog.report]).is_empty()
 
 
@@ -308,10 +310,16 @@ func test_validator_warning_entry_adds_warning_and_stays_ready() -> void:
 
 	assert_int(result).is_equal(OK)
 	assert_int(_catalog.state).is_equal(ContentCatalogService.State.READY)
-	assert_int(_catalog.report.size()).is_equal(1)
-	if _catalog.report.size() != 1:
+	# Only this validator's entries (field "x"); the fixture may carry others,
+	# such as an unreferenced-record warning (story 019).
+	var mine: Array[Dictionary] = []
+	for candidate: Dictionary in _catalog.report:
+		if String(candidate["field"]) == "x":
+			mine.append(candidate)
+	assert_int(mine.size()).is_equal(1)
+	if mine.size() != 1:
 		return
-	var entry: Dictionary = _catalog.report[0]
+	var entry: Dictionary = mine[0]
 	assert_str(String(entry["severity"])).is_equal("warning")
 	assert_str(entry["record_id"]).is_equal(VALID_CHARACTER_ID)
 	assert_str(String(entry["field"])).is_equal("x")
@@ -333,10 +341,10 @@ func test_validator_entry_missing_field_reports_error_not_crash() -> void:
 
 	assert_int(result).is_equal(FAILED)
 	assert_int(_catalog.state).is_equal(ContentCatalogService.State.FAILED)
-	assert_int(_catalog.report.size()).is_equal(1)
-	if _catalog.report.size() != 1:
+	assert_int(ReportFilters.errors(_catalog.report).size()).is_equal(1)
+	if ReportFilters.errors(_catalog.report).size() != 1:
 		return
-	var entry: Dictionary = _catalog.report[0]
+	var entry: Dictionary = ReportFilters.errors(_catalog.report)[0]
 	assert_str(String(entry["severity"])).is_equal("error")
 	assert_str(entry["record_id"]).is_equal(VALID_CHARACTER_ID)
 
@@ -358,7 +366,7 @@ func test_register_during_load_is_rejected_and_late_validator_never_runs() -> vo
 
 	assert_int(result).is_equal(OK)
 	assert_int(_catalog.state).is_equal(ContentCatalogService.State.READY)
-	assert_array(_catalog.report).is_empty()
+	assert_array(ReportFilters.errors(_catalog.report)).is_empty()
 	assert_int(late_calls[0]).override_failure_message("late validator ran").is_equal(0)
 
 

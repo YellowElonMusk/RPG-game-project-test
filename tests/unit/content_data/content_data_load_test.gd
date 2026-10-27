@@ -5,6 +5,8 @@
 ## Guidelines allow this for the catalog's own unit tests).
 extends GdUnitTestSuite
 
+const ReportFilters := preload("res://tests/unit/content_data/helpers/report_filters.gd")
+
 const FIXTURE_ROOT := "res://tests/unit/content_data/fixtures/valid_one_of_each"
 
 ## type → the one fixture record id of that type.
@@ -143,8 +145,8 @@ func test_load_all_filename_not_equal_to_id_fails_with_id_error() -> void:
 	var result: Error = catalog.load_all("res://tests/unit/content_data/fixtures/filename_mismatch")
 	assert_int(result).is_equal(FAILED)
 	assert_int(catalog.state).is_equal(ContentCatalogService.State.FAILED)
-	assert_int(catalog.report.size()).is_equal(1)
-	var entry: Dictionary = catalog.report[0]
+	assert_int(ReportFilters.errors(catalog.report).size()).is_equal(1)
+	var entry: Dictionary = ReportFilters.errors(catalog.report)[0]
 	assert_str(String(entry["severity"])).is_equal("error")
 	assert_str(entry["record_id"]).is_equal("item_declared_id")
 	assert_str(String(entry["field"])).is_equal("id")

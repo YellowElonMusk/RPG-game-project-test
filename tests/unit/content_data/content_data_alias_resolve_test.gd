@@ -11,6 +11,8 @@
 ## autoload) and loads a fixture root directly.
 extends GdUnitTestSuite
 
+const ReportFilters := preload("res://tests/unit/content_data/helpers/report_filters.gd")
+
 const BASIC_ROOT := "res://tests/unit/content_data/fixtures/alias_basic"
 const DEFECTS_ROOT := "res://tests/unit/content_data/fixtures/alias_format_defects"
 const LIVE_ID := "char_new"
@@ -36,10 +38,10 @@ func _assert_one_alias_error(sub_dir: String) -> void:
 
 	assert_int(result).is_equal(FAILED)
 	assert_int(catalog.state).is_equal(ContentCatalogService.State.FAILED)
-	assert_int(catalog.report.size()).is_equal(1)
-	if catalog.report.size() != 1:
+	assert_int(ReportFilters.errors(catalog.report).size()).is_equal(1)
+	if ReportFilters.errors(catalog.report).size() != 1:
 		return  # Indexing an empty report would abort the whole suite.
-	var entry: Dictionary = catalog.report[0]
+	var entry: Dictionary = ReportFilters.errors(catalog.report)[0]
 	assert_str(String(entry["severity"])).is_equal("error")
 	assert_str(String(entry["field"])).is_equal("aliases")
 	assert_str(entry["record_id"]).is_equal(LIVE_ID)
@@ -137,7 +139,7 @@ func test_load_all_two_malformed_aliases_give_two_aliases_errors() -> void:
 	var result: Error = catalog.load_all(DEFECTS_ROOT.path_join("two_malformed"))
 
 	assert_int(result).is_equal(FAILED)
-	assert_int(catalog.report.size()).is_equal(2)
+	assert_int(ReportFilters.errors(catalog.report).size()).is_equal(2)
 	for entry: Dictionary in catalog.report:
 		assert_str(String(entry["field"])).is_equal("aliases")
 		assert_str(entry["record_id"]).is_equal(LIVE_ID)

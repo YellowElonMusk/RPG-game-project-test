@@ -10,6 +10,8 @@
 ## (never the autoload) and loads a fixture root directly.
 extends GdUnitTestSuite
 
+const ReportFilters := preload("res://tests/unit/content_data/helpers/report_filters.gd")
+
 const TWO_FILES_ROOT := "res://tests/unit/content_data/fixtures/duplicate_id_two_files"
 const THREE_FILES_ROOT := "res://tests/unit/content_data/fixtures/duplicate_id_three_files"
 
@@ -34,10 +36,10 @@ func test_two_files_sharing_an_id_reports_one_error_located_at_the_first_path() 
 	var catalog: ContentCatalogService = auto_free(ContentCatalogService.new())
 	catalog.load_all(TWO_FILES_ROOT)
 
-	assert_int(catalog.report.size()).is_equal(1)
-	if catalog.report.size() != 1:
+	assert_int(ReportFilters.errors(catalog.report).size()).is_equal(1)
+	if ReportFilters.errors(catalog.report).size() != 1:
 		return  # Indexing an empty report would abort the whole suite.
-	var entry: Dictionary = catalog.report[0]
+	var entry: Dictionary = ReportFilters.errors(catalog.report)[0]
 	assert_str(String(entry["severity"])).is_equal("error")
 	assert_str(entry["record_id"]).is_equal("char_dup")
 	assert_str(String(entry["field"])).is_equal("id")
@@ -48,10 +50,10 @@ func test_two_files_sharing_an_id_names_the_other_file_in_related_locations() ->
 	var catalog: ContentCatalogService = auto_free(ContentCatalogService.new())
 	catalog.load_all(TWO_FILES_ROOT)
 
-	assert_int(catalog.report.size()).is_equal(1)
-	if catalog.report.size() != 1:
+	assert_int(ReportFilters.errors(catalog.report).size()).is_equal(1)
+	if ReportFilters.errors(catalog.report).size() != 1:
 		return  # Indexing an empty report would abort the whole suite.
-	var related: Array = catalog.report[0]["related_locations"]
+	var related: Array = ReportFilters.errors(catalog.report)[0]["related_locations"]
 
 	assert_int(related.size()).is_equal(1)
 	assert_str((related[0] as Dictionary)["file_path"]).is_equal(PATH_B)
@@ -65,10 +67,10 @@ func test_three_files_sharing_an_id_reports_one_error_with_two_sorted_related_lo
 	var result: Error = catalog.load_all(THREE_FILES_ROOT)
 
 	assert_int(result).is_equal(FAILED)
-	assert_int(catalog.report.size()).is_equal(1)
-	if catalog.report.size() != 1:
+	assert_int(ReportFilters.errors(catalog.report).size()).is_equal(1)
+	if ReportFilters.errors(catalog.report).size() != 1:
 		return  # Indexing an empty report would abort the whole suite.
-	var entry: Dictionary = catalog.report[0]
+	var entry: Dictionary = ReportFilters.errors(catalog.report)[0]
 	assert_str((entry["location"] as Dictionary)["file_path"]).is_equal(PATH3_A)
 	var related: Array = entry["related_locations"]
 	assert_int(related.size()).is_equal(2)
@@ -88,10 +90,10 @@ func test_reversed_discovery_order_still_reports_the_first_path_by_sort() -> voi
 	var result: Error = catalog.load_all(TWO_FILES_ROOT)
 
 	assert_int(result).is_equal(FAILED)
-	assert_int(catalog.report.size()).is_equal(1)
-	if catalog.report.size() != 1:
+	assert_int(ReportFilters.errors(catalog.report).size()).is_equal(1)
+	if ReportFilters.errors(catalog.report).size() != 1:
 		return  # Indexing an empty report would abort the whole suite.
-	var entry: Dictionary = catalog.report[0]
+	var entry: Dictionary = ReportFilters.errors(catalog.report)[0]
 	assert_str((entry["location"] as Dictionary)["file_path"]).is_equal(PATH_A)
 	var related: Array = entry["related_locations"]
 	assert_int(related.size()).is_equal(1)
