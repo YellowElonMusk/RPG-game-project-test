@@ -1,12 +1,12 @@
 # Story 020: Two errors and two warnings fail the catalog, and the report carries all four with the right severities
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-27
 
 ## Context
 
@@ -60,10 +60,8 @@
 
 ## Files
 
-- `tests/unit/content_data/fixtures/mixed_severity/`
-- `tests/unit/content_data/content_data_mixed_severity_test.gd`
-
----
+- `tests/unit/content_data/fixtures/mixed_severity/` — created (2 errors + 2 warnings; a `warnings_only/` subdirectory for the edge case)
+- `tests/unit/content_data/content_data_mixed_severity_test.gd` — created (2 test functions)
 
 ## QA Test Cases
 
@@ -93,3 +91,12 @@
 
 - Depends on: `production/epics/content-catalog/story-009-one-error-fails-catalog.md`, `production/epics/content-catalog/story-010-id-format-validation.md`, `production/epics/content-catalog/story-015-structure-validation.md`, `production/epics/content-catalog/story-019-warning-cases.md`
 - Unlocks: `production/epics/content-catalog/story-027-headless-validate-content.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-27
+**Criteria**: 1/1 passing (AC-19)
+**Deviations**: None
+**Test Evidence**: `tests/unit/content_data/content_data_mixed_severity_test.gd` — 2/2 passing; full test tree 188/188, 0 errors/failures/orphans
+**Reviewed by**: `/code-review` (APPROVED, no changes requested)
