@@ -1,12 +1,12 @@
 # Story 027: The headless validation check exits 0 on valid data, and 1 with the full report on any error
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Integration
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-27
 
 ## Context
 
@@ -59,12 +59,10 @@
 
 ## Files
 
-- `tools/ci/validate-content.gd`
-- `.github/workflows/tests.yml` (validate-content step)
-- `tests/integration/content_data/fixtures/warnings_only/`, `.../two_errors/`
-- `tests/integration/content_data/content_data_validate_cli_test.gd`
-
----
+- `tools/ci/validate-content.gd` — created (headless check: ContentBootstrap.run(), build_log_text(), exit min(error_count, 1))
+- `.github/workflows/tests.yml` — modified (added a Godot setup step and a validate-content step on res://data, chose chickensoft-games/setup-godot since the gdUnit4 action doesn't expose a godot binary on PATH)
+- `tests/integration/content_data/fixtures/warnings_only/`, `.../two_errors/` — created
+- `tests/integration/content_data/content_data_validate_cli_test.gd` — created (4 test functions, runs the script as a real child process)
 
 ## QA Test Cases
 
@@ -92,3 +90,13 @@
 
 - Depends on: `production/epics/content-catalog/story-020-mixed-severity-report.md`, `production/epics/content-catalog/story-024-error-screen-text.md` (`build_log_text`)
 - Unlocks: `production/epics/content-catalog/story-028-id-manifest-ci.md`, `production/epics/content-catalog/story-029-load-benchmark.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-27
+**Criteria**: 1/1 passing (AC-24)
+**Deviations**: Advisory — `.github/` is entirely gitignored (`.gitignore` line 194) and `.github/workflows/tests.yml` has no git history at all; the CI-step edit this story makes sits on disk but will not be committed unless the `.gitignore` entry is fixed or the file is force-added. Flagged for the user; not changed unilaterally. Advisory — the new CI step validates `res://data`, which today holds only `config/` (the content-migration epic hasn't authored records yet), so it currently passes against an empty catalog.
+**CI tool choice**: `chickensoft-games/setup-godot@v2` for a Godot 4.7.2 binary outside the gdUnit4 action — devops-engineer's call to confirm or override, per the story's own instruction.
+**Test Evidence**: `tests/integration/content_data/content_data_validate_cli_test.gd` — 4/4 passing; full test tree 210/210, 0 errors/failures/orphans
+**Reviewed by**: `/code-review` (APPROVED WITH SUGGESTIONS — a test comment overclaimed untested behavior; reworded and re-verified before close)
