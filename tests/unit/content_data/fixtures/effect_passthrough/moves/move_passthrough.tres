@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="MoveData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/move_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "move_passthrough"
+display_name = "Passthrough"
+effects = Array[Dictionary]([{
+"type": "direct_damage",
+"amount": 12,
+"scaling": {
+"multiplier": 1.5,
+"stat": "attack"
+}
+}, {
+"type": "stun",
+"rounds": 2,
+"tags": ["debuff", "control"]
+}, {
+"type": "heal_single",
+"amount": 8,
+"flavour": "unregistered param key"
+}])

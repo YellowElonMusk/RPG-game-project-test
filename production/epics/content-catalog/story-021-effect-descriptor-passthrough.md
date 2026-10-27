@@ -1,12 +1,12 @@
 # Story 021: A Move's EffectDescriptors round-trip untouched, and loading triggers no game effect
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-27
 
 ## Context
 
@@ -59,10 +59,8 @@
 
 ## Files
 
-- `tests/unit/content_data/fixtures/effect_passthrough/` (a Move with three descriptors of known types, including a nested `Dictionary` and an `Array` parameter, plus a Character that references it)
-- `tests/unit/content_data/content_data_effect_passthrough_test.gd`
-
----
+- `tests/unit/content_data/fixtures/effect_passthrough/` — created (a Move with 3 effects: nested Dictionary, Array parameter, unregistered param key; a referencing Character and Faction)
+- `tests/unit/content_data/content_data_effect_passthrough_test.gd` — created (3 test functions)
 
 ## QA Test Cases
 
@@ -91,3 +89,12 @@
 
 - Depends on: `production/epics/content-catalog/story-002-load-one-of-each-type.md`, `production/epics/content-catalog/story-015-structure-validation.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-27
+**Criteria**: 1/1 passing (AC-15)
+**Deviations**: None. Engine Notes verification performed, as the story asked: on Godot 4.7.2, `Script.get_script_method_list()` returns an empty array for all 12 `src/data/records/` scripts — no inherited or implicit entries (no generated setters, no implicit initializer) ever appear. The method allow-list (`get_` prefix or `_init`) needs no additions.
+**Test Evidence**: `tests/unit/content_data/content_data_effect_passthrough_test.gd` — 3/3 passing; full test tree 191/191, 0 errors/failures/orphans
+**Reviewed by**: `/code-review` (APPROVED, no changes requested)
