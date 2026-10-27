@@ -1,12 +1,12 @@
 # Story 023: A fixture triggering five rules gives five errors, in the same order on every run
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-27
 
 ## Context
 
@@ -56,11 +56,9 @@
 
 ## Files
 
-- `src/data/content_catalog.gd` (path normalisation, report sort)
-- `tests/unit/content_data/fixtures/five_rule_violations/`
-- `tests/unit/content_data/content_data_report_order_test.gd`
-
----
+- `src/data/content_catalog.gd` — modified (`_sort_report()`, `_report_entry_less_than()`, `_normalize_path()`; one sort at the end of Validating)
+- `tests/unit/content_data/fixtures/five_rule_violations/` — created (malformed ID, duplicate ID, missing reference, unknown field, faction signature_color mismatch)
+- `tests/unit/content_data/content_data_report_order_test.gd` — created (3 test functions)
 
 ## QA Test Cases
 
@@ -94,3 +92,12 @@
 
 - Depends on: `production/epics/content-catalog/story-003-all-records-sorted-by-id.md`, `story-009-one-error-fails-catalog.md`, `story-010-id-format-validation.md`, `story-011-duplicate-id-one-error.md`, `story-014-reference-validation.md`, `story-015-structure-validation.md`, `story-018-faction-field-rules.md` (all under `production/epics/content-catalog/`)
 - Unlocks: `production/epics/content-catalog/story-024-error-screen-text.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-27
+**Criteria**: 1/1 passing (AC-20)
+**Deviations**: Advisory only — the sort key adds `record_id` and `message` as final tiebreaks beyond GDD F3's four-component key, as the story's own Engine Notes asked, since `Array.sort_custom()` is not documented as stable on 4.7.2 and the four-component key alone cannot order every possible pair of entries.
+**Test Evidence**: `tests/unit/content_data/content_data_report_order_test.gd` — 3/3 passing; full test tree 196/196, 0 errors/failures/orphans
+**Reviewed by**: `/code-review` (first pass: APPROVED WITH SUGGESTIONS — added a test for the sort rules the main fixture couldn't reach: empty field first, error before warning, record_id/message tiebreaks, path normalisation; applied and re-verified before close)

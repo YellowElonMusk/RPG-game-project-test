@@ -370,6 +370,7 @@ func load_all(data_root: String = "res://data") -> Error:
 	_check_signature_in_move_ids()
 	_check_unreferenced_records()
 	_run_validators()
+	_sort_report()
 
 	var error_count: int = 0
 	for entry: Dictionary in report:
@@ -1186,6 +1187,48 @@ func _breaks_id_format(candidate: String, prefix: String) -> bool:
 
 # Appends one entry in the GDD's Entry shape. record_index is 0: one record
 # per file (ADR-0001).
+# Normalises every location path in the report to res://, forward slashes,
+# then sorts the whole report ascending by (file_path, record_index, field,
+# severity, record_id, message) — GDD F3 "Report order". An empty field
+# sorts first (plain string order already does this); "error" sorts before
+# "warning" the same way. record_id and message are final tiebreaks
+# (Engine Notes): Array.sort_custom() is not documented as stable on 4.7.2,
+# so the key must fully order every pair that can differ. Runs once, at the
+# end of Validating, never depending on discovery order (story 003's
+# discovery_order_transform seam proves this in tests).
+func _sort_report() -> void:
+	for entry: Dictionary in report:
+		var location: Dictionary = entry["location"]
+		location["file_path"] = _normalize_path(location["file_path"])
+		for related: Dictionary in (entry["related_locations"] as Array):
+			related["file_path"] = _normalize_path(related["file_path"])
+	report.sort_custom(_report_entry_less_than)
+
+
+# True when entry a sorts strictly before entry b by the F3 key.
+func _report_entry_less_than(a: Dictionary, b: Dictionary) -> bool:
+	var a_location: Dictionary = a["location"]
+	var b_location: Dictionary = b["location"]
+	var a_key: Array = [a_location["file_path"], a_location["record_index"],
+			String(a["field"]), String(a["severity"]), a["record_id"], a["message"]]
+	var b_key: Array = [b_location["file_path"], b_location["record_index"],
+			String(b["field"]), String(b["severity"]), b["record_id"], b["message"]]
+	for i: int in a_key.size():
+		if a_key[i] != b_key[i]:
+			return a_key[i] < b_key[i]
+	return false
+
+
+# A path with backslashes turned to forward slashes, and an absolute
+# filesystem path (possible under validate-content.gd's --data-root=)
+# localized to res:// when it is under the project.
+func _normalize_path(path: String) -> String:
+	var normalized: String = path.replace("\\", "/")
+	if not normalized.begins_with("res://"):
+		normalized = ProjectSettings.localize_path(normalized)
+	return normalized
+
+
 func _add_report_entry(severity: StringName, record_id: String, field: StringName,
 		file_path: String, message: String, related_locations: Array) -> void:
 	report.append({
