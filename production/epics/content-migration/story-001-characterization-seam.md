@@ -1,12 +1,12 @@
 # Story 001: Every shipped enemy, move and rule is built by its future record ID through one test seam, using today's code
 
 > **Epic**: Content Migration
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-27
 
 ## Context
 
@@ -69,11 +69,9 @@
 
 ## Files
 
-- `tests/unit/battle/helpers/battle_content_seam.gd` (`class_name BattleContentSeam`)
-- `tests/unit/battle/fixtures/characterization_expected.gd` (skeleton: ID lists and seeds)
-- `tests/unit/battle/battle_content_seam_test.gd`
-
----
+- `tests/unit/battle/helpers/battle_content_seam.gd` — created (`BattleContentSeam`: enemy/move/rule by ID, enemy_turn, arrange_vitals, scripted_rule, unknown-id failure)
+- `tests/unit/battle/fixtures/characterization_expected.gd` — created (ENEMY_IDS, MOVE_IDS, RULE_IDS, seed constants)
+- `tests/unit/battle/battle_content_seam_test.gd` — created (15 test functions)
 
 ## QA Test Cases
 
@@ -121,3 +119,13 @@
 
 - Depends on: `production/epics/content-catalog/story-001-install-gdunit4.md`
 - Unlocks: `production/epics/content-migration/story-002-characterize-squad-specials.md`, `story-003-characterize-bureaucratia-roster.md`, `story-005-characterize-moves-damage.md`, `story-006-characterize-faction-rule-decisions.md`, `story-007-characterize-faction-rule-presentation.md`, `story-008-characterize-scripted-fights.md` (all in `production/epics/content-migration/`)
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-27
+**Criteria**: 1/1 passing
+**Deviations**: Advisory only — `ADR-0007 §2`'s `lint_hp_writes.sh` allowlist needs a line added for `tests/unit/battle/helpers/battle_content_seam.gd`. Not done; needs technical-director approval first, per this story's own Implementation Notes.
+**Coverage flagged for later stories** (from `/code-review`'s QA pass, not blocking this story): `enemy_turn()` is only exercised against `rule_bureaucratia_permit` and a non-boss enemy — MegaCorp's rule and boss enemies are left to stories 003/006/007; `MegaCorpRule.apply_round_upkeep()`/`move_allowed()` are never invoked through the seam here — left to story 006.
+**Test Evidence**: `tests/unit/battle/battle_content_seam_test.gd` — 15/15 passing; full test tree 225/225, 0 errors/failures/orphans
+**Reviewed by**: `/code-review` (APPROVED WITH SUGGESTIONS — a two-enemy, two-entry script test added and re-verified before close)
