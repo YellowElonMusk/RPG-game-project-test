@@ -1,12 +1,12 @@
 # Story 017: Two new-game-entry maps, a duplicate (faction, stage) pair and a human `patrol_archetype_id` each error; a registered `faction_rule` loads
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-27
 
 ## Context
 
@@ -62,13 +62,11 @@
 
 ## Files
 
-- `src/data/content_catalog.gd` (new-game-entry and `(faction_id, stage)` uniqueness; `patrol_archetype_id` in the alien-only list)
-- `src/boot/content_bootstrap.gd` (step 2; `register_faction_rule_validator`)
-- `src/battle/factions/faction_rule_registry.gd` (only if not already present; see notes)
-- `tests/unit/content_data/fixtures/overworld_and_rules/two_new_game_entry/`, `.../duplicate_faction_stage/`, `.../human_patrol_archetype/`, `.../registered_rule_ok/`, `.../unregistered_rule/`
-- `tests/unit/content_data/content_data_overworld_rules_test.gd`
-
----
+- `src/data/content_catalog.gd` — modified (new `_check_new_game_entry_uniqueness()`, `_check_occupation_stage_uniqueness()`, `_check_alien_only_fields()` and `_ALIEN_ONLY_FIELDS`, run during Validating before the registered validators)
+- `src/boot/content_bootstrap.gd` — modified (new `register_faction_rule_validator()`; the step-2 call in `run()` stays behind `TODO(ADR-0011)`)
+- `src/battle/factions/faction_rule_registry.gd` — created (`register`, `known_rule_classes`, `validator_for`, `create` stub)
+- `tests/unit/content_data/fixtures/overworld_and_rules/` — created (14 fixtures in 5 case directories, plus `two_new_game_entry/none_set/`)
+- `tests/unit/content_data/content_data_overworld_rules_test.gd` — created (6 test functions)
 
 ## QA Test Cases
 
@@ -98,3 +96,12 @@
 
 - Depends on: `production/epics/content-catalog/story-011-duplicate-id-one-error.md`, `production/epics/content-catalog/story-015-structure-validation.md`, `production/epics/content-catalog/story-016-field-range-validators.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-27
+**Criteria**: 1/1 passing (AC-27)
+**Deviations**: Advisory only — (1) `ContentBootstrap.run()` does not call `register_faction_rule_validator()` yet, held behind `# TODO(ADR-0011)` per this story's own Implementation Notes, until the Faction Rule Modifiers epic builds `FactionRules`; (2) once wired, the `valid_one_of_each` fixture's `rule_class = "delay_rule"` will need replacing with a real registered class; (3) open design question for game-designer — should the `(faction_id, stage)` uniqueness key resolve faction aliases (today it uses the raw id)? The `(faction_id, stage)` violation's field is `"stage"`, as specified.
+**Test Evidence**: `tests/unit/content_data/content_data_overworld_rules_test.gd` — 7/7 passing; full `tests/unit/content_data` suite 172/172, 0 errors/failures/orphans
+**Reviewed by**: `/code-review` (first pass: CHANGES REQUIRED — `FactionRuleRegistry` didn't match ADR-0011 §4's interface, and no test proved a rule validator's own error reached the report; both fixed and re-verified by parse check + full suite before close)

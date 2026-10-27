@@ -179,6 +179,9 @@ var _acyclic_fields: Dictionary = {}
 const _IGNORED_RESOURCE_KEYS: Dictionary = {
 	"script": true, "resource_name": true, "resource_local_to_scene": true,
 }
+# Faction fields an alien faction may set but a human_nation may not (ADR-0012;
+# story 018 adds signature_color, backup_icon_id and rule_id to this list).
+const _ALIEN_ONLY_FIELDS: Array[StringName] = [&"patrol_archetype_id"]
 # type StringName → {file_path, record_id, names} for the file of that type
 # whose path sorts first among those declaring an Object/Resource-typed
 # export. Filled while loading; _report_object_typed_exports() reports it once
@@ -301,7 +304,9 @@ static func find_reference_cycles(edges: Dictionary) -> Array:
 ## error. Once Validating starts, the catalog-wide duplicate-id check runs
 ## first; then the two alias checks (a shadowing alias, a doubly-declared
 ## alias — ADR-0001); then the generic reference pass (REFERENCE_SCHEMA) and
-## the cycle walk over registered acyclic fields; then validators run over every stored record in
+## the cycle walk over registered acyclic fields; then the Overworld checks
+## (one new_game_entry Map, unique (faction_id, stage), alien-only faction
+## fields — ADR-0012); then validators run over every stored record in
 ## TYPE_TABLE order and then each bucket's already-sorted id order (ADR-0004
 ## §4), so the report order stays deterministic. Only `ContentBootstrap.run()`
 ## calls this in production; the catalog's own unit tests call it on a
@@ -341,6 +346,9 @@ func load_all(data_root: String = "res://data") -> Error:
 	_check_alias_double_declaration()
 	_run_reference_checks()
 	_run_cycle_checks()
+	_check_new_game_entry_uniqueness()
+	_check_occupation_stage_uniqueness()
+	_check_alien_only_fields()
 	_run_validators()
 
 	var error_count: int = 0
@@ -536,20 +544,136 @@ func _check_alias_double_declaration() -> void:
 		_aliases.erase(alias)
 
 
+# Overworld uniqueness (ADR-0012 §3; story 017): at most one Map sets
+# new_game_entry. Same shape as _check_duplicate_ids(): the Map whose path
+# sorts first owns the one entry; every other such Map goes in
+# related_locations, sorted.
+func _check_new_game_entry_uniqueness() -> void:
+	var bucket: Dictionary = _records.get(&"map", {})
+	var paths_by_id: Dictionary = _record_paths.get(&"map", {})
+	var path_to_id: Dictionary = {}
+	var paths: Array[String] = []
+	for id: String in bucket:
+		if (bucket[id] as Resource).get("new_game_entry"):
+			var path: String = paths_by_id.get(id, "")
+			paths.append(path)
+			path_to_id[path] = id
+	if paths.size() < 2:
+		return
+	paths.sort()
+	var related_locations: Array[Dictionary] = []
+	for other_path: String in paths.slice(1):
+		related_locations.append({"file_path": other_path, "record_index": 0})
+	_add_report_entry(&"error", path_to_id[paths[0]], &"new_game_entry", paths[0],
+			"More than one Map sets new_game_entry.", related_locations)
+
+
+# Overworld uniqueness (ADR-0012 §3; story 017): no two OccupationStage
+# records share one (faction_id, stage) pair. Same shape as
+# _check_duplicate_ids(), grouped by pair; the field is "stage".
+func _check_occupation_stage_uniqueness() -> void:
+	var bucket: Dictionary = _records.get(&"occupation_stage", {})
+	var paths_by_id: Dictionary = _record_paths.get(&"occupation_stage", {})
+	# Nested typed collections do not parse on 4.7.2: plain Arrays as values.
+	var groups: Dictionary = {}
+	var path_to_id: Dictionary = {}
+	for id: String in bucket:
+		var record: Resource = bucket[id]
+		var key: String = "%s|%d" % [record.get("faction_id"), int(record.get("stage"))]
+		var path: String = paths_by_id.get(id, "")
+		if not groups.has(key):
+			groups[key] = []
+		(groups[key] as Array).append(path)
+		path_to_id[path] = id
+	var keys: Array = groups.keys()
+	keys.sort()
+	for key: String in keys:
+		var paths: Array[String] = []
+		paths.assign(groups[key])
+		if paths.size() < 2:
+			continue
+		paths.sort()
+		var related_locations: Array[Dictionary] = []
+		for other_path: String in paths.slice(1):
+			related_locations.append({"file_path": other_path, "record_index": 0})
+		_add_report_entry(&"error", path_to_id[paths[0]], &"stage", paths[0],
+				"This (faction_id, stage) pair is shared by more than one OccupationStage record.",
+				related_locations)
+
+
+# Alien-only fields (ADR-0012; story 018 extends _ALIEN_ONLY_FIELDS): a
+# human_nation Faction that sets any of them gets one error per field, at its
+# own file.
+func _check_alien_only_fields() -> void:
+	var bucket: Dictionary = _records.get(&"faction", {})
+	var paths_by_id: Dictionary = _record_paths.get(&"faction", {})
+	for id: String in bucket:
+		var record: Resource = bucket[id]
+		if record.get("kind") != "human_nation":
+			continue
+		for field: StringName in _ALIEN_ONLY_FIELDS:
+			if String(record.get(field)) != "":
+				_add_report_entry(&"error", id, field, paths_by_id.get(id, ""),
+						"The field %s is alien-only; this faction is a human_nation." % field, [])
+
+
 # The Validating pass (ADR-0004 §4): runs every registered validator, in
 # registration order, over every stored record, after the generic checks in
 # _load_one(). Types go in TYPE_TABLE order and ids in each bucket's sorted
 # order, so the report order is deterministic. Each entry's location is the
-# record's source file from _record_paths, record_index 0.
+# record's source file from _record_paths, record_index 0. A validator that
+# breaks the documented contract (ADR-0004 §4: must return Array[Dictionary]
+# entries each carrying severity and field) never crashes the load:
+# _run_one_validator() turns the violation into one loud error entry naming
+# the validator instead (story 016).
 func _run_validators() -> void:
 	for type: StringName in TYPE_TABLE:
 		var sorted_bucket: Dictionary = _records[type]
 		var paths: Dictionary = _record_paths.get(type, {})
 		for id: String in sorted_bucket:
 			for validator: Callable in _validators.get(type, []):
-				for raw_entry: Dictionary in validator.call(sorted_bucket[id]):
-					_add_report_entry(raw_entry["severity"], id, raw_entry["field"],
-							paths.get(id, ""), raw_entry["message"], raw_entry.get("related_locations", []))
+				_run_one_validator(validator, type, id, sorted_bucket[id], paths.get(id, ""))
+
+
+# Runs one registered validator once against one stored record and appends
+# its entries, filling record_id and location; related_locations defaults to
+# [] and message to "". A return that is not an Array, or an entry that is not
+# a Dictionary or lacks `severity` or `field`, becomes one error entry (field
+# &"", the whole record) naming the validator, so a broken validator fails
+# loudly instead of crashing the load.
+func _run_one_validator(validator: Callable, type: StringName, record_id: String,
+		record: Resource, file_path: String) -> void:
+	var raw_result: Variant = validator.call(record)
+	if not (raw_result is Array):
+		_add_report_entry(&"error", record_id, &"", file_path,
+				"Validator %s registered for type %s returned %s, not an Array[Dictionary]."
+						% [_describe_validator(validator), type, type_string(typeof(raw_result))], [])
+		return
+	for raw_entry: Variant in (raw_result as Array):
+		if not (raw_entry is Dictionary) or not (raw_entry as Dictionary).has("severity") \
+				or not (raw_entry as Dictionary).has("field"):
+			_add_report_entry(&"error", record_id, &"", file_path,
+					"Validator %s registered for type %s returned an entry missing 'severity' or 'field'."
+							% [_describe_validator(validator), type], [])
+			continue
+		var entry: Dictionary = raw_entry
+		_add_report_entry(entry["severity"], record_id, entry["field"], file_path,
+				entry.get("message", ""), entry.get("related_locations", []))
+
+
+# Names a Callable for a broken-validator entry: "Class.method" when it is
+# bound to an object, otherwise just the method name.
+func _describe_validator(validator: Callable) -> String:
+	var obj: Object = validator.get_object()
+	if obj == null:
+		return String(validator.get_method())
+	if obj is Script:
+		var script_obj: Script = obj as Script
+		var script_name: String = script_obj.get_global_name()
+		if script_name.is_empty():
+			script_name = script_obj.resource_path.get_file()
+		return "%s.%s" % [script_name, validator.get_method()]
+	return "%s.%s" % [obj.get_class(), validator.get_method()]
 
 
 # The generic reference pass (TR-content-005; ADR-0001 Rule 3): every field

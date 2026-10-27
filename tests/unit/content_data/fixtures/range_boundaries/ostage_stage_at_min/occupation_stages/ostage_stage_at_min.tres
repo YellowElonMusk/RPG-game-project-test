@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="OccupationStageData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/occupation_stage_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "ostage_stage_at_min"
+stage = 1
+liberation_grumble_min = 0.1

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="FactionData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/faction_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "faction_alien_z"
+display_name = "faction_alien_z"
+kind = "alien"
+rule_id = "rule_ok"

@@ -1,12 +1,12 @@
 # Story 016: Registered range validators reject every F2 boundary outside its bound and accept it at the bound
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-27
 
 ## Context
 
@@ -77,12 +77,10 @@
 
 ## Files
 
-- `src/data/content_catalog.gd` (validator invocation, entry completion, late-registration rejection)
-- `tests/unit/content_data/helpers/f2_test_validators.gd`
-- `tests/unit/content_data/fixtures/range_boundaries/<field>_<value>/` (one fixture per row value above; or one fixture directory per field holding one record per value, each with its own ID)
-- `tests/unit/content_data/content_data_field_range_test.gd`
-
----
+- `src/data/content_catalog.gd` — modified (`_run_validators()` delegates to new `_run_one_validator()`; a malformed validator return becomes an error entry; new `_describe_validator()`)
+- `tests/unit/content_data/helpers/f2_test_validators.gd` — created (GDD F2 bounds as test constants, five pure test-double validators)
+- `tests/unit/content_data/fixtures/range_boundaries/` — created (50 fixtures: 24 invalid, 25 valid boundary, 1 unbounded `cost`)
+- `tests/unit/content_data/content_data_field_range_test.gd` — created (54 test functions)
 
 ## QA Test Cases
 
@@ -120,3 +118,12 @@
 
 - Depends on: `production/epics/content-catalog/story-015-structure-validation.md`
 - Unlocks: `production/epics/content-catalog/story-017-overworld-uniqueness-and-faction-rule.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-27
+**Criteria**: 1/1 passing (AC-26)
+**Deviations**: Advisory only — AC-26 closes fully only when the Stats & Damage Resolution epic (`StatsValidators`/`StatsConfig`, ADR-0007 §7) and the Overworld epic (ADR-0012) register their real validators and re-run these boundary fixtures against them. This story proves the generic `register_record_validator()` mechanism with test-double validators whose bounds equal GDD F2, per its own Implementation Notes and Out of Scope.
+**Test Evidence**: `tests/unit/content_data/content_data_field_range_test.gd` — 54/54 passing; full `tests/unit/content_data` suite 165/165, 0 errors/failures/orphans (run directly, twice, via `godot --headless -s -d --remote-debug tcp://127.0.0.1:0 res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://tests/unit/content_data --ignoreHeadlessMode`)
+**Reviewed by**: `/code-review` (ran this session — APPROVED WITH SUGGESTIONS; the one suggestion, `_describe_validator()`'s script-vs-instance naming, was applied and re-verified clean before close)
