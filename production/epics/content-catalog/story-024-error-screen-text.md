@@ -1,12 +1,12 @@
 # Story 024: Build the capped error-screen text and the full log text from a 30-error report
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-27
 
 ## Context
 
@@ -60,12 +60,11 @@
 
 ## Files
 
-- `src/data/validation_report_text.gd`
-- `src/data/content_report_config.gd`
-- `data/config/content_report_config.tres` (default 20)
-- `tests/unit/content_data/content_data_report_text_test.gd`
-
----
+- `src/data/validation_report_text.gd` — created (`build_error_screen_text()`, `build_log_text()`)
+- `src/data/content_report_config.gd` — created (`ContentReportConfig`, `error_screen_cap` clamped 10-50, `load_or_default(path = DEFAULT_PATH)` per ADR-0007's pattern)
+- `data/config/content_report_config.tres` — created (default 20)
+- `tests/unit/content_data/fixtures/report_config/` — created (out-of-range cap fixtures, 5 and 100)
+- `tests/unit/content_data/content_data_report_text_test.gd` — created (10 test functions)
 
 ## QA Test Cases
 
@@ -102,3 +101,13 @@
 
 - Depends on: `production/epics/content-catalog/story-023-deterministic-report-order.md`
 - Unlocks: `production/epics/content-catalog/story-025-error-screen-on-launch.md`, `production/epics/content-catalog/story-027-headless-validate-content.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-27
+**Criteria**: 1/1 passing (AC-21)
+**Deviations**: Advisory only — `test_config_default_error_screen_cap_is_20` reads the real shipped config file rather than a mock, a sanctioned exception the story's own QA Test Cases asked for.
+**Config path**: `res://data/config/content_report_config.tres` (default `error_screen_cap = 20`, clamped 10-50).
+**Test Evidence**: `tests/unit/content_data/content_data_report_text_test.gd` — 10/10 passing; full test tree 206/206, 0 errors/failures/orphans
+**Reviewed by**: `/code-review` (first pass: CHANGES REQUIRED — `load_or_default()` didn't match the ADR-0007 `StatsConfig` pattern the story named, and the 10-50 clamp had no test; both fixed and re-verified before close)
