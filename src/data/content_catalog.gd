@@ -978,7 +978,9 @@ func _load_one(type: StringName, file_path: String, bucket: Dictionary) -> void:
 	var record: Resource = ResourceLoader.load(file_path, "", ResourceLoader.CACHE_MODE_IGNORE)
 	if record == null:
 		push_error("ContentCatalog: %s failed to load." % file_path)
-		_add_report_entry(&"error", filename, &"", file_path,
+		# record_id is empty, never the filename: an unparsable file has no id
+		# to read (story 022).
+		_add_report_entry(&"error", "", &"", file_path,
 				"The file could not be loaded as a Resource.", [])
 		return
 

@@ -1,12 +1,12 @@
 # Story 022: An unparsable file is one error naming it, and validation still reports the other files' errors
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-27
 
 ## Context
 
@@ -56,11 +56,9 @@
 
 ## Files
 
-- `src/data/content_catalog.gd` (only if story 002's `null` check needs a fix)
-- `tests/unit/content_data/fixtures/unparsable_file/` (one `.tres` with a corrupt `[resource]` header, three valid records, one record with ID `Char_Bad`)
-- `tests/unit/content_data/content_data_unparsable_file_test.gd`
-
----
+- `src/data/content_catalog.gd` — modified (an unparsable file's report entry now uses an empty record_id, never the filename)
+- `tests/unit/content_data/fixtures/unparsable_file/` — created (2 corrupt .tres — one carrying an unknown key to prove the raw-text scan is skipped; 3 valid records; 1 Char_Bad id-format error)
+- `tests/unit/content_data/content_data_unparsable_file_test.gd` — created (2 test functions)
 
 ## QA Test Cases
 
@@ -94,3 +92,12 @@
 
 - Depends on: `production/epics/content-catalog/story-002-load-one-of-each-type.md`, `production/epics/content-catalog/story-010-id-format-validation.md` (the `Char_Bad` error is an F1 error)
 - Unlocks: None
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-27
+**Criteria**: 1/1 passing (AC-16)
+**Deviations**: Advisory only — `_load_one()`'s null-load branch (pre-existing, story 002) changed from reporting `record_id = filename` to `record_id = ""`, matching AC-16 and ADR-0001 step 3's "no id could be read." No existing test asserted the old value.
+**Test Evidence**: `tests/unit/content_data/content_data_unparsable_file_test.gd` — 2/2 passing; full test tree 193/193, 0 errors/failures/orphans
+**Reviewed by**: `/code-review` (first pass: APPROVED WITH SUGGESTIONS — the corrupt fixture needed an unknown field to actually prove the raw-text scan is skipped, and a second corrupt file to prove independence; both applied and re-verified before close)
