@@ -74,6 +74,13 @@ const _MENU_ACTION: StringName = InputActions.MENU
 ## too (story 030).
 const _MENU_ALLOWED_MODES: Array[Mode] = [Mode.OVERWORLD, Mode.CAMP, Mode.BATTLE]
 
+## Rule 10 (ADR-0002 §5-§6, story 029): the Menu's entries by mode, pinned
+## order. Battle (including Battle with the Defeat Prompt on top) is cut down
+## to settings and quit; Overworld and Camp get the full menu.
+const _MENU_ENTRIES_BATTLE: Array[StringName] = [&"settings", &"quit"]
+const _MENU_ENTRIES_FULL: Array[StringName] = [
+	&"pause", &"party", &"codex", &"settings", &"quit"]
+
 ## The transition types that flash, and each one's source id. `fade` and
 ## `none` are absent on purpose: ADR-0002 §11 forbids `fade` from ever
 ## consulting the gate, and `none` never plays anything.
@@ -679,7 +686,7 @@ func _end_in_phase() -> void:
 	if _menu_deferred:
 		_menu_deferred = false
 		if finished_mode in _MENU_ALLOWED_MODES:
-			open_overlay(OverlayKind.MENU, null)
+			open_overlay(OverlayKind.MENU, _build_menu_payload())
 	if _quit_pending:
 		_quit_pending = false
 		_quit_fired = true
@@ -785,7 +792,7 @@ func _handle_focus_or_device_lost() -> void:
 		return
 	if not _overlay_stack.is_empty() and _overlay_stack.back() == OverlayKind.MENU:
 		return
-	open_overlay(OverlayKind.MENU, null)
+	open_overlay(OverlayKind.MENU, _build_menu_payload())
 
 
 ## Dropped while `phase != IDLE` (AC-8). Otherwise delivered to the top
@@ -804,7 +811,20 @@ func _handle_menu_action() -> void:
 		return
 	if not (_current_mode in _MENU_ALLOWED_MODES):
 		return
-	open_overlay(OverlayKind.MENU, null)
+	open_overlay(OverlayKind.MENU, _build_menu_payload())
+
+
+## Story 029, AC-31: the Menu's payload for the mode it is about to open
+## over. Every call site above has already checked `_current_mode in
+## _MENU_ALLOWED_MODES`, so Battle is the only case singled out here --
+## Overworld and Camp share the full menu.
+func _build_menu_payload() -> MenuPayload:
+	var payload := MenuPayload.new()
+	if _current_mode == Mode.BATTLE:
+		payload.entries = _MENU_ENTRIES_BATTLE.duplicate()
+	else:
+		payload.entries = _MENU_ENTRIES_FULL.duplicate()
+	return payload
 
 
 func _dispatch_discrete_action(action: StringName, pressed: bool) -> void:

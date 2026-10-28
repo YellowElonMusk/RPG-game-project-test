@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -85,7 +85,37 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_battle_menu_scope_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
+
+---
+
+## Completion Notes
+
+*2026-10-28, gdscript-specialist*
+
+**Files**:
+- `src/game_state/menu_payload.gd` — new. `MenuPayload extends RefCounted`,
+  one field: `entries: Array[StringName] = []`. Plain data, no Callable fields.
+- `src/game_state/game_state_machine.gd` — added `_MENU_ENTRIES_BATTLE` /
+  `_MENU_ENTRIES_FULL` constants and a private `_build_menu_payload()` that
+  reads `_current_mode` (Battle -> the cut-down list, everything else -> the
+  full list — every call site already filters to `_MENU_ALLOWED_MODES`
+  first). Wired into all three places that previously called
+  `open_overlay(OverlayKind.MENU, null)`: `_handle_menu_action()`,
+  `_handle_focus_or_device_lost()`, and the deferred-Menu resolution in
+  `_end_in_phase()`.
+- `tests/unit/game_state/game_state_battle_menu_scope_test.gd` — new,
+  parameterized over (battle, battle+defeat prompt, overworld, camp) per the
+  QA Test Cases, asserting `loader.last_push_overlay_payload.entries` exactly.
+
+**Tests**: full suite 548/548 (544 baseline + 4 new cases), 0 failures, 0
+orphans.
+
+**Deviations**: none. No `scope` enum was added alongside `entries` — the
+story marked it optional and the AC asserts only `entries`.
+
+**Owed**: none within this story's scope. Story 039 still owes the visible
+Battle system menu screenshot, as scoped.
 
 ---
 
