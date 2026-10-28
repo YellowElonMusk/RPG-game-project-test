@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -89,7 +89,7 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_overworld_freeze_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (412/412 total suite, 2 new: VICTORY and FLED)
 
 ---
 
@@ -97,3 +97,48 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-001-overworld-to-battle-signal-order.md` (the QA gate reversed the draft's 012 → 014 order: 012 now depends on this story)
 - Unlocks: `production/epics/game-state-scene-flow/story-012-failed-swap-rolls-back.md`, `production/epics/game-state-scene-flow/story-015-victory-waits-for-results.md`, `production/epics/game-state-scene-flow/story-016-fled-rejected-when-not-allowed.md`, `production/epics/game-state-scene-flow/story-017-defeat-prompt-and-retry-snapshot.md`, `production/epics/game-state-scene-flow/story-025-menu-stops-time-quit-to-title.md`, `production/epics/game-state-scene-flow/story-033-strip-chapter-flow-chapter-mode.md`, `production/epics/game-state-scene-flow/story-035-game-root-main-scene.md`
+
+---
+
+## Completion Notes
+
+**Files**:
+- `src/game_state/mode_host_scene_loader.gd` (new) — production `SceneLoader`. Dispatches on
+  `(from, to)`: Overworld→Battle freezes (`on_freezing()`, `remove_child`, instantiate+add
+  Battle); Battle→Overworld thaws (free Battle, re-add the frozen instance); everything else is
+  a generic swap. `poll_swap()` always returns `DONE` (ADR-0002 §3, synchronous). Exposes
+  `rollback_swap()` (story 012's case) and `free_frozen_overworld()` unexercised by this story's
+  test but implemented per ADR-0002 §4.
+- `tests/unit/game_state/doubles/stub_overworld_mode.gd` (extended) — added the GDD rule-5
+  fields (`party_position`, `party_facing`, `map_id`, `npc_states`, `enemy_states`,
+  `story_flags`), `snapshot_fields()`, `thaw_snapshot` (captured inside `on_thawed`, before any
+  future mutation), lifecycle counters (`ready_count`, `enter_tree_count`, `exit_tree_count`), a
+  child `Timer` ref, and a node-bound `Tween` created in `_ready()`.
+- `tests/unit/game_state/fixtures/stub_overworld_mode.tscn`, `stub_battle_mode.tscn` (new).
+- `tests/unit/game_state/game_state_overworld_freeze_test.gd` (new) —
+  `test_round_trip_restores_snapshot_victory`, `test_round_trip_restores_snapshot_fled`.
+
+**Test count**: 412/412 passing (410 baseline + 2 new), 0 orphans. Import clean.
+
+**Engine findings**: confirms ADR-0002's Engine Notes on 4.7.2 — `_ready()` fired exactly once
+across detach/re-attach, `_enter_tree`/`_exit_tree` 2/1, `Timer.time_left` and
+`Tween.get_total_elapsed_time()` unchanged across 10 frames while detached.
+
+**Deviation — on_thawed wiring (flagged for architecture review):** ADR-0002 §4/Key Interfaces
+don't say which component calls `GameMode.on_thawed()`, and `GameStateMachine.report_battle_outcome()`/
+`report_results_done()` (committed, story 001) both call `begin_swap(BATTLE, OVERWORLD, null)` —
+the outcome (Victory vs. Fled) never reaches the loader through `begin_swap`'s own payload
+argument for either path. `game_state_machine.gd` is not in this story's Files list, so the fix
+stays inside `mode_host_scene_loader.gd`: `ModeHostSceneLoader.on_mode_entered(to)` is a second
+listener on `GameStateMachine.mode_entered` (the test connects it; `GameRoot` will too) — Godot
+calls same-signal listeners in connection order, so it reliably runs after the
+`SequenceRecorder`'s own listener. It learns the result via the `payload_commit: Callable`
+named in the Implementation Notes, used here as a `() -> int` getter the owner supplies (the
+test binds it to a local box set right before calling `report_battle_outcome`/
+`report_results_done`). `pre_setup: Callable` is implemented (`(mode, payload) -> void`, called
+before `add_child()`) but unused by this story's test — no assertion needed it. Recommend an
+ADR-0002 amendment recording this `mode_entered`-listener pattern once story 015/016 give
+`report_battle_outcome` a real reason to carry the outcome further.
+
+**Items owed**: story 012 (rollback case) and story 021 (free-on-Retreat) still need their test
+cases added to `game_state_overworld_freeze_test.gd` per this story's own Implementation Notes.
