@@ -13,6 +13,8 @@ var last_push_overlay_payload: RefCounted = null
 var current_mode_node_value: Node = null
 var current_overlay_node_value: Node = null
 var free_frozen_overworld_count: int = 0
+## One entry per `set_mode_time_stopped()` call, in order (story 025).
+var set_mode_time_stopped_calls: Array[bool] = []
 
 var _recorder: SequenceRecorder
 var _queue: Array[SwapStatus] = []
@@ -63,6 +65,12 @@ func free_frozen_overworld() -> void:
 	free_frozen_overworld_count += 1
 	if _recorder != null:
 		_recorder.record(&"free_frozen_overworld", [])
+
+
+func set_mode_time_stopped(stopped: bool) -> void:
+	set_mode_time_stopped_calls.append(stopped)
+	if _recorder != null:
+		_recorder.record(&"set_mode_time_stopped", [stopped])
 
 
 func current_mode_node() -> Node:

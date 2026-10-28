@@ -26,18 +26,25 @@ const _PHASE_EPSILON: float = 1e-9
 ## through `report_battle_outcome()` / `report_results_done()` /
 ## `choose_retry()` / `choose_retreat()`, never through `request_transition()`
 ## (draft §2 item 7, accepted) — see `_REQUESTABLE_TARGETS` below.
+## Every mode's row to `TITLE` (story 025, ADR-0002 §4/§5 ruling 2026-10-23)
+## is `fade` -- the Menu's Quit to Title, never requestable through the
+## ordinary `_REQUESTABLE_TARGETS` path (see below), only through
+## `request_transition(TITLE)` while `MENU` is the top overlay.
 const _TRANSITION_TYPES: Dictionary = {
 	Mode.BOOT: {Mode.TITLE: &"fade", Mode.CONTENT_ERROR: &"none"},
 	Mode.TITLE: {Mode.OVERWORLD: &"fade"},
-	Mode.OVERWORLD: {Mode.BATTLE: &"battle_wipe", Mode.CAMP: &"fade"},
+	Mode.OVERWORLD: {Mode.BATTLE: &"battle_wipe", Mode.CAMP: &"fade", Mode.TITLE: &"fade"},
 	Mode.BATTLE: {Mode.OVERWORLD: &"battle_wipe_reverse", Mode.BATTLE: &"retry_flash",
-			Mode.CAMP: &"battle_wipe_reverse"},
-	Mode.CAMP: {Mode.OVERWORLD: &"fade"},
+			Mode.CAMP: &"battle_wipe_reverse", Mode.TITLE: &"fade"},
+	Mode.CAMP: {Mode.OVERWORLD: &"fade", Mode.TITLE: &"fade"},
 }
 
-## The subset of `_TRANSITION_TYPES` legal through `request_transition()`.
-## Boot's two rows are internal (driven by `tick()` reading the catalog);
-## Battle's outbound rows are outcome-driven (see above).
+## The subset of `_TRANSITION_TYPES` legal through `request_transition()`'s
+## ordinary (no-overlay) path. Boot's two rows are internal (driven by
+## `tick()` reading the catalog); Battle's outbound rows are outcome-driven
+## (see above); every mode's row to `TITLE` is reachable only through the
+## Menu's Quit to Title (`request_transition()`'s overlay-stack branch),
+## deliberately absent here.
 const _REQUESTABLE_TARGETS: Dictionary = {
 	Mode.TITLE: [Mode.OVERWORLD],
 	Mode.OVERWORLD: [Mode.BATTLE, Mode.CAMP],
@@ -183,13 +190,19 @@ func _init(loader: SceneLoader, presenter: TransitionPresenter, config: Transiti
 
 
 ## One door in (GDD Rule 2). Legal only for the non-outcome-driven pairs in
-## `_REQUESTABLE_TARGETS`.
+## `_REQUESTABLE_TARGETS`, with one exception (story 025, ADR-0002 §4/§5
+## ruling 2026-10-23): `request_transition(TITLE)` is also legal while
+## `MENU` is the top overlay -- the Menu's own Quit to Title, the only
+## transition the Menu is allowed to start. Every other target is rejected
+## with `REJECTED_OVERLAY_BLOCKS` while any overlay is open, Menu or not.
 func request_transition(target: Mode, payload: RefCounted = null) -> RequestResult:
 	if _current_mode == Mode.CONTENT_ERROR:
 		return RequestResult.REJECTED_TERMINAL
 	if _phase != Phase.IDLE:
 		return RequestResult.REJECTED_BUSY
 	if not _overlay_stack.is_empty():
+		if target == Mode.TITLE and _overlay_stack.back() == OverlayKind.MENU:
+			return _quit_to_title()
 		return RequestResult.REJECTED_OVERLAY_BLOCKS
 	var targets: Array = _REQUESTABLE_TARGETS.get(_current_mode, [])
 	if not targets.has(target):
@@ -199,6 +212,10 @@ func request_transition(target: Mode, payload: RefCounted = null) -> RequestResu
 	return RequestResult.OK
 
 
+## Story 025, AC-20: opening `MENU` disables `ModeHost` through the injected
+## loader (`set_mode_time_stopped(true)`), which is also what stops
+## `mode_time` in `tick()` from the player-visible side. Dialogue and the
+## Defeat Prompt never touch it (GDD rule 11).
 func open_overlay(kind: OverlayKind, payload: RefCounted = null) -> RequestResult:
 	if _current_mode == Mode.CONTENT_ERROR:
 		return RequestResult.REJECTED_TERMINAL
@@ -206,10 +223,15 @@ func open_overlay(kind: OverlayKind, payload: RefCounted = null) -> RequestResul
 		return RequestResult.REJECTED_BUSY
 	_overlay_stack.append(kind)
 	_loader.push_overlay(kind, payload)
+	if kind == OverlayKind.MENU:
+		_loader.set_mode_time_stopped(true)
 	overlay_opened.emit(kind)
 	return RequestResult.OK
 
 
+## Story 025, AC-20: closing `MENU` re-enables `ModeHost`
+## (`set_mode_time_stopped(false)`). Popping any other overlay leaves it
+## untouched.
 func close_overlay() -> RequestResult:
 	# Story 008: busy is checked before every other rejection, including an
 	# empty overlay stack.
@@ -219,6 +241,8 @@ func close_overlay() -> RequestResult:
 		return RequestResult.REJECTED_INVALID_PAIR
 	var kind: OverlayKind = _overlay_stack.pop_back()
 	_loader.pop_overlay()
+	if kind == OverlayKind.MENU:
+		_loader.set_mode_time_stopped(false)
 	overlay_closed.emit(kind)
 	return RequestResult.OK
 
@@ -618,6 +642,24 @@ func _end_in_phase() -> void:
 ## so the two can never disagree.
 func _offers_retreat() -> bool:
 	return _current_descriptor != null and _current_descriptor.retreat_allowed
+
+
+## Quit to Title from the Menu (story 025, ADR-0002 §4/§5 ruling 2026-10-23).
+## Pops every overlay top-down, emitting `overlay_closed` for each, then
+## re-enables `ModeHost` and frees any frozen Overworld -- all before
+## `transition_started`, per the ruling -- and begins the ordinary transition
+## to `TITLE` from whichever mode is underneath. The caller has already
+## checked `_overlay_stack.back() == MENU`.
+func _quit_to_title() -> RequestResult:
+	while not _overlay_stack.is_empty():
+		var kind: OverlayKind = _overlay_stack.pop_back()
+		_loader.pop_overlay()
+		overlay_closed.emit(kind)
+	_loader.set_mode_time_stopped(false)
+	_loader.free_frozen_overworld()
+	var transition_type: StringName = _TRANSITION_TYPES[_current_mode][Mode.TITLE]
+	_begin_transition(_current_mode, Mode.TITLE, transition_type, null)
+	return RequestResult.OK
 
 
 func _close_defeat_prompt() -> void:

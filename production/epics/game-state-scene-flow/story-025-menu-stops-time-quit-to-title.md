@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -96,9 +96,57 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_menu_time_stop_test.gd` and `tests/unit/game_state/game_state_animation_player_freeze_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (479/479 suite-wide)
 
 ---
+
+## Completion Notes
+
+- `mode_time` already stopped advancing while `MENU in _overlay_stack` (prior
+  commit); this story wired the player-visible side: `open_overlay`/`close_overlay`
+  now call `loader.set_mode_time_stopped(true|false)` only for `MENU`, never
+  for Dialogue or the Defeat Prompt.
+- `ModeHostSceneLoader.set_mode_time_stopped()` toggles
+  `ModeHost.process_mode` between `PROCESS_MODE_DISABLED` and
+  `PROCESS_MODE_INHERIT`. `SceneLoader`'s base stays a no-op; `StubSceneLoader`
+  gained `set_mode_time_stopped_calls: Array[bool]` for ordering assertions.
+- `request_transition()` gained one special case: `target == TITLE` while
+  `_overlay_stack.back() == MENU` routes to a new private `_quit_to_title()`
+  instead of the ordinary `REJECTED_OVERLAY_BLOCKS`/`_REQUESTABLE_TARGETS`
+  path. It pops every overlay top-down (`overlay_closed` per pop), calls
+  `set_mode_time_stopped(false)` and `free_frozen_overworld()` once each, all
+  before `_begin_transition()` emits `transition_started` — matching the
+  2026-10-23 ruling's ordering. `_TRANSITION_TYPES` gained a `TITLE: &"fade"`
+  row under `OVERWORLD`, `BATTLE` and `CAMP`; `_REQUESTABLE_TARGETS` was left
+  unchanged on purpose, so `request_transition(TITLE)` stays illegal through
+  the ordinary (no-overlay) path.
+- **Verification item 3 result: PASSED.** `test_animation_player_and_timer_freeze_while_disabled`
+  (loader-level, real `ModeHost` `Node`, real `Timer` and `AnimationPlayer`)
+  confirms `current_animation_position` and `Timer.time_left` are both frozen
+  across 10 frames of `PROCESS_MODE_DISABLED` and both resume after
+  `PROCESS_MODE_INHERIT`. Recommend technical-director fold this into
+  ADR-0002's Engine Compatibility row (item 3, currently "still open").
+- Files changed: `src/game_state/game_state_machine.gd` (`_TRANSITION_TYPES`,
+  `request_transition`, `open_overlay`, `close_overlay`, new `_quit_to_title`),
+  `src/game_state/mode_host_scene_loader.gd` (`set_mode_time_stopped`
+  override), `tests/unit/game_state/doubles/stub_scene_loader.gd`
+  (`set_mode_time_stopped_calls`), new
+  `tests/unit/game_state/game_state_menu_time_stop_test.gd` (6 cases: time
+  stop, Dialogue does not stop time, and 3 Quit-to-Title cases — Menu over
+  Overworld, Menu over Dialogue over Overworld, Menu over Battle freeing a
+  frozen Overworld), new
+  `tests/unit/game_state/game_state_animation_player_freeze_test.gd` (2
+  cases: the engine probe, and the code-review edge case scanning
+  `src/game_state/*.gd` text for a `SceneTree.paused`/`Engine.time_scale`
+  reference).
+- Deviation: none from the story spec. One self-inflicted snag during
+  implementation — the edge-case scanner test initially failed against my
+  own doc comment in `mode_host_scene_loader.gd`, which named the forbidden
+  APIs literally; reworded the comment to describe the rule instead of
+  quoting the API names, since the scan is a literal text search over
+  `src/game_state/`.
+- Items owed: none for this story. ADR-0002 Engine Compatibility item 3
+  should be updated from "still open" to verified, per the result above.
 
 ## Dependencies
 

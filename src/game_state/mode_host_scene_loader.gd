@@ -88,6 +88,17 @@ func free_frozen_overworld() -> void:
 		_frozen_overworld = null
 
 
+## Toggles `ModeHost.process_mode` for the Menu's time stop (ADR-0002 §5,
+## story 025): `PROCESS_MODE_DISABLED` while the Menu is open, which freezes
+## `_process`/`_physics_process`, `Timer`s, node-bound `Tween`s and
+## `AnimationPlayer`s for the whole mode subtree (verified on 4.7.2, this
+## story's verification item 3). `PROCESS_MODE_INHERIT` otherwise.
+## The engine's global pause flag and global time-scale property are never
+## used for this (ADR-0002 §5, Control Manifest Forbidden rule).
+func set_mode_time_stopped(stopped: bool) -> void:
+	_mode_host.process_mode = Node.PROCESS_MODE_DISABLED if stopped else Node.PROCESS_MODE_INHERIT
+
+
 func current_mode_node() -> Node:
 	return _current_mode_node_ref
 
