@@ -119,8 +119,17 @@
 
 ## Completion Notes
 
-*2026-10-28, implementation (autonomous run).*
+**Files written**:
+- `src/game_state/game_state_machine.gd`, `game_mode.gd`, `game_overlay.gd`, `scene_loader.gd`, `transition_presenter.gd`, `game_state_log.gd`, `transition_config.gd`, `encounter_descriptor.gd`, `battle_entry_payload.gd`
+- `tests/unit/game_state/doubles/`: `sequence_recorder.gd`, `stub_scene_loader.gd`, `stub_transition_presenter.gd`, `stub_catalog.gd`, `quit_spy.gd`, `spy_game_state_log.gd`, `stub_flash_gate.gd`, `synthetic_action_source.gd`, `stub_overworld_mode.gd`, `stub_battle_mode.gd`, `stub_camp_mode.gd`, `stub_overlay.gd`, `game_state_fixtures.gd`
+- `tests/unit/game_state/game_state_probe.gd`, `game_state_signal_order_test.gd`
 
-- **Files**: the `src/game_state/` scaffold (`game_state_machine.gd`, the abstract `game_mode.gd` / `game_overlay.gd` bases, the `scene_loader.gd` and `transition_presenter.gd` interfaces, `game_state_log.gd`, `transition_config.gd`, `encounter_descriptor.gd`, `battle_entry_payload.gd`); the doubles in `tests/unit/game_state/doubles/` (recorder, stub modes, overlay, loader, presenter, catalog, flash gate, quit spy, synthetic action source, spy log, fixtures); `game_state_probe.gd`; `game_state_signal_order_test.gd`.
-- **Tests**: 3 cases; full suite 410/410, exit 0.
-- **Engine finding (4.7.2)**: `@abstract` is enforced at parse time. `GameMode.new()` is a parser error ("Cannot construct abstract class"), not a silent success, so every double has to subclass the base. Under `-d`, that parser error froze the headless run in the debugger prompt. The test that assumed otherwise was rewritten to assert only that the stub is a `GameMode`, and the comments were corrected.
+**Tests**: `game_state_signal_order_test.gd` — 3 cases, all passing (`test_overworld_to_battle_fires_four_signals_in_order` [AC-5], the 1/60s-tick bounded-loop edge case, and the `GameMode` abstract-base note below). Full suite: 410/410, 0 errors, 0 failures, 0 orphans (up from the 407 baseline; the one transient failure seen mid-session, in `battle_characterization_gate_test.gd`'s unrelated sandbox checker, did not reproduce on the next run — pre-existing flake, not touched by this story).
+
+**Deviations from the story text, flagged for review**:
+1. **`GameMode.new()` does *not* succeed silently on 4.7.2.** It raises `Parser Error: Cannot construct abstract class "GameMode"`, contradicting the Engine Notes' claim. Confirmed by running it: the headless suite hung in the interactive debugger until that assertion was removed. The shipped test asserts `StubOverworldMode is GameMode` instead; the "every double must subclass" conclusion still holds, just not for the stated reason. Worth correcting in ADR-0002's Engine Notes before story-002 relies on the old wording.
+2. **`_init`'s `flash_gate` and `catalog` params are typed `Object`, not `FlashGate`/`ContentCatalogService`.** `FlashGate` doesn't exist yet (story 017); `catalog` follows the ADR's own duck-typed intent. `is_transition_flash_capped()` always returns `false` this story — flash-gate consultation is deferred to story 017 as instructed.
+3. **Retry (Battle→Battle) and rollback go through the generic `begin_swap`/`poll_swap` path**, not ADR-0002 §7's "no loader call, `restore_start_snapshot()` on the same instance." Compiles and the signal order holds, but the snapshot-restore shortcut is unimplemented — owed to whichever story owns Retry (story-014 per Dependencies).
+4. Renamed the `_init`/local parameter `log` to `log_sink` / `game_log` after gdUnit4 flagged it shadowing the built-in `log()` function (now warning-free).
+
+**Owed / out of scope here (unchanged from the story)**: story 002 (GDD-anchored transitions table), story 006 (`TransitionConfig.validate()`, measured `transition_time`), story 010 (input routing/lock — `bind_action_source`/`get_move_vector`/`is_input_owner` exist but are not wired to real dispatch), story 017 (flash-gate booking).

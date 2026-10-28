@@ -113,14 +113,14 @@ var _flash_gate: Object = null
 ## a `FlashGate` class) so this file never hard-depends on either; `flash_gate`
 ## defaults to `null` ("never capped" — flash-gate booking lands in story 017).
 func _init(loader: SceneLoader, presenter: TransitionPresenter, config: TransitionConfig,
-		catalog: Object, quit_hook: Callable, log: GameStateLog,
+		catalog: Object, quit_hook: Callable, log_sink: GameStateLog,
 		flash_gate: Object = null) -> void:
 	_loader = loader
 	_presenter = presenter
 	_config = config
 	_catalog = catalog
 	_quit_hook = quit_hook
-	_log = log
+	_log = log_sink
 	_flash_gate = flash_gate
 
 

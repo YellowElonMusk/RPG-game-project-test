@@ -65,9 +65,9 @@ static func make_machine_in_overworld(recorder: SequenceRecorder = null) -> Dict
 	var cfg := make_transition_config()
 	var catalog := make_ready_catalog()
 	var quit_spy := QuitSpy.new(recorder)
-	var log := SpyGameStateLog.new()
+	var game_log := SpyGameStateLog.new()
 	var machine := GameStateMachine.new(
-			loader, presenter, cfg, catalog, quit_spy.as_callable(), log)
+			loader, presenter, cfg, catalog, quit_spy.as_callable(), game_log)
 	if recorder != null:
 		recorder.attach(machine)
 
@@ -85,5 +85,5 @@ static func make_machine_in_overworld(recorder: SequenceRecorder = null) -> Dict
 
 	return {
 		"machine": machine, "loader": loader, "presenter": presenter, "config": cfg,
-		"catalog": catalog, "quit_spy": quit_spy, "log": log,
+		"catalog": catalog, "quit_spy": quit_spy, "log": game_log,
 	}
