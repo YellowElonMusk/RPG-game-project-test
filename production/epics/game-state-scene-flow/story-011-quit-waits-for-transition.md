@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -84,7 +84,7 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_quit_wait_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -92,3 +92,35 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-008-busy-transition-rejects-requests.md`
 - Unlocks: `production/epics/game-state-scene-flow/story-025-menu-stops-time-quit-to-title.md`, `production/epics/game-state-scene-flow/story-028-in-mode-fade.md`, `production/epics/game-state-scene-flow/story-031-title-focus-and-quit-confirm.md`
+
+---
+
+## Completion Notes
+
+- `src/game_state/game_state_machine.gd`: `request_quit()` and the Quit-wait
+  flag (`_quit_pending`) already existed from an earlier story and needed no
+  behavioural change for the Quit-wait path itself. Added the missing piece:
+  a lifetime latch (`_quit_fired: bool`). `request_quit()` now returns `OK`
+  and does nothing once the hook has fired; `_end_in_phase()` sets the latch
+  alongside clearing `_quit_pending` before calling the hook. This closes the
+  gap against the Implementation Notes' pinned ruling ("the quit hook fires
+  at most once per machine lifetime") — without it, a second idle-time
+  `request_quit()` after the hook had already fired once would have fired it
+  again.
+- `tests/unit/game_state/game_state_quit_wait_test.gd` (new): one
+  parameterized test, `test_quit_hook_after_transition_finished` (OUT, SWAP,
+  IN), matching AC-9 and the QA Test Cases exactly — no new cases invented.
+  Each case drives Overworld -> Battle, stops in the named phase (pattern
+  copied from `game_state_busy_rejection_test.gd`'s
+  `_arrange_stopped_in_phase`), calls `request_quit()` three times (all `OK`,
+  no stacking), ticks to completion, then asserts `quit_spy.call_count == 1`
+  and `index(quit) > index(transition_finished)` via the shared
+  `SequenceRecorder`.
+- The QA doc's two prose edge cases (idle-synchronous call; in-mode fade) are
+  not separately automated here: the first is unchanged pre-existing
+  behaviour with no QA-named test function, and the second is explicitly out
+  of scope (story 028). Per the brief, no test cases beyond the one named in
+  QA Test Cases were invented.
+- Full suite: 471/471 (468 pre-existing + 3 new parameterized cases), 0
+  errors/failures/orphans.
+- Nothing owed.

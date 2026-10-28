@@ -124,6 +124,9 @@ var _mode_time: float = 0.0
 var _real_time: float = 0.0
 var _last_camp_id: String = ""
 var _quit_pending: bool = false
+## Latch (story 011, ADR-0002 §11 ruling 2026-10-23): `true` once the quit
+## hook has fired, so it never fires a second time in the machine's lifetime.
+var _quit_fired: bool = false
 var _menu_deferred: bool = false
 var _pending_outcome: int = -1   # BattleResult, or -1 for "none pending"
 var _frozen_overworld: Node = null
@@ -221,9 +224,16 @@ func close_overlay() -> RequestResult:
 
 
 ## Waits for a running transition (Rule 12): fires the quit hook immediately
-## when idle, otherwise once, after the next `transition_finished`.
+## when idle, otherwise once, after the next `transition_finished`. Latched
+## (story 011, ADR-0002 §11 ruling 2026-10-23): the hook fires at most once
+## per machine lifetime, so every call after the first does nothing but
+## return `OK` -- repeated calls during a transition never stack, and a
+## later idle call never fires the hook again.
 func request_quit() -> RequestResult:
+	if _quit_fired:
+		return RequestResult.OK
 	if _phase == Phase.IDLE:
+		_quit_fired = true
 		_quit_hook.call()
 	else:
 		_quit_pending = true
@@ -597,6 +607,7 @@ func _end_in_phase() -> void:
 	transition_finished.emit(finished_mode)
 	if _quit_pending:
 		_quit_pending = false
+		_quit_fired = true
 		_quit_hook.call()
 
 
