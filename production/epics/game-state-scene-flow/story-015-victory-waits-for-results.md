@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -83,7 +83,28 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_victory_results_wait_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (460/460 suite-wide, 3 new in this file)
+
+---
+
+## Completion Notes
+
+- `src/game_state/game_state_machine.gd`: `report_battle_outcome` and
+  `report_results_done` already implemented AC-12's happy path (Victory
+  records `_pending_outcome` and starts nothing; `report_results_done` starts
+  `battle_wipe_reverse`). Added two edge-case guards the QA cases required but
+  the code didn't yet enforce: `report_battle_outcome` now rejects
+  (`REJECTED_BUSY`, logged `&"outcome_already_pending"`) a second outcome
+  report while one is already pending; `report_results_done` now logs
+  `&"results_done_no_pending_victory"` on its existing `REJECTED_INVALID_PAIR`
+  rejection.
+- `tests/unit/game_state/game_state_victory_results_wait_test.gd` (new): 3
+  tests — main AC-12 flow (outcome -> 120 ticks idle, no `transition_started`,
+  synthetic confirm still reaches the Battle mode -> `report_results_done` ->
+  `battle_wipe_reverse` to Overworld) plus the two edge cases. All pass; no
+  new cases invented beyond the QA Test Cases section.
+- Full suite: 460/460 pass (457 prior + 3 new), 0 errors/failures/orphans.
+- No deviations from ADR-0002/0010/0006. Nothing owed.
 
 ---
 

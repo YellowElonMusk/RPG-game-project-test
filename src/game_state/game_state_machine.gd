@@ -252,7 +252,10 @@ func register_camp(camp_id: String) -> void:
 
 
 ## Called by the Battle mode / Defeat Prompt. Victory waits for
-## `report_results_done()` (AC-12); Defeat opens the Defeat Prompt overlay.
+## `report_results_done()` (AC-12, story 015); Defeat opens the Defeat Prompt
+## overlay. A second outcome report while one is already pending (Victory
+## waiting on the results screen, or Defeat waiting on the prompt) is a
+## programming error and is rejected without disturbing the first (story 015).
 func report_battle_outcome(result: BattleResult) -> RequestResult:
 	if _current_mode == Mode.CONTENT_ERROR:
 		return RequestResult.REJECTED_TERMINAL
@@ -263,6 +266,9 @@ func report_battle_outcome(result: BattleResult) -> RequestResult:
 		_log.error(&"outcome_during_transition", {"result": result})
 		return RequestResult.REJECTED_BUSY
 	if _current_mode != Mode.BATTLE:
+		return RequestResult.REJECTED_BUSY
+	if _pending_outcome != -1:
+		_log.error(&"outcome_already_pending", {"result": result, "pending": _pending_outcome})
 		return RequestResult.REJECTED_BUSY
 	match result:
 		BattleResult.VICTORY:
@@ -279,8 +285,11 @@ func report_battle_outcome(result: BattleResult) -> RequestResult:
 	return RequestResult.OK
 
 
+## Starts the Battle -> Overworld `battle_wipe_reverse` (AC-12, story 015).
+## Rejected when no Victory is pending -- a programming error, logged.
 func report_results_done() -> RequestResult:
 	if _pending_outcome != BattleResult.VICTORY:
+		_log.error(&"results_done_no_pending_victory", {"pending": _pending_outcome})
 		return RequestResult.REJECTED_INVALID_PAIR
 	_pending_outcome = -1
 	_begin_transition(Mode.BATTLE, Mode.OVERWORLD,
