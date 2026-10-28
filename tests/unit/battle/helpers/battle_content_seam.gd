@@ -135,13 +135,44 @@ static func arrange_vitals(c: Combatant, hp: int, mp: int) -> void:
 	c.spend_mp(c.mp - mp)
 
 
+## Story 008's filtered view of a battle's `outcome_log`: one plain
+## Dictionary per entry (`actor`, `move_name`, `category`, `target`,
+## `hp_delta`, `mp_delta`, `target_knocked_out`, `round_number`), with any
+## non-`RESOLVED` entry dropped. `BattleOutcome` has no `result` field yet
+## (ADR-0007 Step 4 adds `NO_TARGET`/`UNAFFORDABLE` log-only entries), so
+## `outcome.get("result")` returns `null` today and every entry passes; once
+## the field exists, this is the one place that starts filtering, and this
+## story's own test does not change.
+## Example: [code]var log: Array = BattleContentSeam.resolved_log(battle)[/code]
+static func resolved_log(battle: BattleCore) -> Array:
+	var filtered: Array = []
+	for outcome: BattleOutcome in battle.outcome_log:
+		var result_value: Variant = outcome.get("result")
+		if result_value != null and result_value != "RESOLVED":
+			continue
+		filtered.append({
+			"actor": outcome.actor,
+			"move_name": outcome.move_name,
+			"category": outcome.category,
+			"target": outcome.target,
+			"hp_delta": outcome.hp_delta,
+			"mp_delta": outcome.mp_delta,
+			"target_knocked_out": outcome.target_knocked_out,
+			"round_number": outcome.round_number,
+		})
+	return filtered
+
+
 ## A `FactionRule` test double (RC-2) that allows every move in every round
-## and plays back `script` in order: each entry `{move_id, target_index}`
-## becomes one enemy action, the move built through `move()` so this seam
-## owns the shape, the target read from `living_squad[target_index]`. An
-## empty (or exhausted) script yields no enemy actions. Injected through
+## and plays back `script` in order: each entry becomes one enemy action, the
+## target read from `living_squad[target_index]`. An entry names its move
+## either by `move_id` (built through `move()`, so this seam owns the shape)
+## or, for a move `move()` cannot build (story 005: `Move.make_defend()` has
+## no record ID), a literal `move` object directly. An empty (or exhausted)
+## script yields no enemy actions. Injected through
 ## `BattleCore._init(..., p_faction_rule)`.
 ## Example: [code]var rule := BattleContentSeam.scripted_rule([{"move_id": "move_late_fee", "target_index": 1}])[/code]
+## Example (literal move): [code]var rule := BattleContentSeam.scripted_rule([{"move": Move.make_defend(), "target_index": 0}])[/code]
 static func scripted_rule(script: Array) -> FactionRule:
 	return _ScriptedEnemyRule.new(script)
 
@@ -181,6 +212,6 @@ class _ScriptedEnemyRule extends FactionRule:
 			return []
 		var entry: Dictionary = _script[_cursor]
 		_cursor += 1
-		var scripted_move: Move = BattleContentSeam.move(entry["move_id"])
+		var scripted_move: Move = entry["move"] if entry.has("move") else BattleContentSeam.move(entry["move_id"])
 		var target: Combatant = living_squad[entry["target_index"]]
 		return [{"move": scripted_move, "target": target}]

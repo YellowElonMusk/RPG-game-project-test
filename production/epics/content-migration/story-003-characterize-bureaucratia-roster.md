@@ -1,12 +1,12 @@
 # Story 003: The Clerk and Supervisor stat blocks and flags are pinned against today's `BureaucratiaRule` factories (merged with story 004)
 
 > **Epic**: Content Migration
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-27
 
 ## Context
 
@@ -73,15 +73,9 @@
 
 ## Files
 
-- `tests/unit/battle/battle_bureaucratia_roster_characterization_test.gd`
-- `tests/unit/battle/fixtures/characterization_expected.gd` (Bureaucratia roster block)
-
-*Merged from story 004, 2026-10-24:*
-
-- `tests/unit/battle/battle_megacorp_roster_characterization_test.gd`
-- `tests/unit/battle/fixtures/characterization_expected.gd` (MegaCorp roster block)
-
----
+- `tests/unit/battle/battle_bureaucratia_roster_characterization_test.gd` — created (3 test functions: Clerk/Supervisor stat blocks, distinct instances, no shared state)
+- `tests/unit/battle/battle_megacorp_roster_characterization_test.gd` — created (3 test functions: Security Drone/Middle Manager/CEO stat blocks, pinned display name, distinct instances)
+- `tests/unit/battle/fixtures/characterization_expected.gd` — modified (`ENEMY_STATS`: all 5 enemies' stat blocks)
 
 ## QA Test Cases
 
@@ -131,3 +125,13 @@
 
 - Depends on: `production/epics/content-migration/story-001-characterization-seam.md`
 - Unlocks: `production/epics/content-migration/story-009-characterization-regression-gate.md`, `story-015-author-bureaucratia-enemies.md`, `story-024-bureaucratia-roster-adapter.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-27
+**Criteria**: 2/2 passing
+**Deviations**: None
+**Watch it fail**: Clerk's max HP was temporarily changed 40 → 41 in `src/battle/factions/bureaucratia.gd`; the Bureaucratia roster test failed (2 assertions). Reverted; `git status` confirmed `src/` was clean again.
+**Test Evidence**: `tests/unit/battle/battle_bureaucratia_roster_characterization_test.gd`, `tests/unit/battle/battle_megacorp_roster_characterization_test.gd` — 6/6 passing; full test tree 242/242, 0 errors/failures/orphans
+**Reviewed by**: `/code-review` (APPROVED, no changes requested)

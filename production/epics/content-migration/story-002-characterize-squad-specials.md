@@ -1,12 +1,12 @@
 # Story 002: The five squad specials' Move fields and effects are pinned against today's `SquadSpecials`
 
 > **Epic**: Content Migration
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-27
 
 ## Context
 
@@ -65,10 +65,8 @@
 
 ## Files
 
-- `tests/unit/battle/battle_squad_specials_characterization_test.gd`
-- `tests/unit/battle/fixtures/characterization_expected.gd` (specials block)
-
----
+- `tests/unit/battle/battle_squad_specials_characterization_test.gd` — created (11 test functions: Move fields, stun on Clerk + immunity on Supervisor/CEO, Family Meal, Appetizer + KO rejection, Viral Stunt ticks + boosted attack, Home Run vs all 5 enemies)
+- `tests/unit/battle/fixtures/characterization_expected.gd` — modified (specials block: `SQUAD_*` stat blocks, `SPECIALS` Move-field pins)
 
 ## QA Test Cases
 
@@ -118,3 +116,14 @@
 
 - Depends on: `production/epics/content-migration/story-001-characterization-seam.md`
 - Unlocks: `production/epics/content-migration/story-009-characterization-regression-gate.md`, `story-018-author-squad-special-moves.md`, `story-028-squad-specials-adapter.md`, `story-033-delete-is-manager.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-27
+**Criteria**: 1/1 passing
+**Deviations**: None
+**Watch it fail**: Home Run's power was temporarily changed 18 → 19 in `src/battle/squad/specials.gd`; `test_move_fields_equal_the_pin_for_every_special` failed as expected. Reverted; `git status` confirmed `src/` was clean again.
+**Coverage flagged for later stories** (from `/code-review`'s QA pass, not blocking this story): re-casting Viral Stunt on an already-vulnerable target overwrites `vulnerable_rounds_left` rather than stacking it — unpinned, left for whichever later story touches that behavior.
+**Test Evidence**: `tests/unit/battle/battle_squad_specials_characterization_test.gd` — 11/11 passing; full test tree 236/236, 0 errors/failures/orphans
+**Reviewed by**: `/code-review` (CHANGES REQUIRED — `mp_delta` unasserted for 3 specials, 5 unseeded RNGs; both fixed and re-verified at 236/236 before close)

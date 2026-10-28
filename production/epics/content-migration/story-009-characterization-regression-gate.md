@@ -1,12 +1,12 @@
 # Story 009: CI runs the Step 0 suite on every push and fails if any characterization test or its expected-values fixture differs from the Step 0 baseline
 
 > **Epic**: Content Migration
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28
 
 ## Context
 
@@ -64,14 +64,12 @@
 
 ## Files
 
-- `tools/ci/characterization_baseline.gd` (`class_name CharacterizationBaseline`, static `diff()`)
-- `tools/ci/check_characterization_unchanged.gd` (headless entry point)
-- `tools/ci/characterization_baseline.sha256` (the checked-in manifest)
-- `.gitattributes` (LF pinning for the gated paths)
-- `.github/workflows/tests.yml` (one added step: the checker; the battle suite in its own process)
-- `tests/unit/battle/battle_characterization_gate_test.gd`
-
----
+- `tools/ci/characterization_baseline.gd` — created (class_name CharacterizationBaseline: gated_paths(), build_manifest(), diff())
+- `tools/ci/check_characterization_unchanged.gd` — created (headless entry point, exits min(offending.size(), 1))
+- `tools/ci/characterization_baseline.sha256` — created (the checked-in manifest, 9 gated files)
+- `.gitattributes` — modified (LF pinning for the 9 gated paths)
+- `.github/workflows/tests.yml` — modified (battle suite runs in its own process; added the characterization-gate step) — UNCOMMITTABLE: .github/ is gitignored (see story 027)
+- `tests/unit/battle/battle_characterization_gate_test.gd` — created (13 test functions)
 
 ## QA Test Cases
 
@@ -110,3 +108,14 @@
 
 - Depends on: `production/epics/content-migration/story-002-characterize-squad-specials.md`, `story-003-characterize-bureaucratia-roster.md`, `story-005-characterize-moves-damage.md`, `story-006-characterize-faction-rule-decisions.md`, `story-007-characterize-faction-rule-presentation.md`, `story-008-characterize-scripted-fights.md`
 - Unlocks: stories 023–035 in `production/epics/content-migration/` (each closes on this gate): `story-023-move-record-adapter.md` through `story-035-no-hardcoded-battle-content-lint.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-28
+**Criteria**: 1/1 passing
+**Deviations**: Advisory only — `.github/workflows/tests.yml`'s edit sits correctly on disk but cannot be committed (`.github/` is entirely gitignored; same issue first flagged at story 027). The gate is not live in real CI until that's resolved.
+**Watch it fail**: Done twice. `SEED_A` 1 → 999 in `characterization_expected.gd` made the checker exit 1, naming the file. Forcing `check_characterization_unchanged.gd` to always `quit(0)` made the drift-detection test fail. Both reverted; byte-identical diffs confirmed.
+**Coordination owed** (from `/code-review`, not blocking this story): `ADR-0007 §2`'s `lint_hp_writes.sh` allowlist needs a line for the seam file; ADR-0001's Validation Criteria text needs a doc annotation citing this checker (both need technical-director sign-off per this story's own Implementation Notes).
+**Test Evidence**: `tests/unit/battle/battle_characterization_gate_test.gd` — 13/13 passing; full test tree 284/284, 0 errors/failures/orphans
+**Reviewed by**: `/code-review` (CHANGES REQUIRED — checker exit code untested on failure, exclusions untested; both fixed and re-verified before close)

@@ -1,12 +1,12 @@
 # Story 005: Every enemy named attack, Attack and Home Run deals its pinned damage to every shipped stat block under a seeded RNG
 
 > **Epic**: Content Migration
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-27
 
 ## Context
 
@@ -66,10 +66,9 @@
 
 ## Files
 
-- `tests/unit/battle/battle_moves_damage_characterization_test.gd`
-- `tests/unit/battle/fixtures/characterization_expected.gd` (`DAMAGE_SEED`, `DAMAGE_CASES`; generated once, then frozen)
-
----
+- `tests/unit/battle/battle_moves_damage_characterization_test.gd` — created (4 test functions: enemy-side damage matrix [128 cases], squad-side damage matrix [75 cases], minimum-damage floor, rule-emitted named-attack fields)
+- `tests/unit/battle/fixtures/characterization_expected.gd` — modified (`DAMAGE_SEED`, `DAMAGE_CASE_RNG_STATE`, `DAMAGE_CASES`, `DAMAGE_FLOOR_CASE`; generated once by a deleted scratch script, then frozen)
+- `tests/unit/battle/helpers/battle_content_seam.gd` — modified (`scripted_rule()` script entries may now carry a literal `move` in place of `move_id`, needed for Defend, which has no move-by-ID lookup)
 
 ## QA Test Cases
 
@@ -108,3 +107,13 @@
 
 - Depends on: `production/epics/content-migration/story-001-characterization-seam.md`
 - Unlocks: `production/epics/content-migration/story-009-characterization-regression-gate.md`, `story-014-author-enemy-named-attack-moves.md`, `story-023-move-record-adapter.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-27
+**Criteria**: 2/2 passing
+**Deviations**: None. `BattleContentSeam.scripted_rule()` was extended to accept a literal `Move` (needed for Defend and the generic Attack, neither of which `seam.move()` can build) — reviewed by both specialists with no issues raised.
+**Watch it fail**: Hostile Takeover's power was temporarily changed 18 → 19 in `src/battle/factions/megacorp.gd`; one case failed. Reverted; `git status` confirmed `src/` was clean again.
+**Test Evidence**: `tests/unit/battle/battle_moves_damage_characterization_test.gd` — 4/4 test functions passing (203 damage-matrix cases + the floor case + 9 rule-field checks); full test tree 246/246, 0 errors/failures/orphans
+**Reviewed by**: `/code-review` (APPROVED WITH SUGGESTIONS — a missing `display_name` assertion added and re-verified before close)

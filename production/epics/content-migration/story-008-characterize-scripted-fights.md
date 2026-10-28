@@ -1,12 +1,12 @@
 # Story 008: Scripted fights against each faction's shipped roster produce the pinned outcome sequence, per-action HP/MP, result and final RNG state
 
 > **Epic**: Content Migration
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28
 
 ## Context
 
@@ -62,12 +62,10 @@
 
 ## Files
 
-- `tests/unit/battle/battle_scripted_fight_characterization_test.gd`
-- `tests/unit/battle/fixtures/scripted_fight_commands.gd` (the command scripts `BUREAUCRATIA`, `MEGACORP`; constants only)
-- `tests/unit/battle/fixtures/characterization_expected.gd` (fights block, `ROUND_CAP`)
-- `tests/unit/battle/helpers/battle_content_seam.gd` (adds `resolved_log(battle)`)
-
----
+- `tests/unit/battle/battle_scripted_fight_characterization_test.gd` — created (3 test functions: Bureaucratia fight, MegaCorp fight, start_battle(false) carryover)
+- `tests/unit/battle/fixtures/scripted_fight_commands.gd` — created (BUREAUCRATIA, MEGACORP command scripts; constants only)
+- `tests/unit/battle/fixtures/characterization_expected.gd` — modified (fights block: ROUND_CAP, SEED_FIGHT_B/M, BUREAUCRATIA_FIGHT, MEGACORP_FIGHT)
+- `tests/unit/battle/helpers/battle_content_seam.gd` — modified (adds resolved_log(battle))
 
 ## QA Test Cases
 
@@ -103,3 +101,13 @@
 
 - Depends on: `production/epics/content-migration/story-001-characterization-seam.md`
 - Unlocks: `production/epics/content-migration/story-009-characterization-regression-gate.md`, `story-029-battle-factory-reads-enemy-records.md`, `story-034-delete-roster-factories.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-28
+**Criteria**: 1/1 passing
+**Deviations**: None
+**Watch it fail**: Done twice. Supervisor's attack stat 15 → 16 in `src/battle/factions/bureaucratia.gd` failed 57 assertions. The target-index clamp removed from the test harness failed with 43 errors and 13 failures. Both reverted; `git status` confirmed `src/` and the test file were clean each time.
+**Test Evidence**: `tests/unit/battle/battle_scripted_fight_characterization_test.gd` — 3/3 passing; full test tree 271/271, 0 errors/failures/orphans
+**Reviewed by**: `/code-review` (CHANGES REQUIRED — clamp unexercised, carryover test incomplete; all fixed and re-verified before close)

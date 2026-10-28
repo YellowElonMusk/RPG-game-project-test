@@ -1,12 +1,12 @@
 # Story 007: Both faction rules' banner text, tooltip text, combatant note and colours are pinned for every round state
 
 > **Epic**: Content Migration
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28
 
 ## Context
 
@@ -61,10 +61,8 @@
 
 ## Files
 
-- `tests/unit/battle/battle_faction_rule_presentation_characterization_test.gd`
-- `tests/unit/battle/fixtures/characterization_expected.gd` (presentation block)
-
----
+- `tests/unit/battle/battle_faction_rule_presentation_characterization_test.gd` — created (7 test functions: banner/tooltip text by round for both rules, combatant tooltip note for both rules, colours by round for both rules, neutral control case)
+- `tests/unit/battle/fixtures/characterization_expected.gd` — modified (presentation block: banner/tooltip text, colours, suspended note)
 
 ## QA Test Cases
 
@@ -99,3 +97,13 @@
 
 - Depends on: `production/epics/content-migration/story-001-characterization-seam.md`
 - Unlocks: `production/epics/content-migration/story-009-characterization-regression-gate.md`, `story-017-author-faction-rule-records.md`, `story-027-faction-rule-presentation-from-records.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-28
+**Criteria**: 1/1 passing
+**Deviations**: None
+**Watch it fail**: MegaCorp's banner was temporarily changed ("billing" → "Billing") in `src/battle/factions/megacorp.gd`; 8 assertions failed across the round-by-round checks. Reverted; `git status` confirmed `src/` was clean again.
+**Test Evidence**: `tests/unit/battle/battle_faction_rule_presentation_characterization_test.gd` — 7/7 passing; full test tree 268/268, 0 errors/failures/orphans
+**Reviewed by**: `/code-review` (APPROVED WITH SUGGESTIONS — an overclaiming doc comment reworded and re-verified before close)

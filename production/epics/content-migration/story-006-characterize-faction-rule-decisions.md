@@ -1,12 +1,12 @@
 # Story 006: Both faction rules' decisions are pinned: the permit round, the AI's picks before and after it, MegaCorp's per-enemy move choice, billing and suspension
 
 > **Epic**: Content Migration
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-27
 
 ## Context
 
@@ -63,10 +63,8 @@
 
 ## Files
 
-- `tests/unit/battle/battle_faction_rule_decisions_characterization_test.gd`
-- `tests/unit/battle/fixtures/characterization_expected.gd` (rule decisions block, including the boundary rows)
-
----
+- `tests/unit/battle/battle_faction_rule_decisions_characterization_test.gd` — created (15 test functions: permit boundary, pre/post-permit Bureaucratia AI, HP-boundary and tie edge cases, MegaCorp AI parity, billing, move_allowed, statelessness, neutral control case)
+- `tests/unit/battle/fixtures/characterization_expected.gd` — modified (`RULE_SEED`, `PEN_JAB_TARGET_INDEX`, `NEUTRAL_TARGET_INDEX`, `RULE_RNG_STATE_AFTER_ONE_DRAW`)
 
 ## QA Test Cases
 
@@ -110,3 +108,13 @@
 
 - Depends on: `production/epics/content-migration/story-001-characterization-seam.md`
 - Unlocks: `production/epics/content-migration/story-009-characterization-regression-gate.md`, `story-017-author-faction-rule-records.md`, `story-026-faction-rule-decisions-from-records.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-27
+**Criteria**: 1/1 passing
+**Deviations**: None
+**Watch it fail**: Done twice. `PERMIT_ROUNDS` 3 → 2 in `src/battle/factions/bureaucratia.gd` failed a test; reverted. After the review's fix added power assertions, `FINAL_NOTICE_POWER` 18 → 19 also failed; reverted. `git status` confirmed `src/` was clean both times.
+**Test Evidence**: `tests/unit/battle/battle_faction_rule_decisions_characterization_test.gd` — 15/15 passing; full test tree 261/261, 0 errors/failures/orphans
+**Reviewed by**: `/code-review` (CHANGES REQUIRED — named-attack powers unasserted, KO-billing check vacuous; both fixed and re-verified before close)

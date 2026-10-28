@@ -27,3 +27,13 @@
 # .gitattributes governs the INDEX. It does not retro-fix a working tree that
 # predates the rule -- run `git add --renormalize .` for that.
 .claude/**/*.md text eol=lf
+
+# Story 009: the content-migration characterization gate hashes these files
+# with FileAccess.get_sha256(), which reads raw bytes. A CRLF checkout (the
+# Windows default with core.autocrlf=true) would hash differently than the
+# LF content the checked-in manifest (tools/ci/characterization_baseline.sha256)
+# was generated from, failing the gate on every Windows checkout regardless
+# of real content drift.
+tests/unit/battle/*_characterization_test.gd text eol=lf
+tests/unit/battle/fixtures/characterization_expected.gd text eol=lf
+tests/unit/battle/fixtures/scripted_fight_commands.gd text eol=lf
