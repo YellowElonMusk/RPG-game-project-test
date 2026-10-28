@@ -1,0 +1,437 @@
+## Pure logic core for Game State & Scene Flow (ADR-0002 §1). `RefCounted`:
+## it never references the scene tree, `get_tree()`, an autoload by name,
+## `Time`, or `Engine`. Time enters only through `tick(delta)`; every
+## collaborator enters only through `_init`. Created once by `GameRoot` and
+## injected into every mode, overlay and Presentation-layer service — never
+## looked up by name and never an autoload.
+class_name GameStateMachine extends RefCounted
+
+enum Mode { BOOT, CONTENT_ERROR, TITLE, OVERWORLD, BATTLE, CAMP }
+enum OverlayKind { DIALOGUE, MENU, DEFEAT_PROMPT }
+enum Phase { IDLE, OUT, SWAP, IN }
+enum RequestResult { OK, REJECTED_BUSY, REJECTED_INVALID_PAIR, REJECTED_TERMINAL,
+		REJECTED_OVERLAY_BLOCKS, REJECTED_INVALID_PAYLOAD }
+enum BattleResult { VICTORY, FLED, DEFEAT }
+
+## No accumulated phase time ever needs to land exactly on a float duration:
+## a phase ends on the first `tick()` where the accumulated phase time is
+## `>= duration - _PHASE_EPSILON`. Overshoot is not carried into the next phase.
+const _PHASE_EPSILON: float = 1e-9
+
+## The transitions table (ADR-0002 §9): a game rule from the GDD, not a
+## tuning value. Provisional pending story-002's GDD anchor for every row's
+## trigger; every enumerated transition type (`fade`, `battle_wipe`,
+## `battle_wipe_reverse`, `retry_flash`, `none`) appears at least once.
+## Outcome-driven rows (Battle -> Overworld/Battle/Camp) are reachable only
+## through `report_battle_outcome()` / `report_results_done()` /
+## `choose_retry()` / `choose_retreat()`, never through `request_transition()`
+## (draft §2 item 7, accepted) — see `_REQUESTABLE_TARGETS` below.
+const _TRANSITION_TYPES: Dictionary = {
+	Mode.BOOT: {Mode.TITLE: &"fade", Mode.CONTENT_ERROR: &"none"},
+	Mode.TITLE: {Mode.OVERWORLD: &"fade"},
+	Mode.OVERWORLD: {Mode.BATTLE: &"battle_wipe", Mode.CAMP: &"fade"},
+	Mode.BATTLE: {Mode.OVERWORLD: &"battle_wipe_reverse", Mode.BATTLE: &"retry_flash",
+			Mode.CAMP: &"battle_wipe_reverse"},
+	Mode.CAMP: {Mode.OVERWORLD: &"fade"},
+}
+
+## The subset of `_TRANSITION_TYPES` legal through `request_transition()`.
+## Boot's two rows are internal (driven by `tick()` reading the catalog);
+## Battle's outbound rows are outcome-driven (see above).
+const _REQUESTABLE_TARGETS: Dictionary = {
+	Mode.TITLE: [Mode.OVERWORLD],
+	Mode.OVERWORLD: [Mode.BATTLE, Mode.CAMP],
+	Mode.CAMP: [Mode.OVERWORLD],
+}
+
+# The GDD's six announcements (Rule 4), names unchanged.
+signal transition_started(from: Mode, to: Mode)
+signal mode_exited(from: Mode)
+signal mode_entered(to: Mode)
+signal transition_finished(to: Mode)
+signal overlay_opened(kind: OverlayKind)
+signal overlay_closed(kind: OverlayKind)
+
+var current_mode: Mode:
+	get:
+		return _current_mode
+
+## Copy, bottom first.
+var overlay_stack: Array[OverlayKind]:
+	get:
+		return _overlay_stack.duplicate()
+
+var phase: Phase:
+	get:
+		return _phase
+
+## Stops advancing while the Menu overlay is open (AC-20).
+var mode_time: float:
+	get:
+		return _mode_time
+
+var last_camp_id: String:
+	get:
+		return _last_camp_id
+
+var _current_mode: Mode = Mode.BOOT
+var _phase: Phase = Phase.IDLE
+var _overlay_stack: Array[OverlayKind] = []
+var _mode_time: float = 0.0
+var _last_camp_id: String = ""
+var _quit_pending: bool = false
+var _menu_deferred: bool = false
+var _pending_outcome: int = -1   # BattleResult, or -1 for "none pending"
+var _frozen_overworld: Node = null
+var _battle_snapshot: RefCounted = null
+var _current_descriptor: EncounterDescriptor = null
+var _action_source: Object = null
+
+var _pending_from_mode: Mode = Mode.BOOT
+var _pending_to_mode: Mode = Mode.BOOT
+var _pending_payload: RefCounted = null
+var _pending_transition_type: StringName = &""
+var _pending_capped: bool = false
+var _in_mode_fade_active: bool = false
+var _in_mode_fade_callback: Callable = Callable()
+var _current_t_out: float = 0.0
+var _current_t_in: float = 0.0
+var _t_swap: float = 0.0
+var _phase_elapsed: float = 0.0
+
+var _loader: SceneLoader
+var _presenter: TransitionPresenter
+var _config: TransitionConfig
+var _catalog: Object
+var _quit_hook: Callable
+var _log: GameStateLog
+var _flash_gate: Object = null
+
+
+## Every collaborator is injected here and nowhere else. `catalog` and
+## `flash_gate` are typed `Object` (duck-typed, not `ContentCatalogService` /
+## a `FlashGate` class) so this file never hard-depends on either; `flash_gate`
+## defaults to `null` ("never capped" — flash-gate booking lands in story 017).
+func _init(loader: SceneLoader, presenter: TransitionPresenter, config: TransitionConfig,
+		catalog: Object, quit_hook: Callable, log: GameStateLog,
+		flash_gate: Object = null) -> void:
+	_loader = loader
+	_presenter = presenter
+	_config = config
+	_catalog = catalog
+	_quit_hook = quit_hook
+	_log = log
+	_flash_gate = flash_gate
+
+
+## One door in (GDD Rule 2). Legal only for the non-outcome-driven pairs in
+## `_REQUESTABLE_TARGETS`.
+func request_transition(target: Mode, payload: RefCounted = null) -> RequestResult:
+	if _current_mode == Mode.CONTENT_ERROR:
+		return RequestResult.REJECTED_TERMINAL
+	if _phase != Phase.IDLE:
+		return RequestResult.REJECTED_BUSY
+	if not _overlay_stack.is_empty():
+		return RequestResult.REJECTED_OVERLAY_BLOCKS
+	var targets: Array = _REQUESTABLE_TARGETS.get(_current_mode, [])
+	if not targets.has(target):
+		return RequestResult.REJECTED_INVALID_PAIR
+	var transition_type: StringName = _TRANSITION_TYPES[_current_mode][target]
+	_begin_transition(_current_mode, target, transition_type, payload)
+	return RequestResult.OK
+
+
+func open_overlay(kind: OverlayKind, payload: RefCounted = null) -> RequestResult:
+	if _current_mode == Mode.CONTENT_ERROR:
+		return RequestResult.REJECTED_TERMINAL
+	if _phase != Phase.IDLE:
+		return RequestResult.REJECTED_BUSY
+	_overlay_stack.append(kind)
+	_loader.push_overlay(kind, payload)
+	overlay_opened.emit(kind)
+	return RequestResult.OK
+
+
+func close_overlay() -> RequestResult:
+	if _overlay_stack.is_empty():
+		return RequestResult.REJECTED_INVALID_PAIR
+	var kind: OverlayKind = _overlay_stack.pop_back()
+	_loader.pop_overlay()
+	overlay_closed.emit(kind)
+	return RequestResult.OK
+
+
+## Waits for a running transition (Rule 12): fires the quit hook immediately
+## when idle, otherwise once, after the next `transition_finished`.
+func request_quit() -> RequestResult:
+	if _phase == Phase.IDLE:
+		_quit_hook.call()
+	else:
+		_quit_pending = true
+	return RequestResult.OK
+
+
+## Fourth entry point next to `request_transition`, `open_overlay` and
+## `close_overlay` (ADR-0002 §11, revision 2026-10-23, in effect). Fades the
+## current mode out and back in without a swap. Legal only in Overworld, idle,
+## with no overlay open.
+func request_in_mode_fade(callback: Callable) -> RequestResult:
+	if _current_mode == Mode.CONTENT_ERROR:
+		return RequestResult.REJECTED_TERMINAL
+	if _current_mode != Mode.OVERWORLD or _phase != Phase.IDLE:
+		return RequestResult.REJECTED_INVALID_PAIR
+	if not _overlay_stack.is_empty():
+		return RequestResult.REJECTED_OVERLAY_BLOCKS
+	if not callback.is_valid():
+		return RequestResult.REJECTED_INVALID_PAYLOAD
+	_in_mode_fade_callback = callback
+	_begin_transition(_current_mode, _current_mode, &"fade", null, true)
+	return RequestResult.OK
+
+
+## Sets `last_camp_id` outside a camp entry (ADR-0002 §11). Only the current
+## Overworld mode should call this, and only while `current_mode == OVERWORLD`.
+func register_camp(camp_id: String) -> void:
+	if camp_id.is_empty():
+		_log.warning(&"empty_camp_id", {})
+		return
+	if _current_mode != Mode.OVERWORLD:
+		_log.warning(&"register_camp_wrong_mode", {"mode": _current_mode})
+		return
+	_last_camp_id = camp_id
+
+
+## Called by the Battle mode / Defeat Prompt. Victory waits for
+## `report_results_done()` (AC-12); Defeat opens the Defeat Prompt overlay.
+func report_battle_outcome(result: BattleResult) -> RequestResult:
+	if _current_mode == Mode.CONTENT_ERROR:
+		return RequestResult.REJECTED_TERMINAL
+	if _current_mode != Mode.BATTLE or _phase != Phase.IDLE:
+		return RequestResult.REJECTED_BUSY
+	match result:
+		BattleResult.VICTORY:
+			_pending_outcome = result
+		BattleResult.FLED:
+			_pending_outcome = -1
+			_begin_transition(Mode.BATTLE, Mode.OVERWORLD,
+					_TRANSITION_TYPES[Mode.BATTLE][Mode.OVERWORLD], null)
+		BattleResult.DEFEAT:
+			_pending_outcome = result
+			_overlay_stack.append(OverlayKind.DEFEAT_PROMPT)
+			_loader.push_overlay(OverlayKind.DEFEAT_PROMPT, null)
+			overlay_opened.emit(OverlayKind.DEFEAT_PROMPT)
+	return RequestResult.OK
+
+
+func report_results_done() -> RequestResult:
+	if _pending_outcome != BattleResult.VICTORY:
+		return RequestResult.REJECTED_INVALID_PAIR
+	_pending_outcome = -1
+	_begin_transition(Mode.BATTLE, Mode.OVERWORLD,
+			_TRANSITION_TYPES[Mode.BATTLE][Mode.OVERWORLD], null)
+	return RequestResult.OK
+
+
+func choose_retry() -> RequestResult:
+	if _pending_outcome != BattleResult.DEFEAT:
+		return RequestResult.REJECTED_INVALID_PAIR
+	_pending_outcome = -1
+	_close_defeat_prompt()
+	_begin_transition(Mode.BATTLE, Mode.BATTLE,
+			_TRANSITION_TYPES[Mode.BATTLE][Mode.BATTLE], null)
+	return RequestResult.OK
+
+
+func choose_retreat() -> RequestResult:
+	if _pending_outcome != BattleResult.DEFEAT:
+		return RequestResult.REJECTED_INVALID_PAIR
+	if _current_descriptor != null and not _current_descriptor.retreat_allowed:
+		return RequestResult.REJECTED_INVALID_PAYLOAD
+	_pending_outcome = -1
+	_close_defeat_prompt()
+	_begin_transition(Mode.BATTLE, Mode.CAMP,
+			_TRANSITION_TYPES[Mode.BATTLE][Mode.CAMP], null)
+	return RequestResult.OK
+
+
+## The only way time advances. A phase ends on the first `tick()` where the
+## accumulated phase time is `>= duration - _PHASE_EPSILON`; overshoot is not
+## carried into the next phase. In SWAP, `tick(delta)` adds `delta` to the
+## swap-elapsed total and then polls — SWAP lasts until `poll_swap()` returns
+## `DONE`, not until a duration elapses.
+func tick(delta: float) -> void:
+	if not (OverlayKind.MENU in _overlay_stack):
+		_mode_time += delta
+	match _phase:
+		Phase.IDLE:
+			if _current_mode == Mode.BOOT:
+				_tick_boot()
+		Phase.OUT:
+			_phase_elapsed += delta
+			if _phase_elapsed >= _current_t_out - _PHASE_EPSILON:
+				_end_out_phase()
+		Phase.SWAP:
+			_t_swap += delta
+			var status: SceneLoader.SwapStatus = _loader.poll_swap()
+			if status == SceneLoader.SwapStatus.DONE:
+				_end_swap_phase_success()
+			elif status == SceneLoader.SwapStatus.FAILED:
+				_end_swap_phase_failure()
+		Phase.IN:
+			_phase_elapsed += delta
+			if _phase_elapsed >= _current_t_in - _PHASE_EPSILON:
+				_end_in_phase()
+
+
+## Any `Object` meeting the `ActionSource` contract (signal-and-method, not a
+## required base class — story-010 wires dispatch; this story only stores it).
+func bind_action_source(source: Object) -> void:
+	_action_source = source
+
+
+func is_input_owner(receiver: Object) -> bool:
+	if _phase != Phase.IDLE:
+		return false
+	if not _overlay_stack.is_empty():
+		return false
+	return receiver == _loader.current_mode_node()
+
+
+## `Vector2.ZERO` unless `caller` owns input.
+func get_move_vector(caller: Object) -> Vector2:
+	if not is_input_owner(caller):
+		return Vector2.ZERO
+	if _action_source == null:
+		return Vector2.ZERO
+	return _action_source.get_move_vector()
+
+
+## Overworld/Camp, no overlay but Menu, idle.
+func is_save_safe() -> bool:
+	if _phase != Phase.IDLE:
+		return false
+	if _current_mode != Mode.OVERWORLD and _current_mode != Mode.CAMP:
+		return false
+	if _overlay_stack.is_empty():
+		return true
+	return _overlay_stack.size() == 1 and _overlay_stack[0] == OverlayKind.MENU
+
+
+## True between `transition_started` and `transition_finished` of an in-mode
+## fade (ADR-0002 §11).
+func is_in_mode_fade() -> bool:
+	return _in_mode_fade_active
+
+
+## True iff the current transition's flash plays its capped variant; false
+## outside a transition. Flash-gate booking lands in story 017, so this is
+## always false until then.
+func is_transition_flash_capped() -> bool:
+	return _phase != Phase.IDLE and _pending_capped
+
+
+## Read-only debug snapshot (QA RC-1 b). Returns a fresh `Dictionary`, never
+## written through.
+func get_debug_state() -> Dictionary:
+	return {
+		"mode": _current_mode,
+		"overlay_stack": _overlay_stack.duplicate(),
+		"phase": _phase,
+		"frozen_overworld_id": _frozen_overworld.get_instance_id() if is_instance_valid(_frozen_overworld) else 0,
+		"battle_snapshot_id": _battle_snapshot.get_instance_id() if is_instance_valid(_battle_snapshot) else 0,
+		"last_camp_id": _last_camp_id,
+		"quit_pending": _quit_pending,
+		"menu_deferred": _menu_deferred,
+		"pending_outcome": _pending_outcome,
+	}
+
+
+func _tick_boot() -> void:
+	var cat_state: ContentCatalogService.State = (
+			_catalog.get("state") as int) as ContentCatalogService.State
+	if cat_state == ContentCatalogService.State.READY:
+		_begin_transition(Mode.BOOT, Mode.TITLE, _TRANSITION_TYPES[Mode.BOOT][Mode.TITLE], null)
+	elif cat_state == ContentCatalogService.State.FAILED:
+		_begin_transition(Mode.BOOT, Mode.CONTENT_ERROR,
+				_TRANSITION_TYPES[Mode.BOOT][Mode.CONTENT_ERROR], null)
+
+
+## `transition_started` at the start of OUT; `presenter.play_out()` alongside it.
+func _begin_transition(from: Mode, to: Mode, transition_type: StringName,
+		payload: RefCounted, in_mode_fade: bool = false) -> void:
+	_pending_from_mode = from
+	_pending_to_mode = to
+	_pending_payload = payload
+	_pending_transition_type = transition_type
+	_pending_capped = false   # flash-gate booking lands in story 017
+	_in_mode_fade_active = in_mode_fade
+	_phase = Phase.OUT
+	_phase_elapsed = 0.0
+	_current_t_out = float(_config.t_out.get(transition_type, 0.0))
+	_current_t_in = float(_config.t_in.get(transition_type, 0.0))
+	transition_started.emit(from, to)
+	_presenter.play_out(transition_type, _current_t_out, _pending_capped)
+
+
+## `mode_exited` at the start of SWAP. The in-mode fade's zero-length SWAP
+## (ADR-0002 §11) skips this and the loader entirely.
+func _end_out_phase() -> void:
+	if _in_mode_fade_active:
+		var callback: Callable = _in_mode_fade_callback
+		_in_mode_fade_callback = Callable()
+		if callback.is_valid():
+			callback.call()
+		else:
+			_log.error(&"in_mode_fade_callback_invalid", {})
+		_begin_in_phase()
+		return
+	mode_exited.emit(_pending_from_mode)
+	_phase = Phase.SWAP
+	_t_swap = 0.0
+	_loader.begin_swap(_pending_from_mode, _pending_to_mode, _pending_payload)
+
+
+## `mode_entered` at the end of SWAP, on `poll_swap() == DONE`.
+func _end_swap_phase_success() -> void:
+	_current_mode = _pending_to_mode
+	if _pending_payload is BattleEntryPayload:
+		_current_descriptor = (_pending_payload as BattleEntryPayload).descriptor
+	mode_entered.emit(_pending_to_mode)
+	_begin_in_phase()
+
+
+## A swap failure rolls back: re-attach any detached Overworld (handled by
+## `rollback_swap()`), play IN back into the source mode, and log an error.
+func _end_swap_phase_failure() -> void:
+	_loader.rollback_swap()
+	_log.error(&"swap_failed", {"from": _pending_from_mode, "to": _pending_to_mode})
+	mode_entered.emit(_pending_from_mode)
+	_pending_to_mode = _pending_from_mode
+	_begin_in_phase()
+
+
+## `presenter.play_in()` at the start of IN.
+func _begin_in_phase() -> void:
+	_phase = Phase.IN
+	_phase_elapsed = 0.0
+	_presenter.play_in(_pending_transition_type, _current_t_in, _pending_capped)
+
+
+## `transition_finished` at the end of IN. Input unlocks once this is
+## emitted (AC-8): phase is already `IDLE` by the time listeners run.
+func _end_in_phase() -> void:
+	var finished_mode: Mode = _current_mode
+	_phase = Phase.IDLE
+	_phase_elapsed = 0.0
+	_in_mode_fade_active = false
+	transition_finished.emit(finished_mode)
+	if _quit_pending:
+		_quit_pending = false
+		_quit_hook.call()
+
+
+func _close_defeat_prompt() -> void:
+	if not _overlay_stack.is_empty() and _overlay_stack.back() == OverlayKind.DEFEAT_PROMPT:
+		_overlay_stack.pop_back()
+		_loader.pop_overlay()
+		overlay_closed.emit(OverlayKind.DEFEAT_PROMPT)

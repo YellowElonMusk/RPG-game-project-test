@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: L (it carries the shared scaffold every later story reuses)
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -106,7 +106,7 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_signal_order_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-28: game_state_signal_order_test.gd, 3 cases; full suite 410/410, exit 0)
 
 ---
 
@@ -114,3 +114,13 @@
 
 - Depends on: `production/epics/content-catalog/story-001-install-gdunit4.md`
 - Unlocks: every other Step 1 story (002–031); directly `story-004`, `story-006`, `story-008`, `story-010`, `story-014` in `production/epics/game-state-scene-flow/`
+
+---
+
+## Completion Notes
+
+*2026-10-28, implementation (autonomous run).*
+
+- **Files**: the `src/game_state/` scaffold (`game_state_machine.gd`, the abstract `game_mode.gd` / `game_overlay.gd` bases, the `scene_loader.gd` and `transition_presenter.gd` interfaces, `game_state_log.gd`, `transition_config.gd`, `encounter_descriptor.gd`, `battle_entry_payload.gd`); the doubles in `tests/unit/game_state/doubles/` (recorder, stub modes, overlay, loader, presenter, catalog, flash gate, quit spy, synthetic action source, spy log, fixtures); `game_state_probe.gd`; `game_state_signal_order_test.gd`.
+- **Tests**: 3 cases; full suite 410/410, exit 0.
+- **Engine finding (4.7.2)**: `@abstract` is enforced at parse time. `GameMode.new()` is a parser error ("Cannot construct abstract class"), not a silent success, so every double has to subclass the base. Under `-d`, that parser error froze the headless run in the debugger prompt. The test that assumed otherwise was rewritten to assert only that the stub is a `GameMode`, and the comments were corrected.
