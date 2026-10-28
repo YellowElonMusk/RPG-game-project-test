@@ -15,10 +15,15 @@
 ## `action_released` -- it only updates `get_move_vector()` (ADR-0003 §8).
 ##
 ## This story (001) implements edge detection for the default bindings only.
-## `action_held` emission, echo suppression, bindings validation, deadzone
-## rescale, per-axis arbitration, active-device tracking, focus/disconnect
-## signals and overrides are later stories' concern; every signal they need
-## is declared here now so later stories add behaviour, not surface.
+## `action_held` emission, bindings validation, deadzone rescale, per-axis
+## arbitration, active-device tracking and overrides are later stories'
+## concern; every signal they need is declared here now so later stories add
+## behaviour, not surface. Story 025 adds the focus gate (every held action
+## released before `focus_lost()`, pad input dropped while unfocused, a
+## fresh non-echo press required after `focus_gained()`, and a per-axis
+## re-centre latch) and a minimal `device_restored()` on any pad reconnect;
+## full disconnect semantics (the active pad, release-before-`device_lost()`)
+## remain later stories' concern.
 ##
 ## Usage example:
 ## [codeblock]
@@ -105,6 +110,13 @@ var _discrete_held: Dictionary = {}
 # deadzone rescale and per-axis arbitration are later stories' concern.
 var _move_sources: Dictionary = {}
 
+# Per-physical-axis re-centre latch ("device:axis" -> true), set on focus
+# loss for every axis then contributing to _move_sources (story 025,
+# ADR-0003 §8/§9). While latched, _feed_pad_axis() drops that axis's events
+# entirely; the latch clears the moment it reports a value inside
+# _config.deadzone, after which it counts again.
+var _axis_recentre_latch: Dictionary = {}
+
 
 func _init(bindings: InputBindings, config: InputConfig) -> void:
 	_config = config
@@ -113,15 +125,20 @@ func _init(bindings: InputBindings, config: InputConfig) -> void:
 
 ## Feeds one engine `InputEvent` into the resolver. Only `InputEventKey`,
 ## `InputEventJoypadButton` and `InputEventJoypadMotion` are matched against
-## the binding table in this story; every other event type (including
-## `InputEventAction`, per ADR-0003 §5) is ignored with no error.
+## the binding table; every other event type (including `InputEventAction`,
+## per ADR-0003 §5) is ignored with no error. Key echo events are ignored
+## (story 025/ADR-0003 §8: a still-held key needs a fresh non-echo press).
+## While the window is unfocused, every gamepad event is dropped (ADR-0003
+## §9); keyboard events are still processed normally.
 func feed_event(event: InputEvent) -> void:
 	if event is InputEventKey:
 		_feed_key(event as InputEventKey)
 	elif event is InputEventJoypadButton:
-		_feed_pad_button(event as InputEventJoypadButton)
+		if _window_focused:
+			_feed_pad_button(event as InputEventJoypadButton)
 	elif event is InputEventJoypadMotion:
-		_feed_pad_axis(event as InputEventJoypadMotion)
+		if _window_focused:
+			_feed_pad_axis(event as InputEventJoypadMotion)
 
 
 ## Advances the resolver's own clock by `delta` seconds. This story's `tick()`
@@ -132,18 +149,31 @@ func tick(_delta: float) -> void:
 	pass
 
 
-## Records whether the game window has focus. This story stores the value
-## only; releasing held actions and emitting `focus_lost`/`focus_gained` is
-## story 025's concern.
+## Sets whether the game window has focus (ADR-0003 §8/§9; AC-17). Losing
+## focus releases every held discrete action (`action_released` for each, in
+## no guaranteed order) and latches every then-active gamepad axis, both
+## before `focus_lost()` fires; `get_move_vector()` reports `Vector2.ZERO`
+## while unfocused. Regaining focus emits `focus_gained()` exactly once. A
+## call that repeats the current value is a no-op (no duplicate signal).
 func set_window_focused(focused: bool) -> void:
+	if focused == _window_focused:
+		return
 	_window_focused = focused
+	if focused:
+		focus_gained.emit()
+	else:
+		_release_all_held_actions()
+		_latch_active_axes()
+		focus_lost.emit()
 
 
-## Records a joypad connecting or disconnecting. This story is a no-op
-## placeholder; `device_lost`/`device_restored` and active-pad tracking are
-## later stories' concern.
-func on_joy_connection(_device: int, _connected: bool, _joy_name: String) -> void:
-	pass
+## Records a joypad connecting or disconnecting. `device_restored()` fires
+## for any pad reconnecting, focused or not (ADR-0003 §8). Tracking the
+## active pad and releasing its held actions before `device_lost()` on
+## disconnect is a later story's concern.
+func on_joy_connection(_device: int, connected: bool, _joy_name: String) -> void:
+	if connected:
+		device_restored.emit()
 
 
 ## The deadzone-rescaled, per-axis-arbitrated, diagonal-normalized move
@@ -152,7 +182,10 @@ func on_joy_connection(_device: int, _connected: bool, _joy_name: String) -> voi
 ## per test case); deadzone rescale and arbitration ties are stories 004-006.
 ## Sign convention (pinned, ADR-0003 §8, Godot's y-down): `move_right` ->
 ## (+1, 0), `move_left` -> (-1, 0), `move_up` -> (0, -1), `move_down` -> (0, 1).
+## Returns `Vector2.ZERO` while the window is unfocused (ADR-0003 §9).
 func get_move_vector() -> Vector2:
+	if not _window_focused:
+		return Vector2.ZERO
 	var up: float = _move_level(InputActions.MOVE_UP)
 	var down: float = _move_level(InputActions.MOVE_DOWN)
 	var left: float = _move_level(InputActions.MOVE_LEFT)
@@ -234,8 +267,13 @@ func _compile_axis_binding(action: StringName, token: String) -> void:
 
 
 # Matches a keyboard event by physical_keycode (never keycode, ADR-0003 §4),
-# then routes the resolved action to the discrete or move handler.
+# then routes the resolved action to the discrete or move handler. Echo
+# events are ignored (story 025): a held key only ever re-arrives as echoes
+# then a release, so skipping them here is what makes a still-held key need
+# a fresh press after focus returns.
 func _feed_key(event: InputEventKey) -> void:
+	if event.echo:
+		return
 	var action: StringName = _key_actions.get(event.physical_keycode, &"")
 	if action == &"":
 		return
@@ -256,6 +294,11 @@ func _feed_pad_button(event: InputEventJoypadButton) -> void:
 # "+"-bound action, the negative part (as a magnitude) feeds the "-"-bound
 # action, so centering the stick (raw 0.0) clears both.
 func _feed_pad_axis(event: InputEventJoypadMotion) -> void:
+	var axis_key: String = "%d:%d" % [event.device, event.axis]
+	if _axis_recentre_latch.get(axis_key, false):
+		if absf(event.axis_value) <= _config.deadzone:
+			_axis_recentre_latch.erase(axis_key)
+		return
 	var by_sign: Dictionary = _pad_axis_actions.get(event.axis, null)
 	if by_sign == null:
 		return
@@ -318,3 +361,30 @@ func _move_level(action: StringName) -> float:
 	for source_key: String in sources:
 		level = max(level, sources[source_key] as float)
 	return level
+
+
+# Releases every currently-held discrete action, emitting `action_released`
+# for each (ADR-0003 §8: every release fires before `focus_lost`/
+# `device_lost`).
+func _release_all_held_actions() -> void:
+	for action: StringName in _discrete_held.keys():
+		var holders: Dictionary = _discrete_held[action]
+		if not holders.is_empty():
+			_discrete_held[action] = {}
+			action_released.emit(action)
+
+
+# Latches every gamepad axis currently contributing to a move_* action
+# (story 025): its stored source is cleared immediately, as if centered, and
+# the latch set here makes _feed_pad_axis() ignore that physical axis until a
+# later event reports it inside the deadzone.
+func _latch_active_axes() -> void:
+	for action: StringName in _move_sources.keys():
+		var sources: Dictionary = _move_sources[action]
+		for source_key: String in sources.keys():
+			if source_key.begins_with("pad_axis:"):
+				var parts: PackedStringArray = source_key.split(":")
+				if parts.size() >= 3:
+					_axis_recentre_latch["%s:%s" % [parts[1], parts[2]]] = true
+				sources.erase(source_key)
+		_move_sources[action] = sources

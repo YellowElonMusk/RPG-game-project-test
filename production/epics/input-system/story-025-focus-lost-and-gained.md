@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -151,7 +151,7 @@ DEFERRED: real NOTIFICATION_APPLICATION_FOCUS_OUT/IN delivery on 4.7.2 (alt-tab 
 - Integration: `tests/integration/input/input_system_shell_test.gd` — must exist and pass. Gate level: BLOCKING.
 - Manual (deferred, not part of the done gate): focus-notification delivery log in `production/qa/evidence/`.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-28: input_focus_test.gd + input_system_shell_test.gd, 16 cases; full suite 407/407, exit 0). Manual focus-delivery check still DEFERRED.
 
 ---
 
@@ -163,3 +163,14 @@ DEFERRED: real NOTIFICATION_APPLICATION_FOCUS_OUT/IN delivery on 4.7.2 (alt-tab 
   - `production/epics/input-system/story-005-radial-deadzone.md`
   - `production/epics/input-system/story-022-active-pad-lost.md`
 - Unlocks: None in this epic (the game-state-scene-flow boot story consumes the `setup(resolver)` seam)
+
+---
+
+## Completion Notes
+
+*2026-10-28, implementation (autonomous run).*
+
+- **Files**: the focus gate, re-press latch and per-axis re-centre latches in `src/input/input_resolver.gd`; `src/input/input_system.gd` (`InputSystem` shell node with the `setup(resolver)` seam, `PROCESS_MODE_ALWAYS`, `ui_*` device bindings stripped in `_enter_tree()`, events forwarded unconsumed); `project.godot` (`input_devices/joypads/ignore_joypad_on_unfocused_application=true`); `tests/unit/input/input_focus_test.gd`; `tests/integration/input/input_system_shell_test.gd`.
+- **Tests**: 16 new cases; full suite 407/407, exit 0.
+- **Not yet done**: the manual check that real `NOTIFICATION_APPLICATION_FOCUS_OUT/IN` events arrive on a 4.7.2 build (alt-tab with a pad held) is still owed, with its log in `production/qa/evidence/`. If they don't arrive, the `DisplayServer.window_is_focused()` poll fallback becomes a follow-up.
+- **Wiring owed to game-state-scene-flow 035**: `GameRoot` must construct this node under `Services` and call `setup(resolver)`.
