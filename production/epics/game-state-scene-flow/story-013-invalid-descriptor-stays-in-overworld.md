@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -89,7 +89,7 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_descriptor_validation_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (526/526 suite-wide)
 
 ---
 
@@ -97,3 +97,19 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-012-failed-swap-rolls-back.md`, `production/epics/content-catalog/story-002-load-one-of-each-type.md` (`has_record` name and semantics)
 - Unlocks: `production/epics/game-state-scene-flow/story-033-strip-chapter-flow-chapter-mode.md`, `production/epics/game-state-scene-flow/story-035-game-root-main-scene.md`, `production/epics/game-state-scene-flow/story-041-remove-interim-enemy-validation-flag.md`
+
+---
+
+## Completion Notes
+
+**Files**:
+- `src/game_state/encounter_validator.gd` (new) — `EncounterValidator.validate(payload, config, catalog, log_sink) -> bool`, a static pure function. Checks, in order: `payload == null`, `payload.descriptor == null`, empty `encounter_id`, empty `enemy_ids`, unknown `faction_id` (`catalog.has_record(&"faction", id)`), then each `enemy_id` through `catalog.has_record(&"enemy", id)` only when `config.validate_enemy_ids_against_catalog` is true. Logs `&"descriptor_invalid_runtime"` with `context.field` naming the first failing field and returns `false` on the first failure.
+- `src/game_state/game_state_machine.gd` — `request_transition()` now calls `EncounterValidator.validate(payload as BattleEntryPayload, _config, _catalog, _log)` when `target == Mode.BATTLE`, after the pair/overlay/busy checks and before `_begin_transition()`, returning `REJECTED_INVALID_PAYLOAD` on failure. `payload as BattleEntryPayload` safely yields `null` for a `null` or wrongly-typed payload, which the validator treats as "missing".
+- `tests/unit/game_state/doubles/stub_catalog.gd` — extended (not replaced): added `set_known(type, id, known)` and a backing `_known` dictionary so a test can make the catalog know every faction but not one specific enemy id, alongside the existing blanket `has_record_result` flag (unchanged default, so every other test using it is unaffected).
+- `tests/unit/game_state/game_state_descriptor_validation_test.gd` (new) — `test_unknown_enemy_rejected_when_flag_on` (AC-14) and `test_other_fields_checked_when_flag_off` (empty `encounter_id`, empty `enemy_ids`, unknown `faction_id`, null payload, null descriptor all rejected; unknown enemy with the flag off accepted).
+
+**Test count**: suite-wide 526/526 passing (524 baseline + 2 new test functions in this file; 0 failures, 0 orphans).
+
+**Deviations**: none from the Implementation Notes. One correction made during implementation: the first draft asserted `loader.begin_swap_count == 0` literally, but `GameStateFixtures.make_machine_in_overworld()` already drives two real swaps (Boot->Title, Title->Overworld) before the test body runs, so `begin_swap_count` is 2 going in. Fixed to capture a `begin_swap_before` baseline and assert no further calls, matching the pattern already used in `game_state_retry_snapshot_test.gd` and `game_state_transition_table_test.gd`.
+
+**Items owed**: none. Story 034 (boss-count check) and story 041 (removing the interim flag) remain explicitly out of scope per this story's own Out of Scope section.

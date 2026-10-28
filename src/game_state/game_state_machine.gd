@@ -212,6 +212,14 @@ func request_transition(target: Mode, payload: RefCounted = null) -> RequestResu
 	var targets: Array = _REQUESTABLE_TARGETS.get(_current_mode, [])
 	if not targets.has(target):
 		return RequestResult.REJECTED_INVALID_PAIR
+	# Story 013, ADR-0002 §8: the Encounter descriptor is validated at request
+	# time, before OUT and before any detach -- an invalid descriptor returns
+	# REJECTED_INVALID_PAYLOAD here and never reaches _begin_transition(), so
+	# it never needs rollback_swap(). `as` safely yields null for a null or
+	# wrongly-typed payload, which the validator treats the same as "missing".
+	if target == Mode.BATTLE:
+		if not EncounterValidator.validate(payload as BattleEntryPayload, _config, _catalog, _log):
+			return RequestResult.REJECTED_INVALID_PAYLOAD
 	var transition_type: StringName = _TRANSITION_TYPES[_current_mode][target]
 	_begin_transition(_current_mode, target, transition_type, payload)
 	return RequestResult.OK
