@@ -10,6 +10,7 @@ var rollback_count: int = 0
 var push_overlay_count: int = 0
 var pop_overlay_count: int = 0
 var current_mode_node_value: Node = null
+var current_overlay_node_value: Node = null
 
 var _recorder: SequenceRecorder
 var _queue: Array[SwapStatus] = []
@@ -57,3 +58,7 @@ func pop_overlay() -> void:
 
 func current_mode_node() -> Node:
 	return current_mode_node_value
+
+
+func current_overlay_node() -> Node:
+	return current_overlay_node_value

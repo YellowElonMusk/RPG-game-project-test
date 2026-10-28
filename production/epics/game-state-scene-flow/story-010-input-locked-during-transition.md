@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -91,9 +91,27 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_input_lock_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing — `tests/unit/game_state/game_state_input_lock_test.gd`, 443/443 suite-wide, 0 orphans.
 
 ---
+
+## Completion Notes
+
+**Files changed:**
+- `src/game_state/game_state_machine.gd` — `bind_action_source` now connects `action_pressed`/`action_released`/`focus_lost`/`device_lost` on the duck-typed source (and disconnects a prior one on rebind); `_dispatch_discrete_action` drops while `phase != IDLE`, else routes to `_loader.current_overlay_node()` when the overlay stack is non-empty, else to `_loader.current_mode_node()`. `is_input_owner`/`get_move_vector` unchanged (already correct from an earlier story).
+- `src/game_state/scene_loader.gd` — added `current_overlay_node() -> Node` (default `null`), mirroring `current_mode_node()`, so the machine has a destination for overlay routing. `ModeHostSceneLoader` inherits the default unchanged (real `OverlayHost` wiring is story 030).
+- `tests/unit/game_state/doubles/stub_scene_loader.gd` — added `current_overlay_node_value` + override.
+- `tests/unit/game_state/doubles/stub_overlay.gd`, `stub_overworld_mode.gd`, `stub_battle_mode.gd`, `stub_camp_mode.gd` — added `handle_action_count`/`last_action`/`last_pressed` counters.
+- `tests/unit/game_state/doubles/synthetic_action_source.gd` — added `action_held`, `focus_gained`, `device_restored`, `active_device_changed` signals + emit helpers, so a test can prove the machine does not react to the NOT-consumed set.
+- `tests/unit/game_state/game_state_input_lock_test.gd` — new, 2 tests expanding to 4 cases (`test_no_delivery_during_phase` ×3 phases, `test_first_action_after_finished_delivered` ×1, with the unlock test's body also covering both documented edge cases).
+
+**Test count**: full suite 443/443 passing, 0 errors/failures/orphans (up from 439 baseline + 4 new cases).
+
+**Deviations from the Files list:** the story's Files section named only `game_state_machine.gd` and the test; reaching "the top overlay" for routing needed a `SceneLoader.current_overlay_node()` interface addition (mirroring the existing `current_mode_node()`), so `scene_loader.gd` and the doubles above were extended too, per this run's "reuse and extend only where needed" guidance.
+
+**Open design question carried forward (not a gate item, per the story):** an action pressed before a transition and released during it has its `action_released` dropped (never dispatched), same as any other mid-transition input. A receiver tracking held state from press/release pairs would be left holding it. Unresolved — for game-designer review.
+
+**Items owed:** none for AC-8 as written. `focus_lost`/`device_lost` are connected (consumed per the contract) but intentionally inert here — story 026 adds the menu-opening behavior.
 
 ## Dependencies
 

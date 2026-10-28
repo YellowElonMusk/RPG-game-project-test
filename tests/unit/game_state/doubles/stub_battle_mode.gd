@@ -4,6 +4,11 @@ class_name StubBattleMode extends GameMode
 var snapshot_to_return: RefCounted = null
 var restored_snapshot: RefCounted = null
 
+## Story 010: counts `handle_action` calls.
+var handle_action_count: int = 0
+var last_action: StringName = &""
+var last_pressed: bool = false
+
 var _recorder: SequenceRecorder
 
 
@@ -11,7 +16,10 @@ func set_recorder(recorder: SequenceRecorder) -> void:
 	_recorder = recorder
 
 
-func handle_action(_action: StringName, _pressed: bool) -> bool:
+func handle_action(action: StringName, pressed: bool) -> bool:
+	handle_action_count += 1
+	last_action = action
+	last_pressed = pressed
 	return false
 
 

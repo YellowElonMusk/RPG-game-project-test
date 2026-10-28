@@ -314,11 +314,27 @@ func tick(delta: float) -> void:
 
 
 ## Any `Object` meeting the `ActionSource` contract (signal-and-method, not a
-## required base class — story-010 wires dispatch; this story only stores it).
+## required base class). The machine is the only consumer (ADR-0002 §6):
+## connects `action_pressed`, `action_released`, `focus_lost` and
+## `device_lost` for routing; `action_held`, `device_restored`,
+## `focus_gained` and `active_device_changed` are deliberately left
+## unconnected (UI Framework's concern). Rebinding disconnects the previous
+## source first, so a caller never ends up delivering through two sources.
 func bind_action_source(source: Object) -> void:
+	if _action_source != null and is_instance_valid(_action_source):
+		_unbind_action_source()
 	_action_source = source
+	if _action_source == null:
+		return
+	_action_source.connect(&"action_pressed", _on_source_action_pressed)
+	_action_source.connect(&"action_released", _on_source_action_released)
+	_action_source.connect(&"focus_lost", _on_source_focus_lost)
+	_action_source.connect(&"device_lost", _on_source_device_lost)
 
 
+## `true` only while `phase == IDLE` and no overlay is open, for the live
+## mode node under `ModeHost`. An open overlay owns input instead (routing
+## to it is `_dispatch_discrete_action`'s concern, not ownership).
 func is_input_owner(receiver: Object) -> bool:
 	if _phase != Phase.IDLE:
 		return false
@@ -469,3 +485,58 @@ func _close_defeat_prompt() -> void:
 		_overlay_stack.pop_back()
 		_loader.pop_overlay()
 		overlay_closed.emit(OverlayKind.DEFEAT_PROMPT)
+
+
+func _unbind_action_source() -> void:
+	for signal_name: StringName in [&"action_pressed", &"action_released", &"focus_lost", &"device_lost"]:
+		var callable: Callable = _callable_for_source_signal(signal_name)
+		if _action_source.is_connected(signal_name, callable):
+			_action_source.disconnect(signal_name, callable)
+
+
+func _callable_for_source_signal(signal_name: StringName) -> Callable:
+	match signal_name:
+		&"action_pressed":
+			return _on_source_action_pressed
+		&"action_released":
+			return _on_source_action_released
+		&"focus_lost":
+			return _on_source_focus_lost
+		_:
+			return _on_source_device_lost
+
+
+func _on_source_action_pressed(action: StringName) -> void:
+	_dispatch_discrete_action(action, true)
+
+
+func _on_source_action_released(action: StringName) -> void:
+	_dispatch_discrete_action(action, false)
+
+
+## Consumed per the `ActionSource` contract (ADR-0002 §6) but no behaviour is
+## defined yet: story 026 wires the menu-opening response to focus loss.
+func _on_source_focus_lost() -> void:
+	pass
+
+
+## Consumed per the `ActionSource` contract; no behaviour yet (story 026).
+func _on_source_device_lost() -> void:
+	pass
+
+
+## Dropped while `phase != IDLE` (AC-8). Otherwise delivered to the top
+## overlay's `handle_action` when one is open, or to the current mode's when
+## none is (ADR-0002 §6). Full multi-entry overlay-stack routing is story
+## 022's concern; this story only reaches the top entry.
+func _dispatch_discrete_action(action: StringName, pressed: bool) -> void:
+	if _phase != Phase.IDLE:
+		return
+	if not _overlay_stack.is_empty():
+		var overlay: Object = _loader.current_overlay_node()
+		if overlay != null:
+			overlay.handle_action(action, pressed)
+		return
+	var mode: Object = _loader.current_mode_node()
+	if mode != null:
+		mode.handle_action(action, pressed)

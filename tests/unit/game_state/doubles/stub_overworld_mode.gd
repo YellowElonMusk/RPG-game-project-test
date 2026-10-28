@@ -21,6 +21,12 @@ var story_flags: Dictionary = {"flag_intro_seen": true, "flag_boss_defeated": fa
 var freeze_count: int = 0
 var thaw_calls: Array[Dictionary] = []
 
+## Story 010: counts `handle_action` calls, so a test can prove nothing (or
+## exactly one thing) reached this mode.
+var handle_action_count: int = 0
+var last_action: StringName = &""
+var last_pressed: bool = false
+
 ## A copy of `snapshot_fields()` taken inside `on_thawed()`, before anything
 ## `on_thawed()` might do could mutate a field — so the test always compares
 ## against this, not against the live fields read later.
@@ -42,7 +48,10 @@ func set_recorder(recorder: SequenceRecorder) -> void:
 	_recorder = recorder
 
 
-func handle_action(_action: StringName, _pressed: bool) -> bool:
+func handle_action(action: StringName, pressed: bool) -> bool:
+	handle_action_count += 1
+	last_action = action
+	last_pressed = pressed
 	return false
 
 
