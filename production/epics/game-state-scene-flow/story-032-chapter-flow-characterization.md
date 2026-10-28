@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -103,7 +103,7 @@
 **Required evidence**:
 - Logic: `tests/unit/chapters/chapter_flow_sequencing_test.gd`, `tests/unit/chapters/chapter_flow_carryover_test.gd`, `tests/unit/chapters/chapter_flow_retry_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (448/448 suite-wide, 0 errors, 0 failures, 0 orphans)
 
 ---
 
@@ -111,3 +111,22 @@
 
 - Depends on: `production/epics/content-catalog/story-001-install-gdunit4.md`; `production/epics/go-back-to-your-planet/story-006-chapter-flow.md` (Done: the behaviour being pinned)
 - Unlocks: `production/epics/game-state-scene-flow/story-033-strip-chapter-flow-chapter-mode.md`, `production/epics/game-state-scene-flow/story-034-battle-mode-wraps-battle-core.md`
+
+---
+
+## Completion Notes
+
+**Files written** (all new, under `tests/unit/chapters/`):
+- `chapter_flow_probe.gd` — the adapter (`start()`, `current_fight()`, `win_current()`, `lose_current()`, `squad_hp_mp()`); forces outcomes via the real `current_battle.battle_ended.emit(won)`, never a private method.
+- `chapter_flow_expected.gd` — `CHAPTER_EXPECTED` (fight order/roster per faction) and `make_squad()` fixture; no win-rate or balance values.
+- `chapter_flow_sequencing_test.gd` — checks 1, 2, 4 (parameterized `bureaucratia`/`megacorp`).
+- `chapter_flow_carryover_test.gd` — check 3 (`test_hp_mp_carry`) and check 6 (`test_clear_squad_transients_resets_combat_flags_on_new_fight`).
+- `chapter_flow_retry_test.gd` — check 5 (`test_loss_restores_start_state`); marked to move to the Battle mode in Story 034.
+
+No `src/` changes — `chapter_flow.gd` was read-only, per scope.
+
+**Test count**: 5 new test functions (2 parameterized cases + 2 + 1), suite-wide 448/448 passing (up from 443), 0 errors, 0 failures, 0 orphans. Verified via a fresh-process import + full `tests/` run per the Control Manifest rule.
+
+**Deviations**: none from the QA Test Cases. `make_squad()` uses a 2-member fixture squad (arbitrary stat block, not pinned) rather than reusing `tests/unit/battle`'s 4-member fixture, since only carryover/retry *behavior* is pinned here.
+
+**Items owed**: none for this story. Story 033 may change only `chapter_flow_probe.gd`; Story 034 inherits the retry test's intent per its own Battle-mode snapshot.
