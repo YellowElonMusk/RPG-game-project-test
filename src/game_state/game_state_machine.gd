@@ -74,6 +74,19 @@ var last_camp_id: String:
 	get:
 		return _last_camp_id
 
+## Measured sum of OUT + SWAP + IN's actual accumulated `tick()` time for the
+## most recently finished transition (ADR-0002 §9, story 006). Used by
+## story 007 (overrun warning) and story 037 (hardware benchmark).
+var last_transition_time: float:
+	get:
+		return _last_transition_time
+
+## Measured SWAP-phase time for the most recently finished transition. Zero
+## for an in-mode fade's zero-length SWAP (ADR-0002 §11).
+var last_t_swap: float:
+	get:
+		return _last_t_swap
+
 var _current_mode: Mode = Mode.BOOT
 var _phase: Phase = Phase.IDLE
 var _overlay_stack: Array[OverlayKind] = []
@@ -98,6 +111,9 @@ var _current_t_out: float = 0.0
 var _current_t_in: float = 0.0
 var _t_swap: float = 0.0
 var _phase_elapsed: float = 0.0
+var _out_phase_elapsed: float = 0.0
+var _last_transition_time: float = 0.0
+var _last_t_swap: float = 0.0
 
 var _loader: SceneLoader
 var _presenter: TransitionPresenter
@@ -376,7 +392,9 @@ func _begin_transition(from: Mode, to: Mode, transition_type: StringName,
 ## `mode_exited` at the start of SWAP. The in-mode fade's zero-length SWAP
 ## (ADR-0002 §11) skips this and the loader entirely.
 func _end_out_phase() -> void:
+	_out_phase_elapsed = _phase_elapsed
 	if _in_mode_fade_active:
+		_t_swap = 0.0
 		var callback: Callable = _in_mode_fade_callback
 		_in_mode_fade_callback = Callable()
 		if callback.is_valid():
@@ -420,6 +438,8 @@ func _begin_in_phase() -> void:
 ## `transition_finished` at the end of IN. Input unlocks once this is
 ## emitted (AC-8): phase is already `IDLE` by the time listeners run.
 func _end_in_phase() -> void:
+	_last_t_swap = _t_swap
+	_last_transition_time = _out_phase_elapsed + _t_swap + _phase_elapsed
 	var finished_mode: Mode = _current_mode
 	_phase = Phase.IDLE
 	_phase_elapsed = 0.0

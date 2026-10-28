@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -91,7 +91,7 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_transition_time_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing — `tests/unit/game_state/game_state_transition_time_test.gd`, 6 test cases, full suite 418/418 green.
 
 ---
 
@@ -99,3 +99,21 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-001-overworld-to-battle-signal-order.md`
 - Unlocks: `production/epics/game-state-scene-flow/story-007-slow-swap-waits-and-warns.md`, `production/epics/game-state-scene-flow/story-035-game-root-main-scene.md`, `production/epics/game-state-scene-flow/story-037-transition-budget-hardware-bench.md`
+
+---
+
+## Completion Notes
+
+**Files changed:**
+- `src/game_state/game_state_machine.gd` — added `last_transition_time`/`last_t_swap` read-only queries and `_out_phase_elapsed`/`_last_transition_time`/`_last_t_swap` backing fields; `_end_out_phase()` captures the OUT phase's actual elapsed time (and zeroes `_t_swap` on the in-mode-fade's zero-length SWAP path); `_end_in_phase()` sums OUT + SWAP + IN actual elapsed into `_last_transition_time` before resetting.
+- `src/game_state/transition_config.gd` — added `validate(log: GameStateLog) -> bool`, iterating `t_out.keys()`, skipping `&"none"`, strict `<` check, one error per bad row, no early stop.
+- `tests/unit/game_state/doubles/game_state_fixtures.gd` — added `transition_config_with(type, t_out, t_in, budget=-1.0)` and `add_row(cfg, type, t_out, t_in, budget=-1.0)` (budget defaults to `t_out+t_in`, i.e. valid).
+- `tests/unit/game_state/game_state_transition_time_test.gd` — new, 6 test cases (the 2 named in QA Test Cases plus 4 edge cases run as separate functions, following story-001's precedent).
+
+**Test count:** full suite 418/418 green (412 prior + 6 new). No regressions.
+
+**Deviations / engine findings:**
+- The 60 Hz edge case could not drive SWAP with 1/60 s ticks: `poll_swap()` is poll-count-driven, not time-driven, so feeding it 1/60 s deltas collapses `t_swap` to `2 * 1/60 ≈ 0.033`, not the intended 0.20, and fails the within-one-frame assertion (observed: 0.683 vs 0.85). Fixed by driving OUT and IN with 1/60 s ticks (the quantized phases) while keeping SWAP on the same two 0.10 s polls as the main scenario — SWAP has nothing to quantize since its length is poll-count, not elapsed time.
+- `transition_config_with`/`add_row` build rows directly on the dictionaries (ADR-0001 data-only), never via `.tres` per the story's No-`.tres`-in-unit-tests rule.
+
+**Items owed:** none. Story 007 (overrun warning) and story 035 (disk load + integration validate() call) remain out of scope as specified.

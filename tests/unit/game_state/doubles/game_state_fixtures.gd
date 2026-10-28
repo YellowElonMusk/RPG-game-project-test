@@ -22,6 +22,26 @@ static func make_transition_config() -> TransitionConfig:
 	return cfg
 
 
+## Story 006: a `TransitionConfig` with exactly one row, for the
+## `transition_time` formula test and as a valid-row baseline for the budget
+## check test (`add_row` appends further rows). `budget` defaults to
+## `t_out + t_in` (valid) when not given.
+static func transition_config_with(transition_type: StringName, t_out: float,
+		t_in: float, budget: float = -1.0) -> TransitionConfig:
+	var cfg := TransitionConfig.new()
+	add_row(cfg, transition_type, t_out, t_in, budget)
+	return cfg
+
+
+## Appends (or overwrites) one row on an existing `TransitionConfig`, in place.
+## `budget` defaults to `t_out + t_in` (valid) when not given.
+static func add_row(cfg: TransitionConfig, transition_type: StringName, t_out: float,
+		t_in: float, budget: float = -1.0) -> void:
+	cfg.t_out[transition_type] = t_out
+	cfg.t_in[transition_type] = t_in
+	cfg.transition_budget[transition_type] = budget if budget >= 0.0 else t_out + t_in
+
+
 static func make_encounter_descriptor() -> EncounterDescriptor:
 	var descriptor := EncounterDescriptor.new()
 	descriptor.encounter_id = "encounter_fixture_01"

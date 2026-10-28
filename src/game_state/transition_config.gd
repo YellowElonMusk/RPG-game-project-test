@@ -21,3 +21,25 @@ class_name TransitionConfig extends Resource
 ## Interim flag (ADR-0002 §8): false until ADR-0001's enemy-record migration
 ## lands. Load-time validation against it is story 006.
 @export var validate_enemy_ids_against_catalog: bool = false
+
+
+## Load-time check (ADR-0002 §9, story 006): a transition's `transition_budget`
+## must cover its measured `t_out + t_in` (SWAP is bounded separately, by the
+## loader finishing — see ADR-0002 §3). Logs one `budget_below_phases` error
+## per offending row (`context.type` is the row's `StringName`) and does not
+## stop at the first bad row. The comparison is strict: `budget == t_out + t_in`
+## is not an error. Rows of type `&"none"` are skipped — the GDD Budgets table
+## has no row for `none` (Boot -> Content Error, exit). Returns `false` if any
+## row failed.
+func validate(log_sink: GameStateLog) -> bool:
+	var ok: bool = true
+	for transition_type: StringName in t_out.keys():
+		if transition_type == &"none":
+			continue
+		var out_time: float = float(t_out.get(transition_type, 0.0))
+		var in_time: float = float(t_in.get(transition_type, 0.0))
+		var budget: float = float(transition_budget.get(transition_type, 0.0))
+		if budget < out_time + in_time:
+			log_sink.error(&"budget_below_phases", {"type": transition_type})
+			ok = false
+	return ok
