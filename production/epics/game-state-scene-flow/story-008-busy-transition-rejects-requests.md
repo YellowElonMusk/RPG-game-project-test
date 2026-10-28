@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -82,7 +82,7 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_busy_rejection_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (439/439 unit tests green, incl. 21 new parameterized cases; 0 errors, 0 failures, 0 orphans)
 
 ---
 
@@ -90,3 +90,20 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-001-overworld-to-battle-signal-order.md`
 - Unlocks: `production/epics/game-state-scene-flow/story-009-same-frame-requests-first-wins.md`, `production/epics/game-state-scene-flow/story-011-quit-waits-for-transition.md`
+
+---
+
+## Completion Notes
+
+**Files**:
+- `src/game_state/game_state_machine.gd` — three fixes to pin the precedence ADR-0002 requires:
+  - `close_overlay()`: now checks `_phase != Phase.IDLE` first, returning `REJECTED_BUSY` before the empty-stack `REJECTED_INVALID_PAIR` check (previously it had no busy check at all).
+  - `request_in_mode_fade()`: busy is now checked before the Overworld-mode check (previously a busy call returned `REJECTED_INVALID_PAIR` instead of `REJECTED_BUSY`, since both conditions were OR'd into one branch).
+  - `report_battle_outcome()`: busy is now its own branch, logging `&"outcome_during_transition"` via `_log.error()` before returning `REJECTED_BUSY`; the wrong-mode-but-idle case still returns `REJECTED_BUSY` with no log (unchanged). `request_transition()` and `open_overlay()` already checked busy first and needed no change.
+- `tests/unit/game_state/game_state_busy_rejection_test.gd` — new. `test_request_during_phase_rejected`, gdUnit4-parameterized over 21 `(phase, request)` pairs (`OUT`/`SWAP`/`IN` × the 7 requests the QA Test Cases name). Reuses `GameStateFixtures.make_machine_in_overworld`, `StubSceneLoader.script_results`, `GameStateProbe.states_equal`, `SequenceRecorder`, `SpyGameStateLog` — no new test doubles needed. `request_quit()` is deliberately absent, with a comment pointing to story 011.
+
+**Test count**: 439/439 unit tests green (418 prior + 21 new), 0 errors, 0 failures, 0 orphans.
+
+**Deviations**: None from the Implementation Notes or QA Test Cases. The precedence fix touched three methods beyond what a first read of the ADR skeleton suggested was needed, because `close_overlay()` had no busy check at all and the other two conflated busy with a different rejection code — both are corrections to match the ADR's already-stated rule, not new design.
+
+**Items owed**: None for this story. Stories 009 (same-frame ordering) and 011 (`request_quit()` during a transition) remain out of scope here, as noted above.

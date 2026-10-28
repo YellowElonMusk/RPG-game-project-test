@@ -169,6 +169,10 @@ func open_overlay(kind: OverlayKind, payload: RefCounted = null) -> RequestResul
 
 
 func close_overlay() -> RequestResult:
+	# Story 008: busy is checked before every other rejection, including an
+	# empty overlay stack.
+	if _phase != Phase.IDLE:
+		return RequestResult.REJECTED_BUSY
 	if _overlay_stack.is_empty():
 		return RequestResult.REJECTED_INVALID_PAIR
 	var kind: OverlayKind = _overlay_stack.pop_back()
@@ -194,7 +198,11 @@ func request_quit() -> RequestResult:
 func request_in_mode_fade(callback: Callable) -> RequestResult:
 	if _current_mode == Mode.CONTENT_ERROR:
 		return RequestResult.REJECTED_TERMINAL
-	if _current_mode != Mode.OVERWORLD or _phase != Phase.IDLE:
+	# Story 008: busy is checked before the mode/overlay checks below, so a
+	# running transition always rejects with REJECTED_BUSY, never REJECTED_INVALID_PAIR.
+	if _phase != Phase.IDLE:
+		return RequestResult.REJECTED_BUSY
+	if _current_mode != Mode.OVERWORLD:
 		return RequestResult.REJECTED_INVALID_PAIR
 	if not _overlay_stack.is_empty():
 		return RequestResult.REJECTED_OVERLAY_BLOCKS
@@ -222,7 +230,13 @@ func register_camp(camp_id: String) -> void:
 func report_battle_outcome(result: BattleResult) -> RequestResult:
 	if _current_mode == Mode.CONTENT_ERROR:
 		return RequestResult.REJECTED_TERMINAL
-	if _current_mode != Mode.BATTLE or _phase != Phase.IDLE:
+	# Story 008 / GDD Edge Cases: reporting an outcome during a transition is
+	# a programming error distinct from reporting in the wrong mode, so it is
+	# logged separately before the mode check runs.
+	if _phase != Phase.IDLE:
+		_log.error(&"outcome_during_transition", {"result": result})
+		return RequestResult.REJECTED_BUSY
+	if _current_mode != Mode.BATTLE:
 		return RequestResult.REJECTED_BUSY
 	match result:
 		BattleResult.VICTORY:
