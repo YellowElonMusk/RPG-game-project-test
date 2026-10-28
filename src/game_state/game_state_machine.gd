@@ -19,23 +19,28 @@ enum BattleResult { VICTORY, FLED, DEFEAT }
 const _PHASE_EPSILON: float = 1e-9
 
 ## The transitions table (ADR-0002 §9): a game rule from the GDD, not a
-## tuning value. Provisional pending story-002's GDD anchor for every row's
-## trigger; every enumerated transition type (`fade`, `battle_wipe`,
-## `battle_wipe_reverse`, `retry_flash`, `none`) appears at least once.
-## Outcome-driven rows (Battle -> Overworld/Battle/Camp) are reachable only
-## through `report_battle_outcome()` / `report_results_done()` /
-## `choose_retry()` / `choose_retreat()`, never through `request_transition()`
+## tuning value. Anchored against the GDD's Modes transitions table by
+## story-002's `test_table_matches_gdd`; every enumerated transition type
+## (`fade`, `battle_wipe`, `battle_wipe_reverse`, `retry_flash`, `none`)
+## appears at least once. Outcome-driven rows (Battle -> Overworld/Battle/Camp)
+## are reachable only through `report_battle_outcome()` / `report_results_done()`
+## / `choose_retry()` / `choose_retreat()`, never through `request_transition()`
 ## (draft §2 item 7, accepted) — see `_REQUESTABLE_TARGETS` below.
 ## Every mode's row to `TITLE` (story 025, ADR-0002 §4/§5 ruling 2026-10-23)
 ## is `fade` -- the Menu's Quit to Title, never requestable through the
 ## ordinary `_REQUESTABLE_TARGETS` path (see below), only through
-## `request_transition(TITLE)` while `MENU` is the top overlay.
+## `request_transition(TITLE)` while `MENU` is the top overlay. Overworld's row
+## to itself (story 002, GDD "move to another map or region") is an ordinary
+## fresh-instance swap through `request_transition()`, distinct from the
+## in-mode fade's same-instance checkpoint redirect (`request_in_mode_fade()`,
+## ADR-0002 §11, story 028) which never appears in this table.
 const _TRANSITION_TYPES: Dictionary = {
 	Mode.BOOT: {Mode.TITLE: &"fade", Mode.CONTENT_ERROR: &"none"},
 	Mode.TITLE: {Mode.OVERWORLD: &"fade"},
-	Mode.OVERWORLD: {Mode.BATTLE: &"battle_wipe", Mode.CAMP: &"fade", Mode.TITLE: &"fade"},
+	Mode.OVERWORLD: {Mode.BATTLE: &"battle_wipe", Mode.CAMP: &"fade", Mode.TITLE: &"fade",
+			Mode.OVERWORLD: &"fade"},
 	Mode.BATTLE: {Mode.OVERWORLD: &"battle_wipe_reverse", Mode.BATTLE: &"retry_flash",
-			Mode.CAMP: &"battle_wipe_reverse", Mode.TITLE: &"fade"},
+			Mode.CAMP: &"fade", Mode.TITLE: &"fade"},
 	Mode.CAMP: {Mode.OVERWORLD: &"fade", Mode.TITLE: &"fade"},
 }
 
@@ -47,7 +52,7 @@ const _TRANSITION_TYPES: Dictionary = {
 ## deliberately absent here.
 const _REQUESTABLE_TARGETS: Dictionary = {
 	Mode.TITLE: [Mode.OVERWORLD],
-	Mode.OVERWORLD: [Mode.BATTLE, Mode.CAMP],
+	Mode.OVERWORLD: [Mode.BATTLE, Mode.CAMP, Mode.OVERWORLD],
 	Mode.CAMP: [Mode.OVERWORLD],
 }
 
@@ -597,6 +602,14 @@ func _end_swap_phase_success() -> void:
 	_current_mode = _pending_to_mode
 	if _pending_payload is BattleEntryPayload:
 		_current_descriptor = (_pending_payload as BattleEntryPayload).descriptor
+	# ADR-0012 annotation b: CampEntryPayload is the other input to
+	# last_camp_id, recorded here during SWAP -- after mode_exited (start of
+	# SWAP, _end_out_phase) and before mode_entered (just below). Covers both
+	# Overworld -> Camp entry and Battle -> Camp retreat (the latter is a
+	# same-value rewrite: choose_retreat() built the payload from this same
+	# _last_camp_id).
+	if _pending_payload is CampEntryPayload:
+		_last_camp_id = (_pending_payload as CampEntryPayload).camp_id
 	mode_entered.emit(_pending_to_mode)
 	_begin_in_phase()
 

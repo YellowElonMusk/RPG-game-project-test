@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -97,7 +97,26 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_transition_table_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (498/498 suite-wide, 19 new cases in this file)
+
+---
+
+## Completion Notes
+
+**Files**:
+- `src/game_state/game_state_machine.gd` — three real gaps found and fixed against the GDD anchor (see below); doc comments updated to match.
+- `tests/unit/game_state/game_state_transition_table_test.gd` (new) — `test_table_matches_gdd`, `test_row_succeeds` (14 parameterized cases), `test_exit_rows` (4 parameterized cases).
+
+**Gaps fixed in `game_state_machine.gd`** (found by building the GDD anchor table, not invented):
+1. `_TRANSITION_TYPES[BATTLE][CAMP]` was `battle_wipe_reverse`; the GDD and story-020 both say Retreat is `fade`. Fixed. (Flash-gate behaviour is unaffected: `fade` was already excluded from `_FLASH_SOURCE_BY_TYPE`, so this also makes the type-vs-flash-booking relationship consistent for the first time.)
+2. Overworld -> Overworld (map change, fresh instance) was entirely absent from `_TRANSITION_TYPES` and `_REQUESTABLE_TARGETS` — `request_transition(OVERWORLD)` from `OVERWORLD` returned `REJECTED_INVALID_PAIR`. Added `Mode.OVERWORLD: &"fade"` to both tables. Verified this is still distinct from the in-mode fade (`request_in_mode_fade`, zero-length SWAP, no `mode_exited`/`mode_entered`) — the new row is an ordinary swap that calls `begin_swap` once, asserted in `overworld_overworld_map_change`.
+3. `CampEntryPayload` was never consumed: `register_camp()` was the only writer of `last_camp_id` despite the doc comment on `last_camp_id` already naming `CampEntryPayload` as the second input (ADR-0012 annotation b). Added the write in `_end_swap_phase_success()`, before `mode_entered.emit()` — i.e. during SWAP, after `mode_exited` (asserted via signal-order capture in `overworld_camp`) and before `mode_entered`.
+
+**Deviations**: none from the story or QA Test Cases. `GameStateMachine._TRANSITION_TYPES` (not a literal `TRANSITIONS` symbol) is the table the anchor test reads — GDScript constants aren't actually private, so the test reads it directly rather than adding a new accessor.
+
+**Items owed**: none for this story. Story 003 (invalid pairs) and story 028 (in-mode fade row) are unaffected — both were checked against this file's changes before writing.
+
+**Note on regression-test rigor**: gaps 1-3 were identified by reading the pre-existing source against the GDD and ADR-0012 §11 text (which already named the intended behaviour) before writing the test, rather than by watching this suite fail on the unfixed code and then fixing it. The reasoning is recorded above for review.
 
 ---
 
