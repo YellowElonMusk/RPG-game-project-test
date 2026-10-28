@@ -1,12 +1,12 @@
 # Story 010: `ContentBootstrap.run()` registers the six effect types the migrated moves use, so a Move carrying each one loads and an unregistered one errors
 
 > **Epic**: Content Migration
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28
 
 ## Context
 
@@ -67,12 +67,11 @@
 
 ## Files
 
-- `src/battle/battle_effect_types.gd` (`class_name BattleEffectTypes`)
-- `src/boot/content_bootstrap.gd` (step 1 line)
-- `tests/unit/battle/fixtures/effect_types/valid/…`, `tests/unit/battle/fixtures/effect_types/typo/…`
-- `tests/unit/battle/battle_effect_types_registration_test.gd`
-
----
+- `src/battle/battle_effect_types.gd` — created (class_name BattleEffectTypes: TURN_BATTLE, register())
+- `src/boot/content_bootstrap.gd` — modified (step 1: Turn Battle + Stats-placeholder + Quirk-State-placeholder effect-type registration)
+- `tests/unit/battle/fixtures/effect_types/valid/moves/` — created (6 fixture Moves, one per type)
+- `tests/unit/battle/fixtures/effect_types/typo/moves/` — created (1 fixture Move with an unregistered type)
+- `tests/unit/battle/battle_effect_types_registration_test.gd` — created (4 test functions)
 
 ## QA Test Cases
 
@@ -107,3 +106,10 @@
 
 - Depends on: `production/epics/content-catalog/story-002-load-one-of-each-type.md`, `production/epics/content-catalog/story-015-structure-validation.md`
 - Unlocks: `production/epics/content-migration/story-012-register-stats-validators.md`, `story-014-author-enemy-named-attack-moves.md`, `story-018-author-squad-special-moves.md`
+
+## Completion Notes
+**Completed**: 2026-10-28
+**Criteria**: 1/1 passing
+**Deviations**: `content_bootstrap.gd` also registers a provisional `&"quirk_state_provisional"` vocabulary (`apply_quirk_state`, `consume_quirk_state`, `stat_modifier`, `expiry_hook`), not named by this story's AC or by any ADR. Needed because activating effect-type validation for the first time broke 3 pre-existing content-catalog tests against the shared `valid_one_of_each` fixture (`content_data_load_test.gd::test_bootstrap_run_on_fixture_root_reaches_ready`, `content_data_reload_rejected_test.gd::test_bootstrap_run_twice_on_ready_catalog_calls_load_all_once`, `content_data_validate_cli_test.gd::test_clean_data_set_exits_zero`), which already use these quirk/combo type strings. Mirrors this story's own sanctioned Stats placeholder. Replace this line when the Quirk State System gets its own ADR. `damage` is registered under system `&"stats"` (no test asserts this by name — `_known_effect_types` is private to `src/data/`).
+**Test Evidence**: `tests/unit/battle/battle_effect_types_registration_test.gd` — exists and passes (full suite: 288/288, 0 errors, 0 failures, 0 orphans)
+**Reviewed by**: `/code-review` (self-invoked this session) — APPROVED WITH SUGGESTIONS after one fix (vacuous-pass gap in the `src/data/` reference scan, watched fail against an unopenable directory, then fixed)

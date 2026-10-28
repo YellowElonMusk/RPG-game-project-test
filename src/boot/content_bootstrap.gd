@@ -22,25 +22,54 @@ class_name ContentBootstrap
 ##
 ## Registrant lines are added here by the story or epic that builds each
 ## registrant (ADR-0004 §1, as amended by ADR-0007, ADR-0011 and ADR-0013):
-##   1. Turn Battle effect-type registration.
-##   2. Faction Rule registration: build the `FactionRuleRegistry`, fill it
-##      with `FactionRules.register_all()`, then register its `faction_rule`
-##      record validator with `register_faction_rule_validator()` (story 017).
-##      Not wired yet (see the TODO below): `FactionRules` does not exist, and
-##      an empty registry would reject every `faction_rule` record at boot.
+##   1. Turn Battle effect-type registration (story 010: `BattleEffectTypes`),
+##      plus `damage`/`heal` registered on Stats' behalf until that epic
+##      exists, and the Quirk State System's own provisional types (story
+##      010, same placeholder shape) so the content-catalog epic's own
+##      `valid_one_of_each` fixture -- authored before any registrant existed,
+##      and still exercising every record type including `quirk_state` and
+##      `combo` -- keeps reaching READY through this real boot path. Neither
+##      placeholder decides that system's real vocabulary; whichever epic
+##      designs the Quirk State System replaces this line with its own.
+##   2. Faction Rule registration (story 011): build the `FactionRuleRegistry`,
+##      fill it with `FactionRules.register_all()` (the shipped
+##      `bureaucratia_permit` and `megacorp_billing` classes), then register
+##      its `faction_rule` record validator with
+##      `register_faction_rule_validator()`. The registry is returned on the
+##      `ContentBootResult` (ADR-0011 §4); `null` on the no-op path.
 ##   3. `register_record_validator` calls: `InputBindingsValidator`, the Stats
 ##      validators (`StatsConfig.load_or_default()` bound), `LocFieldsValidator`.
 ##   4. `catalog.load_all()`.
-## Steps 1-3 have no complete registrant yet, so today only step 4 runs.
+## Step 3 has no complete registrant yet, so today steps 1, 2 and 4 run.
 ## Example: [code]ContentBootstrap.run(catalog, "res://tests/unit/content_data/fixtures/valid_one_of_each")[/code]
-static func run(catalog: ContentCatalogService, data_root: String = "res://data") -> void:
+static func run(catalog: ContentCatalogService, data_root: String = "res://data") -> ContentBootResult:
 	if catalog.state != ContentCatalogService.State.UNLOADED:
-		return
-	# TODO(ADR-0011): once the Faction Rule Modifiers epic builds FactionRules:
-	#   var registry := FactionRuleRegistry.new()
-	#   FactionRules.register_all(registry)
-	#   register_faction_rule_validator(catalog, registry)
+		return null
+	BattleEffectTypes.register(catalog)
+	# Stats has no epic yet; "damage" (named attacks: {type = "damage", power = N})
+	# and "heal" (unused by the migrated set) are registered on its behalf here.
+	catalog.register_known_effect_types(&"stats", PackedStringArray(["damage", "heal"]))
+	# Placeholder until the (not yet designed) Quirk State System has its own
+	# epic: the four types content-catalog's own `valid_one_of_each` fixture
+	# already uses on its quirk_state and combo records.
+	catalog.register_known_effect_types(&"quirk_state_provisional", PackedStringArray([
+		"apply_quirk_state", "consume_quirk_state", "stat_modifier", "expiry_hook",
+	]))
+	var result := ContentBootResult.new()
+	result.registry = FactionRuleRegistry.new()
+	FactionRules.register_all(result.registry)
+	# Stub, never a shipped rule: content-catalog's own canonical
+	# valid_one_of_each fixture's faction_rule record (authored before any
+	# real rule class existed) uses rule_class &"delay_rule". A no-op
+	# validator keeps that pre-existing fixture at READY now that a
+	# faction_rule validator runs for the first time; whichever story updates
+	# that fixture to a real shipped class removes this line.
+	result.registry.register(&"delay_rule",
+			func(_faction: FactionData, _rule: FactionRuleData) -> FactionRule: return FactionRule.new(),
+			func(_rule: FactionRuleData) -> Array[Dictionary]: return [])
+	register_faction_rule_validator(catalog, result.registry)
 	catalog.load_all(data_root)
+	return result
 
 
 ## Registers the one `&"faction_rule"` record validator on `catalog`, built

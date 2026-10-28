@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="FactionRuleData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/faction_rule_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "rule_bureaucratia_low_hp_over"
+rule_class = &"bureaucratia_permit"
+ref_ids = PackedStringArray("move_hunker_jab", "move_focus_attack", "move_late_fee", "move_mass_audit", "move_final_notice")
+params = {
+"permit_rounds": 3,
+"low_hp_threshold": 1.01,
+"hunker_jab_move": "move_hunker_jab",
+"focus_attack_move": "move_focus_attack",
+"late_fee_move": "move_late_fee",
+"mass_audit_move": "move_mass_audit",
+"final_notice_move": "move_final_notice"
+}
+texts = Dictionary[String, String]({
+"banner_locked_one": "BUREAUCRATIA — Special moves need a government permit. It arrives in 1 round.",
+"banner_locked_other": "BUREAUCRATIA — Special moves need a government permit. It arrives in %d rounds.",
+"banner_unlocked": "PERMIT GRANTED — All-out war! Special moves are allowed for both sides.",
+"tooltip_locked": "Bureaucratia requires a government permit before anyone can use a Special move.",
+"tooltip_unlocked": "The permit arrived: Special moves are now allowed for both sides."
+})
+colors = Dictionary[String, String]({
+"banner_unlocked": "#b07a12"
+})

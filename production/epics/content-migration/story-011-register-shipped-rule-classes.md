@@ -1,12 +1,12 @@
 # Story 011: `bureaucratia_permit` and `megacorp_billing` are registered in `FactionRules.register_all()`, and each class validator accepts the shipped params and rejects a missing, wrong-typed, or unlisted-ID param with one error each
 
 > **Epic**: Content Migration
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28
 
 ## Context
 
@@ -72,12 +72,13 @@
 
 ## Files
 
-- `src/battle/factions/faction_rules.gd` (`FactionRules.register_all(registry)`, two `register()` lines)
-- `src/battle/factions/bureaucratia_rule_validator.gd`, `src/battle/factions/megacorp_rule_validator.gd` (pure static validators; or static functions on the rule classes if ADR-0011's implementer prefers)
-- `tests/unit/battle/fixtures/rule_classes/…`
-- `tests/unit/battle/battle_rule_class_registration_test.gd`
-
----
+- `src/battle/factions/faction_rules.gd` — created (`FactionRules.register_all(registry)`, two `register()` lines)
+- `src/battle/factions/bureaucratia_rule_validator.gd` — created (`create()` unconfigured factory, `validate_record()`)
+- `src/battle/factions/megacorp_rule_validator.gd` — created (`create()` unconfigured factory, `validate_record()`, `role.<enemy_id>` check)
+- `src/boot/content_boot_result.gd` — created (`ContentBootResult` with `.registry`; not in the original list, needed for the AC's boot result)
+- `src/boot/content_bootstrap.gd` — modified (step 2 wired; `run()` returns `ContentBootResult`; `delay_rule` no-op stub)
+- `tests/unit/battle/fixtures/rule_classes/` — created (9 moves, 2 enemies, 1 faction, 14 faction_rule records)
+- `tests/unit/battle/battle_rule_class_registration_test.gd` — created (15 test functions)
 
 ## QA Test Cases
 
@@ -112,3 +113,10 @@
 
 - Depends on: `production/epics/content-catalog/story-017-overworld-uniqueness-and-faction-rule.md`
 - Unlocks: `production/epics/content-migration/story-017-author-faction-rule-records.md`, `story-026-faction-rule-decisions-from-records.md`
+
+## Completion Notes
+**Completed**: 2026-10-28
+**Criteria**: 1/1 passing
+**Deviations**: `ContentBootstrap.run()` now returns `ContentBootResult` (new file, `src/boot/content_boot_result.gd`, `.registry` only) — the return-type annotation is still owed to technical-director in ADR-0004 Key Interfaces. `content_bootstrap.gd`'s step 2 (ADR-0004 rule: an ADR that adds a registrant must name its line) is: `FactionRules.register_all(result.registry)` followed by `register_faction_rule_validator(catalog, result.registry)`. A no-op `&"delay_rule"` stub is also registered directly in `run()`, drifting from ADR-0011's "every rule class goes through `FactionRules.register_all()`" — needed because wiring the `faction_rule` validator for the first time broke 3 pre-existing content-catalog tests against the shared `valid_one_of_each` fixture (`rule_red_tape.tres`, `rule_class = &"delay_rule"`, authored before any real rule class existed); same shape as story 010's `quirk_state_provisional`. Remove it once that fixture moves to a real shipped class. The MegaCorp `role.<enemy_id>` flat-key format is implemented as the story describes but still needs the technical-director confirmation the story itself calls for.
+**Test Evidence**: `tests/unit/battle/battle_rule_class_registration_test.gd` — exists and passes (full suite: 303/303, 0 errors, 0 failures, 0 orphans)
+**Reviewed by**: `/code-review` (self-invoked this session) — APPROVED WITH SUGGESTIONS; one suggestion applied (redundant cast removed in `megacorp_rule_validator.gd`) and re-verified

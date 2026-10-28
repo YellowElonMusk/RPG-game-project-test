@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="FactionRuleData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/faction_rule_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "rule_megacorp_billing_bad_ref"
+rule_class = &"megacorp_billing"
+ref_ids = PackedStringArray("move_laser_scan", "move_upsell", "move_layoffs", "move_hostile_takeover", "enemy_security_drone")
+params = {
+"bill_mp": 1,
+"laser_scan_move": "move_laser_scan",
+"upsell_move": "move_upsell",
+"layoffs_move": "move_layoffs",
+"hostile_takeover_move": "move_hostile_takeover",
+"role.enemy_security_drone": "laser_scan",
+"role.enemy_middle_manager": "upsell"
+}
+texts = Dictionary[String, String]({
+"banner": "MEGACORP — Subscription billing. Every squad member pays 1 MP at the end of each round.",
+"tooltip": "MegaCorp bills every squad member 1 MP at the end of each round.",
+"note_suspended": "SUSPENDED: out of MP. Basic Attack only until MP is regained."
+})
