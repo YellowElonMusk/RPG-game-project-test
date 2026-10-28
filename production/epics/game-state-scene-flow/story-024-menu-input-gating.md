@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -85,7 +85,45 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_menu_gating_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (533/533 suite-wide, 0 failures, 0 orphans)
+
+---
+
+## Completion Notes
+
+**Files**:
+- `src/game_state/game_state_machine.gd` — added `_MENU_ACTION` (test-local
+  `&"menu"` constant with a TODO to switch to ADR-0003's `InputActions.MENU`)
+  and `_MENU_ALLOWED_MODES` (`[OVERWORLD, CAMP, BATTLE]`, rule 10). Changed
+  `_on_source_action_pressed` to intercept `&"menu"` before
+  `_dispatch_discrete_action` and route it to a new private
+  `_handle_menu_action()`, which calls `open_overlay(MENU, null)` only while
+  `phase == IDLE` and `_current_mode` is in the allowed list — every other
+  case (a running transition, Boot, Title, Content Error) silently drops the
+  request. `action_released(&"menu")` is left unintercepted (not in scope;
+  the ADR summary names only `action_pressed`).
+- `tests/unit/game_state/game_state_menu_gating_test.gd` (new) —
+  `test_menu_input_rejected` (parameterized BOOT, CONTENT_ERROR, TITLE, OUT,
+  SWAP, IN) and `test_menu_input_opens_in_allowed_modes` (OVERWORLD, CAMP,
+  BATTLE, BATTLE-with-Defeat-Prompt-on-top, plus the two direct-`open_overlay`
+  edge cases: REJECTED_BUSY mid-transition, REJECTED_TERMINAL in Content
+  Error).
+
+**Test count**: 533/533 passing (526 baseline + 7 new: 6 parameterized rows
++ 1 multi-stage test), 0 errors, 0 orphans.
+
+**Deviations / notes**:
+- Story 023 (the full overlay "can open over" table, incl. `REJECTED_INVALID_PAIR`
+  for a direct `open_overlay(MENU)` in Boot/Title) is deferred pending
+  Dialogue. This story does not add that table to `open_overlay()` itself —
+  only the input-interception path's own local allow-list, per the
+  Implementation Notes' framing ("the pinned overlay-not-allowed code from
+  story 023" describes the conceptual rejection, not a dependency this story
+  had to build). Direct `open_overlay(MENU)` in Boot/Title therefore still
+  succeeds unconditionally today, same as before this story — untouched,
+  since `Files` scoped this story to the `menu` interception only. Flagging
+  for story 023 / technical-director.
+- No items owed within this story's stated scope.
 
 ---
 

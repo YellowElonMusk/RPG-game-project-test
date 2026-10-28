@@ -63,6 +63,17 @@ const FLASH_SOURCE_RETRY: StringName = &"retry_flash"
 const FLASH_SOURCE_BATTLE_WIPE: StringName = &"battle_wipe"
 const FLASH_SOURCE_BATTLE_WIPE_REVERSE: StringName = &"battle_wipe_reverse"
 
+## Story 024: the action that opens the Menu overlay (ADR-0003 `InputActions`).
+const _MENU_ACTION: StringName = InputActions.MENU
+
+## Rule 10 (ADR-0002 §6, §10): the modes the Menu overlay may open over,
+## checked by the machine's own `action_pressed(&"menu")` interception (story
+## 024) ahead of the full overlay "can open over" table (story 023, deferred
+## pending Dialogue). Battle is on this list regardless of what overlay (if
+## any) already sits on top of it, so the Menu opens over the Defeat Prompt
+## too (story 030).
+const _MENU_ALLOWED_MODES: Array[Mode] = [Mode.OVERWORLD, Mode.CAMP, Mode.BATTLE]
+
 ## The transition types that flash, and each one's source id. `fade` and
 ## `none` are absent on purpose: ADR-0002 §11 forbids `fade` from ever
 ## consulting the gate, and `none` never plays anything.
@@ -721,7 +732,14 @@ func _callable_for_source_signal(signal_name: StringName) -> Callable:
 			return _on_source_device_lost
 
 
+## Story 024, ADR-0002 §6/§10 ruling 2026-10-23: `&"menu"` is intercepted
+## here, before any routing -- it never reaches `_dispatch_discrete_action`,
+## so the mode and any open overlay never see it, whether or not the Menu
+## actually opens.
 func _on_source_action_pressed(action: StringName) -> void:
+	if action == _MENU_ACTION:
+		_handle_menu_action()
+		return
 	_dispatch_discrete_action(action, true)
 
 
@@ -746,6 +764,19 @@ func _on_source_device_lost() -> void:
 ## loader's `current_overlay_node()` is always the top of that stack, so a
 ## single lookup here is already correct at any depth; only the top ever
 ## receives input.
+## Story 024, AC-22: turns `&"menu"` into `open_overlay(MENU)` itself, only
+## while `IDLE` and only in `_MENU_ALLOWED_MODES` -- a running transition,
+## Boot, Title or Content Error silently drops the request instead of
+## calling `open_overlay()`, which would otherwise need the full overlay
+## "can open over" table that story 023 (deferred) has not built yet.
+func _handle_menu_action() -> void:
+	if _phase != Phase.IDLE:
+		return
+	if not (_current_mode in _MENU_ALLOWED_MODES):
+		return
+	open_overlay(OverlayKind.MENU, null)
+
+
 func _dispatch_discrete_action(action: StringName, pressed: bool) -> void:
 	if _phase != Phase.IDLE:
 		return
