@@ -73,13 +73,28 @@ static func make_ready_catalog() -> StubCatalog:
 	return catalog
 
 
+## Story 017, AC-15: a `StubBattleMode.battle_state` baseline -- party hp/mp,
+## items, states and enemy group -- every component distinct so a test that
+## mutates "every component" and restores can tell each one apart.
+static func battle_start_state() -> Dictionary:
+	return {
+		"party_hp": {"hero": 50, "ally": 40},
+		"party_mp": {"hero": 20, "ally": 15},
+		"items": ["potion", "ether"],
+		"states": [],
+		"enemy_group": ["clerk_01", "clerk_02"],
+	}
+
+
 ## Builds a machine and its doubles, then drives it from `BOOT` to an idle
 ## `OVERWORLD` through the real Boot -> Title -> Overworld path (tick() for
 ## Boot's internal check, `request_transition()` for Title -> Overworld) —
 ## never a shortcut that sets `current_mode` directly. If `recorder` is given,
 ## every double is wired to it so a caller can `clear()` before its own
-## scenario and get a clean, ordered array.
-static func make_machine_in_overworld(recorder: SequenceRecorder = null) -> Dictionary:
+## scenario and get a clean, ordered array. `flash_gate` is `null` by default
+## (never capped, story 017) so only tests exercising the gate need pass one.
+static func make_machine_in_overworld(recorder: SequenceRecorder = null,
+		flash_gate: FlashGatePort = null) -> Dictionary:
 	var loader := StubSceneLoader.new(recorder)
 	var presenter := StubTransitionPresenter.new(recorder)
 	var cfg := make_transition_config()
@@ -87,7 +102,7 @@ static func make_machine_in_overworld(recorder: SequenceRecorder = null) -> Dict
 	var quit_spy := QuitSpy.new(recorder)
 	var game_log := SpyGameStateLog.new()
 	var machine := GameStateMachine.new(
-			loader, presenter, cfg, catalog, quit_spy.as_callable(), game_log)
+			loader, presenter, cfg, catalog, quit_spy.as_callable(), game_log, flash_gate)
 	if recorder != null:
 		recorder.attach(machine)
 

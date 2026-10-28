@@ -44,6 +44,22 @@ const _REQUESTABLE_TARGETS: Dictionary = {
 	Mode.CAMP: [Mode.OVERWORLD],
 }
 
+## Flash-gate source IDs (ADR-0002 amendment, ruling 2026-10-23): one
+## `StringName` constant per flashing transition type, passed to
+## `FlashGate.request()` so the gate can tell bookings apart.
+const FLASH_SOURCE_RETRY: StringName = &"retry_flash"
+const FLASH_SOURCE_BATTLE_WIPE: StringName = &"battle_wipe"
+const FLASH_SOURCE_BATTLE_WIPE_REVERSE: StringName = &"battle_wipe_reverse"
+
+## The transition types that flash, and each one's source id. `fade` and
+## `none` are absent on purpose: ADR-0002 §11 forbids `fade` from ever
+## consulting the gate, and `none` never plays anything.
+const _FLASH_SOURCE_BY_TYPE: Dictionary = {
+	&"retry_flash": FLASH_SOURCE_RETRY,
+	&"battle_wipe": FLASH_SOURCE_BATTLE_WIPE,
+	&"battle_wipe_reverse": FLASH_SOURCE_BATTLE_WIPE_REVERSE,
+}
+
 # The GDD's six announcements (Rule 4), names unchanged.
 signal transition_started(from: Mode, to: Mode)
 signal mode_exited(from: Mode)
@@ -87,10 +103,18 @@ var last_t_swap: float:
 	get:
 		return _last_t_swap
 
+## Tick-accumulated clock that, unlike `mode_time`, never stops (not even
+## while the Menu is open) and is never read from `Time` (ADR-0002 amendment,
+## ruling 2026-10-23). Passed to `FlashGate.request()`.
+var real_time: float:
+	get:
+		return _real_time
+
 var _current_mode: Mode = Mode.BOOT
 var _phase: Phase = Phase.IDLE
 var _overlay_stack: Array[OverlayKind] = []
 var _mode_time: float = 0.0
+var _real_time: float = 0.0
 var _last_camp_id: String = ""
 var _quit_pending: bool = false
 var _menu_deferred: bool = false
@@ -121,16 +145,18 @@ var _config: TransitionConfig
 var _catalog: Object
 var _quit_hook: Callable
 var _log: GameStateLog
-var _flash_gate: Object = null
+var _flash_gate: FlashGatePort = null
 
 
-## Every collaborator is injected here and nowhere else. `catalog` and
-## `flash_gate` are typed `Object` (duck-typed, not `ContentCatalogService` /
-## a `FlashGate` class) so this file never hard-depends on either; `flash_gate`
-## defaults to `null` ("never capped" — flash-gate booking lands in story 017).
+## Every collaborator is injected here and nowhere else. `catalog` is typed
+## `Object` (duck-typed, not `ContentCatalogService`) so this file never
+## hard-depends on it. `flash_gate` is typed against the `FlashGatePort`
+## interface (story 017; ADR-0005's own `FlashGate` does not exist yet) and
+## defaults to `null`, meaning "never capped" for tests that don't exercise
+## flashes.
 func _init(loader: SceneLoader, presenter: TransitionPresenter, config: TransitionConfig,
 		catalog: Object, quit_hook: Callable, log_sink: GameStateLog,
-		flash_gate: Object = null) -> void:
+		flash_gate: FlashGatePort = null) -> void:
 	_loader = loader
 	_presenter = presenter
 	_config = config
@@ -290,6 +316,7 @@ func choose_retreat() -> RequestResult:
 ## swap-elapsed total and then polls — SWAP lasts until `poll_swap()` returns
 ## `DONE`, not until a duration elapses.
 func tick(delta: float) -> void:
+	_real_time += delta
 	if not (OverlayKind.MENU in _overlay_stack):
 		_mode_time += delta
 	match _phase:
@@ -369,9 +396,8 @@ func is_in_mode_fade() -> bool:
 	return _in_mode_fade_active
 
 
-## True iff the current transition's flash plays its capped variant; false
-## outside a transition. Flash-gate booking lands in story 017, so this is
-## always false until then.
+## True iff the current transition's flash plays its capped variant (the
+## `FlashGate` refused the booking, story 017); false outside a transition.
 func is_transition_flash_capped() -> bool:
 	return _phase != Phase.IDLE and _pending_capped
 
@@ -409,7 +435,7 @@ func _begin_transition(from: Mode, to: Mode, transition_type: StringName,
 	_pending_to_mode = to
 	_pending_payload = payload
 	_pending_transition_type = transition_type
-	_pending_capped = false   # flash-gate booking lands in story 017
+	_pending_capped = _book_flash(transition_type)
 	_in_mode_fade_active = in_mode_fade
 	_phase = Phase.OUT
 	_phase_elapsed = 0.0
@@ -419,8 +445,25 @@ func _begin_transition(from: Mode, to: Mode, transition_type: StringName,
 	_presenter.play_out(transition_type, _current_t_out, _pending_capped)
 
 
+## Books this transition's flash through the injected `FlashGate`, once, at
+## the start of OUT (ADR-0002 amendment; ADR-0005 §12). Returns the `capped`
+## flag to pass to both `play_out()` and `play_in()`. Non-flashing types
+## (`fade`, `none`) and a `null` flash_gate (tests that don't exercise
+## flashes) are never capped -- `fade` is never even asked.
+func _book_flash(transition_type: StringName) -> bool:
+	if _flash_gate == null:
+		return false
+	if not _FLASH_SOURCE_BY_TYPE.has(transition_type):
+		return false
+	var source_id: StringName = _FLASH_SOURCE_BY_TYPE[transition_type]
+	var handle: int = _flash_gate.request(source_id, _real_time, 1.0)
+	return handle == -1
+
+
 ## `mode_exited` at the start of SWAP. The in-mode fade's zero-length SWAP
-## (ADR-0002 §11) skips this and the loader entirely.
+## (ADR-0002 §11) skips this and the loader entirely. Retry (Battle -> Battle,
+## ADR-0002 §7 amendment / ADR-0006 §5) still fires `mode_exited`, but its
+## SWAP restores the snapshot instead of calling the loader.
 func _end_out_phase() -> void:
 	_out_phase_elapsed = _phase_elapsed
 	if _in_mode_fade_active:
@@ -434,9 +477,28 @@ func _end_out_phase() -> void:
 		_begin_in_phase()
 		return
 	mode_exited.emit(_pending_from_mode)
+	if _pending_from_mode == Mode.BATTLE and _pending_to_mode == Mode.BATTLE:
+		_end_retry_swap()
+		return
 	_phase = Phase.SWAP
 	_t_swap = 0.0
 	_loader.begin_swap(_pending_from_mode, _pending_to_mode, _pending_payload)
+
+
+## Retry's SWAP (ADR-0002 §7 amendment, ADR-0006 §5): no `SceneLoader` call.
+## Hands the captured handle back to the same Battle-mode instance and
+## completes immediately -- there is nothing to poll. `mode_entered(BATTLE)`
+## still fires (amendment); listeners must not re-apply entry state over what
+## `restore_start_snapshot()` just set.
+func _end_retry_swap() -> void:
+	_phase = Phase.SWAP
+	_t_swap = 0.0
+	var battle_node: Object = _loader.current_mode_node()
+	if battle_node != null:
+		battle_node.restore_start_snapshot(_battle_snapshot)
+	_current_mode = Mode.BATTLE
+	mode_entered.emit(Mode.BATTLE)
+	_begin_in_phase()
 
 
 ## `mode_entered` at the end of SWAP, on `poll_swap() == DONE`. On Overworld

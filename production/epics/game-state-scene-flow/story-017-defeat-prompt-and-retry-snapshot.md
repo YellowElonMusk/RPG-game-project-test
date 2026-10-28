@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -96,7 +96,7 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_retry_snapshot_test.gd` and `tests/unit/game_state/game_state_flash_gate_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (457/457 suite-wide; `game_state_retry_snapshot_test.gd` 1 case, `game_state_flash_gate_test.gd` 3 cases incl. a 2-way parametrize)
 
 ---
 
@@ -104,3 +104,22 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-014-overworld-snapshot-exact-restore.md`
 - Unlocks: `production/epics/game-state-scene-flow/story-002-transition-table-rows-succeed.md`, `production/epics/game-state-scene-flow/story-018-retreat-offer-no-stale-flag.md`, `production/epics/game-state-scene-flow/story-019-repeated-retry-one-restart.md`, `production/epics/game-state-scene-flow/story-020-register-camp-and-retreat-to-it.md`, `production/epics/game-state-scene-flow/story-030-defeat-prompt-focus-and-cancel.md`, `production/epics/game-state-scene-flow/story-034-battle-mode-wraps-battle-core.md`
+
+---
+
+## Completion Notes
+
+**Implemented 2026-10-28.** `report_battle_outcome(DEFEAT)` and `choose_retry()` already existed (story 012's `_battle_snapshot` handle); this story added flash booking and the actual Retry restore.
+
+**Files:**
+- `src/game_state/game_state_machine.gd` — `FLASH_SOURCE_RETRY`/`_BATTLE_WIPE`/`_BATTLE_WIPE_REVERSE` + `_FLASH_SOURCE_BY_TYPE`; `real_time` (tick-accumulated, never pauses); `_book_flash()` called from `_begin_transition()`; `_end_out_phase()` now branches Battle→Battle into `_end_retry_swap()` (calls `restore_start_snapshot()` on the loader's current mode node, no `begin_swap`, still emits `mode_exited`/`mode_entered`).
+- `src/game_state/flash_gate_port.gd` (new) — `@abstract` `FlashGatePort`, since ADR-0005's own `FlashGate` doesn't exist yet; `_init`'s `flash_gate` param is now typed against it.
+- Doubles extended: `tests/unit/game_state/doubles/stub_flash_gate.gd` (now `request() -> int`, subclasses `FlashGatePort`, records calls), `stub_battle_mode.gd` (+`battle_state: Dictionary`, restore now applies a `BattleStateSnapshot`), `battle_state_snapshot.gd` (new, deep-copy handle type), `game_state_fixtures.gd` (+`battle_start_state()`, `make_machine_in_overworld()` takes an optional `flash_gate`).
+- Tests: `tests/unit/game_state/game_state_retry_snapshot_test.gd` (AC-15), `tests/unit/game_state/game_state_flash_gate_test.gd` (TR-007, 3 functions incl. the named parametrized case).
+
+**Test count:** 457/457 passing (was 452; +1 snapshot test, +4 flash-gate cases across 3 functions, net of the prior single baseline test file not existing).
+
+**Deviations / items owed:**
+- `_FLASH_SOURCE_BY_TYPE` also books `battle_wipe`/`battle_wipe_reverse` per the Implementation Notes, though only `retry_flash` has QA coverage here — the other two are exercised incidentally (every Overworld↔Battle entry/exit in the suite books and grants against a `null` gate) but have no dedicated capped-refusal test. Flagged for story-002 or a future flash-gate story to add explicit coverage.
+- `BattleCore.retry_battle()` edge case: not applicable yet — no production code in this epic references `BattleCore` (story 034's concern); nothing to assert against today.
+- AC-34 (capped-retry GDD anchor) is still owed by game-designer per the story's own note.
