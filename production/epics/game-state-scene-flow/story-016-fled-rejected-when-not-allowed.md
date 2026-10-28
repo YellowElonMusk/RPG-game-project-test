@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -82,7 +82,7 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_fled_guard_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -90,3 +90,31 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-014-overworld-snapshot-exact-restore.md`
 - Unlocks: `production/epics/game-state-scene-flow/story-002-transition-table-rows-succeed.md`
+
+---
+
+## Completion Notes
+
+- `src/game_state/game_state_machine.gd`: `report_battle_outcome()`'s `FLED`
+  branch now checks `_current_descriptor.can_flee` before starting the
+  Battle -> Overworld transition. `can_flee = false` returns
+  `REJECTED_INVALID_PAYLOAD`, logs `&"fled_not_allowed"` with
+  `{"encounter_id": ...}`, and leaves `_pending_outcome`, `_phase` and
+  `_current_mode` untouched (battle continues). A `null` descriptor (no
+  Battle entry payload) is treated as flee-allowed, matching the existing
+  `choose_retreat()` null-descriptor convention. Doc comment above
+  `report_battle_outcome()` extended to describe the guard.
+- `tests/unit/game_state/game_state_fled_guard_test.gd` (new):
+  `test_fled_rejected_when_not_allowed` (AC-13, exact QA case: rejection code,
+  error code/context, mode unchanged, probe-equal, later VICTORY still
+  accepted) and `test_fled_allowed_starts_return_immediately` (QA edge case:
+  `can_flee = true` starts `battle_wipe_reverse` at once, no
+  `report_results_done()`).
+- No fixture changes — built the `can_flee = false` descriptor inline from
+  `GameStateFixtures.make_encounter_descriptor()` since the shared fixture
+  defaults to `true` and other tests depend on that default.
+- Full suite: 462/462 pass (`godot --headless ... GdUnitCmdTool.gd`), 0
+  errors/failures/flaky/skipped/orphans.
+- Deviations: none. Items owed: none within this story's scope (Story 034 —
+  real Battle mode wiring — and Story 014's exact Fled restore remain
+  Out of Scope here, as specified).

@@ -256,6 +256,10 @@ func register_camp(camp_id: String) -> void:
 ## overlay. A second outcome report while one is already pending (Victory
 ## waiting on the results screen, or Defeat waiting on the prompt) is a
 ## programming error and is rejected without disturbing the first (story 015).
+## Fled on a descriptor with `can_flee = false` is rejected as a Turn Battle
+## bug (AC-13, story 016): nothing changes and the battle continues. With
+## `can_flee = true` (or no descriptor), Fled starts the return at once --
+## no results wait, unlike Victory.
 func report_battle_outcome(result: BattleResult) -> RequestResult:
 	if _current_mode == Mode.CONTENT_ERROR:
 		return RequestResult.REJECTED_TERMINAL
@@ -274,6 +278,9 @@ func report_battle_outcome(result: BattleResult) -> RequestResult:
 		BattleResult.VICTORY:
 			_pending_outcome = result
 		BattleResult.FLED:
+			if _current_descriptor != null and not _current_descriptor.can_flee:
+				_log.error(&"fled_not_allowed", {"encounter_id": _current_descriptor.encounter_id})
+				return RequestResult.REJECTED_INVALID_PAYLOAD
 			_pending_outcome = -1
 			_begin_transition(Mode.BATTLE, Mode.OVERWORLD,
 					_TRANSITION_TYPES[Mode.BATTLE][Mode.OVERWORLD], null)
