@@ -54,9 +54,9 @@ func current_mode_node() -> Node:
 
 
 ## Interface addition (story-010): the live `GameOverlay` node at the top of
-## the overlay stack, or `null` if none is open. Full overlay-stack lifecycle
-## (multiple live nodes, push/pop wiring to the real `OverlayHost`) is story
-## 030's/022's concern; this story only needs the top entry to route discrete
-## input, so the base default stays `null` until then.
+## the overlay stack, or `null` if none is open. Story 022 (AC-19) relies on
+## this always being the top entry for input routing; wiring multiple live
+## nodes to the real `OverlayHost` is story 030's concern, so the base
+## default stays `null` until then.
 func current_overlay_node() -> Node:
 	return null

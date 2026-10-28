@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -84,7 +84,36 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_overlay_stack_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
+
+---
+
+## Completion Notes
+
+- Files touched: `tests/unit/game_state/game_state_overlay_stack_test.gd` (new,
+  `test_top_overlay_owns_input`); doc-comment-only clarifications in
+  `src/game_state/game_state_machine.gd` (`_dispatch_discrete_action`) and
+  `src/game_state/scene_loader.gd` (`current_overlay_node`) — no behavior
+  change in either.
+- Finding: `open_overlay`/`close_overlay` already maintained `_overlay_stack`
+  as a true stack (append/pop_back), already emitted `overlay_opened`/
+  `overlay_closed` in stack order, already returned `overlay_stack` as a
+  duplicate, and `_dispatch_discrete_action` already routed only to
+  `_loader.current_overlay_node()` (the top) whenever the stack was
+  non-empty. This story's AC-19 was already satisfied by story 010/020-era
+  code; the only gap was test coverage, so this story adds the test and
+  updates two stale doc comments that said multi-entry routing was still
+  owed to this story.
+- Test: `game_state_overlay_stack_test.gd :: test_top_overlay_owns_input`
+  covers the QA case verbatim — Menu-only delivery while both overlays are
+  open, Dialogue delivery after the first close, the stack-order signal
+  sequence, the `overlay_stack` copy-safety edge case, `is_input_owner`
+  false while any overlay is open, and the stub loader's push/pop order.
+- Suite: 472/472 (471 prior + this one), 0 errors/failures/orphans, headless
+  import clean.
+- Items owed: none for this story. Precedence rules (023), Menu time stop
+  (025) and production `OverlayHost` wiring (030) remain out of scope here
+  as specified.
 
 ---
 

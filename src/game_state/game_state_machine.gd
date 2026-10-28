@@ -667,8 +667,10 @@ func _on_source_device_lost() -> void:
 
 ## Dropped while `phase != IDLE` (AC-8). Otherwise delivered to the top
 ## overlay's `handle_action` when one is open, or to the current mode's when
-## none is (ADR-0002 §6). Full multi-entry overlay-stack routing is story
-## 022's concern; this story only reaches the top entry.
+## none is (ADR-0002 §6). With a multi-entry stack (story 022, AC-19), the
+## loader's `current_overlay_node()` is always the top of that stack, so a
+## single lookup here is already correct at any depth; only the top ever
+## receives input.
 func _dispatch_discrete_action(action: StringName, pressed: bool) -> void:
 	if _phase != Phase.IDLE:
 		return
