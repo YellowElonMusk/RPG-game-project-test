@@ -6,7 +6,7 @@
 > **Type**: Integration
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -112,7 +112,25 @@
 - Integration: `tests/integration/game_state/game_state_battle_mode_test.gd` — must exist and pass. Gate level: BLOCKING.
 - Logic (moved): `tests/unit/battle/battle_mode_snapshot_test.gd` — must pass.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing. Full suite: 575/575, 0 errors, 0 failures, 0 orphans (`godot --headless -s -d GdUnitCmdTool.gd -a res://tests`, exit 0).
+
+---
+
+## Completion Notes
+
+*2026-10-28, implemented by godot-gdscript-specialist.*
+
+- **Files**: `src/battle/battle_mode.gd` + `battle_mode.tscn` (new, extends `GameMode`, hosts `BattleHud` as `%BattleHud`); `src/battle/battle_start_snapshot.gd` (new, `RefCounted`: `party_hp`/`party_mp` arrays, captured/restored by index); `src/battle/battle_factory.gd` (new, minimal `BattleFactory.build()` + inner `BattleBuildResult`, with ADR-0010 §3's interim enemy-ID and faction-id tables); `src/battle/battle_core.gd` (added `static func clear_transients(party)`); `tests/unit/battle/battle_mode_snapshot_test.gd` (new, the moved 032/033 retry test, driving `BattleMode` directly with no `GameStateMachine`); `tests/integration/game_state/game_state_battle_mode_test.gd` (new, Checks 1-4, real `GameStateMachine` + `ModeHostSceneLoader` + `battle_mode.tscn`, `stub_overworld_mode.tscn` for OVERWORLD).
+- **Call order implemented** (ADR-0006 §5 simplified per this story's own Implementation Notes, since no `BattleReplayController` exists yet): `setup()` → `BattleFactory.build()` → `BattleCore.clear_transients(party)` → boss-count check (`is_boss` with != 1 boss enemy → leaves `_battle = null`, which fails `capture_start_snapshot()` and rolls back) → connect `battle_ended` → `start_battle(false)` → `hud.setup(battle)`. Connecting `battle_ended` *before* `hud.setup()` is what guarantees `report_battle_outcome()` is recorded before the HUD's own `battle_ended` handler repaints the end banner (Check 3) — signal listeners run in connection order.
+- **Reporting**: Victory sets `_awaiting_results_done` and calls `report_battle_outcome(VICTORY)` at once (no replay hold, TODO'd); `handle_action()` calls `report_results_done()` only on a `confirm` press while that flag is set. Defeat reports at once. Fled is not wired (TODO, matches the story's own scope note — AC-13 is machine-level, story 016).
+- **Retry**: `restore_start_snapshot()` restores party HP/MP from the snapshot, clears transients, and calls `start_battle(false)` again on the same `BattleCore` — never `start_battle()` or `retry_battle()`. The enemy roster needs no snapshot of its own: `BattleCore.start_battle()` unconditionally `reset_for_battle()`s every enemy on every call, so Retry's fresh full-HP roster is already guaranteed by the existing contract.
+- **Deviations (flag for review)**:
+  1. `BattleStartSnapshot` captures only `party_hp`/`party_mp`, not items or an explicit enemy-group snapshot. No inventory system exists yet (TODO, later story); the enemy group needs no snapshot per the point above. Documented in the class's own doc comment.
+  2. Every ADR-0006 §5 step that names `BattleReplayController` (reveal gate, takeover hold, `resync()`, the retry-flash light hand-off, `cancel_pending_replay()`) is left as an inline `# TODO` comment at its position in `battle_mode.gd`, per this story's Implementation Notes ("Steps involving BattleReplayController are N/A until ADR-0006 ships").
+  3. `BattleFactory.build()` takes `(payload, rng)` only — no `catalog`/`FactionRuleRegistry`/`StatsConfig`/`TurnBattleConfig` parameters — since none of those exist in this codebase yet; ADR-0010's full signature is content-migration story 029's job once the enemy-record migration lands. `BattleBuildResult` is a nested class inside `battle_factory.gd` rather than its own file, to stay within the story's Files list.
+  4. Check 3's "report_battle_outcome recorded before the end banner shows" is verified by construction (connection order, see above) plus a runtime check that `pending_outcome == VICTORY` while `current_mode` is still `BATTLE` (pre-confirm) — not a signal-level trace of the HUD's own banner repaint, which would need a deeper hook into `BattleHud` than this story's scope covers.
+- **Test evidence**: `godot --headless --path . --import` clean, no parse errors. Full gdUnit4 suite green at 575/575 (570 baseline + 5 new: 1 unit `battle_mode_snapshot_test.gd` + 4 integration `game_state_battle_mode_test.gd`), 0 errors, 0 failures, 0 orphans, exit 0. One orphan fix during implementation: `test_entry_builds_and_snapshots`/`test_retry_restores` never leave BATTLE, so the frozen `StubOverworldMode` (detached, not destroyed, on Overworld -> Battle per ADR-0002 §4) was never reattached by a round trip; both now call `loader.free_frozen_overworld()` at the end, the same call production makes on Retreat/Quit to Title.
+- **Owed**: Check 6's grep gates (no `retry_battle(`/`start_battle()` without `false` in `battle_mode.gd`; no `BattleCore.new` outside `battle_factory.gd` and the two harnesses) are a review-time check, not run here — a reviewer should confirm them before `/story-done`. Cross-domain review by gameplay-programmer of `BattleCore.clear_transients()` and `BattleFactory` per the story's own cross-domain note.
 
 ---
 

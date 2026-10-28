@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="TransitionConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/game_state/transition_config.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+t_out = {
+&"fade": 0.2,
+&"battle_wipe": 0.3,
+&"battle_wipe_reverse": 0.3,
+&"retry_flash": 0.15,
+&"none": 0.0
+}
+t_in = {
+&"fade": 0.2,
+&"battle_wipe": 0.25,
+&"battle_wipe_reverse": 0.25,
+&"retry_flash": 0.15,
+&"none": 0.0
+}
+transition_budget = {
+&"fade": 0.6,
+&"battle_wipe": 0.6,
+&"battle_wipe_reverse": 0.6,
+&"retry_flash": 0.4,
+&"none": 0.0
+}
+mode_scene_paths = {
+1: "res://src/game_state/modes/content_error_mode.tscn",
+2: "res://src/game_state/modes/title_mode.tscn",
+3: "res://src/chapters/chapter_mode.tscn",
+4: "res://src/battle/battle_mode.tscn"
+}
+overlay_scene_paths = {
+2: "res://src/game_state/overlays/defeat_prompt.tscn"
+}
+validate_enemy_ids_against_catalog = false

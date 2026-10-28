@@ -6,7 +6,7 @@
 > **Type**: Integration
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -122,7 +122,50 @@
 - Unit: `tests/unit/game_state/game_root_data_root_test.gd` — must pass.
 - Run-and-observe: `production/qa/evidence/game-state-035-demo-under-game-state-[date].png` retained (coding standards: "A parse check is not a run").
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-29: game_state_game_root_boot_test.gd 4/4, game_root_data_root_test.gd; full suite 581/581). Run-and-observe screenshots retained: production/qa/evidence/story-035-game-root-main-scene/01-title.png, 02-battle-fight1.png (copy at game-state-035-demo-under-game-state-2026-10-29.png).
+
+---
+
+## Completion Notes
+
+*Written by godot-gdscript-specialist, 2026-10-28, before the full-suite run that gates this story's close.*
+
+**Files**: `src/game_state/game_root.gd`/`.tscn`, `src/game_state/modes/content_error_mode.gd`/`.tscn`,
+`src/game_state/interim_fade_presenter.gd`, `src/game_state/debug_launch_args.gd`,
+`data/config/transition_config.tres`, `project.godot` (`run/main_scene`),
+`src/chapters/chapter_flow_demo.gd`/`.tscn` (rewritten), `tests/unit/game_state/game_root_data_root_test.gd`,
+`tests/integration/game_state/game_state_game_root_boot_test.gd`,
+`tests/integration/game_state/boot_content_error_harness.gd` (new support file, see Deviations).
+
+**Deviations**:
+- Added `tests/integration/game_state/boot_content_error_harness.gd`, not in the Files list. `ContentCatalog`
+  is a one-shot autoload (`ContentBootstrap.run()` no-ops after the first call in a process); Check 2's FAILED-root
+  scenario cannot share a process with Checks 1/3/4's valid-root scenario, so it runs as a real subprocess
+  (`OS.execute`), mirroring `content_data_validate_cli_test.gd`'s own reason for driving `validate-content.gd`
+  the same way.
+- Added `GameRoot.resolver` and `GameRoot.used_fallback_bindings` read-only getters (not pinned by the story) —
+  the test seams Check 1/2 need to prove action-source binding and fallback-bindings use without new surface on
+  `GameStateMachine`.
+- Added `ContentErrorMode.report_text` getter for the same reason (cross-process/cross-scene text check).
+- `--debug-retreat-descriptor` (`DebugLaunchArgs.apply_retreat_override`/`wants_retreat_descriptor`) is
+  implemented but not wired into `ChapterMode` or the demo — `ChapterMode` is not in this story's Files list.
+  Owed to story 038 when it needs the retreat screenshot.
+- `chapter_flow_demo.gd`'s rewrite drops the old `--faction=` flag (MegaCorp chapters): wiring it would mean
+  editing `chapter_mode.gd`, outside this story's Files list. Noted for whichever story needs the MegaCorp demo path.
+
+**Test Evidence Status**: see the main-session addendum below.
+
+**Main-session addendum (2026-10-29)**: the specialist ran out of turns while the suite was still failing. The main session made these fixes:
+1. **Faction ID mismatch**: `EncounterDescriptor.faction_id` was `"bureaucratia"`, but the catalog record id is `"faction_bureaucratia"`, so `EncounterValidator` rejected every real battle. `ChapterFlow` now emits `FACTION_RECORD_PREFIX + faction_name`. `BattleFactory`'s rule table and three tests were updated to match.
+2. **Autoload not in scope under `-s`**: the `ContentCatalog` identifier fails to compile under a `-s` main-loop script (the content-error harness). `GameRoot.catalog()` and `ContentErrorMode` now read it through `Engine.get_main_loop().root`, which also works before the node is in the tree.
+3. **Harness hang**: the harness never reached its tick cap when `GameRoot` was null. The cap is now checked first.
+4. **Boot test fixes**: the valid root is the real `res://data`, because the demo loop needs Bureaucratia and the catalog loads once per process. `_run_subprocess` normalises CRLF. The throwaway catalog is `auto_free`d. The first check expects BATTLE, because `ChapterMode` starts fight 0 on arrival.
+5. **Battle result never reached the Overworld**: `GameRoot` passed an empty `payload_commit`, so `on_thawed()` never saw the result and the chapter never advanced. The machine now exposes `last_battle_result`, set as a Victory or Fled return begins, and `GameRoot` passes it as the loader's result getter. Owed to technical-director: an ADR-0002 note on how the thaw result is delivered.
+6. **Demo stuck on Title**: the demo requested Overworld from `_ready()` while the Boot → Title transition was busy. It now requests it from `_process()` once Title is idle.
+7. **Untagged TODOs**: the TODOs in `battle_mode.gd` and `battle_start_snapshot.gd` now carry owner tags.
+
+**Run result**: OBSERVED. The main scene boots to Title, with New Game focused and Continue disabled (`01-title.png`). The demo reaches a Bureaucratia fight under `GameRoot`, with banner, party and Clerk rendered by `BattleHud` (`02-battle-fight1.png`).
+**Gap, not a defect of this story**: `BattleHud` is display-only, and no player command UI calls `BattleCore.submit_action()` yet, so a human can boot into a battle but cannot act in it.
 
 ---
 

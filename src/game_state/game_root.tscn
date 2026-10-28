@@ -1,0 +1,20 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/game_state/game_root.gd" id="1_a"]
+
+[node name="GameRoot" type="Node"]
+script = ExtResource("1_a")
+
+[node name="ModeHost" type="Node" parent="."]
+unique_name_in_owner = true
+
+[node name="OverlayHost" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+layer = 10
+
+[node name="TransitionLayer" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+layer = 20
+
+[node name="Services" type="Node" parent="."]
+unique_name_in_owner = true

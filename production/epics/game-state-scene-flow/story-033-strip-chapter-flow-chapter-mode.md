@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -100,7 +100,23 @@
 **Required evidence**:
 - Logic: `tests/unit/chapters/chapter_flow_descriptor_test.gd`, `tests/unit/chapters/chapter_mode_test.gd`, and story 032's sequencing and carryover suites unchanged — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (full suite green; see Completion Notes)
+
+---
+
+## Completion Notes
+
+*2026-10-28, implemented by godot-gdscript-specialist.*
+
+- **Files**: `src/chapters/chapter_flow.gd` (stripped to sequencing: `build_next_descriptor()`, `advance_on_victory()`, `chapter_won`; no `BattleCore`, no `battle_ended`, no snapshot pair, no `fight_lost`); `src/chapters/chapter_mode.gd` + `chapter_mode.tscn` (new); `tests/unit/chapters/chapter_flow_probe.gd` (changed, per rule); `tests/unit/chapters/chapter_flow_descriptor_test.gd` (new, Check 3); `tests/unit/chapters/chapter_mode_test.gd` (new, Checks 4-5).
+- **Deviations (flag for review)**:
+  1. `src/chapters/chapter_flow_demo.gd`/`.tscn` **deleted**, not in the Files list. It referenced the removed `fight_started`/`fight_lost`/`current_battle` API and would not parse against the new `ChapterFlow`; Story 035 ("the demo rewrite") was already going to replace it.
+  2. `tests/unit/chapters/chapter_flow_retry_test.gd` **removed from `tests/unit/chapters/`** (not rewritten in place) since the retry mechanics it pins no longer exist in `ChapterFlow`. Per Implementation Notes this test "moves to 034, not deleted" — it is not recreated here because Story 034's Battle mode doesn't exist yet; 034 should add its own version under `tests/unit/battle/`.
+  3. `tests/unit/chapters/chapter_flow_carryover_test.gd`'s transient-clear test still passes only because `chapter_flow_probe.gd`'s `win_current()` now clears the squad's transient flags itself, standing in for the Battle mode's future `BattleCore.clear_transients(party)` call (documented in the probe's class doc comment) — not a ChapterFlow behavior.
+  4. `ChapterMode` never calls `request_transition()` from `setup()`/`on_thawed()` directly (both run while `GameStateMachine._phase` is still `SWAP`, confirmed by reading `game_state_machine.gd`, which would hit the busy gate). It connects once to `machine.transition_finished` in `setup()` and requests the next fight only once that fires with `OVERWORLD` (phase already `IDLE` by then). This is implied, not spelled out, by the story's Implementation Notes — flagging for technical-director confirmation alongside the "unchanged" annotation the story already owes.
+- **Recorded placeholders**: `EncounterDescriptor.battle_stage_id` = `ChapterFlow.BATTLE_STAGE_ID_INTERIM` = `"stage_chapter_interim"`.
+- **Test evidence**: `godot --headless --path . --import` clean (no parse errors); full gdUnit4 suite green at 567/567 (558 baseline − 1 retry test moved out + 8 descriptor param cases + 1 uniqueness test + 3 ChapterMode tests − 2 carryover/sequencing unchanged... net +9 test cases, 0 failures, 0 errors, 0 orphans).
+- **Owed**: technical-director confirmation of the "unchanged" scope for 032's suites (per Implementation Notes) and of the `transition_finished`-deferred request pattern; Story 034 to recreate the retry test under `tests/unit/battle/`.
 
 ---
 

@@ -1,6 +1,4 @@
 ; Engine configuration file.
-; run/main_scene is intentionally unset — /dev-story or the developer sets it
-; once a scene exists. An empty project with no main scene opens fine.
 
 config_version=5
 
@@ -8,6 +6,7 @@ config_version=5
 
 config/name="Resistance Permit Denied"
 config/features=PackedStringArray("4.7", "Forward Plus")
+run/main_scene="res://src/game_state/game_root.tscn"
 
 [autoload]
 

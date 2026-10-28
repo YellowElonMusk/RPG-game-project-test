@@ -96,6 +96,22 @@ func retry_battle() -> void:
 	start_battle()
 
 
+## Clears every per-fight transient on `party` (`is_defending`, `is_stunned`,
+## `vulnerable_rounds_left`) without touching HP/MP (ADR-0010 §7's named
+## writers list). The Battle mode calls this before every `start_battle(false)`
+## -- both on first entry and on Retry (ADR-0002 §7 amendment; ADR-0006 §5
+## step 2) -- because `start_battle(false)` leaves the party's own state
+## untouched, so a Defend or debuff left over from the previous fight would
+## otherwise carry into this one. Replaces the retired
+## `ChapterFlow._clear_squad_transients()`.
+## Example: [code]BattleCore.clear_transients(party)[/code]
+static func clear_transients(party: Array[Combatant]) -> void:
+	for combatant in party:
+		combatant.is_defending = false
+		combatant.is_stunned = false
+		combatant.vulnerable_rounds_left = 0
+
+
 ## Squad members with HP above 0, in turn order.
 ## Example: [code]var alive := battle.get_living_squad()[/code]
 func get_living_squad() -> Array[Combatant]:

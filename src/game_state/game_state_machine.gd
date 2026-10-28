@@ -159,6 +159,12 @@ var _quit_pending: bool = false
 var _quit_fired: bool = false
 var _menu_deferred: bool = false
 var _pending_outcome: int = -1   # BattleResult, or -1 for "none pending"
+
+## The result of the most recent Battle -> Overworld return (VICTORY or FLED),
+## set as that return transition begins; -1 before the first. GameRoot feeds
+## it to ModeHostSceneLoader as its result getter, so the thawed Overworld's
+## on_thawed() receives it (story 014: the return swap carries no payload).
+var last_battle_result: int = -1
 var _frozen_overworld: Node = null
 var _battle_snapshot: RefCounted = null
 var _current_descriptor: EncounterDescriptor = null
@@ -369,6 +375,7 @@ func report_battle_outcome(result: BattleResult) -> RequestResult:
 				_log.error(&"fled_not_allowed", {"encounter_id": _current_descriptor.encounter_id})
 				return RequestResult.REJECTED_INVALID_PAYLOAD
 			_pending_outcome = -1
+			last_battle_result = BattleResult.FLED
 			_begin_transition(Mode.BATTLE, Mode.OVERWORLD,
 					_TRANSITION_TYPES[Mode.BATTLE][Mode.OVERWORLD], null)
 		BattleResult.DEFEAT:
@@ -391,6 +398,7 @@ func report_results_done() -> RequestResult:
 		_log.error(&"results_done_no_pending_victory", {"pending": _pending_outcome})
 		return RequestResult.REJECTED_INVALID_PAIR
 	_pending_outcome = -1
+	last_battle_result = BattleResult.VICTORY
 	_begin_transition(Mode.BATTLE, Mode.OVERWORLD,
 			_TRANSITION_TYPES[Mode.BATTLE][Mode.OVERWORLD], null)
 	return RequestResult.OK
