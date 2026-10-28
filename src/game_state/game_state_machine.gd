@@ -306,7 +306,7 @@ func tick(delta: float) -> void:
 			if status == SceneLoader.SwapStatus.DONE:
 				_end_swap_phase_success()
 			elif status == SceneLoader.SwapStatus.FAILED:
-				_end_swap_phase_failure()
+				_end_swap_phase_failure(&"loader_failed")
 		Phase.IN:
 			_phase_elapsed += delta
 			if _phase_elapsed >= _current_t_in - _PHASE_EPSILON:
@@ -439,8 +439,21 @@ func _end_out_phase() -> void:
 	_loader.begin_swap(_pending_from_mode, _pending_to_mode, _pending_payload)
 
 
-## `mode_entered` at the end of SWAP, on `poll_swap() == DONE`.
+## `mode_entered` at the end of SWAP, on `poll_swap() == DONE`. On Overworld
+## -> Battle only (ADR-0002 §7), a `null` `capture_start_snapshot()` is itself
+## a swap failure (the base `GameMode` returns `null`, so a Battle mode that
+## forgets to override it fails loudly) -- checked only when the loader
+## reports a live node, so a stub test that never sets `current_mode_node()`
+## is unaffected (story 012).
 func _end_swap_phase_success() -> void:
+	if _pending_from_mode == Mode.OVERWORLD and _pending_to_mode == Mode.BATTLE:
+		var battle_node: Object = _loader.current_mode_node()
+		if battle_node != null:
+			var snapshot: RefCounted = battle_node.capture_start_snapshot()
+			if snapshot == null:
+				_end_swap_phase_failure(&"capture_snapshot_null")
+				return
+			_battle_snapshot = snapshot
 	_current_mode = _pending_to_mode
 	if _pending_payload is BattleEntryPayload:
 		_current_descriptor = (_pending_payload as BattleEntryPayload).descriptor
@@ -449,10 +462,11 @@ func _end_swap_phase_success() -> void:
 
 
 ## A swap failure rolls back: re-attach any detached Overworld (handled by
-## `rollback_swap()`), play IN back into the source mode, and log an error.
-func _end_swap_phase_failure() -> void:
+## `rollback_swap()`), play IN back into the source mode, and log an error
+## naming `cause` (`&"loader_failed"` or `&"capture_snapshot_null"`, story 012).
+func _end_swap_phase_failure(cause: StringName) -> void:
 	_loader.rollback_swap()
-	_log.error(&"swap_failed", {"from": _pending_from_mode, "to": _pending_to_mode})
+	_log.error(&"swap_failed", {"from": _pending_from_mode, "to": _pending_to_mode, "cause": cause})
 	mode_entered.emit(_pending_from_mode)
 	_pending_to_mode = _pending_from_mode
 	_begin_in_phase()

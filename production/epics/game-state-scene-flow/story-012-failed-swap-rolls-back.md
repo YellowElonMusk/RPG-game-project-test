@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -89,7 +89,7 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_swap_rollback_test.gd` and the loader-level case in `tests/unit/game_state/game_state_overworld_freeze_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (452/452 suite-wide, 0 orphans)
 
 ---
 
@@ -97,3 +97,20 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-014-overworld-snapshot-exact-restore.md` (the real loader the loader-level case needs)
 - Unlocks: `production/epics/game-state-scene-flow/story-013-invalid-descriptor-stays-in-overworld.md`, `production/epics/game-state-scene-flow/story-034-battle-mode-wraps-battle-core.md`
+
+---
+
+## Completion Notes
+
+**Files changed:**
+- `src/game_state/game_state_machine.gd` — `_end_swap_phase_success()` now checks, Overworld→Battle only, whether the loader reports a live `current_mode_node()`; if so and its `capture_start_snapshot()` is `null`, it routes into the (now shared) rollback path instead of promoting `_current_mode` (ADR-0002 §7). A non-null snapshot is stored in `_battle_snapshot` (previously declared, never written). `_end_swap_phase_failure()` gained a required `cause: StringName` parameter, now in `_log.error(&"swap_failed", {..., "cause": cause})`; the `tick()` call site (loader `FAILED`) passes `&"loader_failed"`, the new capture-null branch passes `&"capture_snapshot_null"`. `mode_host_scene_loader.gd` and `scene_loader.gd` needed no changes — `rollback_swap()` was already implemented and already the mechanism this story's tests exercise.
+- `tests/unit/game_state/game_state_swap_rollback_test.gd` (new) — `test_failure_rolls_back`, parametrized over the three QA sources: `loader_failed` and `payload_commit_false` are mechanically identical at the machine level (both a scripted `poll_swap() == FAILED`) and share cause `&"loader_failed"`; `capture_null` uses a `StubBattleMode` whose `capture_start_snapshot()` stays null. Asserts `rollback_swap` called once, `current_mode == OVERWORLD`, `phase == IDLE`, one `&"swap_failed"` log entry with `context.cause`, the pinned four-signal rollback sequence, `battle_snapshot_id == 0`, full debug-state restoration, and that the next synthetic action reaches a stub Overworld node (re-attached via a `mode_entered` listener standing in for the real loader's re-attach).
+- `tests/unit/game_state/game_state_overworld_freeze_test.gd` — added `test_failure_after_detach_reattaches_same_instance` (real `ModeHostSceneLoader`, no `pre_setup`, so the real `stub_battle_mode.tscn` instance's `capture_start_snapshot()` stays null and the machine's own check fails it after a real `on_freezing()` + `remove_child()`); asserts `is_same` re-attach, `is_inside_tree()`, exact snapshot-field equality, the logged cause, and `mode_host.get_child_count() == 1` after draining to IDLE (no orphans). Also had to give `_run_round_trip`'s `ModeHostSceneLoader` a `pre_setup` that sets `StubBattleMode.snapshot_to_return`, since the new capture-null check would otherwise have rolled back that story's own (pre-existing) round-trip tests.
+- `tests/unit/game_state/game_state_input_lock_test.gd` — `test_no_delivery_during_phase` swapped its generic counting double from `StubOverworldMode` to `StubBattleMode` (with `snapshot_to_return` set) for its Overworld→Battle case, for the same reason: the double stood in for "current mode node" regardless of target mode, and the new check would have rolled back a transition this test expects to reach `BATTLE`.
+
+**Test count**: suite-wide 452/452 passing (448 baseline + 3 new parametrized rows + 1 new loader-level case), 0 orphans, confirmed via headless import + gdUnit4 run.
+
+**Deviations / items owed:**
+- The capture-null check is skipped when `current_mode_node()` is `null` (most pure-stub tests that don't care about this concern never set it). This is deliberate so existing signal-order/busy-rejection tests needed no change, but means the check is only exercised when a test (or production) actually supplies a node.
+- `_battle_snapshot` is now populated on a successful battle entry, which is part of story 017's stated scope ("the machine calls `capture_start_snapshot()` and stores the opaque handle"). Only the capture call and null-rollback landed here; `choose_retry()` still does not call `restore_start_snapshot()` — that wiring remains story 017's job. Flagging for technical-director/story-017 implementer awareness.
+- `payload_commit false` (ADR-0009 §6's distinct `SceneLoader.payload_commit` hook) is not implemented anywhere yet — no `SaveService` exists. Per the story's own wording ("stubbed through the loader as FAILED"), this case is tested purely as a second `loader_failed` row and introduces no new production code path.

@@ -17,7 +17,10 @@ func test_no_delivery_during_phase(phase_name: String, test_parameters := _PHASE
 	var machine: GameStateMachine = env["machine"]
 	var loader: StubSceneLoader = env["loader"]
 	var cfg: TransitionConfig = env["config"]
-	var mode: StubOverworldMode = auto_free(StubOverworldMode.new())
+	# Story 012: a battle entry's capture_start_snapshot() must be non-null or
+	# the swap rolls back, so this double returns a fixture snapshot.
+	var mode: StubBattleMode = auto_free(StubBattleMode.new())
+	mode.snapshot_to_return = GameStateFixtures.make_overworld_snapshot()
 	loader.current_mode_node_value = mode
 	var source := SyntheticActionSource.new()
 	machine.bind_action_source(source)
