@@ -9,6 +9,7 @@ var last_begin_swap_args: Array = []
 var rollback_count: int = 0
 var push_overlay_count: int = 0
 var pop_overlay_count: int = 0
+var last_push_overlay_payload: RefCounted = null
 var current_mode_node_value: Node = null
 var current_overlay_node_value: Node = null
 
@@ -44,8 +45,9 @@ func rollback_swap() -> void:
 		_recorder.record(&"rollback_swap", [])
 
 
-func push_overlay(kind: int, _payload: RefCounted) -> void:
+func push_overlay(kind: int, payload: RefCounted) -> void:
 	push_overlay_count += 1
+	last_push_overlay_payload = payload
 	if _recorder != null:
 		_recorder.record(&"push_overlay", [kind])
 

@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -89,7 +89,37 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_retreat_offer_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created, passing (465/465 suite tests pass, 0 orphans)
+
+---
+
+## Completion Notes
+
+**Files changed**:
+- `src/game_state/defeat_prompt_payload.gd` (new) — `offers_retreat: bool`.
+- `src/game_state/game_state_machine.gd` — DEFEAT case in `report_battle_outcome`
+  now builds a fresh `DefeatPromptPayload` and passes it to `_loader.push_overlay`
+  (was `null`); added private `_offers_retreat()` (`_current_descriptor != null and
+  _current_descriptor.retreat_allowed`), used by both the DEFEAT case and
+  `choose_retreat()`'s existing rejection guard so the two can never disagree.
+- `tests/unit/game_state/doubles/stub_scene_loader.gd` — added
+  `last_push_overlay_payload: RefCounted`, captured in `push_overlay()`, so a
+  test can inspect what the machine handed the loader (previously discarded as
+  `_payload`).
+- `tests/unit/game_state/game_state_retreat_offer_test.gd` (new) —
+  `test_offer_follows_descriptor` (parametrized, cases a/b) and
+  `test_no_stale_flag_after_retry`, per the QA Test Cases above.
+
+**Test count**: 3 new test cases (1 parametrized function x2 cases + 1 plain
+function). Suite: 465/465 pass, 0 failures, 0 orphans (was 462/462).
+
+**Deviations**: none. `choose_retreat()`'s reject-when-not-offered guard
+already existed from story 017/016-era code; this story routed it through the
+same `_offers_retreat()` helper the new payload uses, rather than leaving two
+copies of the same condition to drift.
+
+**Items owed**: none for this story. Camp-availability and region-default
+rules remain story 020/021's concern, as scoped.
 
 ---
 

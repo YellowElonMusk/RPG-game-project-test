@@ -286,8 +286,10 @@ func report_battle_outcome(result: BattleResult) -> RequestResult:
 					_TRANSITION_TYPES[Mode.BATTLE][Mode.OVERWORLD], null)
 		BattleResult.DEFEAT:
 			_pending_outcome = result
+			var prompt_payload := DefeatPromptPayload.new()
+			prompt_payload.offers_retreat = _offers_retreat()
 			_overlay_stack.append(OverlayKind.DEFEAT_PROMPT)
-			_loader.push_overlay(OverlayKind.DEFEAT_PROMPT, null)
+			_loader.push_overlay(OverlayKind.DEFEAT_PROMPT, prompt_payload)
 			overlay_opened.emit(OverlayKind.DEFEAT_PROMPT)
 	return RequestResult.OK
 
@@ -317,7 +319,7 @@ func choose_retry() -> RequestResult:
 func choose_retreat() -> RequestResult:
 	if _pending_outcome != BattleResult.DEFEAT:
 		return RequestResult.REJECTED_INVALID_PAIR
-	if _current_descriptor != null and not _current_descriptor.retreat_allowed:
+	if not _offers_retreat():
 		return RequestResult.REJECTED_INVALID_PAYLOAD
 	_pending_outcome = -1
 	_close_defeat_prompt()
@@ -570,6 +572,15 @@ func _end_in_phase() -> void:
 	if _quit_pending:
 		_quit_pending = false
 		_quit_hook.call()
+
+
+## Story 018, AC-16: computed fresh from the stored descriptor every time it
+## is called -- never cached on the machine -- so a Retry (which keeps the
+## same descriptor) never carries a stale flag into a later Defeat in the
+## same battle. Shared by the Defeat payload and `choose_retreat()`'s guard
+## so the two can never disagree.
+func _offers_retreat() -> bool:
+	return _current_descriptor != null and _current_descriptor.retreat_allowed
 
 
 func _close_defeat_prompt() -> void:
