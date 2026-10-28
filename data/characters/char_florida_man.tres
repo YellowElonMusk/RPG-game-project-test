@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CharacterData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/character_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "char_florida_man"
+display_name = "Florida Man"
+max_hp = 38
+max_mp = 10
+attack = 14
+defense = 8
+speed = 12
+move_ids = PackedStringArray("move_viral_stunt")

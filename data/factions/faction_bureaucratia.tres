@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="FactionData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/faction_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "faction_bureaucratia"
+display_name = "Bureaucratia"
+kind = "alien"
+base_shape = "square"
+signature_color = "#d23a2e"
+backup_icon_id = "icon_faction_bureaucratia"
+rule_id = "rule_bureaucratia_permit"
+patrol_archetype_id = "patrol_compliance_clerk"

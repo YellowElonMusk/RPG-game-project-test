@@ -1,12 +1,12 @@
 # Story 014: The nine enemy named attacks exist as Move records whose name, target type, cost and `damage` power equal the shipped `_named_attack()` values
 
 > **Epic**: Content Migration
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Config/Data
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28
 
 ## Context
 
@@ -67,8 +67,6 @@
 - `tests/unit/battle/fixtures/migrated_records_expected.gd` (named-attack block)
 - `tests/unit/battle/battle_migrated_records_test.gd` (named-attack cases)
 
----
-
 ## QA Test Cases
 
 *Written by qa-lead at story creation (QL-STORY-READY, 2026-10-23; verdict GAPS, revisions applied: non-circular descriptor equality, catalog-vs-raw comparison, `src/data/` grep). The developer implements against these — do not invent new test cases during implementation.*
@@ -101,3 +99,10 @@
 
 - Depends on: `production/epics/content-migration/story-005-characterize-moves-damage.md`, `story-010-register-migrated-effect-types.md`; `production/epics/content-catalog/story-015-structure-validation.md`
 - Unlocks: `production/epics/content-migration/story-015-author-bureaucratia-enemies.md`, `story-017-author-faction-rule-records.md`, `story-023-move-record-adapter.md`
+
+## Completion Notes
+**Completed**: 2026-10-28
+**Criteria**: 1/1 passing
+**Deviations**: Implemented together with stories 015 and 017 (beyond this story's own declared dependencies) because this story's own AC needs a genuinely READY catalog on `res://data`, which depends on both. Smoke report (`production/qa/smoke-2026-10-23.md`) predates these files; re-run `/smoke-check`.
+**Test Evidence**: `tests/unit/battle/battle_migrated_records_test.gd` — exists and passes (full suite: 313/313, 0 errors, 0 failures, 0 orphans; direct probe confirms `res://data` reaches READY)
+**Reviewed by**: `/code-review` (self-invoked this session, covering stories 014/015/017 together) — APPROVED

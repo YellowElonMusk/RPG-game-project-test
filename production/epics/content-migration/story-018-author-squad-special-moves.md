@@ -1,12 +1,12 @@
 # Story 018: The five squad specials exist as provisional Move records whose name, target type, cost and single EffectDescriptor equal the shipped `SquadSpecials` factories (merged with story 019)
 
 > **Epic**: Content Migration
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Config/Data
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28
 
 ## Context
 
@@ -81,17 +81,10 @@
 ## Files
 
 - `data/moves/move_speak_to_the_manager.tres`, `move_family_meal.tres`, `move_appetizer.tres`, `move_viral_stunt.tres`, `move_home_run.tres`
-- `src/battle/battle_effect_types.gd` (adds `const PROVISIONAL`)
-- `tests/unit/battle/fixtures/migrated_records_expected.gd` (specials block)
-- `tests/unit/battle/battle_migrated_records_test.gd` (special cases)
-
-*Merged from story 019, 2026-10-24:*
-
-- `data/characters/char_karen.tres`, `char_michelin_chef.tres`, `char_florida_man.tres`, `char_baguette_thrower.tres`
-- `tests/unit/battle/fixtures/migrated_records_expected.gd` (character block)
-- `tests/unit/battle/battle_migrated_records_test.gd` (character cases)
-
----
+- `src/battle/battle_effect_types.gd` — modified (adds `const PROVISIONAL`)
+- `data/characters/char_karen.tres`, `char_michelin_chef.tres`, `char_florida_man.tres`, `char_baguette_thrower.tres` (merged story 019; Q1 approved)
+- `tests/unit/battle/fixtures/migrated_records_expected.gd` (specials + character block)
+- `tests/unit/battle/battle_migrated_records_test.gd` (special + character cases, 6 test functions)
 
 ## QA Test Cases
 
@@ -144,3 +137,10 @@
 
 - Depends on: `production/epics/content-migration/story-002-characterize-squad-specials.md`, `story-010-register-migrated-effect-types.md`; `production/epics/content-catalog/story-015-structure-validation.md`
 - Unlocks: `story-021-migrated-set-validates-clean.md`, `story-028-squad-specials-adapter.md`, None in this epic (no runtime reader)
+
+## Completion Notes
+**Completed**: 2026-10-28
+**Criteria**: 2/2 passing
+**Deviations**: Q1 (merged story 019) resolved this session: squad character stats sourced from `prototypes/battle-concept/battle.gd` iteration 3, moved as-is, per the story's own recommended path. Within that approval, `nation_id`, `archetype_line`, `signature_move_id`, `sprite_set_id` and `portrait_id` are left empty (none in `CharacterData.REQUIRED_FIELDS`) rather than inventing four `human_nation` Faction records with no source anywhere in the shipped code or the prototype — flagged for technical-director review. Smoke report (`production/qa/smoke-2026-10-23.md`) predates these files; re-run `/smoke-check`.
+**Test Evidence**: `tests/unit/battle/battle_migrated_records_test.gd` — exists and passes (full suite: 318/318, 0 errors, 0 failures, 0 orphans)
+**Reviewed by**: `/code-review` (self-invoked this session) — APPROVED

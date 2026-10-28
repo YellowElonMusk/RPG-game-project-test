@@ -1,12 +1,12 @@
 # Story 015: `enemy_clerk` and `enemy_supervisor` exist as Enemy records whose stat blocks, boss flag, faction and named attacks equal the shipped Bureaucratia roster (merged with story 016)
 
 > **Epic**: Content Migration
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Config/Data
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28
 
 ## Context
 
@@ -82,17 +82,10 @@
 
 ## Files
 
-- `data/enemies/enemy_clerk.tres`, `data/enemies/enemy_supervisor.tres`
-- `tests/unit/battle/fixtures/migrated_records_expected.gd` (Bureaucratia enemy block)
-- `tests/unit/battle/battle_migrated_records_test.gd` (Bureaucratia enemy cases)
-
-*Merged from story 016, 2026-10-24:*
-
-- `data/enemies/enemy_security_drone.tres`, `data/enemies/enemy_middle_manager.tres`, `data/enemies/enemy_ceo.tres`
-- `tests/unit/battle/fixtures/migrated_records_expected.gd` (MegaCorp enemy block)
-- `tests/unit/battle/battle_migrated_records_test.gd` (MegaCorp enemy cases)
-
----
+- `data/enemies/enemy_clerk.tres`, `enemy_supervisor.tres`
+- `data/enemies/enemy_security_drone.tres`, `enemy_middle_manager.tres`, `enemy_ceo.tres` (merged story 016)
+- `tests/unit/battle/fixtures/migrated_records_expected.gd` (enemy block)
+- `tests/unit/battle/battle_migrated_records_test.gd` (enemy cases)
 
 ## QA Test Cases
 
@@ -142,3 +135,10 @@
 
 - Depends on: `production/epics/content-migration/story-003-characterize-bureaucratia-roster.md`, `story-013-author-faction-records.md`, `story-014-author-enemy-named-attack-moves.md`
 - Unlocks: `production/epics/content-migration/story-017-author-faction-rule-records.md`, `story-020-enemy-reward-range-validation.md`, `story-021-migrated-set-validates-clean.md`, `story-024-bureaucratia-roster-adapter.md`
+
+## Completion Notes
+**Completed**: 2026-10-28
+**Criteria**: 2/2 passing
+**Deviations**: Implemented together with stories 014 and 017 (see story 014's Completion Notes). Smoke report (`production/qa/smoke-2026-10-23.md`) predates these files; re-run `/smoke-check`. ADR-0007 §7's stat-block range validators are not registered yet (Stats epic doesn't exist) — ranges are not asserted here, by this story's own design, not a gap.
+**Test Evidence**: `tests/unit/battle/battle_migrated_records_test.gd` — exists and passes (full suite: 313/313, 0 errors, 0 failures, 0 orphans)
+**Reviewed by**: `/code-review` (self-invoked this session, covering stories 014/015/017 together) — APPROVED

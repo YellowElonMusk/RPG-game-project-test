@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/enemy_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "enemy_supervisor"
+display_name = "Supervisor"
+faction_id = "faction_bureaucratia"
+is_boss = true
+max_hp = 110
+attack = 15
+defense = 10
+speed = 9
+move_ids = PackedStringArray("move_pen_jab", "move_red_tape", "move_mass_audit", "move_final_notice")
+sprite_set_id = "sprite_placeholder"

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CharacterData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/character_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "char_baguette_thrower"
+display_name = "Baguette Thrower"
+max_hp = 32
+max_mp = 12
+attack = 15
+defense = 7
+speed = 13
+move_ids = PackedStringArray("move_home_run")

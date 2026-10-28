@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="FactionData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/faction_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "faction_megacorp"
+display_name = "MegaCorp"
+kind = "alien"
+base_shape = "wedge"
+signature_color = "#19c2d6"
+backup_icon_id = "icon_faction_megacorp"
+rule_id = "rule_megacorp_billing"

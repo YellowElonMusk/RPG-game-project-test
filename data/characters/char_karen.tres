@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CharacterData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/character_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "char_karen"
+display_name = "Karen"
+max_hp = 34
+max_mp = 12
+attack = 12
+defense = 9
+speed = 11
+move_ids = PackedStringArray("move_speak_to_the_manager")

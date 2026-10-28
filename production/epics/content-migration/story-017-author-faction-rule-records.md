@@ -1,12 +1,12 @@
 # Story 017: `rule_bureaucratia_permit` and `rule_megacorp_billing` exist as `faction_rule` records whose params, `ref_ids`, texts and colours reproduce the shipped rules
 
 > **Epic**: Content Migration
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Config/Data
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28
 
 ## Context
 
@@ -78,8 +78,6 @@
 - `tests/unit/battle/fixtures/migrated_records_expected.gd` (rule block)
 - `tests/unit/battle/battle_migrated_records_test.gd` (rule cases, including the template-fill check)
 
----
-
 ## QA Test Cases
 
 *Written by qa-lead at story creation (QL-STORY-READY, 2026-10-23; verdict GAPS, revisions applied: `MigratedRecordsExpected` (RC-3), concrete fill values per round). The developer implements against these — do not invent new test cases during implementation.*
@@ -115,3 +113,10 @@
 
 - Depends on: `production/epics/content-migration/story-006-characterize-faction-rule-decisions.md`, `story-007-characterize-faction-rule-presentation.md`, `story-011-register-shipped-rule-classes.md`, `story-013-author-faction-records.md`, `story-014-author-enemy-named-attack-moves.md`, `story-015-author-bureaucratia-enemies.md`
 - Unlocks: `production/epics/content-migration/story-021-migrated-set-validates-clean.md`, `story-026-faction-rule-decisions-from-records.md`, `story-027-faction-rule-presentation-from-records.md`
+
+## Completion Notes
+**Completed**: 2026-10-28
+**Criteria**: 1/1 passing
+**Deviations**: Implemented together with stories 013-015 in the same turn, since this story needs their records to resolve `ref_ids` and `rule_id`. The Bureaucratia banner text uses the shipped `{rounds_left}` placeholder rather than ADR-0011 §5's example `{unlock_round}` — flagged by this story's own Implementation Notes for a technical-director annotation, not yet done. Smoke report (`production/qa/smoke-2026-10-23.md`) predates these files; re-run `/smoke-check`.
+**Test Evidence**: `tests/unit/battle/battle_migrated_records_test.gd` — exists and passes (full suite: 313/313, 0 errors, 0 failures, 0 orphans)
+**Reviewed by**: `/code-review` (self-invoked this session, covering stories 014/015/017 together) — APPROVED

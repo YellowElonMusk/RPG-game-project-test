@@ -1,12 +1,12 @@
 # Story 013: `faction_bureaucratia` and `faction_megacorp` exist as alien Faction records whose shape, colour and `rule_id` equal the shipped identity
 
 > **Epic**: Content Migration
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Config/Data
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28
 
 ## Context
 
@@ -64,12 +64,10 @@
 
 ## Files
 
-- `data/factions/faction_bureaucratia.tres`
-- `data/factions/faction_megacorp.tres`
-- `tests/unit/battle/fixtures/migrated_records_expected.gd` (faction block)
-- `tests/unit/battle/battle_migrated_records_test.gd` (faction cases)
-
----
+- `data/factions/faction_bureaucratia.tres` — created
+- `data/factions/faction_megacorp.tres` — created
+- `tests/unit/battle/fixtures/migrated_records_expected.gd` — created (faction block)
+- `tests/unit/battle/battle_migrated_records_test.gd` — created (faction cases, 2 test functions)
 
 ## QA Test Cases
 
@@ -99,3 +97,10 @@
 
 - Depends on: `production/epics/content-catalog/story-002-load-one-of-each-type.md`, `production/epics/content-catalog/story-017-overworld-uniqueness-and-faction-rule.md`
 - Unlocks: `production/epics/content-migration/story-015-author-bureaucratia-enemies.md`, `story-017-author-faction-rule-records.md`, `story-027-faction-rule-presentation-from-records.md`
+
+## Completion Notes
+**Completed**: 2026-10-28
+**Criteria**: 1/1 passing
+**Deviations**: `rule_id` on both records points to `faction_rule` records that content-migration story 017 authors, not yet done. Land 013 and 017 in the same commit, or the catalog-level reference pass (content-catalog story 021) fails in between. `patrol_archetype_id` is `""` on MegaCorp (confirmed against `FactionData.REQUIRED_FIELDS`, which names only `display_name`, and `ContentCatalog._ALIEN_ONLY_FIELDS`, which forbids these fields on a `human_nation` but does not require them on an alien). Existing smoke report (`production/qa/smoke-2026-10-23.md`) predates these files; re-run `/smoke-check` before relying on it for this story.
+**Test Evidence**: `tests/unit/battle/battle_migrated_records_test.gd` — exists and passes (full suite: 305/305, 0 errors, 0 failures, 0 orphans)
+**Reviewed by**: `/code-review` (self-invoked this session) — APPROVED WITH SUGGESTIONS; one suggestion applied (load-failure assertion with file path) and re-verified
