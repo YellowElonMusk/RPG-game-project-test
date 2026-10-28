@@ -236,8 +236,11 @@ func open_overlay(kind: OverlayKind, payload: RefCounted = null) -> RequestResul
 
 ## Story 025, AC-20: closing `MENU` re-enables `ModeHost`
 ## (`set_mode_time_stopped(false)`). Popping any other overlay leaves it
-## untouched.
+## untouched. Story 005: Content Error is terminal, so this is rejected
+## before the busy/empty-stack checks below, same as every other entry point.
 func close_overlay() -> RequestResult:
+	if _current_mode == Mode.CONTENT_ERROR:
+		return RequestResult.REJECTED_TERMINAL
 	# Story 008: busy is checked before every other rejection, including an
 	# empty overlay stack.
 	if _phase != Phase.IDLE:
@@ -354,7 +357,10 @@ func report_battle_outcome(result: BattleResult) -> RequestResult:
 
 ## Starts the Battle -> Overworld `battle_wipe_reverse` (AC-12, story 015).
 ## Rejected when no Victory is pending -- a programming error, logged.
+## Story 005: Content Error is terminal and is checked first.
 func report_results_done() -> RequestResult:
+	if _current_mode == Mode.CONTENT_ERROR:
+		return RequestResult.REJECTED_TERMINAL
 	if _pending_outcome != BattleResult.VICTORY:
 		_log.error(&"results_done_no_pending_victory", {"pending": _pending_outcome})
 		return RequestResult.REJECTED_INVALID_PAIR
@@ -364,7 +370,10 @@ func report_results_done() -> RequestResult:
 	return RequestResult.OK
 
 
+## Story 005: Content Error is terminal and is checked first.
 func choose_retry() -> RequestResult:
+	if _current_mode == Mode.CONTENT_ERROR:
+		return RequestResult.REJECTED_TERMINAL
 	if _pending_outcome != BattleResult.DEFEAT:
 		return RequestResult.REJECTED_INVALID_PAIR
 	_pending_outcome = -1
@@ -374,7 +383,10 @@ func choose_retry() -> RequestResult:
 	return RequestResult.OK
 
 
+## Story 005: Content Error is terminal and is checked first.
 func choose_retreat() -> RequestResult:
+	if _current_mode == Mode.CONTENT_ERROR:
+		return RequestResult.REJECTED_TERMINAL
 	if _pending_outcome != BattleResult.DEFEAT:
 		return RequestResult.REJECTED_INVALID_PAIR
 	if not _offers_retreat():

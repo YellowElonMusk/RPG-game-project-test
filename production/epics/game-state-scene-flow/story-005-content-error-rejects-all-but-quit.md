@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -95,7 +95,7 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_content_error_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (521/521 project-wide)
 
 ---
 
@@ -103,3 +103,23 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-004-boot-to-title-or-content-error.md`
 - Unlocks: `production/epics/game-state-scene-flow/story-024-menu-input-gating.md`, `production/epics/game-state-scene-flow/story-035-game-root-main-scene.md`, `production/epics/content-catalog/story-025-error-screen-on-launch.md` (together with 035)
+
+---
+
+## Completion Notes
+
+**Files**:
+- `tests/unit/game_state/game_state_content_error_test.gd` (new) — the story's required evidence: one parameterized test over all 17 entry-point/argument cases (`test_every_request_rejected_terminal`), plus `test_register_camp_ignored`, `test_focus_and_device_loss_ignored`, `test_quit_only_accepted`.
+- `src/game_state/game_state_machine.gd` (edited) — most entry points already returned `REJECTED_TERMINAL` in `CONTENT_ERROR` (story 004's work). Four had a real gap, found by running the new tests against the unfixed code first: `close_overlay()`, `report_results_done()`, `choose_retry()` and `choose_retreat()` had no `CONTENT_ERROR` guard and fell through to `REJECTED_INVALID_PAIR`/`REJECTED_BUSY` instead. Added the same `if _current_mode == Mode.CONTENT_ERROR: return RequestResult.REJECTED_TERMINAL` guard used by the other entry points, checked first (same order as `request_transition`).
+
+**Not changed (already correct, pinned by the new tests)**:
+- `register_camp()` — already ignored outside `OVERWORLD`, which covers `CONTENT_ERROR`.
+- `_on_source_focus_lost()` / `_on_source_device_lost()` — still no-ops (story 026 not yet implemented), so no overlay opens and `_menu_deferred` is never set, in any mode including `CONTENT_ERROR`.
+- `_dispatch_discrete_action()` — the stub loader's `current_mode_node()`/`current_overlay_node()` default to `null`, so `action_pressed(&"menu"/"confirm")` already reaches no receiver.
+- `request_quit()`'s latch (story 011) — already fires the hook at most once per lifetime; verified directly rather than re-derived.
+
+**Test count**: 521/521 project-wide (up from 501), 0 errors, 0 failures, 0 flaky, 0 orphans.
+
+**Deviations**: None from the QA Test Cases. No new cases invented.
+
+**Items owed**: None for this story. Stories 024, 035 and content-catalog/025 remain unlocked as noted above.
