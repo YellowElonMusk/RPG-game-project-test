@@ -160,6 +160,34 @@ func get_move_vector() -> Vector2:
 	return Vector2(right - left, down - up)
 
 
+## The code-constant fallback bindings for Content Error only (ADR-0003 §7):
+## `confirm` (Enter, south), `cancel` (Esc, east), `move` (arrows, d-pad).
+## `GameRoot` uses this only when the catalog is `FAILED` -- never a second
+## default-bindings source (control manifest, story 003). Deliberately
+## incomplete under `InputBindingsValidator`'s "every action has a binding"
+## rule (`menu`, `inspect`, `page_left`, `page_right` and `fast_forward` have
+## none); only the token-parse and double-bound rules apply to it, so Content
+## Error's Quit stays reachable by keyboard and pad as well as mouse.
+static func make_fallback_bindings() -> InputBindings:
+	var bindings := InputBindings.new()
+	bindings.id = "bindings_fallback"
+	bindings.bindings = [
+		{"action": "confirm", "device": "key", "input": "Enter"},
+		{"action": "confirm", "device": "pad", "input": "south"},
+		{"action": "cancel", "device": "key", "input": "Escape"},
+		{"action": "cancel", "device": "pad", "input": "east"},
+		{"action": "move_up", "device": "key", "input": "Up"},
+		{"action": "move_up", "device": "pad", "input": "dpad_up"},
+		{"action": "move_down", "device": "key", "input": "Down"},
+		{"action": "move_down", "device": "pad", "input": "dpad_down"},
+		{"action": "move_left", "device": "key", "input": "Left"},
+		{"action": "move_left", "device": "pad", "input": "dpad_left"},
+		{"action": "move_right", "device": "key", "input": "Right"},
+		{"action": "move_right", "device": "pad", "input": "dpad_right"},
+	]
+	return bindings
+
+
 # Compiles the binding table once from `bindings.bindings` (Array[Dictionary]
 # of {action, device, input}; src/data/records/input_bindings.gd). Keyboard
 # resolves through OS.find_keycode_from_string(); pad buttons and axes

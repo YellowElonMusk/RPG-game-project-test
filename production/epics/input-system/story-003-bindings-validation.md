@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -151,7 +151,7 @@ Edge cases: none (the full boot path is game-state-scene-flow's)
 **Required evidence**:
 - Logic: `tests/unit/input/input_bindings_validator_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-28: input_bindings_validator_test.gd, 16 cases; full suite 391/391, exit 0)
 
 ---
 
@@ -162,3 +162,15 @@ Edge cases: none (the full boot path is game-state-scene-flow's)
   - `production/epics/content-catalog/story-002-load-one-of-each-type.md` (`ContentBootstrap.run()` and `register_record_validator` skeleton)
   - `production/epics/content-catalog/story-016-field-range-validators.md` (full `register_record_validator` behaviour; the registration line can land before it, but the boot-path check needs 016)
 - Unlocks: `production/epics/input-system/story-026-invalid-override-discarded.md`
+
+---
+
+## Completion Notes
+
+*2026-10-28, implementation (autonomous run).*
+
+- **Files**: `src/input/input_bindings_validator.gd` (`InputBindingsValidator.validate`), `InputResolver.make_fallback_bindings()` in `src/input/input_resolver.gd`, the registration in `ContentBootstrap.run()` (before `load_all()`), fixtures `tests/unit/input/fixtures/bindings/{no_keyboard,no_gamepad,key_double_bound}.tres`, `tests/unit/input/input_bindings_validator_test.gd`.
+- **Fixture change**: `tests/unit/content_data/fixtures/valid_one_of_each/bindings/bindings_default.tres` used the old `keyboard`/`gamepad`/`button_south` vocabulary and two rows. With the validator now registered at boot it would fail, so it was rewritten to a complete, valid set in the `key`/`pad` vocabulary. Its id and alias are unchanged.
+- **Record shape**: validates `Array[Dictionary]` `{action, device, input}` entries (see story 001's notes). `field` values follow the pinned convention (`bindings.<action>.key|pad`, `bindings.<device>:<input>`, `bindings[<index>]`).
+- **Engine finding**: a `const` initialized with `PackedStringArray([...])` is a parser error on 4.7.2 ("isn't a constant expression"). It is now a typed `Array[String]` literal. Under `-d`, a parser error drops gdUnit4 into the interactive debugger and the headless run hangs. Run CI with a timeout and `< /dev/null`.
+- **Fallback bindings**: `confirm`, `cancel` and `move_*` on keyboard and d-pad only. They deliberately fail the coverage rule, because they are for the Content Error screen only (ADR-0003 §7).

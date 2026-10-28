@@ -37,10 +37,12 @@ class_name ContentBootstrap
 ##      its `faction_rule` record validator with
 ##      `register_faction_rule_validator()`. The registry is returned on the
 ##      `ContentBootResult` (ADR-0011 §4); `null` on the no-op path.
-##   3. `register_record_validator` calls: `InputBindingsValidator`, the Stats
-##      validators (`StatsConfig.load_or_default()` bound), `LocFieldsValidator`.
+##   3. `register_record_validator` calls: `InputBindingsValidator` (story
+##      003, ADR-0003 §6), the Stats validators (`StatsConfig.load_or_default()`
+##      bound), `LocFieldsValidator`.
 ##   4. `catalog.load_all()`.
-## Step 3 has no complete registrant yet, so today steps 1, 2 and 4 run.
+## The Stats validators and `LocFieldsValidator` have no epic yet, so today
+## step 3 runs only `InputBindingsValidator`, alongside steps 1, 2 and 4.
 ## Example: [code]ContentBootstrap.run(catalog, "res://tests/unit/content_data/fixtures/valid_one_of_each")[/code]
 static func run(catalog: ContentCatalogService, data_root: String = "res://data") -> ContentBootResult:
 	if catalog.state != ContentCatalogService.State.UNLOADED:
@@ -68,6 +70,8 @@ static func run(catalog: ContentCatalogService, data_root: String = "res://data"
 			func(_faction: FactionData, _rule: FactionRuleData) -> FactionRule: return FactionRule.new(),
 			func(_rule: FactionRuleData) -> Array[Dictionary]: return [])
 	register_faction_rule_validator(catalog, result.registry)
+	# Step 3 (ADR-0003 §6): the bindings record validator, before load_all().
+	catalog.register_record_validator(&"bindings", InputBindingsValidator.validate)
 	catalog.load_all(data_root)
 	return result
 
