@@ -5,13 +5,40 @@
 ## `DONE` on its very first call). Overworld freeze is detach, never
 ## serialize (§4): `on_freezing()` runs, then `ModeHost.remove_child()`, and
 ## the same instance is kept alive, unparented, until the return trip
-## re-adds it. Overlay push/pop into the real `OverlayHost` is story 030, so
-## this file inherits the base `SceneLoader`'s overlay no-ops unchanged.
+## re-adds it.
+##
+## Story 030 adds the real `push_overlay`/`pop_overlay` into `OverlayHost`:
+## resolve the overlay path from `TransitionConfig.overlay_scene_paths`,
+## instantiate, call `_overlay_pre_setup` (no-op default, `Callable(node)`
+## per ADR-0008 §2's amendment), then `node.setup(machine, payload)`, then
+## add as the last child of `OverlayHost` (top of stack). Popping frees the
+## top. The machine itself is late-bound through `set_machine()`, since this
+## loader is a constructor argument of `GameStateMachine` and is built first
+## (the same chicken-and-egg note as `_pre_setup` below).
 class_name ModeHostSceneLoader extends SceneLoader
 
 var _mode_host: Node
+var _overlay_host: Node
 var _config: TransitionConfig
 var _log: GameStateLog
+
+## Late-bound once the machine exists. Needed only by `push_overlay()`, to
+## call `node.setup(machine, payload)` (ADR-0002 Key Interfaces); mode swaps
+## still resolve `setup()` through the `_pre_setup` closure below, unchanged
+## by this story.
+var _machine: GameStateMachine = null
+
+## `(node: GameOverlay) -> void`, called right after a new overlay scene is
+## instantiated and before `setup()` (ADR-0008 §2 amendment to ADR-0002:
+## `pre_setup: Callable(node)`, distinct in arity from the mode `_pre_setup`
+## below since it predates any payload need — `setup()` itself still gets
+## the payload). Defaults to a no-op. `GameRoot` binds the production
+## version to `UiService.inject(node)`; tests skip it.
+var _overlay_pre_setup: Callable
+
+## The live overlay stack, bottom first — last entry is the real top child
+## of `OverlayHost`.
+var _overlay_nodes: Array[GameOverlay] = []
 
 ## `(mode: GameMode, payload: RefCounted) -> void`, called right after a new
 ## mode scene is instantiated and before `add_child()`. This loader has no
@@ -43,12 +70,23 @@ var _pending_thaw_result: int = -1
 
 
 func _init(mode_host: Node, config: TransitionConfig, log_sink: GameStateLog,
-		pre_setup: Callable = Callable(), payload_commit: Callable = Callable()) -> void:
+		pre_setup: Callable = Callable(), payload_commit: Callable = Callable(),
+		overlay_host: Node = null, overlay_pre_setup: Callable = Callable()) -> void:
 	_mode_host = mode_host
 	_config = config
 	_log = log_sink
 	_pre_setup = pre_setup
 	_payload_commit = payload_commit
+	_overlay_host = overlay_host
+	_overlay_pre_setup = overlay_pre_setup
+
+
+## Late-bound by the caller right after `GameStateMachine.new(self, ...)`
+## (the same pattern as connecting `machine.mode_entered` to
+## `on_mode_entered()` elsewhere), so `push_overlay()` can call
+## `node.setup(machine, payload)`.
+func set_machine(machine: GameStateMachine) -> void:
+	_machine = machine
 
 
 ## Synchronous per ADR-0002 §3: every case below finishes before this
@@ -86,6 +124,53 @@ func free_frozen_overworld() -> void:
 	if _frozen_overworld != null:
 		_frozen_overworld.queue_free()
 		_frozen_overworld = null
+
+
+## Story 030 (QA RC-4): resolves `kind`'s path from
+## `TransitionConfig.overlay_scene_paths`, instantiates, runs
+## `_overlay_pre_setup(node)`, then `node.setup(machine, payload)`, then adds
+## as the last child of `OverlayHost` — the new top of the stack. A missing
+## `OverlayHost`, an unmapped `kind`, a load failure or a wrong scene root
+## type is logged and skipped rather than throwing, matching
+## `_instantiate_mode()`'s error handling below.
+func push_overlay(kind: int, payload: RefCounted) -> void:
+	if _overlay_host == null:
+		_log.error(&"overlay_host_missing", {"kind": kind})
+		return
+	var path: String = String(_config.overlay_scene_paths.get(kind, ""))
+	if path.is_empty():
+		_log.error(&"overlay_scene_path_missing", {"kind": kind})
+		return
+	var scene: PackedScene = ResourceLoader.load(path) as PackedScene
+	if scene == null:
+		_log.error(&"overlay_scene_load_failed", {"kind": kind, "path": path})
+		return
+	var node: GameOverlay = scene.instantiate() as GameOverlay
+	if node == null:
+		_log.error(&"overlay_scene_wrong_type", {"kind": kind, "path": path})
+		return
+	if _overlay_pre_setup.is_valid():
+		_overlay_pre_setup.call(node)
+	node.setup(_machine, payload)
+	_overlay_host.add_child(node)
+	_overlay_nodes.append(node)
+
+
+## Frees the top overlay (the last child of `OverlayHost`). A no-op if the
+## stack is empty.
+func pop_overlay() -> void:
+	if _overlay_nodes.is_empty():
+		return
+	var node: GameOverlay = _overlay_nodes.pop_back()
+	_overlay_host.remove_child(node)
+	node.queue_free()
+
+
+## The live `GameOverlay` node at the top of the stack, or `null` if none.
+func current_overlay_node() -> Node:
+	if _overlay_nodes.is_empty():
+		return null
+	return _overlay_nodes.back()
 
 
 ## Toggles `ModeHost.process_mode` for the Menu's time stop (ADR-0002 §5,

@@ -1,0 +1,33 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/game_state/overlays/defeat_prompt.gd" id="1"]
+
+[node name="DefeatPrompt" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Backdrop" type="Control" parent="."]
+mouse_filter = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Buttons" type="VBoxContainer" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="RetryButton" type="Button" parent="Buttons"]
+unique_name_in_owner = true
+text = "Retry"
+
+[node name="RetreatButton" type="Button" parent="Buttons"]
+unique_name_in_owner = true
+text = "Retreat"

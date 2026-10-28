@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: M (grew: it also owns the production overlay push/pop and the interim confirm helper)
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -99,7 +99,7 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_defeat_prompt_focus_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-28: game_state_defeat_prompt_focus_test.gd, 4 test functions; full suite 554/554)
 
 ---
 
@@ -107,3 +107,18 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-017-defeat-prompt-and-retry-snapshot.md`, `production/epics/game-state-scene-flow/story-018-retreat-offer-no-stale-flag.md`, `production/epics/game-state-scene-flow/story-024-menu-input-gating.md`, `production/epics/game-state-scene-flow/story-026-focus-loss-opens-menu.md`, `production/epics/game-state-scene-flow/story-029-battle-menu-system-entries.md`
 - Unlocks: `production/epics/game-state-scene-flow/story-031-title-focus-and-quit-confirm.md`, `production/epics/game-state-scene-flow/story-035-game-root-main-scene.md`, `production/epics/game-state-scene-flow/story-036-victory-dialogue-after-transition.md`, `production/epics/game-state-scene-flow/story-038-screenshots-title-prompts-error.md`, `production/epics/game-state-scene-flow/story-039-screenshots-menus.md`
+
+---
+
+## Completion Notes
+
+*2026-10-28, implementation (autonomous run; the implementing agent ran out of turns before writing notes, and the main session verified and wrote them).*
+
+- **Files**:
+  - `src/game_state/overlays/defeat_prompt.tscn` and `defeat_prompt.gd` (extends `GameOverlay`);
+  - `src/game_state/interim_focus_nav.gd` (the interim confirm/direction helper);
+  - `push_overlay` / `pop_overlay` with `pre_setup` in `src/game_state/mode_host_scene_loader.gd`;
+  - `tests/unit/game_state/doubles/stub_overlay.gd` and the new `tests/unit/game_state/fixtures/stub_overlay.tscn`;
+  - `tests/unit/game_state/game_state_defeat_prompt_focus_test.gd`.
+- **Tests**: four functions (`test_prompt_opens_with_retry_focused`, `test_cancel_changes_nothing`, `test_menu_over_prompt_and_focus_returns` (parametrized), `test_confirm_on_retry_calls_choose_retry` (parametrized)). Full suite 554/554, exit 0.
+- **Deviations / items owed**: none recorded. Review the interim focus helper when the UI Framework epic (ADR-0008) lands.
