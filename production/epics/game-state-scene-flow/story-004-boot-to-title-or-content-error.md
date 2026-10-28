@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -84,7 +84,28 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_boot_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
+
+---
+
+## Completion Notes
+
+- **Files**: added `tests/unit/game_state/game_state_boot_test.gd`
+  (`test_ready_catalog_goes_to_title` parametrized on `_READY_CASES` -- (a)
+  immediate Ready, (c) UNLOADED/LOADING/VALIDATING ticks then Ready --
+  and `test_failed_catalog_goes_to_content_error`, asserting the Content
+  Error's `none` zero-duration phases and the four signals in order).
+  `src/game_state/game_state_machine.gd`'s `_tick_boot()` already implemented
+  AC-1 exactly (committed under an earlier story building the full
+  transitions table) -- no production code change was needed; this story
+  added the dedicated Boot test file the Files list calls for, since the
+  behaviour was previously exercised only incidentally by
+  `game_state_transition_table_test.gd`'s `boot_title`/`boot_content_error`
+  rows, which don't cover the "becomes Ready later" edge case.
+- **Test count**: suite 498 -> 501 (3 new test cases: 2 parametrized rows +
+  1), all green, 0 failures/errors/orphans.
+- **Deviations**: none from the story's QA Test Cases.
+- **Items owed**: none.
 
 ---
 
