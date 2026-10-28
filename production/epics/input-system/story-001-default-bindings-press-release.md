@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -152,7 +152,7 @@ Edge cases: none
 **Required evidence**:
 - Logic: `tests/unit/input/input_default_bindings_test.gd` and `tests/unit/input/input_synthetic_events_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-28: 57 input tests; full suite 375/375, exit 0)
 
 ---
 
@@ -169,3 +169,14 @@ Edge cases: none
   - `production/epics/input-system/story-011-device-id-zero-pad.md`
   - `production/epics/input-system/story-025-focus-lost-and-gained.md`
   - `production/epics/input-system/story-026-invalid-override-discarded.md`
+
+---
+
+## Completion Notes
+
+*2026-10-28, implementation (autonomous run).*
+
+- **Files**: `src/input/{input_actions,input_config,input_resolver}.gd`, `data/config/input_config.tres`, `data/bindings/bindings_default.tres`, `tests/unit/input/{input_test_support,input_default_bindings_test,input_synthetic_events_test}.gd`, `tests/unit/input/fixtures/default_binding_events.gd`. `src/data/records/input_bindings.gd` already existed (content-catalog 002) and was reused unchanged.
+- **Record shape**: the existing `InputBindings.bindings` is `Array[Dictionary]` of `{action, device, input}`, not the `PackedStringArray` of `"action:device:input"` strings the story text assumed. The resolver compiles from the dictionaries; test parameter keys still use the `action:device:input` spelling. Owed to technical-director: ADR-0003 Key Interfaces wording.
+- **Tests**: 54 parametrized binding cases plus row-count parity (`input_default_bindings_test.gd`) and 3 synthetic-event regressions; full suite 375/375, exit 0. Remaining warning: gdUnit4 requires the parametrized argument to be named `test_parameters`, so GDScript's "unused parameter" warning on it is expected.
+- **Forbidden-API audit**: `input_resolver.gd` has no `Input.`, `InputMap`, `get_tree`, `Time.` or `Engine.` references; every Key Interfaces signal is declared.
