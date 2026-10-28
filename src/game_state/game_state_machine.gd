@@ -673,6 +673,13 @@ func _end_in_phase() -> void:
 	_phase_elapsed = 0.0
 	_in_mode_fade_active = false
 	transition_finished.emit(finished_mode)
+	# Story 026, ADR-0002 §6/§11: resolves a deferred focus/device loss by the
+	# destination mode just reached -- opens the Menu only if it permits one,
+	# otherwise clears the flag silently (deferred-Menu destination rule).
+	if _menu_deferred:
+		_menu_deferred = false
+		if finished_mode in _MENU_ALLOWED_MODES:
+			open_overlay(OverlayKind.MENU, null)
 	if _quit_pending:
 		_quit_pending = false
 		_quit_fired = true
@@ -747,15 +754,38 @@ func _on_source_action_released(action: StringName) -> void:
 	_dispatch_discrete_action(action, false)
 
 
-## Consumed per the `ActionSource` contract (ADR-0002 §6) but no behaviour is
-## defined yet: story 026 wires the menu-opening response to focus loss.
+## Story 026, ADR-0002 §6/§11: `focus_lost` and `device_lost` share the same
+## machine-level response.
 func _on_source_focus_lost() -> void:
-	pass
+	_handle_focus_or_device_lost()
 
 
-## Consumed per the `ActionSource` contract; no behaviour yet (story 026).
+## Story 026: see `_on_source_focus_lost()`.
 func _on_source_device_lost() -> void:
-	pass
+	_handle_focus_or_device_lost()
+
+
+## Story 026, ADR-0002 §6/§11: idle in an allowed mode (Overworld, Camp,
+## Battle -- the Defeat Prompt on top counts as allowed, same gate as
+## `_handle_menu_action()`) opens the Menu at once, unless it is already the
+## top overlay, in which case this is a no-op (a second loss never stacks a
+## second Menu). Idle in any other mode (Boot, Content Error, Title) is
+## ignored, with no flag set (shared with story 005). Mid-transition this
+## defers instead of ignoring: `_menu_deferred` is set unconditionally,
+## regardless of which mode the transition started from -- `_end_in_phase()`
+## resolves it by the *destination* mode once `transition_finished` fires
+## (the deferred-Menu destination rule, pinned 2026-10-23: a destination that
+## does not permit the Menu, e.g. TITLE, clears the flag silently instead of
+## opening it).
+func _handle_focus_or_device_lost() -> void:
+	if _phase != Phase.IDLE:
+		_menu_deferred = true
+		return
+	if not (_current_mode in _MENU_ALLOWED_MODES):
+		return
+	if not _overlay_stack.is_empty() and _overlay_stack.back() == OverlayKind.MENU:
+		return
+	open_overlay(OverlayKind.MENU, null)
 
 
 ## Dropped while `phase != IDLE` (AC-8). Otherwise delivered to the top

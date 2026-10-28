@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -88,7 +88,7 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_focus_loss_menu_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-28: game_state_focus_loss_menu_test.gd, 11 cases)
 
 ---
 
@@ -96,3 +96,13 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-010-input-locked-during-transition.md`, `production/epics/game-state-scene-flow/story-024-menu-input-gating.md`
 - Unlocks: `production/epics/game-state-scene-flow/story-028-in-mode-fade.md`, `production/epics/game-state-scene-flow/story-030-defeat-prompt-focus-and-cancel.md`
+
+---
+
+## Completion Notes
+
+*2026-10-28, implementation (autonomous run).*
+
+- **Files**: in `src/game_state/game_state_machine.gd`, `_on_source_focus_lost()` and `_on_source_device_lost()` now call `_handle_focus_or_device_lost()`. That opens the Menu at once when idle in Overworld, Camp or Battle (the Defeat Prompt on top counts), and does nothing if the Menu is already on top. Mid-transition it sets `_menu_deferred`. `_end_in_phase()` then opens the Menu if the destination allows it and otherwise clears the flag silently (a Title destination). Boot, Title and Content Error ignore the loss and set no flag. New test file: `tests/unit/game_state/game_state_focus_loss_menu_test.gd`, 11 cases.
+- **Test fix during verification**: the first draft asserted `overlay_opened` at recorder index 0, and at exactly `transition_finished + 1`. The stub loader also records `push_overlay` and `set_mode_time_stopped` into the same recorder, so those asserts were wrong although the behaviour was right. They now assert that `overlay_opened` is recorded at all, and that it comes after `transition_finished`.
+- **Items owed**: none.
