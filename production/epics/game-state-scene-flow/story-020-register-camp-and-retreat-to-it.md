@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: M (grew from S: the registered-camp Retreat path moved here from story 021)
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -91,7 +91,7 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_register_camp_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (468/468 suite-wide; 3 new test cases)
 
 ---
 
@@ -99,3 +99,29 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-017-defeat-prompt-and-retry-snapshot.md`, `production/epics/game-state-scene-flow/story-018-retreat-offer-no-stale-flag.md`
 - Unlocks: `production/epics/game-state-scene-flow/story-002-transition-table-rows-succeed.md`, `production/epics/game-state-scene-flow/story-021-retreat-region-default-and-no-camp.md`
+
+---
+
+## Completion Notes
+
+**Files**:
+- `src/game_state/camp_entry_payload.gd` (new) -- `camp_id: String`, used by `choose_retreat()`; Story 002 will reuse it for Overworld -> Camp entry.
+- `src/game_state/game_state_machine.gd`:
+  - `last_camp_id` gained an explicit `set(value)` that logs `&"last_camp_write_rejected"` and does not assign; the machine still writes `_last_camp_id` directly.
+  - `register_camp()` now also requires `phase == IDLE` (previously mode-only), and calls the injected `_mark_unsaved` hook once on a successful write (ADR-0009, pre-SaveService).
+  - `_init()` gained an 8th, defaulted parameter `mark_unsaved: Callable = Callable()` -- positionally after `flash_gate`, so every existing call site is unaffected.
+  - `choose_retreat()` now builds a `CampEntryPayload(camp_id = last_camp_id)` and passes it to the Battle -> Camp transition instead of `null`.
+  - `_end_out_phase()` calls `_loader.free_frozen_overworld()` on the Battle -> Camp row, before `begin_swap()`, since an unparented Overworld is not freed by its old parent.
+- `tests/unit/game_state/doubles/stub_scene_loader.gd`: added `free_frozen_overworld_count` + override (previously inherited the base no-op, uncounted).
+- `tests/unit/game_state/doubles/game_state_fixtures.gd`: `make_machine_in_overworld()` gained an optional `mark_unsaved: Callable` 3rd parameter, forwarded to `_init`.
+- `tests/unit/game_state/doubles/unsaved_progress_spy.gd` (new) -- mirrors `QuitSpy`; stands in for `SaveService.mark_unsaved()` until ADR-0009 ships it.
+- `tests/unit/game_state/game_state_register_camp_test.gd` (new) -- the 3 QA cases: `test_walk_past_registers_and_retreat_goes_there`, `test_outside_write_rejected`, `test_register_ignored_outside_overworld` (covers OVERWORLD+non-IDLE, BATTLE, TITLE, CAMP and an empty-string guard, plus the register/overwrite edge cases).
+
+**Tests**: full suite 468/468 (465 baseline + 3 new), 0 errors, 0 orphans. Import and gdUnit4 run both clean.
+
+**Deviations**:
+- The `UnsavedProgressSpy` passed to `make_machine_in_overworld()` is constructed **without** the shared `SequenceRecorder`, so its own call doesn't appear as a "signal recorded by register_camp" in that assertion -- its count is read directly off `call_count` instead.
+- `_mark_unsaved` is an injected `Callable` (not a dirty-flag bool), per the Implementation Notes' "or a dirty flag" alternative -- chosen to match the existing `_quit_hook` pattern already in `_init`.
+- `register_camp`'s rejection log codes (`&"empty_camp_id"`, `&"register_camp_wrong_mode"`) were kept from the pre-existing implementation rather than invented fresh; only `&"last_camp_write_rejected"` was specified by the story and is new.
+
+**Owed**: none against this story's QA Test Cases. Story 002 still owns wiring `CampEntryPayload` into the Overworld -> Camp SWAP-time write path (out of scope here, per Out of Scope).

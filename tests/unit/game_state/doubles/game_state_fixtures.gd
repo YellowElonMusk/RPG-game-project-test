@@ -94,7 +94,7 @@ static func battle_start_state() -> Dictionary:
 ## scenario and get a clean, ordered array. `flash_gate` is `null` by default
 ## (never capped, story 017) so only tests exercising the gate need pass one.
 static func make_machine_in_overworld(recorder: SequenceRecorder = null,
-		flash_gate: FlashGatePort = null) -> Dictionary:
+		flash_gate: FlashGatePort = null, mark_unsaved: Callable = Callable()) -> Dictionary:
 	var loader := StubSceneLoader.new(recorder)
 	var presenter := StubTransitionPresenter.new(recorder)
 	var cfg := make_transition_config()
@@ -102,7 +102,8 @@ static func make_machine_in_overworld(recorder: SequenceRecorder = null,
 	var quit_spy := QuitSpy.new(recorder)
 	var game_log := SpyGameStateLog.new()
 	var machine := GameStateMachine.new(
-			loader, presenter, cfg, catalog, quit_spy.as_callable(), game_log, flash_gate)
+			loader, presenter, cfg, catalog, quit_spy.as_callable(), game_log, flash_gate,
+			mark_unsaved)
 	if recorder != null:
 		recorder.attach(machine)
 

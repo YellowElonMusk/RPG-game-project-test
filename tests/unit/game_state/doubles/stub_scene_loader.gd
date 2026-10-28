@@ -12,6 +12,7 @@ var pop_overlay_count: int = 0
 var last_push_overlay_payload: RefCounted = null
 var current_mode_node_value: Node = null
 var current_overlay_node_value: Node = null
+var free_frozen_overworld_count: int = 0
 
 var _recorder: SequenceRecorder
 var _queue: Array[SwapStatus] = []
@@ -56,6 +57,12 @@ func pop_overlay() -> void:
 	pop_overlay_count += 1
 	if _recorder != null:
 		_recorder.record(&"pop_overlay", [])
+
+
+func free_frozen_overworld() -> void:
+	free_frozen_overworld_count += 1
+	if _recorder != null:
+		_recorder.record(&"free_frozen_overworld", [])
 
 
 func current_mode_node() -> Node:

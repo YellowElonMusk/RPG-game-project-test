@@ -86,9 +86,16 @@ var mode_time: float:
 	get:
 		return _mode_time
 
+## Read-only to everyone but the machine (ADR-0002 §11, control manifest). A
+## plain GDScript property with only a getter still accepts assignment into
+## its own storage, so this setter explicitly rejects an outside write: it
+## logs and never assigns. The machine writes `_last_camp_id` directly,
+## bypassing this setter (`register_camp()`, and `CampEntryPayload` handling).
 var last_camp_id: String:
 	get:
 		return _last_camp_id
+	set(value):
+		_log.warning(&"last_camp_write_rejected", {"attempted": value})
 
 ## Measured sum of OUT + SWAP + IN's actual accumulated `tick()` time for the
 ## most recently finished transition (ADR-0002 §9, story 006). Used by
@@ -146,6 +153,7 @@ var _catalog: Object
 var _quit_hook: Callable
 var _log: GameStateLog
 var _flash_gate: FlashGatePort = null
+var _mark_unsaved: Callable = Callable()
 
 
 ## Every collaborator is injected here and nowhere else. `catalog` is typed
@@ -154,9 +162,13 @@ var _flash_gate: FlashGatePort = null
 ## interface (story 017; ADR-0005's own `FlashGate` does not exist yet) and
 ## defaults to `null`, meaning "never capped" for tests that don't exercise
 ## flashes.
+## `mark_unsaved` (story 020, ADR-0002 §11) stands in for a future
+## `SaveService.mark_unsaved()` (ADR-0009) until SaveService exists; it
+## defaults to an invalid `Callable`, so a test that does not exercise
+## `register_camp()`'s unsaved-progress marking can ignore it entirely.
 func _init(loader: SceneLoader, presenter: TransitionPresenter, config: TransitionConfig,
 		catalog: Object, quit_hook: Callable, log_sink: GameStateLog,
-		flash_gate: FlashGatePort = null) -> void:
+		flash_gate: FlashGatePort = null, mark_unsaved: Callable = Callable()) -> void:
 	_loader = loader
 	_presenter = presenter
 	_config = config
@@ -164,6 +176,7 @@ func _init(loader: SceneLoader, presenter: TransitionPresenter, config: Transiti
 	_quit_hook = quit_hook
 	_log = log_sink
 	_flash_gate = flash_gate
+	_mark_unsaved = mark_unsaved
 
 
 ## One door in (GDD Rule 2). Legal only for the non-outcome-driven pairs in
@@ -239,16 +252,22 @@ func request_in_mode_fade(callback: Callable) -> RequestResult:
 	return RequestResult.OK
 
 
-## Sets `last_camp_id` outside a camp entry (ADR-0002 §11). Only the current
-## Overworld mode should call this, and only while `current_mode == OVERWORLD`.
+## Second input to `last_camp_id` (ADR-0002 §11, story 020): the current
+## Overworld mode calls this while walking past a camp, with no mode change.
+## Legal only while `current_mode == OVERWORLD` and `phase == IDLE`; an empty
+## `camp_id`, any other mode, or a running transition is logged and ignored.
+## Emits no signal, and marks unsaved progress for ADR-0009 via the injected
+## `_mark_unsaved` hook until SaveService exists.
 func register_camp(camp_id: String) -> void:
 	if camp_id.is_empty():
 		_log.warning(&"empty_camp_id", {})
 		return
-	if _current_mode != Mode.OVERWORLD:
-		_log.warning(&"register_camp_wrong_mode", {"mode": _current_mode})
+	if _current_mode != Mode.OVERWORLD or _phase != Phase.IDLE:
+		_log.warning(&"register_camp_wrong_mode", {"mode": _current_mode, "phase": _phase})
 		return
 	_last_camp_id = camp_id
+	if _mark_unsaved.is_valid():
+		_mark_unsaved.call()
 
 
 ## Called by the Battle mode / Defeat Prompt. Victory waits for
@@ -323,8 +342,10 @@ func choose_retreat() -> RequestResult:
 		return RequestResult.REJECTED_INVALID_PAYLOAD
 	_pending_outcome = -1
 	_close_defeat_prompt()
+	var payload := CampEntryPayload.new()
+	payload.camp_id = _last_camp_id
 	_begin_transition(Mode.BATTLE, Mode.CAMP,
-			_TRANSITION_TYPES[Mode.BATTLE][Mode.CAMP], null)
+			_TRANSITION_TYPES[Mode.BATTLE][Mode.CAMP], payload)
 	return RequestResult.OK
 
 
@@ -498,6 +519,11 @@ func _end_out_phase() -> void:
 	if _pending_from_mode == Mode.BATTLE and _pending_to_mode == Mode.BATTLE:
 		_end_retry_swap()
 		return
+	# Retreat (ADR-0002 §4, §11 -- story 020, QA RC-2): the loader's swap
+	# frees the live Battle node; the machine frees the detached Overworld
+	# explicitly, since an unparented node is not freed by its old parent.
+	if _pending_from_mode == Mode.BATTLE and _pending_to_mode == Mode.CAMP:
+		_loader.free_frozen_overworld()
 	_phase = Phase.SWAP
 	_t_swap = 0.0
 	_loader.begin_swap(_pending_from_mode, _pending_to_mode, _pending_payload)
