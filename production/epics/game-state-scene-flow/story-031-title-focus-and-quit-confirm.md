@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -90,7 +90,7 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_title_quit_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-28: game_state_title_quit_test.gd, 4 cases; full suite 558/558)
 
 ---
 
@@ -98,3 +98,21 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-011-quit-waits-for-transition.md`, `production/epics/game-state-scene-flow/story-024-menu-input-gating.md`, `production/epics/game-state-scene-flow/story-030-defeat-prompt-focus-and-cancel.md` (the interim confirm/direction helper)
 - Unlocks: `production/epics/game-state-scene-flow/story-035-game-root-main-scene.md`, `production/epics/game-state-scene-flow/story-038-screenshots-title-prompts-error.md`
+
+---
+
+## Completion Notes
+
+*2026-10-28, implementation (autonomous run; the implementing agent ran out of turns, and the main session fixed, verified and wrote these notes).*
+
+- **Files**:
+  - `src/game_state/modes/title_mode.tscn` and `title_mode.gd` (`TitleMode extends GameMode`: New Game focused on open; Continue disabled but focusable; Quit opens `QuitConfirm`; New Game confirm requests Overworld);
+  - `src/game_state/modes/quit_confirm.tscn` and `quit_confirm.gd` (a reusable Yes/No child panel, never a machine overlay; opens on No; `cancel` closes it; Yes relies on `request_quit()`'s latch);
+  - `tests/unit/game_state/game_state_title_quit_test.gd` (4 cases).
+- **Fixes the main session made**:
+  1. `InterimFocusNav.route_*(self as Control)` was a parse error on 4.7.2, because the script extends `GameMode` (a `Node`) even though the scene root is a `Control`. It now routes through the `Buttons` container.
+  2. `_ready()` read a button field that is only assigned in `setup()`. It now resolves `%NewGameButton` itself.
+  3. Mode scenes get `setup()` only through the loader's `pre_setup` closure, and the test passed none. The test now passes `pre_setup = func(mode, payload): mode.setup(machine, payload)`. **Story 035's `GameRoot` must wire the same closure.**
+  4. The test looked up `%YesButton`/`%NoButton` from the Title root, but those unique names belong to the `QuitConfirm` sub-scene. They now resolve from `quit_confirm`.
+  5. Headless geometric focus search did not reach Yes from No, so `quit_confirm.tscn` now sets explicit focus neighbours.
+- **Items owed**: to story 035, the `GameRoot` `pre_setup` wiring above.
