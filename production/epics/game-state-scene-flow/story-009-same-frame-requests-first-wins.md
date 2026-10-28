@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -81,7 +81,33 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_same_frame_requests_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
+
+---
+
+## Completion Notes
+
+*2026-10-28, implemented against existing behaviour (no production code changes needed):*
+
+- **Files**: `tests/unit/game_state/game_state_same_frame_requests_test.gd` (new).
+  No `src/` changes — `request_transition()` and `open_overlay()` already check
+  `_phase != Phase.IDLE` before any other mutation and already set `_phase = OUT`
+  and emit `transition_started` synchronously inside `_begin_transition()`
+  (story 008/ADR-0002 behaviour), so AC-7 was already satisfied; this story
+  pins it with a dedicated test.
+- **Test**: one parametrized `test_first_accepted_second_rejected` with three
+  cases — main scenario (BATTLE then CAMP, BATTLE wins), the QA's reversed-order
+  edge case (CAMP then BATTLE, CAMP wins), and the QA's `open_overlay(MENU)`-as-
+  second-call edge case (BATTLE wins, MENU never recorded). Each case asserts:
+  first call `OK`; `phase == OUT` and `transition_started` recorded (index 0)
+  immediately after the first call; second call `REJECTED_BUSY`; no new
+  recorder event from the second call; the second request's target/kind value
+  never appears in any recorded signal argument; running to IDLE lands on the
+  expected winning mode.
+- **Test count**: suite went from 521 to 524 test cases (3 parametrized cases
+  of this one function), 0 failures, 0 orphans.
+- **Deviations**: none from the QA Test Cases.
+- **Items owed**: none.
 
 ---
 
