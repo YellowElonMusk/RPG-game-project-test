@@ -1,7 +1,7 @@
 # Story 080: Every EntryPoint sits clear of every MapExit rectangle, facing into the map
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-30f [D] (R11, map exits)** Every EntryPoint lies at least `body_radius + entry_clearance_m` outside every MapExit rectangle and faces into the map.
+- [x] **AC-30f [D] (R11, map exits)** Every EntryPoint lies at least `body_radius + entry_clearance_m` outside every MapExit rectangle and faces into the map.
 
 ---
 
@@ -75,7 +75,7 @@
 **Required evidence**:
 - `tests/unit/overworld/data/entry_point_exit_clearance_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (6 cases); `tools/ci/validate_maps.gd` exits 0 on res://data and 1 on a broken EntryPoint facing (checked 2026-10-29)
 
 ---
 
