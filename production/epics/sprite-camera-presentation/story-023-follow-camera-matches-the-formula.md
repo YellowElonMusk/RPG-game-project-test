@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -79,7 +79,7 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/follow_camera_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] `tests/unit/presentation/follow_camera_test.gd` — 15/15 passing; full suite 631/631 green
 
 ---
 
@@ -87,3 +87,14 @@
 
 - Depends on: `production/epics/sprite-camera-presentation/story-001-windowed-engine-spike.md`, the Overworld (ADR-0012, no epic yet)
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+- `src/presentation/follow_camera.gd`: `FollowCamera extends Camera3D`. Pure static functions implement every formula piece exactly (`effective_vertical_fov_degrees` = `F_v_eff`, `horizontal_fov_degrees` = `F_h`, `compute_footprint` → `Footprint` value object, `validate_horizon` fixed at 4:3, `clamp_or_centre`, `dead_zone`, `ease_step`, `clamp_to_footprint`). Instance methods `advance()`/`snap_to()` drive `cam_ground` against an injected target, `aspect` and map bounds; `apply_fov()`/`apply_transform()` are thin, documented best-effort mappings onto the live `Camera3D` (untested convention — yaw=0 is world -Z — since the Overworld's own ground-to-world axis convention isn't decided yet, ADR-0012). `from_config()` reads the new `PresentationConfig.follow_camera_*` fields and runs the horizon guard.
+- `src/presentation/presentation_config.gd`: extended (not in the story's own Files list, but named explicitly by the build brief and invited by the story-004 stub's own header, "widen this file in place here") with a `Follow Camera` export group: `follow_camera_height/pitch_degrees/fov_degrees/dead_zone_fraction/tau/dt_max/horizon_margin_degrees`, matching GDD defaults.
+- Deviations/assumptions: (1) `dz.y`'s "footprint half-extent" is interpreted as `(a_near + a_far) / 2` (the GDD states this only for `x` = `w_far` explicitly); (2) the node's ground→world transform convention (`apply_transform`) is a placeholder the Overworld may override, not covered by an AC.
+- Verified: the GDD worked example (`a_near=5.40, a_far=10.15, w_far=9.03` at 16:9) reproduces exactly; 60fps/30fps ease agreement is exact by construction (exponential decay is step-size-invariant); 75%-by-frame-15 holds at tau 0.15/0.17/0.18; horizon guard checks 4:3 specifically, not 16:9.
+
+**Test Evidence Status**: `tests/unit/presentation/follow_camera_test.gd` — 15/15 passing. Full suite: 631/631 green (`$TEMP/scp023_full.log`).
