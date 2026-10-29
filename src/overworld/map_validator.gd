@@ -9,8 +9,11 @@
 ## outside every MapExit rectangle on its map (AC-30f) and faces into the
 ## map (the cell one `cell_m` ahead along its facing is walkable).
 ##
+## Story 075: Town, story-encounter and boss placement
+## (`MapStructureValidator`).
+##
 ## TODO(ow-epic): the remaining `tools/ci/validate_maps.gd` checks
-## (DioramaStage count, physics-node ban, placement and leg checks).
+## (DioramaStage count, physics-node ban, patrol and leg checks).
 ##
 ## Usage example:
 ## [codeblock]
@@ -50,8 +53,11 @@ static func validate_catalog(catalog: ContentCatalogService, cfg: OverworldConfi
 
 ## Validates `maps` (`map_id -> OverworldMap`, not necessarily in the tree)
 ## against each other. Bakes each map's grid for the facing check.
-static func validate_maps(maps: Dictionary, cfg: OverworldConfig) -> PackedStringArray:
+static func validate_maps(maps: Dictionary, cfg: OverworldConfig,
+		presentation: PresentationConfig = null) -> PackedStringArray:
 	var errors := PackedStringArray()
+	errors.append_array(MapStructureValidator.validate(maps, cfg,
+			presentation if presentation != null else PresentationConfig.new()))
 	var clearance: float = cfg.body_radius + cfg.entry_clearance_m
 	for map_id: String in maps:
 		var map: OverworldMap = maps[map_id]

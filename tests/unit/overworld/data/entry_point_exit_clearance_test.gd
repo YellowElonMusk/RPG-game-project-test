@@ -50,8 +50,14 @@ func test_entry_inside_clearance_is_reported_naming_both_markers() -> void:
 	cfg.entry_clearance_m = _seg_entry_distance(maps) - cfg.body_radius + 0.1
 	var errors: PackedStringArray = MapValidator.validate_maps(maps, cfg)
 	_free(maps)
-	assert_int(errors.size()).is_equal(1)
-	assert_str(errors[0]).contains(_SEG_ID).contains(String(entry_id)).contains(String(exit_id))
+	# Other maps' entries may sit at the same authored distance; only the
+	# segment's pair is the subject here.
+	var named: Array[String] = []
+	for err: String in errors:
+		if err.begins_with(_SEG_ID) and err.contains("'%s'" % entry_id) \
+				and err.contains("'%s'" % exit_id):
+			named.append(err)
+	assert_int(named.size()).is_equal(1)
 
 
 func test_entry_inside_a_second_exit_is_reported_against_that_exit() -> void:
@@ -94,10 +100,15 @@ func _seg_entry_distance(maps: Dictionary) -> float:
 			seg.map_exits()[0].trigger_rect)
 
 
+## Every shipped map: exits are checked against their targets, so the
+## segment needs the dungeon, and the dungeon the boss chamber.
 func _maps() -> Dictionary:
-	var town: OverworldMap = (load(_TOWN) as PackedScene).instantiate() as OverworldMap
-	var seg: OverworldMap = (load(_SEG) as PackedScene).instantiate() as OverworldMap
-	return {town.map_id: town, seg.map_id: seg}
+	var maps: Dictionary = {}
+	for path: String in [_TOWN, _SEG, "res://data/maps/paris_dungeon_placeholder.tscn",
+			"res://data/maps/paris_boss_chamber_placeholder.tscn"]:
+		var map: OverworldMap = (load(path) as PackedScene).instantiate() as OverworldMap
+		maps[map.map_id] = map
+	return maps
 
 
 func _free(maps: Dictionary) -> void:

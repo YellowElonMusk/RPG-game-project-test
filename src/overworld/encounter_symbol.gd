@@ -27,6 +27,21 @@ extends Marker3D
 ## How the polyline continues past its last vertex (GDD rule 5).
 @export var path_mode: SymbolBrain.PathMode = SymbolBrain.PathMode.PINGPONG
 
+## How a Static symbol starts its fight (ADR-0012 §3; GDD rules 5, 13, 13a).
+enum StartOn { CONTACT_OR_CONFIRM, CONFIRM }
+
+## A Static symbol never patrols, notices, chases or is pushed: it stands on
+## `patrol_path[0]` (GDD rule 5). The boss and the story encounter.
+@export var is_static: bool = false
+## Static only: `CONFIRM` (the story encounter: touching it does nothing) or
+## `CONTACT_OR_CONFIRM` (the boss).
+@export var start_on: StartOn = StartOn.CONTACT_OR_CONFIRM
+## Static only: where Fled places the leader (ground metres; GDD rule 13a),
+## a safe-zone source at `return_safe_radius_m`. Zero means none.
+@export var return_marker: Vector2 = Vector2.ZERO
+## The `CheckpointMarker` its Victory opens (the story encounter's boom).
+@export var checkpoint_id: StringName = &""
+
 
 ## `true` when the marker names a record and has a patrol path.
 func is_valid_marker() -> bool:

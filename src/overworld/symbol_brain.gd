@@ -184,6 +184,10 @@ var _resume_dir: int = 1
 var _return_needs_path: bool = false
 var _return_stuck: bool = false
 
+## Static only: `true` when contact also starts its fight (`start_on =
+## contact_or_confirm`).
+var _static_contact: bool = false
+
 
 ## `path` is the marker's patrol polyline in ground-plane metres; `mode`
 ## says how it continues past its last vertex; `p_marker_index` is the
@@ -264,12 +268,28 @@ func is_return_stuck() -> bool:
 	return _return_stuck
 
 
-## GDD rule 5 Contact: contact counts only in Patrol, Noticing and Chasing
-## (the Static `contact_or_confirm` case is TODO(overworld): story 038+).
-## Grace and the leader's `SAFE` cell are the caller's checks.
+## GDD rule 5 Contact: contact counts only in Patrol, Noticing and Chasing,
+## and for a Static symbol whose `start_on` is `contact_or_confirm` (the
+## boss, rule 13). A `confirm`-started Static symbol never makes contact
+## (rule 13a). Grace and the leader's `SAFE` cell are the caller's checks.
 func contact_eligible() -> bool:
+	if sub_state == SubState.STATIC:
+		return _static_contact
 	return sub_state == SubState.PATROL or sub_state == SubState.NOTICING \
 			or sub_state == SubState.CHASING
+
+
+## Makes this a Static symbol (GDD rules 5, 13, 13a): it stands still and
+## never notices, chases, is stunned or is pushed. `contact_starts` is
+## `true` for `start_on = contact_or_confirm`, `false` for `confirm`.
+func make_static(contact_starts: bool) -> void:
+	sub_state = SubState.STATIC
+	_static_contact = contact_starts
+
+
+## `true` for a Static symbol (`confirm` can start it, whatever `start_on`).
+func is_static() -> bool:
+	return sub_state == SubState.STATIC
 
 
 ## Called by `OverworldMode` on the first frame of a contact (not on a

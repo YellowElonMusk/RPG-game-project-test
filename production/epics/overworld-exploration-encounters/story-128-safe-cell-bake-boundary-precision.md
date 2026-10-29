@@ -1,7 +1,7 @@
 # Story 128: SAFE cell tagging is precise at the 0.01 m boundary
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-56 [L] (rule 0, SAFE bake)** GIVEN a cell whose nearest point lies 0.01 m inside `safe_radius_m` of an EntryPoint while its centre lies outside, THEN it is tagged `SAFE`; a cell 0.01 m outside is not. The same holds for a MapExit rectangle (nearest point to the rectangle) and a CampSpot at `safe_radius_m`, and for return markers at `return_safe_radius_m`.
+- [x] **AC-56 [L] (rule 0, SAFE bake)** GIVEN a cell whose nearest point lies 0.01 m inside `safe_radius_m` of an EntryPoint while its centre lies outside, THEN it is tagged `SAFE`; a cell 0.01 m outside is not. The same holds for a MapExit rectangle (nearest point to the rectangle) and a CampSpot at `safe_radius_m`, and for return markers at `return_safe_radius_m`.
 
 ---
 
@@ -79,7 +79,7 @@ checks scope against it.*
 **Story Type**: Logic
 **Required evidence**: `tests/unit/overworld/walk_grid_safe_bake_test.gd` — must exist and pass.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing; evidence `production/qa/evidence/story-075-camps-checkpoints/`
 
 ---
 

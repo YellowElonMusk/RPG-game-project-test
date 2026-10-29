@@ -1,7 +1,7 @@
 # Story 075: Town, dungeon, story-encounter and boss placement match the map-structure rules
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: L
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-30b [D] (R11, R13, R13a)** Town has 0 symbols and a CampSpot flagged as the region default. The dungeon's first room holds a CampSpot and the story encounter. The story encounter stands on a walkable cell in front of its checkpoint (it is exempt from the symbol-legal rule, rule 13a); its walk-grid distance from the CampSpot's safe-zone edge is at most `story_sight_m`; the visibility edge `R_e` in its direction from that edge is at least its distance; and its return marker lies between `return_safe_radius_m + body_radius` and `interact_reach_m · 3` from it, on the camp side. The boss lies outside every `SAFE` cell, at least `safe_radius_m + 2·body_radius + cell_m` from every safe-zone source in the boss chamber.
+- [x] **AC-30b [D] (R11, R13, R13a)** Town has 0 symbols and a CampSpot flagged as the region default. The dungeon's first room holds a CampSpot and the story encounter. The story encounter stands on a walkable cell in front of its checkpoint (it is exempt from the symbol-legal rule, rule 13a); its walk-grid distance from the CampSpot's safe-zone edge is at most `story_sight_m`; the visibility edge `R_e` in its direction from that edge is at least its distance; and its return marker lies between `return_safe_radius_m + body_radius` and `interact_reach_m · 3` from it, on the camp side. The boss lies outside every `SAFE` cell, at least `safe_radius_m + 2·body_radius + cell_m` from every safe-zone source in the boss chamber.
 
 ---
 
@@ -78,7 +78,7 @@
 **Required evidence**:
 - `tests/unit/overworld/data/town_dungeon_story_encounter_and_boss_placement_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing; evidence `production/qa/evidence/story-075-camps-checkpoints/`
 
 ---
 

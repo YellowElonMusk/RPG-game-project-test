@@ -9,8 +9,10 @@
 ## `on_map_entered()` can apply `on_map_reenter` without a marker -> record
 ## lookup through the catalog (no marker table exists yet).
 ##
-## TODO(overworld): camp_returns, chapter_step, opened interactables,
-## liberation, stage_stored, granted payoffs, rest_counter, story_flags and
+## Stories 070-072 add opened checkpoints and story flags.
+##
+## TODO(overworld): camp_returns, chapter_step, other opened interactables,
+## liberation, stage_stored, granted payoffs, rest_counter and
 ## `reset_to_new_game()` (stories 050+, ADR-0012 §4).
 class_name WorldState
 extends RefCounted
@@ -31,6 +33,11 @@ var party_facing: Vector2 = Vector2.ZERO
 
 # map_id -> { symbol_id -> Respawn }
 var _resolved: Dictionary = {}
+# map_id -> { checkpoint marker_id -> true }; an opened checkpoint stays open
+# (GDD rule 10, saved).
+var _opened: Dictionary = {}
+# Story flags set so far (GDD rule 14), flag -> true.
+var _flags: Dictionary = {}
 
 
 ## `true` when `symbol_id` on `p_map_id` is resolved (its symbol is absent).
@@ -68,3 +75,27 @@ static func respawn_of(rec: EncounterData) -> Respawn:
 	if rec != null and rec.respawn:
 		return Respawn.ON_MAP_REENTER
 	return Respawn.NEVER
+
+
+## `true` once checkpoint `marker_id` on `p_map_id` has been opened (GDD
+## rule 10: it stays open, across visits and saves).
+func is_checkpoint_open(p_map_id: String, marker_id: StringName) -> bool:
+	return (_opened.get(p_map_id, {}) as Dictionary).has(marker_id)
+
+
+## Opens checkpoint `marker_id` on `p_map_id` for good. Written only by
+## `OverworldMode`.
+func open_checkpoint(p_map_id: String, marker_id: StringName) -> void:
+	if not _opened.has(p_map_id):
+		_opened[p_map_id] = {}
+	(_opened[p_map_id] as Dictionary)[marker_id] = true
+
+
+## `true` when story flag `flag` is set.
+func has_flag(flag: String) -> bool:
+	return _flags.has(flag)
+
+
+## Sets story flag `flag` (GDD rule 14).
+func set_flag(flag: String) -> void:
+	_flags[flag] = true

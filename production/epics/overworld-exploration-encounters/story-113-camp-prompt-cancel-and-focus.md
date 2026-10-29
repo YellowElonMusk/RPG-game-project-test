@@ -1,7 +1,7 @@
 # Story 113: The camp prompt's cancel does nothing, and Yes has default focus
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-45d [L] (UI)** In the camp prompt, `cancel` closes it with no camp request, and Yes has the default focus.
+- [x] **AC-45d [L] (UI)** In the camp prompt, `cancel` closes it with no camp request, and Yes has the default focus.
 
 ---
 
@@ -78,7 +78,7 @@ checks scope against it.*
 **Story Type**: Logic
 **Required evidence**: `tests/unit/overworld/camp_prompt_test.gd` — must exist and pass.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing; evidence `production/qa/evidence/story-075-camps-checkpoints/`
 
 ---
 

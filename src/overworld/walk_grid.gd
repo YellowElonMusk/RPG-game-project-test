@@ -66,11 +66,7 @@ var _astar_revision: int = -1
 ## `TileData.get_custom_data()`, all at this bake). Grid-local cell (0, 0) is
 ## the minimum of `layer.get_used_cells()`, not the layer's own (0, 0) --
 ## aligning that to the map's ground origin is the map-loading story's job.
-## TODO(ow-epic): `safe_sources`-driven `SAFE` rasterisation
-## (EntryPoint/MapExit/CampSpot/return-marker radii, exact to 0.01 m) is
-## story 128's scope; `safe_sources` and `cfg` are accepted here (so this
-## signature does not change shape when that story lands) but not yet read --
-## every baked cell's `SAFE` bit is 0 until then.
+## Then tags `SAFE` from `safe_sources` (`apply_safe_sources()`, story 128).
 static func bake(layer: TileMapLayer, cell_m: float, safe_sources: Array, cfg: OverworldConfig) -> WalkGrid:
 	var used_cells: Array[Vector2i] = layer.get_used_cells()
 	var grid := WalkGrid.new()
@@ -93,7 +89,43 @@ static func bake(layer: TileMapLayer, cell_m: float, safe_sources: Array, cfg: O
 		if tile_data != null and bool(tile_data.get_custom_data("walk")):
 			var local: Vector2i = cell - min_cell
 			grid.cells[local.y * grid.size.x + local.x] = FLAG_WALKABLE
+	grid.apply_safe_sources(safe_sources)
 	return grid
+
+
+## A safe-zone source for `apply_safe_sources()`: a ground rectangle in
+## metres (zero size for a point source -- an EntryPoint, a CampSpot, a
+## return marker) and its radius (GDD rule 0).
+static func safe_source(rect: Rect2, radius: float) -> Dictionary:
+	return {"rect": rect, "radius": radius}
+
+
+## Tags `SAFE` every cell whose nearest point lies within a source's radius
+## of that source's rectangle (GDD rule 0: conservative, "a cell any part of
+## which is in range counts"; story 128, AC-56). Cell `(x, y)` spans
+## `[x, x + 1) * cell_m` on each axis, with the grid origin at ground (0, 0).
+## Walls are tagged too: `SAFE` only matters on walkable cells.
+func apply_safe_sources(safe_sources: Array) -> void:
+	for source: Dictionary in safe_sources:
+		var rect: Rect2 = source["rect"]
+		var radius: float = source["radius"]
+		var lo: Vector2i = Vector2i(floori((rect.position.x - radius) / cell_m),
+				floori((rect.position.y - radius) / cell_m))
+		var hi: Vector2i = Vector2i(floori((rect.end.x + radius) / cell_m),
+				floori((rect.end.y + radius) / cell_m))
+		for y in range(maxi(lo.y, 0), mini(hi.y, size.y - 1) + 1):
+			for x in range(maxi(lo.x, 0), mini(hi.x, size.x - 1) + 1):
+				var cell_rect := Rect2(Vector2(x, y) * cell_m, Vector2.ONE * cell_m)
+				if rect_distance(cell_rect, rect) <= radius:
+					cells[y * size.x + x] = cells[y * size.x + x] | FLAG_SAFE
+
+
+## The distance between the nearest points of two rectangles (0 when they
+## touch or overlap).
+static func rect_distance(a: Rect2, b: Rect2) -> float:
+	var dx: float = maxf(0.0, maxf(b.position.x - a.end.x, a.position.x - b.end.x))
+	var dy: float = maxf(0.0, maxf(b.position.y - a.end.y, a.position.y - b.end.y))
+	return Vector2(dx, dy).length()
 
 
 ## Baked walkable and not runtime-blocked (Key Interfaces). Out-of-bounds

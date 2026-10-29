@@ -45,6 +45,8 @@ var _last_aspect: float = 0.0
 @export var symbol_tint: Color = Color(0.25, 0.25, 0.3)
 ## SymbolBrain -> CharacterSprite, one per registered symbol.
 var _symbol_sprites: Dictionary = {}
+## The placeholder camp prompt (`_build_prompt()`).
+var _prompt_label: Label = null
 
 
 func _init() -> void:
@@ -83,6 +85,7 @@ func _start() -> void:
 		var sprite: CharacterSprite = follower_sprites[i]
 		sprite.visible = i < follower_count
 		_setup_sprite(sprite, follower_tints[i % follower_tints.size()])
+	_build_prompt()
 	_camera.snap_to(mode.get_leader_position())
 	_present(0.0)
 
@@ -113,6 +116,7 @@ func _present(delta: float) -> void:
 	_camera.apply_transform(FollowCamera.compute_footprint(
 			_camera.height, _camera.pitch_degrees, _camera.fov_degrees, aspect))
 
+	_update_prompt()
 	_place(leader_sprite, mode.get_leader_position())
 	var followers: Array[Vector2] = mode.get_follower_positions()
 	for i: int in mini(followers.size(), follower_sprites.size()):
@@ -161,3 +165,37 @@ func _viewport_aspect() -> float:
 	if size.y <= 0.0:
 		return 16.0 / 9.0
 	return size.x / size.y
+
+
+## Placeholder "Rest here?" camp prompt (GDD States CampPrompt; story 113):
+## a centred label, Yes or No marked as focused. The final P15 widget and
+## its screenshots are story 108's.
+func _build_prompt() -> void:
+	var layer := CanvasLayer.new()
+	layer.name = "PromptLayer"
+	add_child(layer)
+	_prompt_label = Label.new()
+	_prompt_label.name = "CampPrompt"
+	_prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_prompt_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_prompt_label.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	_prompt_label.position = Vector2(-160.0, -120.0)
+	_prompt_label.size = Vector2(320.0, 64.0)
+	_prompt_label.add_theme_font_size_override(&"font_size", 28)
+	_prompt_label.visible = false
+	layer.add_child(_prompt_label)
+
+
+func _update_prompt() -> void:
+	if _prompt_label == null:
+		return
+	var camp: CampSpot = mode.get_camp_prompt_camp()
+	_prompt_label.visible = camp != null
+	if camp != null:
+		var yes: bool = mode.camp_prompt_focus == OverworldMode.CampChoice.YES
+		_prompt_label.text = "Rest here?\n%s   %s" % ["[Yes]" if yes else " Yes ", " No " if yes else "[No]"]
+
+
+## The camp prompt label (tests).
+func get_prompt_label() -> Label:
+	return _prompt_label

@@ -12,6 +12,9 @@
 #
 # Story 137: the Paris street-fight encounters are referenced by the map
 # scene's EncounterSymbol markers, which are not records, so the validator
-# truthfully reports them unreferenced until map records exist.
+# truthfully reports them unreferenced until map records exist. Story 075
+# adds the dungeon story encounter and the boss, referenced the same way.
 enc_paris_clerks_east |
 enc_paris_clerks_west |
+enc_paris_permit_counter |
+enc_paris_supervisor |

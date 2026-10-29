@@ -148,3 +148,25 @@ func validate() -> PackedStringArray:
 @export var map_scene_dir: String = "res://data/maps"
 ## Followers snapped behind the leader on map entry (GDD rule 2: up to 3).
 @export var max_followers: int = 3
+
+## Safe-zone radius around every EntryPoint, MapExit rectangle and CampSpot,
+## in metres (GDD rule 0, Tuning Knobs `safe_radius_m`, 4.5 m, range
+## 4.0-6.0; must exceed `symbol_chase_m + 2 * body_radius`, I7). Cells whose
+## nearest point lies within it are baked `SAFE`.
+@export var safe_radius_m: float = 4.5
+## The smaller safe disc around a checkpoint or story-encounter return
+## marker, in metres (GDD rule 0, Tuning Knobs `return_safe_radius_m`,
+## 1.5 m, range 1.0-2.0).
+@export var return_safe_radius_m: float = 1.5
+## How far from the probe point `confirm` reaches, in metres (GDD rule 3,
+## Tuning Knobs `interact_reach_m`, 1.2 m, range 1.0-1.5).
+@export var interact_reach_m: float = 1.2
+## Longest walk-grid distance from the pre-dungeon CampSpot's safe-zone edge
+## to the story encounter, in metres (GDD rule 13a, Tuning Knobs
+## `story_sight_m`, 12 m, range 8-16; level review).
+@export var story_sight_m: float = 12.0
+## Whether the camp prompt's Yes requests the Camp mode (GDD States,
+## CampPrompt). Off until the Camp mode exists (Camp & Party Management is
+## not designed): Yes then registers the camp and closes the prompt, so the
+## game never enters a mode with no scene.
+@export var camp_mode_enabled: bool = false

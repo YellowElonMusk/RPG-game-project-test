@@ -1,7 +1,7 @@
 # Story 072: An encounter-outcome checkpoint starts its linked fight, and Victory opens it
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-28c [L] (R10)** GIVEN an unmet requirement with `encounter`, THEN the linked encounter starts, and a Victory opens the checkpoint.
+- [x] **AC-28c [L] (R10)** GIVEN an unmet requirement with `encounter`, THEN the linked encounter starts, and a Victory opens the checkpoint.
 
 ---
 
@@ -75,7 +75,7 @@
 **Required evidence**:
 - `tests/unit/overworld/checkpoint_encounter_outcome_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing; evidence `production/qa/evidence/story-075-camps-checkpoints/`
 
 ---
 
@@ -83,3 +83,10 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-070-checkpoint-opens-on-met-requirement.md`, `story-039-encounter-descriptor-matches-record.md` (AC-14, encounter-start integration)
 - Unlocks: `production/epics/overworld-exploration-encounters/story-073-checkpoint-requirement-and-critical-path-reachability.md`
+
+## Completion Notes (2026-10-29)
+
+- Built with stories 113, 128 and 075. Checkpoints are `CheckpointMarker` (`src/overworld/markers/interactable_checkpoint.gd`); a closed one blocks `blocked_rect`, an opened one is kept in `WorldState` and its barrier hidden.
+- Pulled forward from story 070: the success branch for a **flag** requirement (`WorldState.has_flag`). Items are TODO until an inventory exists; save/load of opened checkpoints waits for ADR-0009.
+- `redirect`/`queue` call `redirect_leader()` directly; story 071 still owes the Dialogue line first.
+- Minimal `probe()`/`confirm()` (CampSpots, Static symbols, closed checkpoints; the story encounter guards its own boom). NPCs and gags remain stories 011-016.

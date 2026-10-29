@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="EncounterData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/encounter_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "enc_paris_supervisor"
+enemy_ids = PackedStringArray("enemy_supervisor", "enemy_clerk")
+battle_stage_id = "stage_chapter_interim"
+faction_id = "faction_bureaucratia"
+is_boss = true
+can_flee = false
+retreat_allowed = true
+respawn = false

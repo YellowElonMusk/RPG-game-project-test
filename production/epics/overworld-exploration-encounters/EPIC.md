@@ -135,10 +135,10 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 069 | [Liberated profile/kit fields resolve, and liberation blocks the dungeon route](story-069-liberated-fields-and-dungeon-route-block.md) | Logic | Ready | ADR-0012 |
 | 070 | [A checkpoint opens on a met requirement and stays open across save and load](story-070-checkpoint-opens-on-met-requirement.md) | Logic | Ready | ADR-0012 |
 | 071 | [Redirect and queue failures lock input, snap the party to the return marker and start grace](story-071-checkpoint-redirect-and-queue-failure.md) | Logic | Ready | ADR-0012 |
-| 072 | [An encounter-outcome checkpoint starts its linked fight, and Victory opens it](story-072-checkpoint-encounter-outcome.md) | Logic | Ready | ADR-0012 |
+| 072 | [An encounter-outcome checkpoint starts its linked fight, and Victory opens it](story-072-checkpoint-encounter-outcome.md) | Logic | Complete | ADR-0012 |
 | 073 | [Every checkpoint has exactly one resolving requirement, reachable fight-free on the critical path](story-073-checkpoint-requirement-and-critical-path-reachability.md) | Logic | Ready | ADR-0012 |
 | 074 | [Every MapExit, critical-path leg and ChapterFlow step reference resolves](story-074-map-exit-and-critical-path-reference-integrity.md) | Logic | Ready | ADR-0012 |
-| 075 | [Town, dungeon, story-encounter and boss placement match the map-structure rules](story-075-town-dungeon-story-encounter-and-boss-placement.md) | Logic | Ready | ADR-0012 |
+| 075 | [Town, dungeon, story-encounter and boss placement match the map-structure rules](story-075-town-dungeon-story-encounter-and-boss-placement.md) | Logic | Complete | ADR-0012 |
 | 076 | [Retained walk-in screenshot — the Permit Counter is on screen from the pre-dungeon camp](story-076-permit-counter-telegraph-screenshot.md) | Visual/Feel | Ready | ADR-0012 |
 | 077 | [No spawn point or patrol segment crowds a safe zone or a return marker](story-077-patrol-and-spawn-safe-zone-clearance.md) | Logic | Ready | ADR-0012 |
 | 078 | [Every encounter, symbol, flag, payoff, remark, decree-gag and item reference resolves](story-078-overworld-reference-integrity-check.md) | Logic | Ready | ADR-0012 |
@@ -176,7 +176,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 110 | [Every leg's junction nodes cover its real branch points](story-110-beacon-junction-coverage-validation.md) | Logic | Ready | ADR-0012 |
 | 111 | [The map name card shows only on a map load's reveal](story-111-map-name-card-timing.md) | Logic | Ready | ADR-0012 |
 | 112 | [Only the current leg's beacon chain is lit, and the objective line matches the step](story-112-leg-beacon-chain-and-objective-line.md) | Logic | Ready | ADR-0012 |
-| 113 | [The camp prompt's cancel does nothing, and Yes has default focus](story-113-camp-prompt-cancel-and-focus.md) | Logic | Ready | ADR-0012 |
+| 113 | [The camp prompt's cancel does nothing, and Yes has default focus](story-113-camp-prompt-cancel-and-focus.md) | Logic | Complete | ADR-0012 |
 | 114 | [Symbol stepping and queries hold their frame budget on the min-spec PC and Steam Deck](story-114-overworld-performance-benchmark.md) | Integration | Ready | ADR-0012 |
 | 115 | [Playtest confirms players can both bypass and engage Clerks](story-115-paris-playtest-engagement-report.md) | Integration | Ready | ADR-0012 |
 | 116 | [Measure the share of chapter time spent walking against the budget](story-116-paris-walk-share-playtest.md) | Integration | Ready | ADR-0012 |
@@ -191,7 +191,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 125 | [Retained screenshots of every overworld event cue](story-125-event-feedback-screenshot-set.md) | Visual/Feel | Ready | ADR-0012 |
 | 126 | [Every overworld SFX event has its visual twin on the same frame](story-126-overworld-sfx-visual-twin-coverage.md) | Logic | Ready | ADR-0012 |
 | 127 | [Exterior stage sky luminance stays at or above L* 60](story-127-exterior-stage-sky-luminance.md) | Visual/Feel | Ready | ADR-0012 |
-| 128 | [SAFE cell tagging is precise at the 0.01 m boundary](story-128-safe-cell-bake-boundary-precision.md) | Logic | Ready | ADR-0012 |
+| 128 | [SAFE cell tagging is precise at the 0.01 m boundary](story-128-safe-cell-bake-boundary-precision.md) | Logic | Complete | ADR-0012 |
 | 129 | [Symbols, followers and civilians never block or push each other; a touched symbol resumes from its contact point](story-129-symbol-follower-civilian-non-collision.md) | Logic | Ready | ADR-0012 |
 | 130 | [The name card, payoff card and bark window each hold for text_hold(text), pausing under overlays](story-130-timed-text-hold-and-overlay-pause.md) | Logic | Ready | ADR-0012 |
 | 131 | [AStarGrid2D setup stays frozen after bake, and sprite frames never drift from ow_dt](story-131-astargrid-pathing-setup-invariants.md) | Logic | Ready | ADR-0012 |

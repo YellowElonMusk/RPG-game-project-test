@@ -100,6 +100,23 @@ var _grace_left: float = 0.0
 var _overlays_open: int = 0
 var _transitioning: bool = false
 var _camp_prompt_open: bool = false
+## The CampSpot the open prompt belongs to.
+var _camp_prompt_camp: CampSpot = null
+## The CampSpot whose safe zone the leader stood in last frame.
+var _camp_zone: CampSpot = null
+## This map's checkpoints by `marker_id`.
+var _checkpoints: Dictionary = {}
+## Checkpoints opened this visit (used when there is no `world_state`).
+var _opened_this_visit: Dictionary = {}
+
+## Choices on the "Rest here?" prompt. Yes has the default focus (UI
+## Requirements: the player already chose to press `confirm` on the camp).
+enum CampChoice { YES, NO }
+
+## The prompt's focused choice while it is open.
+var camp_prompt_focus: CampChoice = CampChoice.YES
+## Camp requests issued from the prompt (tests read it).
+var camp_requests: int = 0
 ## The leader's facing: the last non-zero input direction (ADR-0012 §4
 ## `party_facing`; the flee push's coincident-centres fallback).
 var _leader_facing: Vector2 = Vector2.DOWN
@@ -194,6 +211,7 @@ func load_map(map: OverworldMap, entry_marker_id: StringName = &"") -> void:
 		(map_parent if map_parent != null else self).add_child(map)
 	_grid = map.bake_walk_grid(config)
 	map.build_set(_grid)
+	_setup_checkpoints(map)
 	_leader_pos = map.spawn_position(_grid)
 	var entry: EntryPoint = map.find_entry_point(entry_marker_id) \
 			if entry_marker_id != &"" else null
@@ -251,8 +269,13 @@ func _place_symbols(map: OverworldMap) -> void:
 			push_error("OverworldMode: symbol marker '%s' names no enc_ record or has no patrol path" \
 					% marker.name)
 			continue
-		add_symbol(marker.encounter_id,
+		var source: EncounterSource = add_symbol(marker.encounter_id,
 				SymbolBrain.new(marker.patrol_path, marker.path_mode, i), marker.symbol_id)
+		if source != null and marker.is_static:
+			source.brain.make_static(marker.start_on == EncounterSymbol.StartOn.CONTACT_OR_CONFIRM)
+			source.checkpoint_id = marker.checkpoint_id
+			source.return_marker = marker.return_marker
+			source.return_facing = (marker.return_marker - marker.patrol_path[0]).normalized()
 
 
 ## The baked walk grid, or null while no map is loaded.
@@ -272,8 +295,13 @@ func get_map() -> OverworldMap:
 ## however they're driven (pressed or held), since `handle_action()` and the
 ## movement step in `_process()` never share state
 ## (`tests/unit/overworld/ground_mover_speed_test.gd`).
-func handle_action(_action: StringName, _pressed: bool) -> bool:
-	return false
+func handle_action(action: StringName, pressed: bool) -> bool:
+	if _camp_prompt_open:
+		return _handle_camp_prompt(action, pressed)
+	if action != InputActions.CONFIRM or not pressed or not is_exploring():
+		return false
+	confirm()
+	return true
 
 
 ## Reads movement only through `machine.get_move_vector(self)` (control
@@ -308,6 +336,7 @@ func step_frame(ow_dt: float, input_vec: Vector2) -> void:
 	_last_distance_moved = result.distance_moved
 	if _check_exits(leader_from, _leader_pos):
 		return
+	_check_camp_registration()
 	if _budget == null:
 		_budget = QueryBudget.new(config.repath_per_frame_max)
 	_budget.begin_frame()
@@ -536,8 +565,8 @@ func is_exploring() -> bool:
 			and not _camp_prompt_open
 
 
-## The CampPrompt state (GDD States: "Rest here?"). TODO(overworld): the
-## CampSpot `confirm` flow is the intended caller once it exists.
+## The CampPrompt state (GDD States: "Rest here?"), set directly by tests;
+## the game opens it through `confirm()` at a CampSpot (story 113).
 func set_camp_prompt_open(open: bool) -> void:
 	_camp_prompt_open = open
 
@@ -579,9 +608,18 @@ func on_thawed(encounter_id: String, result: GameStateMachine.BattleResult) -> v
 	pending_thaw = true
 	match result:
 		GameStateMachine.BattleResult.VICTORY:
-			_resolve_victory(source)
+			if _sources.has(source):
+				_resolve_victory(source)
+			# Rule 10 `encounter` outcome and rule 13a: winning opens the checkpoint.
+			if source.checkpoint_id != &"":
+				open_checkpoint(source.checkpoint_id)
 		GameStateMachine.BattleResult.FLED:
 			source.brain.on_fled(_leader_pos, _leader_facing, _grid, config)
+			# Rule 13a: Fled places the squad at the return marker, under the wipe.
+			if source.return_marker != Vector2.ZERO:
+				_leader_pos = source.return_marker
+				if not source.return_facing.is_zero_approx():
+					_leader_facing = source.return_facing.normalized()
 	_reform_followers()
 
 
@@ -672,3 +710,234 @@ func get_follower_positions() -> Array[Vector2]:
 ## calls this once per frame alongside `_process()`.
 func step_followers(n_followers: int) -> void:
 	set_follower_positions(_follower_trail.step(_leader_pos, n_followers, config))
+
+
+# -- Checkpoints (GDD rule 10; stories 070-072) ------------------------------
+
+## Registers `map`'s checkpoints: one already opened in `world_state` stays
+## open; every other one blocks its cells (rule 0 "Blocked cell").
+func _setup_checkpoints(map: OverworldMap) -> void:
+	_checkpoints.clear()
+	_opened_this_visit.clear()
+	for cp: CheckpointMarker in map.checkpoints():
+		add_checkpoint(cp)
+
+
+## Registers checkpoint `cp` on the current map (load, tests): closed
+## unless `world_state` holds it open, in which case its cells stay free.
+func add_checkpoint(cp: CheckpointMarker) -> void:
+	_checkpoints[cp.marker_id] = cp
+	if not is_checkpoint_open(cp.marker_id) and _grid != null:
+		_grid.set_blocked(checkpoint_cells(cp, _grid), true)
+	elif _map != null:
+		_map.set_checkpoint_shown(cp.marker_id, false)
+
+
+## The grid cells `cp.blocked_rect` covers (any overlap counts).
+static func checkpoint_cells(cp: CheckpointMarker, grid: WalkGrid) -> Array[Vector2i]:
+	var out: Array[Vector2i] = []
+	var r: Rect2 = cp.blocked_rect
+	if r.size.x <= 0.0 or r.size.y <= 0.0:
+		return out
+	var lo := Vector2i(floori(r.position.x / grid.cell_m), floori(r.position.y / grid.cell_m))
+	var hi := Vector2i(ceili(r.end.x / grid.cell_m) - 1, ceili(r.end.y / grid.cell_m) - 1)
+	for y in range(lo.y, hi.y + 1):
+		for x in range(lo.x, hi.x + 1):
+			out.append(Vector2i(x, y))
+	return out
+
+
+## `true` once checkpoint `marker_id` on this map is open.
+func is_checkpoint_open(marker_id: StringName) -> bool:
+	if not _checkpoints.has(marker_id):
+		return false
+	if world_state != null:
+		return world_state.is_checkpoint_open(_map_id(), marker_id)
+	return _opened_this_visit.has(marker_id)
+
+
+## Opens checkpoint `marker_id` for good (rule 10 Success; the `encounter`
+## outcome's Victory): frees its cells and records it in `world_state`.
+func open_checkpoint(marker_id: StringName) -> void:
+	var cp: CheckpointMarker = _checkpoints.get(marker_id) as CheckpointMarker
+	if cp == null:
+		push_error("OverworldMode: no checkpoint '%s' on this map" % marker_id)
+		return
+	if is_checkpoint_open(marker_id):
+		return
+	_opened_this_visit[marker_id] = true
+	if _map != null:
+		_map.set_checkpoint_shown(marker_id, false)
+	if world_state != null:
+		world_state.open_checkpoint(_map_id(), marker_id)
+	if _grid != null:
+		_grid.set_blocked(checkpoint_cells(cp, _grid), false)
+
+
+## `confirm` at checkpoint `marker_id` (rule 10). A met requirement opens
+## it. Otherwise the failure outcome plays: `encounter` starts the linked
+## fight (story 072), whose Victory opens it; `redirect` and `queue` send
+## the leader to the return marker (story 071 adds their Dialogue line).
+func confirm_checkpoint(marker_id: StringName) -> void:
+	var cp: CheckpointMarker = _checkpoints.get(marker_id) as CheckpointMarker
+	if cp == null or is_checkpoint_open(marker_id):
+		return
+	if _requirement_met(cp):
+		open_checkpoint(marker_id)
+		return
+	match cp.failure_outcome:
+		CheckpointMarker.FailureOutcome.ENCOUNTER:
+			start_encounter(cp.linked_encounter_id, checkpoint_source(cp, _map))
+		_:
+			# TODO(overworld): story 071, the redirect/queue Dialogue line first.
+			redirect_leader(cp.return_marker, cp.return_facing)
+
+
+## The encounter source a checkpoint's `encounter` outcome fights from: a
+## Static, contact-free stand-in at the checkpoint, never stepped or
+## touched, that opens `cp` on Victory and returns to its marker on Fled.
+static func checkpoint_source(cp: CheckpointMarker, map: OverworldMap) -> EncounterSource:
+	var at: Vector2 = cp.ground_position(map) if map != null else cp.return_marker
+	var brain := SymbolBrain.new(PackedVector2Array([at]), SymbolBrain.PathMode.LOOP, -1)
+	brain.make_static(false)
+	var source := EncounterSource.new(cp.linked_encounter_id, brain,
+			"checkpoint_" + String(cp.marker_id))
+	source.checkpoint_id = cp.marker_id
+	source.return_marker = cp.return_marker
+	source.return_facing = cp.return_facing
+	return source
+
+
+## Rule 10: exactly one requirement, an item or a story flag. Flags read
+## `world_state`. TODO(overworld): items, once an inventory exists.
+func _requirement_met(cp: CheckpointMarker) -> bool:
+	if not cp.requirement_flag.is_empty():
+		return world_state != null and world_state.has_flag(cp.requirement_flag)
+	return false
+
+
+func _map_id() -> String:
+	return _map.map_id if _map != null else ""
+
+
+# -- Interaction (GDD rule 3) -----------------------------------------------
+
+## The nearest eligible target within `interact_reach_m` of the probe point
+## (`facing * body_radius` ahead of the leader), or null (GDD rule 3).
+## Targets: CampSpots (always eligible), Static symbols (eligible while
+## unresolved) and closed checkpoints, except a story encounter's own
+## checkpoint while its Static symbol stands. Exact ties go CampSpot, then
+## Static symbol, then checkpoint. Returns a `CampSpot`, an
+## `EncounterSource` or a `CheckpointMarker`. TODO(overworld): NPCs and
+## gags (stories 011-016).
+func probe() -> Object:
+	var point: Vector2 = _leader_pos + _leader_facing.normalized() * config.body_radius
+	var best: Object = null
+	var best_d: float = INF
+	var reach: float = config.interact_reach_m + 1e-6
+	if _map != null:
+		for camp: CampSpot in _map.camp_spots():
+			var d: float = point.distance_to(camp.ground_position(_map))
+			if d <= reach and d < best_d:
+				best = camp
+				best_d = d
+	var guarded: Dictionary = {}
+	for source: EncounterSource in _sources:
+		if not source.brain.is_static():
+			continue
+		if source.checkpoint_id != &"":
+			guarded[source.checkpoint_id] = true
+		var d: float = point.distance_to(source.brain.position)
+		if d <= reach and d < best_d:
+			best = source
+			best_d = d
+	for marker_id: StringName in _checkpoints:
+		var cp: CheckpointMarker = _checkpoints[marker_id]
+		if is_checkpoint_open(marker_id) or guarded.has(marker_id):
+			continue
+		var d: float = point.distance_to(cp.ground_position(_map))
+		if d <= reach and d < best_d:
+			best = cp
+			best_d = d
+	return best
+
+
+## `confirm` in Exploring acts on `probe()`'s result (GDD rule 3). Nothing
+## in reach does nothing.
+func confirm() -> void:
+	var target: Object = probe()
+	if target is CampSpot:
+		_open_camp_prompt(target as CampSpot)
+	elif target is EncounterSource:
+		var source: EncounterSource = target
+		start_encounter(source.enc_id, source)
+	elif target is CheckpointMarker:
+		confirm_checkpoint((target as CheckpointMarker).marker_id)
+
+
+# -- Camps (GDD rule 13a, States CampPrompt; story 113) ----------------------
+
+## The CampSpot the open prompt belongs to, or null.
+func get_camp_prompt_camp() -> CampSpot:
+	return _camp_prompt_camp if _camp_prompt_open else null
+
+
+func _open_camp_prompt(camp: CampSpot) -> void:
+	_camp_prompt_camp = camp
+	camp_prompt_focus = CampChoice.YES
+	_camp_prompt_open = true
+
+
+func _close_camp_prompt() -> void:
+	_camp_prompt_open = false
+	_camp_prompt_camp = null
+
+
+## Input while the prompt is open; every action is consumed. `cancel` acts
+## as No: it closes the prompt with no camp request. A move toggles the
+## focus. `confirm` takes the focused choice: Yes requests the Camp mode
+## (or, while `config.camp_mode_enabled` is off, registers the camp and
+## closes).
+func _handle_camp_prompt(action: StringName, pressed: bool) -> bool:
+	if not pressed:
+		return true
+	match action:
+		InputActions.CANCEL:
+			_close_camp_prompt()
+		InputActions.MOVE_LEFT, InputActions.MOVE_RIGHT, InputActions.MOVE_UP, InputActions.MOVE_DOWN:
+			camp_prompt_focus = CampChoice.NO if camp_prompt_focus == CampChoice.YES else CampChoice.YES
+		InputActions.CONFIRM:
+			var camp: CampSpot = _camp_prompt_camp
+			var choice: CampChoice = camp_prompt_focus
+			_close_camp_prompt()
+			if choice == CampChoice.YES and camp != null:
+				_rest_at(camp)
+	return true
+
+
+func _rest_at(camp: CampSpot) -> void:
+	if _machine == null:
+		return
+	if not config.camp_mode_enabled:
+		_machine.register_camp(camp.camp_id)
+		return
+	var payload := CampEntryPayload.new()
+	payload.camp_id = camp.camp_id
+	camp_requests += 1
+	_machine.request_transition(GameStateMachine.Mode.CAMP, payload)
+
+
+## Rule 13a "Passing a CampSpot registers it": entering a CampSpot's safe
+## zone (within `safe_radius_m`) asks Game State to register it, once per
+## entry.
+func _check_camp_registration() -> void:
+	if _map == null or _machine == null:
+		return
+	var inside: CampSpot = null
+	for camp: CampSpot in _map.camp_spots():
+		if _leader_pos.distance_to(camp.ground_position(_map)) <= config.safe_radius_m:
+			inside = camp
+			break
+	if inside != null and inside != _camp_zone:
+		_machine.register_camp(inside.camp_id)
+	_camp_zone = inside

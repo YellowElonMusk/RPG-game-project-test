@@ -21,9 +21,4 @@ extends Marker3D
 ## Ground position (`x`, `z`) relative to `map_root`, composed from the
 ## local transforms of this marker and its ancestors below `map_root`.
 func ground_position(map_root: Node) -> Vector2:
-	var xf: Transform3D = transform
-	var node: Node = get_parent()
-	while node != null and node != map_root and node is Node3D:
-		xf = (node as Node3D).transform * xf
-		node = node.get_parent()
-	return Vector2(xf.origin.x, xf.origin.z)
+	return OverworldMap.ground_position_of(self, map_root)

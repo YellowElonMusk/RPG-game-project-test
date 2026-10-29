@@ -148,6 +148,47 @@ func test_world_state_commits_the_new_map_only_after_the_swap() -> void:
 	assert_int(seg.get_encounter_sources().size()).is_equal(_CLERKS.size())
 
 
+## Stories 072/075 end to end: in the dungeon's first room, touching the
+## Permit Counter starts nothing; `confirm` at it starts the story encounter,
+## and the Victory opens the boom (cells freed, kept in `WorldState`) and
+## resolves the counter for good.
+func test_permit_counter_confirm_fight_and_victory_open_the_boom() -> void:
+	var root: GameRoot = _boot()
+	_new_game(root)
+	assert_int(root.machine.request_transition(GameStateMachine.Mode.OVERWORLD,
+			MapEntryPayload.new("map_paris_dungeon_placeholder", &"from_segment"))) \
+			.is_equal(GameStateMachine.RequestResult.OK)
+	_run_to_idle(root.machine)
+	var dungeon: OverworldMode = root.current_mode_node() as OverworldMode
+	dungeon.set_process(false)
+	var map: OverworldMap = dungeon.get_map()
+	var counter: Vector2 = map.symbol_markers()[0].patrol_path[0]
+	var boom: CheckpointMarker = map.find_checkpoint(&"cp_permit_boom")
+	var boom_cell: Vector2i = OverworldMode.checkpoint_cells(boom, dungeon.get_walk_grid())[0]
+	assert_bool(dungeon.get_walk_grid().is_walkable(boom_cell)).is_false()
+	# Touching the counter (confirm-started Static) starts nothing.
+	dungeon.grace_active = false
+	dungeon.set_leader_position(counter + Vector2(0.0, 0.7))
+	dungeon.step_frame(_DT, Vector2.UP)
+	assert_int(root.machine.phase).is_equal(GameStateMachine.Phase.IDLE)
+	# Confirm facing it starts the fight; Victory opens the boom.
+	dungeon.set_leader_facing(Vector2.UP)
+	assert_bool(dungeon.handle_action(InputActions.CONFIRM, true)).is_true()
+	assert_int(root.machine.phase).is_not_equal(GameStateMachine.Phase.IDLE)
+	_run_to_idle(root.machine)
+	var battle_mode: BattleMode = root.current_mode_node() as BattleMode
+	assert_object(battle_mode).is_not_null()
+	DebugLaunchArgs.force_outcome(battle_mode.battle, DebugLaunchArgs.VICTORY)
+	assert_int(root.machine.report_results_done()).is_equal(GameStateMachine.RequestResult.OK)
+	_run_to_idle(root.machine)
+	assert_bool(is_same(root.current_mode_node(), dungeon)).is_true()
+	assert_bool(dungeon.is_checkpoint_open(&"cp_permit_boom")).is_true()
+	assert_bool(dungeon.get_walk_grid().is_walkable(boom_cell)).is_true()
+	assert_bool(root.world_state.is_checkpoint_open("map_paris_dungeon_placeholder", &"cp_permit_boom")).is_true()
+	assert_bool(root.world_state.is_resolved("map_paris_dungeon_placeholder", "sym_paris_permit_counter")).is_true()
+	assert_int(dungeon.get_encounter_sources().size()).is_equal(0)
+
+
 func _assert_party_at_entry(ow: OverworldMode, entry: EntryPoint) -> void:
 	var pos: Vector2 = entry.ground_position(ow.get_map())
 	assert_vector(ow.get_leader_position()).is_equal_approx(pos, Vector2.ONE * 0.001)

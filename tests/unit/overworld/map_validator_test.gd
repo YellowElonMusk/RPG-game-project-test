@@ -24,10 +24,15 @@ func test_unknown_entry_target_is_reported() -> void:
 	assert_str(errors[0]).contains("nope")
 
 
+## Every shipped map: exits are checked against their targets, so the
+## segment needs the dungeon, and the dungeon the boss chamber.
 func _maps() -> Dictionary:
-	var town: OverworldMap = (load(_TOWN) as PackedScene).instantiate() as OverworldMap
-	var seg: OverworldMap = (load(_SEG) as PackedScene).instantiate() as OverworldMap
-	return {town.map_id: town, seg.map_id: seg}
+	var maps: Dictionary = {}
+	for path: String in [_TOWN, _SEG, "res://data/maps/paris_dungeon_placeholder.tscn",
+			"res://data/maps/paris_boss_chamber_placeholder.tscn"]:
+		var map: OverworldMap = (load(path) as PackedScene).instantiate() as OverworldMap
+		maps[map.map_id] = map
+	return maps
 
 
 func _free(maps: Dictionary) -> void:

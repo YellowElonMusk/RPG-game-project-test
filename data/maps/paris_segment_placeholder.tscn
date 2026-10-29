@@ -62,4 +62,18 @@ patrol_path = PackedVector2Array(8.5, 4.5, 14.5, 4.5)
 [node name="SymbolClerksEast" type="Marker3D" parent="." unique_id=208026303]
 script = ExtResource("4_kglc8")
 encounter_id = "enc_paris_clerks_east"
-patrol_path = PackedVector2Array(18.5, 4.5, 18.5, 11.5)
+patrol_path = PackedVector2Array(17.5, 8.5, 17.5, 13.5)
+
+[node name="ExitToDungeon" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 0, 1.5)
+script = ExtResource("2_3qdwj")
+marker_id = &"exit_to_dungeon"
+target_map_id = "map_paris_dungeon_placeholder"
+target_entry_id = &"from_segment"
+trigger_rect = Rect2(21, 1, 2, 1)
+
+[node name="EntryFromDungeon" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 0, 3.5)
+script = ExtResource("3_xrel5")
+marker_id = &"from_dungeon"
+facing = Vector2(0, 1)

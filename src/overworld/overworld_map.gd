@@ -32,6 +32,10 @@ extends Node3D
 @export var wall_color: Color = Color(0.78, 0.7, 0.55)
 ## Placeholder tint of a MapExit rectangle's floor patch (story 138).
 @export var exit_color: Color = Color(0.35, 0.6, 0.85)
+## Placeholder tint of a CampSpot's floor patch.
+@export var camp_color: Color = Color(0.45, 0.7, 0.4)
+## Placeholder colour of a closed checkpoint's barrier boxes.
+@export var checkpoint_color: Color = Color(0.85, 0.3, 0.25)
 
 
 ## Bakes this map's `WalkGrid` from `walk_layer` (the only read of the
@@ -42,7 +46,7 @@ func bake_walk_grid(cfg: OverworldConfig) -> WalkGrid:
 		push_error("OverworldMap: walk_layer is not assigned")
 		return WalkGrid.new()
 	walk_layer.visible = false
-	return WalkGrid.bake(walk_layer, cell_m, [], cfg)
+	return WalkGrid.bake(walk_layer, cell_m, safe_sources(cfg), cfg)
 
 
 ## The map's `EncounterSymbol` markers in child order (story 137;
@@ -73,6 +77,65 @@ func entry_points() -> Array[EntryPoint]:
 	return out
 
 
+## The map's `CampSpot` markers in child order.
+func camp_spots() -> Array[CampSpot]:
+	var out: Array[CampSpot] = []
+	for child: Node in get_children():
+		if child is CampSpot:
+			out.append(child as CampSpot)
+	return out
+
+
+## The map's `CheckpointMarker`s in child order.
+func checkpoints() -> Array[CheckpointMarker]:
+	var out: Array[CheckpointMarker] = []
+	for child: Node in get_children():
+		if child is CheckpointMarker:
+			out.append(child as CheckpointMarker)
+	return out
+
+
+## The CheckpointMarker with `marker_id`, or null.
+func find_checkpoint(marker_id: StringName) -> CheckpointMarker:
+	for cp: CheckpointMarker in checkpoints():
+		if cp.marker_id == marker_id:
+			return cp
+	return null
+
+
+## Every safe-zone source on this map (GDD rule 0; ADR-0012 §2): EntryPoints,
+## MapExit rectangles and CampSpots at `safe_radius_m`; checkpoint and
+## Static-symbol return markers at `return_safe_radius_m`. In the shape
+## `WalkGrid.apply_safe_sources()` reads.
+func safe_sources(cfg: OverworldConfig) -> Array:
+	var out: Array = []
+	for entry: EntryPoint in entry_points():
+		out.append(WalkGrid.safe_source(Rect2(entry.ground_position(self), Vector2.ZERO), cfg.safe_radius_m))
+	for exit: MapExit in map_exits():
+		out.append(WalkGrid.safe_source(exit.trigger_rect, cfg.safe_radius_m))
+	for camp: CampSpot in camp_spots():
+		out.append(WalkGrid.safe_source(Rect2(camp.ground_position(self), Vector2.ZERO), cfg.safe_radius_m))
+	for cp: CheckpointMarker in checkpoints():
+		out.append(WalkGrid.safe_source(Rect2(cp.return_marker, Vector2.ZERO), cfg.return_safe_radius_m))
+	for sym: EncounterSymbol in symbol_markers():
+		if sym.is_static and sym.return_marker != Vector2.ZERO:
+			out.append(WalkGrid.safe_source(Rect2(sym.return_marker, Vector2.ZERO), cfg.return_safe_radius_m))
+	return out
+
+
+## Ground position (`x`, `z`) of `marker` relative to `map_root`, composed
+## from the local transforms of the marker and its ancestors below
+## `map_root` (never `global_*`: markers are read before the map enters the
+## tree).
+static func ground_position_of(marker: Node3D, map_root: Node) -> Vector2:
+	var xf: Transform3D = marker.transform
+	var node: Node = marker.get_parent()
+	while node != null and node != map_root and node is Node3D:
+		xf = (node as Node3D).transform * xf
+		node = node.get_parent()
+	return Vector2(xf.origin.x, xf.origin.z)
+
+
 ## The EntryPoint with `marker_id`, or null.
 func find_entry_point(marker_id: StringName) -> EntryPoint:
 	for entry: EntryPoint in entry_points():
@@ -81,7 +144,7 @@ func find_entry_point(marker_id: StringName) -> EntryPoint:
 	return null
 
 
-## Every MapExit and EntryPoint `marker_id`, in child order (duplicates kept,
+## Every MapExit, EntryPoint, CampSpot and checkpoint `marker_id`, in child order (duplicates kept,
 ## for `MapValidator`).
 func marker_ids() -> Array[StringName]:
 	var out: Array[StringName] = []
@@ -89,6 +152,10 @@ func marker_ids() -> Array[StringName]:
 		out.append(exit.marker_id)
 	for entry: EntryPoint in entry_points():
 		out.append(entry.marker_id)
+	for camp: CampSpot in camp_spots():
+		out.append(camp.marker_id)
+	for cp: CheckpointMarker in checkpoints():
+		out.append(cp.marker_id)
 	return out
 
 
@@ -157,6 +224,38 @@ func build_set(grid: WalkGrid) -> void:
 		var c: Vector2 = exit.trigger_rect.get_center()
 		patch.position = Vector3(c.x, 0.01, c.y)
 		set_root.add_child(patch)
+
+	# A flat tinted patch per CampSpot, and a barrier per checkpoint over its
+	# blocked cells, hidden once it opens (`set_checkpoint_shown()`).
+	for camp: CampSpot in camp_spots():
+		var camp_mesh := PlaneMesh.new()
+		camp_mesh.size = Vector2(1.6, 1.6)
+		camp_mesh.material = _flat_material(camp_color)
+		var camp_patch := MeshInstance3D.new()
+		camp_patch.name = "CampPatch_%s" % camp.marker_id
+		camp_patch.mesh = camp_mesh
+		camp_patch.layers = DioramaStage.LAYER_SET
+		var at: Vector2 = camp.ground_position(self)
+		camp_patch.position = Vector3(at.x, 0.01, at.y)
+		set_root.add_child(camp_patch)
+	for cp: CheckpointMarker in checkpoints():
+		var bar_mesh := BoxMesh.new()
+		bar_mesh.size = Vector3(cp.blocked_rect.size.x, wall_height_m * 0.6, cp.blocked_rect.size.y)
+		bar_mesh.material = _flat_material(checkpoint_color)
+		var bar := MeshInstance3D.new()
+		bar.name = "Checkpoint_%s" % cp.marker_id
+		bar.mesh = bar_mesh
+		bar.layers = DioramaStage.LAYER_SET
+		var bc: Vector2 = cp.blocked_rect.get_center()
+		bar.position = Vector3(bc.x, wall_height_m * 0.3, bc.y)
+		set_root.add_child(bar)
+
+
+## Shows or hides checkpoint `marker_id`'s placeholder barrier.
+func set_checkpoint_shown(marker_id: StringName, shown: bool) -> void:
+	var bar: Node3D = get_node_or_null("PlaceholderSet/Checkpoint_%s" % marker_id) as Node3D
+	if bar != null:
+		bar.visible = shown
 
 
 func _flat_material(color: Color) -> StandardMaterial3D:

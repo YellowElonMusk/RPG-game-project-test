@@ -1,0 +1,195 @@
+extends SceneTree
+## Builds the placeholder Paris dungeon and boss-chamber map scenes
+## (`data/maps/paris_dungeon_placeholder.tscn`,
+## `data/maps/paris_boss_chamber_placeholder.tscn`) from the ASCII layouts
+## below, so their walk layers are reviewable as text and rebuildable (story
+## 075; GDD rule 11 map table, rules 13 and 13a). `#` is wall, `.` is floor;
+## one character is one `cell_m` (1 m) cell, and ground (x, y) is world
+## (x, z). The tile set is the segment map's (`walk` custom data on atlas
+## tile (0, 0)).
+##
+## Usage, from the project root:
+##
+##   godot --headless --path . -s res://tools/maps/build_paris_dungeon_maps.gd
+##
+## Re-run after editing a layout or a marker below; the scenes are
+## overwritten. Exit 0 on success, 1 if a scene fails to save.
+
+const _TILESET_SOURCE: String = "res://data/maps/paris_segment_placeholder.tscn"
+const _OUT_DIR: String = "res://data/maps"
+
+## Dungeon: the first room (south) holds the segment entry and exit, the
+## pre-dungeon camp inside the entry's safe zone, and the Permit Counter in
+## front of the closed boom (rows 11-12, the only way north). The boss
+## chamber exit is at the top.
+const _DUNGEON: Array[String] = [
+	"################",
+	"#..............#",
+	"#..............#",
+	"#..............#",
+	"#..............#",
+	"#..............#",
+	"#..............#",
+	"#..............#",
+	"#..............#",
+	"#..............#",
+	"#..............#",
+	"#######..#######",
+	"#######..#######",
+	"#..............#",
+	"#..............#",
+	"#..............#",
+	"#..............#",
+	"#..............#",
+	"#..............#",
+	"#..............#",
+	"#..............#",
+	"#..............#",
+	"#..............#",
+	"#..............#",
+	"################",
+]
+
+## Boss chamber: the Supervisor stands at the far end, the dungeon entry and
+## exit at the near end.
+const _BOSS: Array[String] = [
+	"##############",
+	"#............#",
+	"#............#",
+	"#............#",
+	"#............#",
+	"#............#",
+	"#............#",
+	"#............#",
+	"#............#",
+	"#............#",
+	"#............#",
+	"#............#",
+	"#............#",
+	"##############",
+]
+
+
+func _initialize() -> void:
+	var source_map: OverworldMap = (load(_TILESET_SOURCE) as PackedScene).instantiate() as OverworldMap
+	var tile_set: TileSet = source_map.walk_layer.tile_set.duplicate(true) as TileSet
+	source_map.free()
+	var ok: bool = true
+	ok = _save(_build_dungeon(tile_set), "paris_dungeon_placeholder") and ok
+	ok = _save(_build_boss_chamber(tile_set), "paris_boss_chamber_placeholder") and ok
+	quit(0 if ok else 1)
+
+
+func _build_dungeon(tile_set: TileSet) -> OverworldMap:
+	var map: OverworldMap = _map("ParisDungeonPlaceholder", "map_paris_dungeon_placeholder",
+			_DUNGEON, tile_set, Vector2i(8, 21), Color(0.5, 0.48, 0.46))
+	_exit(map, "ExitToSegment", &"exit_to_segment", "map_paris_segment_placeholder",
+			&"from_dungeon", Rect2(7, 23, 2, 1))
+	_entry(map, "EntryFromSegment", &"from_segment", Vector2(8.0, 21.0), Vector2.UP)
+	_exit(map, "ExitToBossChamber", &"exit_to_boss_chamber", "map_paris_boss_chamber_placeholder",
+			&"from_dungeon", Rect2(7, 1, 2, 1))
+	_entry(map, "EntryFromBossChamber", &"from_boss_chamber", Vector2(8.0, 3.5), Vector2.DOWN)
+	var camp := CampSpot.new()
+	camp.name = "CampPreDungeon"
+	camp.marker_id = &"camp_pre_dungeon"
+	camp.camp_id = "camp_paris_pre_dungeon"
+	camp.return_entry_id = &"from_segment"
+	_place(map, camp, Vector2(4.5, 19.5))
+	var boom := CheckpointMarker.new()
+	boom.name = "PermitBoom"
+	boom.marker_id = &"cp_permit_boom"
+	boom.requirement_flag = "permit_to_approach_the_counter"
+	boom.obtained_at = "enc_paris_permit_counter"
+	boom.failure_outcome = CheckpointMarker.FailureOutcome.ENCOUNTER
+	boom.linked_encounter_id = "enc_paris_permit_counter"
+	boom.blocked_rect = Rect2(7, 11, 2, 2)
+	boom.return_marker = Vector2(7.5, 16.0)
+	boom.return_facing = Vector2.DOWN
+	_place(map, boom, Vector2(8.0, 12.0))
+	var counter := EncounterSymbol.new()
+	counter.name = "SymbolPermitCounter"
+	counter.encounter_id = "enc_paris_permit_counter"
+	counter.symbol_id = "sym_paris_permit_counter"
+	counter.patrol_path = PackedVector2Array([Vector2(7.5, 13.5)])
+	counter.is_static = true
+	counter.start_on = EncounterSymbol.StartOn.CONFIRM
+	counter.return_marker = Vector2(7.5, 16.0)
+	counter.checkpoint_id = &"cp_permit_boom"
+	_place(map, counter, Vector2(7.5, 13.5))
+	return map
+
+
+func _build_boss_chamber(tile_set: TileSet) -> OverworldMap:
+	var map: OverworldMap = _map("ParisBossChamberPlaceholder", "map_paris_boss_chamber_placeholder",
+			_BOSS, tile_set, Vector2i(7, 10), Color(0.46, 0.44, 0.5))
+	_exit(map, "ExitToDungeon", &"exit_to_dungeon", "map_paris_dungeon_placeholder",
+			&"from_boss_chamber", Rect2(6, 12, 2, 1))
+	_entry(map, "EntryFromDungeon", &"from_dungeon", Vector2(7.0, 10.5), Vector2.UP)
+	var boss := EncounterSymbol.new()
+	boss.name = "SymbolSupervisor"
+	boss.encounter_id = "enc_paris_supervisor"
+	boss.symbol_id = "sym_paris_supervisor"
+	boss.patrol_path = PackedVector2Array([Vector2(6.5, 3.5)])
+	boss.is_static = true
+	boss.start_on = EncounterSymbol.StartOn.CONTACT_OR_CONFIRM
+	_place(map, boss, Vector2(6.5, 3.5))
+	return map
+
+
+func _map(node_name: String, map_id: String, rows: Array[String], tile_set: TileSet,
+		spawn: Vector2i, floor_color: Color) -> OverworldMap:
+	var map := OverworldMap.new()
+	map.name = node_name
+	map.map_id = map_id
+	map.leader_spawn_cell = spawn
+	map.floor_color = floor_color
+	var layer := TileMapLayer.new()
+	layer.name = "WalkLayer"
+	layer.visible = false
+	layer.tile_set = tile_set
+	for y in rows.size():
+		for x in rows[y].length():
+			layer.set_cell(Vector2i(x, y), 0, Vector2i(0, 0) if rows[y][x] == "." else Vector2i(1, 0))
+	map.add_child(layer)
+	layer.owner = map
+	map.walk_layer = layer
+	return map
+
+
+func _exit(map: OverworldMap, node_name: String, marker_id: StringName, target_map: String,
+		target_entry: StringName, rect: Rect2) -> void:
+	var exit := MapExit.new()
+	exit.name = node_name
+	exit.marker_id = marker_id
+	exit.target_map_id = target_map
+	exit.target_entry_id = target_entry
+	exit.trigger_rect = rect
+	_place(map, exit, rect.get_center())
+
+
+func _entry(map: OverworldMap, node_name: String, marker_id: StringName, at: Vector2,
+		facing: Vector2) -> void:
+	var entry := EntryPoint.new()
+	entry.name = node_name
+	entry.marker_id = marker_id
+	entry.facing = facing
+	_place(map, entry, at)
+
+
+func _place(map: OverworldMap, marker: Node3D, at: Vector2) -> void:
+	marker.position = Vector3(at.x, 0.0, at.y)
+	map.add_child(marker)
+	marker.owner = map
+
+
+func _save(map: OverworldMap, file_name: String) -> bool:
+	var scene := PackedScene.new()
+	var err: Error = scene.pack(map)
+	if err == OK:
+		err = ResourceSaver.save(scene, _OUT_DIR.path_join(file_name + ".tscn"))
+	map.free()
+	if err != OK:
+		printerr("build_paris_dungeon_maps: %s failed (%s)" % [file_name, error_string(err)])
+		return false
+	print("build_paris_dungeon_maps: wrote ", file_name)
+	return true
