@@ -21,6 +21,11 @@ const _NEIGHBOURS: Array[Vector2i] = [
 	Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1),
 	Vector2i(1, 1), Vector2i(1, -1), Vector2i(-1, 1), Vector2i(-1, -1)]
 
+## The four neighbours component labelling follows (GDD rule 5 check 3:
+## "4-connected component labels (matching the A* diagonal rule)").
+const _NEIGHBOURS4: Array[Vector2i] = [
+	Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]
+
 ## Grid extent, in cells.
 var size: Vector2i = Vector2i.ZERO
 
@@ -30,10 +35,29 @@ var cell_m: float = 1.0
 ## One byte per cell, row-major (`y * size.x + x`); see the `FLAG_*` constants.
 var cells: PackedByteArray = PackedByteArray()
 
-## Bumped by every `set_blocked()` call (ADR-0012 §2). TODO(ow-epic): read
-## by symbol path/notice caches once `SymbolBrain` exists -- `set_blocked`
-## is already the only path that changes it.
+## Pathfinder spy (AC-9h, AC-10a): every `bounded_route()` and
+## `find_path()` call -- the queries the shared `QueryBudget` meters.
+var query_count: int = 0
+
+## Cells the most recent bounded search expanded (story 029's spy).
+var last_search_expanded: int = 0
+
+## Largest route length, in metres, of any cell the most recent bounded
+## search expanded; never above that search's cap (AC-9k).
+var last_search_max_expanded_m: float = 0.0
+
+## Bumped by every `set_blocked()` call (ADR-0012 §2). Symbol path and
+## notice caches, the component labels and the A* solids are keyed on it.
 var _revision: int = 0
+
+## 4-connected symbol-legal component label per cell (-1: not legal).
+var _labels: PackedInt32Array = PackedInt32Array()
+var _labels_revision: int = -1
+
+## The symbols' pathfinder (ADR-0012 §2): `update()` runs once, at first
+## use; afterwards only solids change, re-synced when `_revision` moves.
+var _astar: AStarGrid2D = null
+var _astar_revision: int = -1
 
 
 ## Bakes a grid from `layer`'s `walk: bool` custom data layer (ADR-0012 §2;
@@ -107,9 +131,9 @@ func is_blocked(cell: Vector2i, blocked_mask: int) -> bool:
 ## The only path that changes blocked cells at runtime (Key Interfaces):
 ## sets or clears `FLAG_RUNTIME_BLOCKED` on every cell in `cells_to_set`,
 ## batched into a single `revision()` bump. Out-of-bounds entries are
-## skipped. TODO(ow-epic): syncing the symbols' `AStarGrid2D` and
-## relabelling symbol-legal components (ADR-0012 §2) is later stories'
-## scope -- no `AStarGrid2D` or component labelling exists yet.
+## skipped. The revision bump makes the next `component_of()` relabel once
+## and the next `find_path()` re-sync the A* solids (ADR-0012 §2), and it
+## invalidates every symbol's stored path and notice cache.
 func set_blocked(cells_to_set: Array[Vector2i], on: bool) -> void:
 	for cell in cells_to_set:
 		if not _in_bounds(cell):
@@ -146,21 +170,36 @@ func is_safe(cell: Vector2i) -> bool:
 	return (cells[_index(cell)] & FLAG_SAFE) != 0
 
 
+## The notice test's bounded search (GDD rule 5 check 4; ADR-0012 §5) as a
+## route length: the length of `bounded_route()`'s route, or `INF` when it
+## finds none within `cap_m`.
+func bounded_search(from: Vector2i, to: Vector2i, cap_m: float) -> float:
+	var route: Array[Vector2i] = bounded_route(from, to, cap_m)
+	if route.is_empty():
+		return INF
+	return route_length(route)
+
+
 ## The notice test's bounded search (GDD rule 5 check 4; ADR-0012 §5):
 ## uniform-cost (Dijkstra-style) over symbol-legal cells, 8-connected with
 ## `cell_m * sqrt(2)` diagonal steps, a diagonal allowed only when both
 ## orthogonal cells it cuts past are symbol-legal (the A* diagonal rule).
-## Returns the route length between the two cell centres, in metres, or
-## `INF` when `to` is not reached within `cap_m`. No cell whose route length
-## exceeds `cap_m` is ever expanded, so the cost is bounded by the cap.
-## TODO(overworld): the per-symbol waypoint cache cleared by `set_blocked`
-## (AC-9k) is outside stories 021-027.
-func bounded_search(from: Vector2i, to: Vector2i, cap_m: float) -> float:
+## Returns the cell route `from` .. `to`, or `[]` when `to` is not reached
+## within `cap_m`. No cell whose route length exceeds `cap_m` is ever
+## expanded (`last_search_max_expanded_m` records it), so the cost is
+## bounded by the cap. Counts as one query.
+func bounded_route(from: Vector2i, to: Vector2i, cap_m: float) -> Array[Vector2i]:
+	query_count += 1
+	last_search_expanded = 0
+	last_search_max_expanded_m = 0.0
+	var route: Array[Vector2i] = []
 	if cap_m < 0.0 or not is_symbol_legal(from) or not is_symbol_legal(to):
-		return INF
+		return route
 	if from == to:
-		return 0.0
+		route.append(from)
+		return route
 	var dist: Dictionary[Vector2i, float] = {from: 0.0}
+	var parent: Dictionary[Vector2i, Vector2i] = {}
 	var done: Dictionary[Vector2i, bool] = {}
 	var frontier: Array[Vector2i] = [from]
 	while not frontier.is_empty():
@@ -175,8 +214,16 @@ func bounded_search(from: Vector2i, to: Vector2i, cap_m: float) -> float:
 			continue
 		done[cell] = true
 		var d: float = dist[cell]
+		last_search_expanded += 1
+		last_search_max_expanded_m = maxf(last_search_max_expanded_m, d)
 		if cell == to:
-			return d
+			var walk: Vector2i = to
+			route.append(walk)
+			while walk != from:
+				walk = parent[walk]
+				route.append(walk)
+			route.reverse()
+			return route
 		for off: Vector2i in _NEIGHBOURS:
 			var n: Vector2i = cell + off
 			if done.has(n) or not is_symbol_legal(n):
@@ -190,8 +237,108 @@ func bounded_search(from: Vector2i, to: Vector2i, cap_m: float) -> float:
 				continue
 			if not dist.has(n) or nd < dist[n]:
 				dist[n] = nd
+				parent[n] = cell
 				frontier.append(n)
-	return INF
+	return route
+
+
+## Length, in metres, of a cell route between its end cell centres
+## (`cell_m` per orthogonal step, `cell_m * sqrt(2)` per diagonal one).
+func route_length(route: Array[Vector2i]) -> float:
+	var total: float = 0.0
+	for i in range(1, route.size()):
+		var step: Vector2i = route[i] - route[i - 1]
+		total += cell_m * (sqrt(2.0) if step.x != 0 and step.y != 0 else 1.0)
+	return total
+
+
+## A* over symbol-legal cells (ADR-0012 §2 pathing setup: octile heuristic,
+## no jumping, `DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES`,
+## `allow_partial_path = false`). Returns the cell route `from` .. `to`, or
+## `[]` when either end is not symbol-legal or `to` is unreachable. Counts
+## as one query; callers meter it through the `QueryBudget`.
+func find_path(from: Vector2i, to: Vector2i) -> Array[Vector2i]:
+	query_count += 1
+	var route: Array[Vector2i] = []
+	if not is_symbol_legal(from) or not is_symbol_legal(to):
+		return route
+	_sync_astar()
+	assert(not _astar.is_dirty(), "WalkGrid: A* queried while dirty")
+	for id: Vector2i in _astar.get_id_path(from, to, false):
+		route.append(id)
+	return route
+
+
+## 4-connected symbol-legal component label of `cell` (GDD rule 5 notice
+## check 3), or -1 when `cell` is not symbol-legal. Labels are recomputed at
+## most once per `set_blocked()` revision, on first use after it.
+func component_of(cell: Vector2i) -> int:
+	if not is_symbol_legal(cell):
+		return -1
+	if _labels_revision != _revision or _labels.size() != cells.size():
+		_relabel()
+	return _labels[_index(cell)]
+
+
+## `true` iff the straight segment `a` -> `b`, swept by a square of
+## half-width `radius`, crosses only cells that pass the rule: symbol-legal
+## when `symbol_rule` is set (GDD rule 5 final approach), else walkable (the
+## leader's rule, for `path_dist`'s gap). Sampled every `cell_m / 20`; the
+## square makes the sweep conservative.
+func segment_clear(a: Vector2, b: Vector2, radius: float, symbol_rule: bool) -> bool:
+	var r: float = maxf(0.0, radius - 1e-6)
+	var steps: int = maxi(1, ceili(a.distance_to(b) / (cell_m * 0.05)))
+	for i in steps + 1:
+		var p: Vector2 = a.lerp(b, float(i) / float(steps))
+		var lo: Vector2i = cell_of(p - Vector2(r, r))
+		var hi: Vector2i = cell_of(p + Vector2(r, r))
+		for y in range(lo.y, hi.y + 1):
+			for x in range(lo.x, hi.x + 1):
+				var c := Vector2i(x, y)
+				if not (is_symbol_legal(c) if symbol_rule else is_walkable(c)):
+					return false
+	return true
+
+
+func _relabel() -> void:
+	_labels.resize(cells.size())
+	_labels.fill(-1)
+	var next_label: int = 0
+	for y in size.y:
+		for x in size.x:
+			var start := Vector2i(x, y)
+			if _labels[_index(start)] >= 0 or not is_symbol_legal(start):
+				continue
+			_labels[_index(start)] = next_label
+			var stack: Array[Vector2i] = [start]
+			while not stack.is_empty():
+				var cur: Vector2i = stack.pop_back()
+				for off: Vector2i in _NEIGHBOURS4:
+					var n: Vector2i = cur + off
+					if is_symbol_legal(n) and _labels[_index(n)] < 0:
+						_labels[_index(n)] = next_label
+						stack.append(n)
+			next_label += 1
+	_labels_revision = _revision
+
+
+func _sync_astar() -> void:
+	if _astar == null:
+		_astar = AStarGrid2D.new()
+		_astar.region = Rect2i(Vector2i.ZERO, size)
+		_astar.cell_size = Vector2.ONE
+		_astar.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
+		_astar.default_compute_heuristic = AStarGrid2D.HEURISTIC_OCTILE
+		_astar.default_estimate_heuristic = AStarGrid2D.HEURISTIC_OCTILE
+		_astar.jumping_enabled = false
+		_astar.update()
+		_astar_revision = -1
+	if _astar_revision != _revision:
+		for y in size.y:
+			for x in size.x:
+				var c := Vector2i(x, y)
+				_astar.set_point_solid(c, not is_symbol_legal(c))
+		_astar_revision = _revision
 
 
 func _in_bounds(cell: Vector2i) -> bool:

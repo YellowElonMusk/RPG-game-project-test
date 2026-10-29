@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -30,7 +30,7 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-10e [L] (R5, final approach legality)** GIVEN a leader standing one cell inside a `SAFE` edge, a leader who rounds a wall corner between repaths, and a diagonal approach past a blocked corner, THEN on every frame the symbol's centre lies on a symbol-legal cell, the final approach is used only while the leader's cell is the path's target and every crossed cell is legal, and every A* query starts from a symbol-legal cell.
+- [x] **AC-10e [L] (R5, final approach legality)** GIVEN a leader standing one cell inside a `SAFE` edge, a leader who rounds a wall corner between repaths, and a diagonal approach past a blocked corner, THEN on every frame the symbol's centre lies on a symbol-legal cell, the final approach is used only while the leader's cell is the path's target and every crossed cell is legal, and every A* query starts from a symbol-legal cell.
 
 ---
 
@@ -76,7 +76,7 @@ conditions:
 **Required evidence**:
 - `tests/unit/overworld/symbol_brain_final_approach_legality_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-29)
 
 ---
 
@@ -84,3 +84,9 @@ conditions:
 
 - Depends on: `story-034-chase-target-offset.md`, `story-025-safe-cell-leader-never-noticed.md` (AC-9f, `SAFE` cells are not symbol-legal)
 - Unlocks: `story-036-chase-gives-up-at-safe-zone.md`
+
+---
+
+## Completion Notes
+
+Final approach requires: route non-empty, chase-target cell == route target cell (interpreted as the offset target's cell, not literally the leader's), leader not SAFE, `segment_clear` swept by body_radius (conservative square sweep). Test: `symbol_brain_final_approach_legality_test.gd` (3). `ground_mover.gd` unchanged; it still applies corner assist to symbols (ADR says leader only) -- flagged, not changed. Shared implementation for stories 028-037: `src/overworld/query_budget.gd` (new), `symbol_brain.gd`, `walk_grid.gd` (component labels, `bounded_route`, `find_path` on AStarGrid2D, `segment_clear`, query spy), `overworld_config.gd` (f_chase, repath_s, repath_per_frame_max, symbol_giveup_m, giveup_s, `v_chase()`). Deviation: `step()` takes `budget: QueryBudget = null` as its last optional argument (ADR-0012 lists it fifth) so earlier callers compile; null serves every query.

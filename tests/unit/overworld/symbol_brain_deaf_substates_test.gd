@@ -47,7 +47,9 @@ func _assert_deaf_in(state: SymbolBrain.SubState, grace: bool) -> void:
 		brain.step(_DT, leader, grid, grace, cfg)
 	assert_int(brain.notice_tests_run).is_equal(0)
 	assert_int(brain.notice_searches_run).is_equal(0)
-	if state != SymbolBrain.SubState.NOTICING:
+	# Returning now walks home and rejoins Patrol (story 033); the cooldown
+	# keeps it deaf, so only the other states must hold.
+	if state != SymbolBrain.SubState.NOTICING and state != SymbolBrain.SubState.RETURNING:
 		assert_int(brain.sub_state).is_equal(state)
 
 

@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -30,7 +30,7 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-10d [L] (R5, chase target)** GIVEN a leader standing still at an off-centre point of a cell, THEN a chasing symbol reaches contact within `(path_dist₀ / v_chase) + 2·dt`. GIVEN symbols chasing with marker indices i = 0, 1, 2, THEN each target's offset from its nearest-cell point equals `|(i mod 3) − 1| · body_radius`, perpendicular to **that symbol's own** symbol-to-leader vector, and the offset is dropped when the offset point is not symbol-legal. Ties for the nearest cell go to the lowest cell index.
+- [x] **AC-10d [L] (R5, chase target)** GIVEN a leader standing still at an off-centre point of a cell, THEN a chasing symbol reaches contact within `(path_dist₀ / v_chase) + 2·dt`. GIVEN symbols chasing with marker indices i = 0, 1, 2, THEN each target's offset from its nearest-cell point equals `|(i mod 3) − 1| · body_radius`, perpendicular to **that symbol's own** symbol-to-leader vector, and the offset is dropped when the offset point is not symbol-legal. Ties for the nearest cell go to the lowest cell index.
 
 ---
 
@@ -74,7 +74,7 @@ visually on the exact same cell.
 **Required evidence**:
 - `tests/unit/overworld/symbol_brain_chase_target_offset_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-29)
 
 ---
 
@@ -82,3 +82,9 @@ visually on the exact same cell.
 
 - Depends on: `story-031-chase-speed-and-repath-throttle.md`
 - Unlocks: `story-035-final-approach-legality.md`
+
+---
+
+## Completion Notes
+
+`chase_target()`, `nearest_legal_cell()` (lowest-index ties), `nearest_cell_point()`. Test: `symbol_brain_chase_target_offset_test.gd` (5). Shared implementation for stories 028-037: `src/overworld/query_budget.gd` (new), `symbol_brain.gd`, `walk_grid.gd` (component labels, `bounded_route`, `find_path` on AStarGrid2D, `segment_clear`, query spy), `overworld_config.gd` (f_chase, repath_s, repath_per_frame_max, symbol_giveup_m, giveup_s, `v_chase()`). Deviation: `step()` takes `budget: QueryBudget = null` as its last optional argument (ADR-0012 lists it fifth) so earlier callers compile; null serves every query.

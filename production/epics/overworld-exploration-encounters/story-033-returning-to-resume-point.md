@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -30,7 +30,7 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-10c [L] (R5, Returning)** GIVEN give-up, THEN the symbol walks by A* at `v_patrol` to its stored resume point, then resumes Patrol in its earlier direction. It notices nothing until `renotice_cooldown_s` after rejoining (asserted at `− dt` and `+ dt`), and no contact occurs while it is Returning, even when it walks through the leader.
+- [x] **AC-10c [L] (R5, Returning)** GIVEN give-up, THEN the symbol walks by A* at `v_patrol` to its stored resume point, then resumes Patrol in its earlier direction. It notices nothing until `renotice_cooldown_s` after rejoining (asserted at `− dt` and `+ dt`), and no contact occurs while it is Returning, even when it walks through the leader.
 
 ---
 
@@ -74,7 +74,7 @@ test, no contact, whatever the leader does.
 **Required evidence**:
 - `tests/unit/overworld/symbol_brain_returning_resume_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-29)
 
 ---
 
@@ -82,3 +82,9 @@ test, no contact, whatever the leader does.
 
 - Depends on: `story-032-chase-give-up-path-distance.md`
 - Unlocks: `story-037-chase-pathing-edge-cases.md`, `story-045-stunned-symbol-grants-no-encounter.md`
+
+---
+
+## Completion Notes
+
+Returning: one budgeted A* to the resume point at `v_patrol`, restores next vertex and direction, then `rejoin_patrol`; `contact_eligible()` added; `on_grace_started()` added. story-024 deaf test no longer asserts a forced Returning symbol stays Returning (it now walks home). Test: `symbol_brain_returning_resume_test.gd` (2). Shared implementation for stories 028-037: `src/overworld/query_budget.gd` (new), `symbol_brain.gd`, `walk_grid.gd` (component labels, `bounded_route`, `find_path` on AStarGrid2D, `segment_clear`, query spy), `overworld_config.gd` (f_chase, repath_s, repath_per_frame_max, symbol_giveup_m, giveup_s, `v_chase()`). Deviation: `step()` takes `budget: QueryBudget = null` as its last optional argument (ADR-0012 lists it fifth) so earlier callers compile; null serves every query.

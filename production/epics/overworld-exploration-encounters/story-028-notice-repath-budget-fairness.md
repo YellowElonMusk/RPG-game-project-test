@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-9j [L] (R5, budget fairness)** GIVEN N symbols all requesting a search on the same frame with `repath_per_frame_max` B, THEN every request is served within `⌈N/B⌉` frames, the oldest deferred request first, whatever the marker order; Returning paths count toward B.
+- [x] **AC-9j [L] (R5, budget fairness)** GIVEN N symbols all requesting a search on the same frame with `repath_per_frame_max` B, THEN every request is served within `⌈N/B⌉` frames, the oldest deferred request first, whatever the marker order; Returning paths count toward B.
 
 ---
 
@@ -87,7 +87,7 @@ checks scope against it.*
 **Required evidence**:
 - `tests/unit/overworld/symbol_brain_budget_fairness_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-29)
 
 ---
 
@@ -95,3 +95,9 @@ checks scope against it.*
 
 - Depends on: `story-021-notice-delay-before-chasing-starts.md` (AC-9b, the notice test this budget gates), `story-023-notice-respects-bounded-path-cap.md` (AC-9d, the bounded search sharing the pool)
 - Unlocks: `story-029-bounded-notice-search-cap.md`, `story-030-cross-component-query-budget.md`
+
+---
+
+## Completion Notes
+
+Round-robin `QueryBudget` (reserved slots for the oldest deferred first). Test: `tests/unit/overworld/symbol_brain_budget_fairness_test.gd` (5). Shared implementation for stories 028-037: `src/overworld/query_budget.gd` (new), `symbol_brain.gd`, `walk_grid.gd` (component labels, `bounded_route`, `find_path` on AStarGrid2D, `segment_clear`, query spy), `overworld_config.gd` (f_chase, repath_s, repath_per_frame_max, symbol_giveup_m, giveup_s, `v_chase()`). Deviation: `step()` takes `budget: QueryBudget = null` as its last optional argument (ADR-0012 lists it fifth) so earlier callers compile; null serves every query.

@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -30,7 +30,7 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-9k [L] (R5, bounded notice search)** GIVEN a leader 3 m from a symbol in the same component but 60 m round a wall, THEN the notice search visits no cell whose path length exceeds `notice_path_cap_m`, and no notice occurs. The cached waypoints are per symbol, and two symbols in the same cell with different marker indices get different chase targets.
+- [x] **AC-9k [L] (R5, bounded notice search)** GIVEN a leader 3 m from a symbol in the same component but 60 m round a wall, THEN the notice search visits no cell whose path length exceeds `notice_path_cap_m`, and no notice occurs. The cached waypoints are per symbol, and two symbols in the same cell with different marker indices get different chase targets.
 
 ---
 
@@ -75,7 +75,7 @@ visited path length exceeds `notice_path_cap_m`.
 **Required evidence**:
 - `tests/unit/overworld/symbol_brain_notice_search_cap_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-29)
 
 ---
 
@@ -83,3 +83,9 @@ visited path length exceeds `notice_path_cap_m`.
 
 - Depends on: `story-023-notice-respects-bounded-path-cap.md` (AC-9d, reachability and the notice-path cap concept), `story-028-notice-repath-budget-fairness.md`
 - Unlocks: `story-030-cross-component-query-budget.md`
+
+---
+
+## Completion Notes
+
+Bounded search expands no cell past `notice_path_cap_m` (spied via `last_search_max_expanded_m`); per-symbol cache keyed on (symbol cell, leader cell, grid revision). Closes story 023's waypoint-cache TODO. Test: `symbol_brain_notice_search_cap_test.gd` (3). Shared implementation for stories 028-037: `src/overworld/query_budget.gd` (new), `symbol_brain.gd`, `walk_grid.gd` (component labels, `bounded_route`, `find_path` on AStarGrid2D, `segment_clear`, query spy), `overworld_config.gd` (f_chase, repath_s, repath_per_frame_max, symbol_giveup_m, giveup_s, `v_chase()`). Deviation: `step()` takes `budget: QueryBudget = null` as its last optional argument (ADR-0012 lists it fifth) so earlier callers compile; null serves every query.

@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -30,7 +30,7 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-11 [L] (R5, R12)** GIVEN a chase toward a leader who enters a safe zone at `t₀`, THEN on no frame does the symbol's centre enter a `SAFE` cell, and no contact occurs. The symbol is still Chasing at `t₀ + giveup_s − dt` and Returning at `t₀ + giveup_s + dt`.
+- [x] **AC-11 [L] (R5, R12)** GIVEN a chase toward a leader who enters a safe zone at `t₀`, THEN on no frame does the symbol's centre enter a `SAFE` cell, and no contact occurs. The symbol is still Chasing at `t₀ + giveup_s − dt` and Returning at `t₀ + giveup_s + dt`.
 
 ---
 
@@ -74,7 +74,7 @@ left out of scope.
 **Required evidence**:
 - `tests/unit/overworld/symbol_brain_safe_zone_giveup_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-29)
 
 ---
 
@@ -82,3 +82,9 @@ left out of scope.
 
 - Depends on: `story-035-final-approach-legality.md`, `story-025-safe-cell-leader-never-noticed.md` (AC-9f, `SAFE` cells and reachability)
 - Unlocks: `story-038-contact-starts-encounter-once.md`
+
+---
+
+## Completion Notes
+
+SAFE-leader branch of the give-up test. Test: `symbol_brain_safe_zone_giveup_test.gd` (2). Shared implementation for stories 028-037: `src/overworld/query_budget.gd` (new), `symbol_brain.gd`, `walk_grid.gd` (component labels, `bounded_route`, `find_path` on AStarGrid2D, `segment_clear`, query spy), `overworld_config.gd` (f_chase, repath_s, repath_per_frame_max, symbol_giveup_m, giveup_s, `v_chase()`). Deviation: `step()` takes `budget: QueryBudget = null` as its last optional argument (ADR-0012 lists it fifth) so earlier callers compile; null serves every query.

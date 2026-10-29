@@ -65,7 +65,9 @@ func _assert_delay(cfg: OverworldConfig, leader_leaves: bool) -> void:
 		if leader_leaves:
 			leader = _FAR_LEADER
 		brain.step(_DT, leader, grid, false, cfg)
-		assert_float(brain.last_distance_moved).is_equal(0.0)
+		# Noticing holds still; Chasing moves (story 031).
+		if brain.sub_state == SymbolBrain.SubState.NOTICING:
+			assert_float(brain.last_distance_moved).is_equal(0.0)
 		var t: float = k * _DT
 		if t <= delay - _DT:
 			assert_int(brain.sub_state).is_equal(SymbolBrain.SubState.NOTICING)

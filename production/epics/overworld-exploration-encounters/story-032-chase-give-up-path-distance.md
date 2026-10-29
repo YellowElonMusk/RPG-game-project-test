@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -30,7 +30,7 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-10b [L] (R5, give-up)** GIVEN a chase in a switchback fixture where the straight-line distance stays under `symbol_giveup_m` but `path_dist` exceeds it from time `t₀`, with `dt` chosen so that `giveup_s/dt` is not whole, THEN the symbol is still Chasing at `t₀ + giveup_s − dt` and Returning at `t₀ + giveup_s + dt`. The test's `path_dist` is recomputed from the stored path each frame, per rule 5.
+- [x] **AC-10b [L] (R5, give-up)** GIVEN a chase in a switchback fixture where the straight-line distance stays under `symbol_giveup_m` but `path_dist` exceeds it from time `t₀`, with `dt` chosen so that `giveup_s/dt` is not whole, THEN the symbol is still Chasing at `t₀ + giveup_s − dt` and Returning at `t₀ + giveup_s + dt`. The test's `path_dist` is recomputed from the stored path each frame, per rule 5.
 
 ---
 
@@ -76,7 +76,7 @@ can only make give-up earlier than straight-line distance would, never later.
 **Required evidence**:
 - `tests/unit/overworld/symbol_brain_giveup_path_dist_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-29)
 
 ---
 
@@ -84,3 +84,9 @@ can only make give-up earlier than straight-line distance would, never later.
 
 - Depends on: `story-031-chase-speed-and-repath-throttle.md`
 - Unlocks: `story-033-returning-to-resume-point.md`, `story-036-chase-gives-up-at-safe-zone.md`, `story-037-chase-pathing-edge-cases.md`
+
+---
+
+## Completion Notes
+
+`path_dist()` = arc + gap at t0 (INF if leader SAFE or gap not walkable) + leader travel. Test: `symbol_brain_giveup_path_dist_test.gd` (2). Shared implementation for stories 028-037: `src/overworld/query_budget.gd` (new), `symbol_brain.gd`, `walk_grid.gd` (component labels, `bounded_route`, `find_path` on AStarGrid2D, `segment_clear`, query spy), `overworld_config.gd` (f_chase, repath_s, repath_per_frame_max, symbol_giveup_m, giveup_s, `v_chase()`). Deviation: `step()` takes `budget: QueryBudget = null` as its last optional argument (ADR-0012 lists it fifth) so earlier callers compile; null serves every query.

@@ -77,12 +77,42 @@ extends Resource
 ## 0.9-1.4; default 0.9; invariant I17). 0 disables the pause.
 @export var turn_pause_s: float = 0.9
 
+## Chase speed as a fraction of `walk_speed` (GDD Formulas, `symbol_speeds`'s
+## `f_chase`; GDD Tuning Knobs; safe range 0.7-0.85; default 0.8; invariants
+## I1-I3). `v_chase()` turns it into metres per second.
+@export var f_chase: float = 0.8
+
+## Shortest gap, in seconds, between two chase repaths of one symbol (GDD
+## rule 5 Chasing row; GDD Tuning Knobs; safe range 0.25-1.0; default 0.5).
+@export var repath_s: float = 0.5
+
+## Pathfinder queries (notice searches, chase repaths and Returning paths
+## together) served per frame across all symbols (GDD rule 5 "Query budget";
+## GDD Tuning Knobs; safe range 1-4; default 2).
+@export var repath_per_frame_max: int = 2
+
+## Path distance, in metres, past which a chase counts as "beyond" for the
+## give-up test (GDD rule 5 "Give-up test"; GDD Tuning Knobs; safe range 6-8;
+## default 6.5; invariants I2, I4, I5, I16).
+@export var symbol_giveup_m: float = 6.5
+
+## How long, in seconds, the give-up test must hold without a break before a
+## chase ends (GDD rule 5 "Give-up test"; GDD Tuning Knobs; safe range
+## 1.0-2.5; default 1.5; invariant I2).
+@export var giveup_s: float = 1.5
+
 
 ## `v_patrol = f_patrol * walk_speed`, in metres per second (GDD Formulas,
 ## `chase_escape`). The speed a Patrol (and Returning) symbol passes to
 ## `GroundMover.step()`.
 func v_patrol() -> float:
 	return f_patrol * walk_speed
+
+
+## `v_chase = f_chase * walk_speed`, in metres per second (GDD Formulas,
+## `symbol_speeds`). The speed a Chasing symbol passes to `GroundMover.step()`.
+func v_chase() -> float:
+	return f_chase * walk_speed
 
 
 ## Invariants I1-I18 (GDD Formulas, "Load-time invariants"). Returns one

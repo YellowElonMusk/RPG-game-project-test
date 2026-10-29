@@ -10,23 +10,33 @@
 ##   or reversing at each end of a `PINGPONG` path; the **turn pause** at a
 ##   `PINGPONG` end or a `LOOP` vertex turning by more than 90 degrees, the old
 ##   facing deciding the half-planes until the flip (story 026).
-## - **Notice test** (stories 022-025): runs only in Patrol, outside the
-##   re-notice cooldown and outside encounter grace; check 1 the half-plane
-##   radius, check 2 the leader not `SAFE`, check 4 the bounded search.
+## - **Notice test** (stories 022-025, 029-030): runs only in Patrol, outside
+##   the re-notice cooldown and outside encounter grace; check 1 the
+##   half-plane radius, check 2 the leader not `SAFE`, check 3 the same
+##   symbol-legal component, check 4 the bounded search (route cached per
+##   symbol per (symbol cell, leader cell, grid revision)).
+## - **Query budget** (story 028): every pathfinder query (notice search,
+##   chase repath, Returning path) asks the injected `QueryBudget` first.
 ## - **Noticing** (story 021): a timed hold of `cfg.notice_delay_s`, then
 ##   Chasing unconditionally.
+## - **Chasing** (stories 031-037): `cfg.v_chase()` along the stored A* route
+##   toward the chase target, repathing at most every `cfg.repath_s` and only
+##   when the target cell or the grid revision changed; the final approach;
+##   the give-up test (`path_dist`, `SAFE` leader, empty path).
+## - **Returning** (story 033, 037): A* at `cfg.v_patrol()` to the resume
+##   point, then Patrol in its earlier direction with the re-notice cooldown;
+##   an unreachable resume point holds the symbol still, deaf, with one
+##   warning.
 ## - **Facing** (stories 026-027): snapped to the four displayed diagonals
 ##   with 45 + 5 degree hysteresis, held while not moving.
 ##
-## TODO(overworld): Chasing/Returning/Stunned/Static behaviour (stories 031+;
-## Chasing currently holds still), notice check 3 (component labels, AC-9h),
-## and the `QueryBudget` argument of ADR-0012's
-## `step(dt, leader, leader_safe, grid, budget, grace, cfg)` (stories 028-030).
+## TODO(overworld): Stunned/Static behaviour, `on_fled()` and swept contact
+## (stories 038+).
 class_name SymbolBrain
 extends RefCounted
 
-## GDD rule 5 sub-states. `PATROL` and `NOTICING` have behaviour; the rest
-## hold still in `step()` (TODO(overworld): stories 031+).
+## GDD rule 5 sub-states. `STUNNED` and `STATIC` hold still in `step()`
+## (TODO(overworld): stories 038+).
 enum SubState { PATROL, NOTICING, CHASING, RETURNING, STUNNED, STATIC }
 
 ## How a patrol polyline continues past its last vertex (GDD rule 5: "a
@@ -53,6 +63,9 @@ const _HALF_SECTOR_DEG: float = 45.0
 ## rule constant, not a GDD Tuning Knob, so it lives here, not in config.
 const FACING_HYSTERESIS_DEG: float = 5.0
 
+## Returned by `nearest_legal_cell()` when the grid has no symbol-legal cell.
+const NO_CELL: Vector2i = Vector2i(-1, -1)
+
 ## Current sub-state. Starts in `PATROL` (GDD edge cases: symbols start at
 ## their patrol origins in Patrol).
 var sub_state: SubState = SubState.PATROL
@@ -68,6 +81,11 @@ var facing: Facing = Facing.NE
 ## input to `facing`).
 var heading: Vector2 = Vector2.RIGHT
 
+## The symbol's index in its map's marker order. Picks the chase target's
+## sideways offset, `(marker_index mod 3 - 1) * body_radius` (GDD rule 5
+## "Chase target").
+var marker_index: int = 0
+
 ## Distance actually covered by the most recent `step()`, in metres (sum of
 ## every `GroundMover.MoveResult.distance_moved` inside it).
 var last_distance_moved: float = 0.0
@@ -76,9 +94,25 @@ var last_distance_moved: float = 0.0
 ## (story 024 asserts the deaf sub-states never enter it).
 var notice_tests_run: int = 0
 
-## Diagnostic counter: how many times the notice test reached its bounded
-## search, check 4 (story 022 asserts check 1 rejects without a search).
+## Diagnostic counter: how many times the notice test reached check 4, the
+## bounded search, whether it was served from the cache or not (story 022
+## asserts check 1 rejects without a search).
 var notice_searches_run: int = 0
+
+## Diagnostic counter: pathfinder queries this brain was granted (notice
+## searches, chase repaths and Returning paths; story 028's spy).
+var queries_granted: int = 0
+
+## Diagnostic counter: chase repaths issued (story 031's spy).
+var repaths_run: int = 0
+
+## Diagnostic counter: warnings logged (story 037: exactly one for an
+## unreachable resume point).
+var warnings_logged: int = 0
+
+## Diagnostic: `true` when the most recent Chasing step used the final
+## approach (straight at the target point) instead of the stored route.
+var used_final_approach: bool = false
 
 var _path: PackedVector2Array
 var _mode: PathMode
@@ -93,14 +127,56 @@ var _cooldown_left: float = 0.0
 ## Seconds of turn pause left; > 0 while in the look-back pose.
 var _pause_left: float = 0.0
 
+# Stored route (Chasing and Returning): remaining waypoints, in metres.
+var _route: Array[Vector2] = []
+# `w_last`, the stored route's end, kept once its waypoints are consumed.
+var _route_end: Vector2 = Vector2.ZERO
+# The cell the stored route was computed toward.
+var _route_target_cell: Vector2i = NO_CELL
+# `grid.revision()` when the route was computed.
+var _route_revision: int = 0
+# `c_L(t0)`: the leader's centre when the route was computed.
+var _route_leader_t0: Vector2 = Vector2.ZERO
+# `true` when the gap `w_last -> c_L(t0)` is not a real route (GDD "Path
+# distance": the leader was `SAFE` at `t0`, or the gap crosses a cell the
+# leader cannot walk).
+var _route_gap_inf: bool = false
+# The last query returned nothing and nothing is pending.
+var _route_empty: bool = false
+# A repath was deferred by the budget; the old route is kept.
+var _repath_pending: bool = false
+# Seconds since the stored route was computed.
+var _since_repath: float = 0.0
+# `d_L(t0 -> t)`: distance the leader has walked since `t0`.
+var _leader_travel: float = 0.0
+var _last_leader: Vector2 = Vector2.ZERO
+# Seconds the give-up test has held without a break; -1 while it fails.
+var _giveup_elapsed: float = -1.0
+
+# Notice cache (GDD rule 5 check 4: waypoints cached per symbol).
+var _cache_valid: bool = false
+var _cache_from: Vector2i = NO_CELL
+var _cache_to: Vector2i = NO_CELL
+var _cache_rev: int = 0
+var _cache_route: Array[Vector2i] = []
+
+# Resume point (GDD rule 5 Returning row): where the symbol left Patrol.
+var _resume_point: Vector2 = Vector2.ZERO
+var _resume_next: int = 0
+var _resume_dir: int = 1
+var _return_needs_path: bool = false
+var _return_stuck: bool = false
+
 
 ## `path` is the marker's patrol polyline in ground-plane metres; `mode`
-## says how it continues past its last vertex. A path with fewer than two
-## vertices is a stationary patrol: `step()` holds the symbol at vertex 0
-## (or `Vector2.ZERO` for an empty path).
-func _init(path: PackedVector2Array, mode: PathMode) -> void:
+## says how it continues past its last vertex; `p_marker_index` is the
+## marker's index in map order. A path with fewer than two vertices is a
+## stationary patrol: `step()` holds the symbol at vertex 0 (or
+## `Vector2.ZERO` for an empty path).
+func _init(path: PackedVector2Array, mode: PathMode, p_marker_index: int = 0) -> void:
 	_path = path
 	_mode = mode
+	marker_index = p_marker_index
 	if _path.size() > 0:
 		position = _path[0]
 	_next = 1 if _path.size() > 1 else 0
@@ -138,10 +214,57 @@ func facing_vector() -> Vector2:
 	return DIAGONALS[facing].normalized()
 
 
+## The resume point stored when the symbol left Patrol (GDD rule 5
+## Returning row).
+func resume_point() -> Vector2:
+	return _resume_point
+
+
+## `true` while a budget-deferred repath keeps the old route (GDD: a pending
+## path is never empty).
+func is_repath_pending() -> bool:
+	return _repath_pending
+
+
+## `true` when the last route query returned nothing and nothing is pending.
+func has_empty_route() -> bool:
+	return _route_empty and not _repath_pending
+
+
+## The cell the stored route leads to (`NO_CELL` before any route).
+func route_target_cell() -> Vector2i:
+	return _route_target_cell
+
+
+## Seconds the give-up test has held without a break (0 while it fails).
+func giveup_elapsed() -> float:
+	return maxf(0.0, _giveup_elapsed)
+
+
+## `true` once Returning found its resume point unreachable: the symbol
+## holds still, deaf, until the map reloads (GDD rule 5 "No route").
+func is_return_stuck() -> bool:
+	return _return_stuck
+
+
+## GDD rule 5 Contact: contact counts only in Patrol, Noticing and Chasing
+## (the Static `contact_or_confirm` case is TODO(overworld): story 038+).
+## Grace and the leader's `SAFE` cell are the caller's checks.
+func contact_eligible() -> bool:
+	return sub_state == SubState.PATROL or sub_state == SubState.NOTICING \
+			or sub_state == SubState.CHASING
+
+
+## ADR-0012 §5 `on_grace_started()`: a Noticing or Chasing symbol switches
+## to Returning when encounter grace starts (GDD rule 7).
+func on_grace_started() -> void:
+	if sub_state == SubState.NOTICING or sub_state == SubState.CHASING:
+		_enter_returning()
+
+
 ## The Returning -> Patrol transition (GDD rule 5 Returning row): back in
-## Patrol, with the notice test off for `cfg.renotice_cooldown_s`.
-## TODO(overworld): the Returning behaviour (stories 031+) calls this on
-## reaching the resume point; until then only tests drive it.
+## Patrol, with the notice test off for `cfg.renotice_cooldown_s`. Called by
+## the Returning step on reaching the resume point.
 func rejoin_patrol(cfg: OverworldConfig) -> void:
 	sub_state = SubState.PATROL
 	_cooldown_left = cfg.renotice_cooldown_s
@@ -152,32 +275,354 @@ func rejoin_patrol(cfg: OverworldConfig) -> void:
 ## leader move; whether it stands in a `SAFE` cell is read from `grid` (one
 ## source of truth instead of ADR-0012's separate `leader_safe` argument).
 ## `grace` is `true` during encounter grace (GDD rule 7), which keeps the
-## notice test off whatever the sub-state.
+## notice test off whatever the sub-state. `budget` is the frame's shared
+## `QueryBudget` (ADR-0012 §5); `null` serves every query (tests of other
+## rules). It is the last, optional argument rather than ADR-0012's fifth,
+## so earlier callers keep compiling.
 ##
 ## Patrol: tick the re-notice cooldown, run the notice test (entering
 ## Noticing, without moving, when it passes), else walk the path. Noticing:
 ## hold still; Chasing starts once `cfg.notice_delay_s` has elapsed since the
-## entry frame. Every other sub-state holds still (TODO(overworld)).
-func step(dt: float, leader: Vector2, grid: WalkGrid, grace: bool, cfg: OverworldConfig) -> void:
+## entry frame. Chasing and Returning: see `_step_chasing()` and
+## `_step_returning()`. Stunned and Static hold still (TODO(overworld)).
+func step(dt: float, leader: Vector2, grid: WalkGrid, grace: bool, cfg: OverworldConfig,
+		budget: QueryBudget = null) -> void:
 	last_distance_moved = 0.0
+	used_final_approach = false
 	if dt <= 0.0:
 		return
 	match sub_state:
 		SubState.PATROL:
 			if _cooldown_left > 0.0:
 				_cooldown_left = maxf(0.0, _cooldown_left - dt)
-			if not grace and _cooldown_left <= 0.0 and _notice_test(leader, grid, cfg):
-				_enter_noticing(leader)
+			if not grace and _cooldown_left <= 0.0 and _notice_test(leader, grid, cfg, budget):
+				_enter_noticing(leader, grid, cfg)
 				return
 			_walk_patrol(dt, grid, cfg)
 		SubState.NOTICING:
+			_track_leader(leader)
+			_since_repath += dt
 			_notice_elapsed += dt
 			if _notice_elapsed >= cfg.notice_delay_s:
-				# TODO(overworld): chase movement (stories 031+); Chasing holds
-				# still until then.
 				sub_state = SubState.CHASING
+				_giveup_elapsed = -1.0
+		SubState.CHASING:
+			_step_chasing(dt, leader, grid, cfg, budget)
+		SubState.RETURNING:
+			_step_returning(dt, grid, cfg, budget)
 		_:
 			pass
+
+
+## GDD rule 5 "Path distance": `arc(c_S -> w_last) + |w_last - c_L(t0)| +
+## d_L(t0 -> t)` -- the remaining arc along the stored route from the
+## symbol's centre, the gap from the route's end to the leader's centre when
+## it was computed, and the distance the leader has walked since (tracked
+## per step; `leader` adds any walk since the last step). `INF` when the
+## route is empty or its gap is not a real route segment. Always an upper
+## bound on the leader's true path distance.
+func path_dist(leader: Vector2) -> float:
+	if _route_empty or _route_gap_inf:
+		return INF
+	var arc: float = 0.0
+	if _route.is_empty():
+		arc = position.distance_to(_route_end)
+	else:
+		var p: Vector2 = position
+		for w: Vector2 in _route:
+			arc += p.distance_to(w)
+			p = w
+	return arc + _route_end.distance_to(_route_leader_t0) + _leader_travel \
+			+ _last_leader.distance_to(leader)
+
+
+## GDD rule 5 "Chase target": the symbol-legal cell nearest `leader` (ties:
+## lowest cell index) -- the leader's own point when its cell is legal,
+## else the closest point of that cell -- offset sideways by
+## `(marker_index mod 3 - 1) * cfg.body_radius` perpendicular to this
+## symbol's own symbol-to-leader vector. The offset is dropped when the
+## offset point is not on a symbol-legal cell.
+func chase_target(leader: Vector2, grid: WalkGrid, cfg: OverworldConfig) -> Vector2:
+	var base: Vector2 = nearest_cell_point(grid, leader)
+	var k: int = posmod(marker_index, 3) - 1
+	var to_leader: Vector2 = leader - position
+	if k == 0 or to_leader == Vector2.ZERO:
+		return base
+	var offset_point: Vector2 = base + to_leader.normalized().orthogonal() * (float(k) * cfg.body_radius)
+	if grid.is_symbol_legal(grid.cell_of(offset_point)):
+		return offset_point
+	return base
+
+
+## The closest point to `point` inside the symbol-legal cell nearest it
+## (`point` itself when its cell is legal; `point` unchanged when the grid
+## has no legal cell).
+static func nearest_cell_point(grid: WalkGrid, point: Vector2) -> Vector2:
+	var cell: Vector2i = nearest_legal_cell(grid, point)
+	if cell == NO_CELL or cell == grid.cell_of(point):
+		return point
+	var lo: Vector2 = Vector2(cell) * grid.cell_m
+	var hi: Vector2 = lo + Vector2(grid.cell_m, grid.cell_m) * (1.0 - 1e-6)
+	return point.clamp(lo, hi)
+
+
+## The symbol-legal cell nearest `point` (GDD rule 5 "A* origins" and
+## "Chase target": ties go to the lowest cell index, `y * size.x + x`).
+## Distance is from `point` to the cell's square. `NO_CELL` when none.
+static func nearest_legal_cell(grid: WalkGrid, point: Vector2) -> Vector2i:
+	var c: Vector2i = grid.cell_of(point)
+	if grid.is_symbol_legal(c):
+		return c
+	var best: Vector2i = NO_CELL
+	var best_d: float = INF
+	var best_idx: int = 0
+	var max_r: int = maxi(grid.size.x, grid.size.y) + absi(c.x) + absi(c.y) + 1
+	for r in range(1, max_r + 1):
+		if best != NO_CELL and float(r - 1) * grid.cell_m > best_d:
+			break
+		for y in range(c.y - r, c.y + r + 1):
+			for x in range(c.x - r, c.x + r + 1):
+				if maxi(absi(x - c.x), absi(y - c.y)) != r:
+					continue
+				var cell := Vector2i(x, y)
+				if not grid.is_symbol_legal(cell):
+					continue
+				var lo: Vector2 = Vector2(cell) * grid.cell_m
+				var hi: Vector2 = lo + Vector2(grid.cell_m, grid.cell_m)
+				var d: float = point.distance_to(point.clamp(lo, hi))
+				var idx: int = y * grid.size.x + x
+				if d < best_d or (d == best_d and idx < best_idx):
+					best = cell
+					best_d = d
+					best_idx = idx
+	return best
+
+
+static func _ring_distance(a: int, b: int) -> int:
+	var d: int = absi(a - b)
+	return mini(d, DIAGONALS.size() - d)
+
+
+## GDD rule 5 notice test, its cheap checks first; the first that fails ends
+## it without any search. Entered only from Patrol, outside the cooldown and
+## outside grace (the caller's gate).
+func _notice_test(leader: Vector2, grid: WalkGrid, cfg: OverworldConfig, budget: QueryBudget) -> bool:
+	notice_tests_run += 1
+	# Check 1: half-plane radius. A leader exactly on the dividing line (dot
+	# product 0) counts as in front.
+	var offset: Vector2 = leader - position
+	var in_front: bool = offset.dot(DIAGONALS[facing]) >= 0.0
+	var radius: float = cfg.symbol_chase_m if in_front else cfg.symbol_notice_rear_m
+	if offset.length() > radius:
+		return false
+	# Check 2: the leader is not in a SAFE cell.
+	var leader_cell: Vector2i = grid.cell_of(leader)
+	if grid.is_safe(leader_cell):
+		return false
+	# Check 3: same 4-connected symbol-legal component (AC-9h). A rejected
+	# leader costs no query and never reaches the budget.
+	var own_cell: Vector2i = nearest_legal_cell(grid, position)
+	var leader_component: int = grid.component_of(leader_cell)
+	if own_cell == NO_CELL or leader_component < 0 \
+			or grid.component_of(own_cell) != leader_component:
+		return false
+	# Check 4: bounded search, served from the per-symbol cache when the
+	# (symbol cell, leader cell, grid revision) key repeats. The end gaps
+	# (symbol centre to its cell centre, target cell centre to the leader)
+	# are recomputed from the exact centres on every use.
+	notice_searches_run += 1
+	if not (_cache_valid and _cache_from == own_cell and _cache_to == leader_cell
+			and _cache_rev == grid.revision()):
+		if budget != null and not budget.request(get_instance_id()):
+			return false  # Deferred: "not noticed this frame" (GDD rule 5).
+		queries_granted += 1
+		_cache_route = grid.bounded_route(own_cell, leader_cell, cfg.notice_path_cap_m)
+		_cache_valid = true
+		_cache_from = own_cell
+		_cache_to = leader_cell
+		_cache_rev = grid.revision()
+	if _cache_route.is_empty():
+		return false
+	var gaps: float = position.distance_to(grid.cell_center(own_cell)) \
+			+ grid.cell_center(leader_cell).distance_to(leader)
+	return grid.route_length(_cache_route) + gaps <= cfg.notice_path_cap_m
+
+
+## Patrol -> Noticing: stop, cancel any turn pause, and turn to face the
+## leader (snapped to the displayed diagonal; GDD rule 5 Noticing row). The
+## facing then holds for as long as the symbol is not moving. Stores the
+## resume point and installs the notice search's route as the chase's first
+## path (GDD rule 5 "Path distance").
+func _enter_noticing(leader: Vector2, grid: WalkGrid, cfg: OverworldConfig) -> void:
+	sub_state = SubState.NOTICING
+	_notice_elapsed = 0.0
+	_pause_left = 0.0
+	facing = nearest_facing(leader - position, facing)
+	_resume_point = position
+	_resume_next = _next
+	_resume_dir = _dir
+	_install_route(_cache_route, _cache_to, leader, grid, cfg)
+
+
+## Stores a cell route as the symbol's path (waypoints at cell centres) and
+## restarts `path_dist`'s `t0` bookkeeping. The origin waypoint is dropped
+## when the next one is reachable in a straight, legal line.
+func _install_route(cells: Array[Vector2i], target_cell: Vector2i, leader: Vector2,
+		grid: WalkGrid, cfg: OverworldConfig) -> void:
+	_route.clear()
+	for c: Vector2i in cells:
+		_route.append(grid.cell_center(c))
+	_route_empty = cells.is_empty()
+	_route_target_cell = target_cell
+	_route_revision = grid.revision()
+	_route_end = position if _route_empty else _route[_route.size() - 1]
+	_route_leader_t0 = leader
+	_last_leader = leader
+	_leader_travel = 0.0
+	_route_gap_inf = _route_empty or grid.is_safe(grid.cell_of(leader)) \
+			or not grid.segment_clear(_route_end, leader, 0.0, false)
+	_repath_pending = false
+	_since_repath = 0.0
+	if _route.size() > 1 and grid.segment_clear(position, _route[1], cfg.body_radius, true):
+		_route.pop_front()
+
+
+func _track_leader(leader: Vector2) -> void:
+	_leader_travel += _last_leader.distance_to(leader)
+	_last_leader = leader
+
+
+## GDD rule 5 Chasing row: repath (throttled, budgeted), move at `v_chase`
+## by the final approach or along the route, then run the give-up test.
+func _step_chasing(dt: float, leader: Vector2, grid: WalkGrid, cfg: OverworldConfig,
+		budget: QueryBudget) -> void:
+	_track_leader(leader)
+	_since_repath += dt
+	var target: Vector2 = chase_target(leader, grid, cfg)
+	var target_cell: Vector2i = nearest_legal_cell(grid, target)
+	var stale: bool = target_cell != _route_target_cell or grid.revision() != _route_revision
+	if not stale:
+		_repath_pending = false
+	elif _since_repath >= cfg.repath_s:
+		if budget == null or budget.request(get_instance_id()):
+			queries_granted += 1
+			repaths_run += 1
+			var origin: Vector2i = nearest_legal_cell(grid, position)
+			var cells: Array[Vector2i] = []
+			if origin != NO_CELL and target_cell != NO_CELL:
+				cells = grid.find_path(origin, target_cell)
+			_install_route(cells, target_cell, leader, grid, cfg)
+		else:
+			_repath_pending = true  # The old route is kept: pending, never empty.
+	var speed: float = cfg.v_chase()
+	var leader_safe: bool = grid.is_safe(grid.cell_of(leader))
+	# Final approach (GDD rule 5): only while the chase target's cell is the
+	# route's target, the leader is not SAFE, the route exists, and the
+	# straight segment swept by `body_radius` crosses only legal cells.
+	if not _route_empty and not leader_safe and target_cell == _route_target_cell \
+			and grid.segment_clear(position, target, cfg.body_radius, true):
+		used_final_approach = true
+		_leg(target, dt, speed, grid, cfg)
+	else:
+		_follow_route(dt, speed, grid, cfg)
+	# Give-up test: `giveup_s` without a break of any "beyond" condition.
+	var beyond: bool = leader_safe or (_route_empty and not _repath_pending) \
+			or path_dist(leader) > cfg.symbol_giveup_m
+	if not beyond:
+		_giveup_elapsed = -1.0
+		return
+	_giveup_elapsed = 0.0 if _giveup_elapsed < 0.0 else _giveup_elapsed + dt
+	if _giveup_elapsed >= cfg.giveup_s:
+		_enter_returning()
+
+
+## Chasing/Noticing -> Returning: deaf and intangible until the resume point.
+func _enter_returning() -> void:
+	sub_state = SubState.RETURNING
+	_route.clear()
+	_route_empty = false
+	_repath_pending = false
+	_giveup_elapsed = -1.0
+	_pause_left = 0.0
+	_return_needs_path = true
+
+
+## GDD rule 5 Returning row: one budgeted A* query to the resume point, then
+## walk it at `v_patrol`; on arrival resume Patrol in the earlier direction.
+## An unreachable resume point holds the symbol still, deaf, until the map
+## reloads, and logs one warning (GDD rule 5 "No route").
+func _step_returning(dt: float, grid: WalkGrid, cfg: OverworldConfig, budget: QueryBudget) -> void:
+	if _return_stuck:
+		return
+	if _return_needs_path:
+		if budget != null and not budget.request(get_instance_id()):
+			return
+		queries_granted += 1
+		var origin: Vector2i = nearest_legal_cell(grid, position)
+		var goal: Vector2i = grid.cell_of(_resume_point)
+		var cells: Array[Vector2i] = []
+		if origin != NO_CELL:
+			cells = grid.find_path(origin, goal)
+		if cells.is_empty():
+			_return_stuck = true
+			warnings_logged += 1
+			push_warning("SymbolBrain: resume point %s unreachable; holding still until reload" \
+					% [_resume_point])
+			return
+		_route.clear()
+		for c: Vector2i in cells:
+			_route.append(grid.cell_center(c))
+		_route[_route.size() - 1] = _resume_point
+		if _route.size() > 1 and grid.segment_clear(position, _route[1], cfg.body_radius, true):
+			_route.pop_front()
+		_return_needs_path = false
+	_follow_route(dt, cfg.v_patrol(), grid, cfg)
+	if _route.is_empty():
+		_next = _resume_next
+		_dir = _resume_dir
+		if _path.size() > 1:
+			var leg: Vector2 = _path[_next] - position
+			if leg != Vector2.ZERO:
+				heading = leg.normalized()
+				facing = snap_facing(facing, heading)
+		rejoin_patrol(cfg)
+
+
+## Walks the stored route at `speed` for `dt`, carrying leftover time past
+## each reached waypoint (within `cfg.waypoint_tol_m`) onto the next.
+func _follow_route(dt: float, speed: float, grid: WalkGrid, cfg: OverworldConfig) -> void:
+	var dt_left: float = dt
+	while dt_left > 0.0 and not _route.is_empty():
+		var left: float = _leg(_route[0], dt_left, speed, grid, cfg)
+		if left < 0.0:
+			return
+		_route.pop_front()
+		dt_left = left
+
+
+## One straight leg toward `target` through `GroundMover.step()` with the
+## symbol mask. Returns the unused time when it arrived (within
+## `cfg.waypoint_tol_m`), or -1.0 when it did not.
+func _leg(target: Vector2, dt_left: float, speed: float, grid: WalkGrid, cfg: OverworldConfig) -> float:
+	var to_target: Vector2 = target - position
+	var dist: float = to_target.length()
+	if dist <= 0.0:
+		return dt_left
+	if speed <= 0.0:
+		return -1.0
+	var arrive_dt: float = dist / speed
+	var arrives: bool = arrive_dt <= dt_left
+	var leg_dt: float = arrive_dt if arrives else dt_left
+	var dir: Vector2 = to_target / dist
+	var result: GroundMover.MoveResult = GroundMover.step(
+			position, dir, leg_dt, grid, cfg, speed, WalkGrid.FLAG_SAFE)
+	position = result.position
+	heading = dir
+	facing = snap_facing(facing, dir)
+	last_distance_moved += result.distance_moved
+	if arrives and position.distance_to(target) <= cfg.waypoint_tol_m:
+		return dt_left - leg_dt
+	return -1.0
 
 
 ## The facing a moving symbol shows (GDD rule 5 Facing clause): `current`
@@ -211,53 +656,6 @@ static func nearest_facing(dir: Vector2, previous: int) -> Facing:
 				and _ring_distance(i, previous) < _ring_distance(best, previous):
 			best = i
 	return best as Facing
-
-
-static func _ring_distance(a: int, b: int) -> int:
-	var d: int = absi(a - b)
-	return mini(d, DIAGONALS.size() - d)
-
-
-## GDD rule 5 notice test, its cheap checks first; the first that fails ends
-## it without any search. Entered only from Patrol, outside the cooldown and
-## outside grace (the caller's gate).
-func _notice_test(leader: Vector2, grid: WalkGrid, cfg: OverworldConfig) -> bool:
-	notice_tests_run += 1
-	# Check 1: half-plane radius. A leader exactly on the dividing line (dot
-	# product 0) counts as in front.
-	var offset: Vector2 = leader - position
-	var in_front: bool = offset.dot(DIAGONALS[facing]) >= 0.0
-	var radius: float = cfg.symbol_chase_m if in_front else cfg.symbol_notice_rear_m
-	if offset.length() > radius:
-		return false
-	# Check 2: the leader is not in a SAFE cell.
-	var leader_cell: Vector2i = grid.cell_of(leader)
-	if grid.is_safe(leader_cell):
-		return false
-	# TODO(overworld): check 3, same symbol-legal component (AC-9h) once
-	# `WalkGrid.component_of()` exists; check 4 below rejects a disconnected
-	# leader too, at a cost bounded by the cap.
-	# Check 4: bounded search. The end gaps (symbol centre to its cell centre,
-	# target cell centre to the leader) are paid out of the cap first.
-	# TODO(overworld): the chase target's nearest-legal-cell fallback and
-	# sideways offset (GDD "Chase target") land with Chasing; the leader's
-	# own cell is the target here.
-	notice_searches_run += 1
-	var own_cell: Vector2i = grid.cell_of(position)
-	var gaps: float = position.distance_to(grid.cell_center(own_cell)) \
-			+ grid.cell_center(leader_cell).distance_to(leader)
-	var cap: float = cfg.notice_path_cap_m - gaps
-	return grid.bounded_search(own_cell, leader_cell, cap) <= cap
-
-
-## Patrol -> Noticing: stop, cancel any turn pause, and turn to face the
-## leader (snapped to the displayed diagonal; GDD rule 5 Noticing row). The
-## facing then holds for as long as the symbol is not moving.
-func _enter_noticing(leader: Vector2) -> void:
-	sub_state = SubState.NOTICING
-	_notice_elapsed = 0.0
-	_pause_left = 0.0
-	facing = nearest_facing(leader - position, facing)
 
 
 ## Patrol movement: the symbol covers `cfg.v_patrol() * dt` metres of path

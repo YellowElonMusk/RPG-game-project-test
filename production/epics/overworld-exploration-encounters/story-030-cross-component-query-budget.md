@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -30,7 +30,7 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-9h [L] (R5, query budget)** GIVEN a leader in a different symbol-legal component from 6 patrolling symbols with the leader inside their radii, THEN the pathfinder spy records **zero** A* queries (the component check rejects them). GIVEN the same component, THEN notice queries plus repaths never exceed `repath_per_frame_max` on any frame, and a repeated (symbol cell, leader cell) pair is served from the cache.
+- [x] **AC-9h [L] (R5, query budget)** GIVEN a leader in a different symbol-legal component from 6 patrolling symbols with the leader inside their radii, THEN the pathfinder spy records **zero** A* queries (the component check rejects them). GIVEN the same component, THEN notice queries plus repaths never exceed `repath_per_frame_max` on any frame, and a repeated (symbol cell, leader cell) pair is served from the cache.
 
 ---
 
@@ -76,7 +76,7 @@ can reject a leader who is radius-eligible but unreachable.
 **Required evidence**:
 - `tests/unit/overworld/symbol_brain_cross_component_budget_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-29)
 
 ---
 
@@ -84,3 +84,9 @@ can reject a leader who is radius-eligible but unreachable.
 
 - Depends on: `story-023-notice-respects-bounded-path-cap.md` (AC-9d, same-component reachability), `story-028-notice-repath-budget-fairness.md`, `story-029-bounded-notice-search-cap.md`
 - Unlocks: `story-031-chase-speed-and-repath-throttle.md`
+
+---
+
+## Completion Notes
+
+Notice check 3 (4-connected component labels, relabelled lazily per `set_blocked` revision) closes story 023's TODO. Test: `symbol_brain_cross_component_budget_test.gd` (5). Shared implementation for stories 028-037: `src/overworld/query_budget.gd` (new), `symbol_brain.gd`, `walk_grid.gd` (component labels, `bounded_route`, `find_path` on AStarGrid2D, `segment_clear`, query spy), `overworld_config.gd` (f_chase, repath_s, repath_per_frame_max, symbol_giveup_m, giveup_s, `v_chase()`). Deviation: `step()` takes `budget: QueryBudget = null` as its last optional argument (ADR-0012 lists it fifth) so earlier callers compile; null serves every query.

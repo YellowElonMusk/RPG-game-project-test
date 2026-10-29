@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -30,7 +30,7 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-10a [L] (R5)** GIVEN Chasing, THEN the symbol's speed is `v_chase`, and the pathfinder spy records at most one repath per `repath_s`, none while the target cell is unchanged and no `set_blocked` call happened, and at most `repath_per_frame_max` queries (notice and repath together) across all symbols on any frame.
+- [x] **AC-10a [L] (R5)** GIVEN Chasing, THEN the symbol's speed is `v_chase`, and the pathfinder spy records at most one repath per `repath_s`, none while the target cell is unchanged and no `set_blocked` call happened, and at most `repath_per_frame_max` queries (notice and repath together) across all symbols on any frame.
 
 ---
 
@@ -76,7 +76,7 @@ repaths rather than notice searches.
 **Required evidence**:
 - `tests/unit/overworld/symbol_brain_chase_speed_repath_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-29)
 
 ---
 
@@ -84,3 +84,9 @@ repaths rather than notice searches.
 
 - Depends on: `story-021-notice-delay-before-chasing-starts.md` (AC-9b, Noticing → Chasing transition), `story-030-cross-component-query-budget.md`
 - Unlocks: `story-032-chase-give-up-path-distance.md`, `story-034-chase-target-offset.md`, `story-035-final-approach-legality.md`
+
+---
+
+## Completion Notes
+
+Chasing moves at `v_chase`; repath only on target-cell/revision change and after `repath_s`. story-021 test `symbol_brain_notice_delay_test.gd` now asserts zero movement only while Noticing. Test: `symbol_brain_chase_speed_repath_test.gd` (6). `ground_mover.gd` unchanged. Shared implementation for stories 028-037: `src/overworld/query_budget.gd` (new), `symbol_brain.gd`, `walk_grid.gd` (component labels, `bounded_route`, `find_path` on AStarGrid2D, `segment_clear`, query spy), `overworld_config.gd` (f_chase, repath_s, repath_per_frame_max, symbol_giveup_m, giveup_s, `v_chase()`). Deviation: `step()` takes `budget: QueryBudget = null` as its last optional argument (ADR-0012 lists it fifth) so earlier callers compile; null serves every query.
