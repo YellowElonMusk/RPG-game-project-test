@@ -366,6 +366,35 @@ formulas:
     notes: "Raised only on the faction's schedule (ChapterFlow step changes, never a player Victory or map entry) and only before any step in which the raised map can be loaded, so the player never sees it at the lower stage (rev 3-4, Pillar 2); reachable stages are derived from the ChapterFlow step list; player victories clear clutter locally (liberated markers) but never change the stage. After region liberation a presentation override restores golden hour (rule 17) while the stage value stays. Paris (rev 4): Town 1; overworld segment base 1, always first loaded at 2 (permits_mandatory set on the chapter opening step); dungeon 3; Town stages 2-3 and segment stage 1 not authored in MVP."
     added: 2026-10-23
     revised: 2026-10-23
+  - name: intensity_tier
+    status: active
+    source: design/gdd/beatbox-battle-score.md
+    referenced_by:
+      - design/gdd/beatbox-battle-score.md
+    variables:
+      - score_tier_override
+      - score_base_tier
+      - is_boss
+      - boss_tier_bonus
+      - tier_max
+    output_range: [1, 4]
+    expression: "score_tier_override if score_tier_override > 0 else clamp(score_base_tier + (boss_tier_bonus if is_boss else 0), 1, tier_max)"
+    notes: "F1. Fixed at fight start from data, never RNG; it never changes mid-fight. Bureaucratia: street 1, story encounter 2 (override), Supervisor 3. Feeds score_bpm."
+    added: 2026-10-29
+    revised: ""
+  - name: score_bpm
+    status: active
+    source: design/gdd/beatbox-battle-score.md
+    referenced_by:
+      - design/gdd/beatbox-battle-score.md
+    variables:
+      - tier_bpm
+      - intensity_tier
+    output_range: [92, 138]
+    expression: "tier_bpm[intensity_tier], default [92, 108, 124, 138]"
+    notes: "F3. Stems are authored at exactly these tempos; the score never time-stretches, and the replay speed-up latch never changes the tempo."
+    added: 2026-10-29
+    revised: ""
 
 # Named numerical values referenced across multiple systems.
 # Register a constant when it is defined in one GDD but another GDD must

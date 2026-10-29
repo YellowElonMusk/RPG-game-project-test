@@ -48,6 +48,7 @@ A satirical turn-based RPG: the player recruits a squad of mismatched "misfit" h
 | 19 | Save/Load & Settings (inferred) | Persistence | Vertical Slice | Not Started | — | Game State & Scene Flow, Content Data Definitions |
 | 20 | Audio Manager (inferred) | Audio | Vertical Slice | Not Started | — | Game State & Scene Flow, Turn Battle System, Combo System & Codex, Faction Rule Modifiers, Overworld Exploration & Encounters |
 | 21 | Onboarding & Tutorial (inferred) | Meta | Vertical Slice | Not Started | — | Turn Battle System, Quirk State System, Combo System & Codex, UI Framework |
+| 22 | Beatbox Battle Score (split from Audio Manager, 2026-10-29) | Audio | Vertical Slice | Designed | design/gdd/beatbox-battle-score.md | Turn Battle System (via the replay controller), Faction Rule Modifiers, Content Data Definitions, Game State & Scene Flow, Audio Manager |
 
 > **UX flag — Stats & Damage Resolution:** has UI requirements (battle HUD, command menu, camp party screen, results screen). Run `/ux-design` for each before writing epics.
 
@@ -63,7 +64,7 @@ A satirical turn-based RPG: the player recruits a squad of mismatched "misfit" h
 | **Economy** | Resource creation and consumption | Items, Equipment & Shops |
 | **Persistence** | Save state and continuity | Save/Load & Settings |
 | **UI** | Player-facing information displays | UI Framework |
-| **Audio** | Sound and music systems | Audio Manager |
+| **Audio** | Sound and music systems | Audio Manager, Beatbox Battle Score |
 | **Narrative** | Story and dialogue delivery | Dialogue, Banter & Quests |
 | **Meta** | Systems outside the core game loop | Onboarding & Tutorial |
 
@@ -182,12 +183,12 @@ Effort: S = 1 session, M = 2–3 sessions, L = 4+ sessions (a session is one foc
 
 | Metric | Count |
 |--------|-------|
-| Total systems identified | 21 |
-| Design docs started | 8 |
+| Total systems identified | 22 |
+| Design docs started | 9 |
 | Design docs reviewed | 0 |
 | Design docs approved | 0 |
 | MVP systems designed | 8/16 |
-| Vertical Slice systems designed | 0/5 |
+| Vertical Slice systems designed | 1/6 |
 
 ---
 
