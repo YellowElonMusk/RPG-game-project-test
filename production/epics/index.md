@@ -1,6 +1,6 @@
 # Epics Index
 
-Last Updated: 2026-10-23
+Last Updated: 2026-10-29
 Engine: Godot 4.7.2
 
 | Epic | Layer | System | GDD | Stories | Status |
@@ -10,6 +10,7 @@ Engine: Godot 4.7.2
 | [Content Migration](content-migration/EPIC.md) | Foundation | Content Data Definitions (ADR-0001 Migration Plan) | content-data-definitions.md | 35 stories | Ready |
 | [Input System](input-system/EPIC.md) | Foundation | Input System | input-system.md | 26 stories | Ready |
 | [Game State & Scene Flow](game-state-scene-flow/EPIC.md) | Foundation | Game State & Scene Flow | game-state-scene-flow.md | 41 stories | Ready |
+| [Sprite & Camera Presentation](sprite-camera-presentation/EPIC.md) | Core | Sprite & Camera Presentation | sprite-camera-presentation.md | Not yet created | Ready |
 
 **Foundation build order** (producer PR-EPIC, 2026-10-23): test setup (story 1 of
 Content Catalog) → Content Catalog, with Content Migration Step 0 alongside → Input
