@@ -3,7 +3,8 @@
 ## (real `GameStateMachine` + `ModeHostSceneLoader`, freeze by detach) with
 ## every field equal to the pre-freeze snapshot except those GDD rule 7
 ## changes: the stunned and pushed symbol (Fled) or the resolved one
-## (Victory), grace started, the follower trail snapped, and every Noticing
+## (Victory), grace started, the followers re-formed behind the leader (story
+## 007), and every Noticing
 ## or Chasing symbol switched to Returning. Liberated-marker sets and payoffs
 ## do not exist yet (stories 050, 052), so they are not in the snapshot.
 ##
@@ -152,6 +153,14 @@ func _run(outcome: GameStateMachine.BattleResult) -> void:
 		(expected["brains"] as Dictionary).erase(_ENC_A)
 		assert_bool(ws.is_resolved(_MAP, _ENC_A)).is_true()
 	var actual: Dictionary = _snapshot(mode)
+	# Story 007: the thaw re-forms the followers at spacing behind the leader,
+	# opposite its facing (checked to a tolerance, then excluded from the diff).
+	var followers: Array[Vector2] = actual["followers"]
+	assert_int(followers.size()).is_equal(ocfg.max_followers)
+	for i: int in followers.size():
+		var want: Vector2 = _LEADER - mode.get_leader_facing() * float(i + 1) * ocfg.follower_spacing_m
+		assert_vector(followers[i]).is_equal_approx(want, Vector2.ONE * 1e-4)
+	expected["followers"] = followers
 	var diffs: Array[String] = []
 	_diff("", expected, actual, diffs)
 	assert_array(diffs).override_failure_message("snapshot mismatch: %s" % [diffs]).is_empty()

@@ -131,8 +131,8 @@ var _follower_positions: Array[Vector2] = []
 
 ## The follower-trail replay (GDD Formulas, `follower_trail`). Owns its own
 ## recorded-point buffer across frames; `step_followers()` is the only
-## caller. TODO(ow-epic): `reset()` this on map entry, teleport, redirect
-## and thaw once that wiring exists (story 007).
+## caller in normal walking; `_reform_followers()` snaps it on map entry,
+## teleport, redirect and thaw (story 007).
 var _follower_trail: FollowerTrail = FollowerTrail.new()
 
 
@@ -198,8 +198,7 @@ func load_map(map: OverworldMap, entry_marker_id: StringName = &"") -> void:
 		_leader_pos = entry.ground_position(map)
 		if not entry.facing.is_zero_approx():
 			_leader_facing = entry.facing.normalized()
-	_follower_trail.snap(_leader_pos, _leader_facing, config.max_followers, config, _grid)
-	_follower_positions = _follower_trail.step(_leader_pos, config.max_followers, config)
+	_reform_followers()
 	for exit: MapExit in map.map_exits():
 		add_map_exit(exit.marker_id, exit.trigger_rect,
 				MapEntryPayload.new(exit.target_map_id, exit.target_entry_id))
@@ -324,6 +323,40 @@ func set_walk_grid(grid: WalkGrid) -> void:
 func set_leader_position(pos: Vector2) -> void:
 	_leader_pos = pos
 	_follower_trail.reset(pos)
+
+
+## A scripted teleport (story 007, GDD Edge Cases): places the leader at
+## `pos`, facing `facing` if it is non-zero, and snaps the followers into
+## formation behind it on this same call.
+func teleport_leader(pos: Vector2, facing: Vector2 = Vector2.ZERO) -> void:
+	_leader_pos = pos
+	if not facing.is_zero_approx():
+		_leader_facing = facing.normalized()
+	_reform_followers()
+
+
+## A checkpoint redirect (story 007; ADR-0012 §6, ADR-0002 §11): requests
+## the same-instance in-mode fade, whose callback teleports the leader to
+## `pos` behind the fade and re-forms the followers there. Closing the
+## checkpoint's Dialogue first, the camera snap and the `WorldState` write
+## belong to the checkpoint-outcome story (072); this is the follower half.
+func redirect_leader(pos: Vector2, facing: Vector2 = Vector2.ZERO) -> GameStateMachine.RequestResult:
+	if _machine == null:
+		push_error("OverworldMode: redirect_leader() with no GameStateMachine")
+		return GameStateMachine.RequestResult.REJECTED_INVALID_PAYLOAD
+	return _machine.request_in_mode_fade(teleport_leader.bind(pos, facing))
+
+
+## The one routine every position reset outside walking funnels into (story
+## 007, GDD rule 2 and Edge Cases; ADR-0012 §4/§6): map entry, teleport,
+## redirect and battle thaw. Clears the trail and fills it behind the
+## leader, opposite its facing, over walkable cells only, so on this frame
+## the followers sit at spacing in formation; where a wall cuts the walk
+## short the remaining followers share the last walkable point
+## (`FollowerTrail.snap()`).
+func _reform_followers() -> void:
+	_follower_trail.snap(_leader_pos, _leader_facing, config.max_followers, config, _grid)
+	_follower_positions = _follower_trail.step(_leader_pos, config.max_followers, config)
 
 
 ## The registered encounter sources (symbol + record id), in marker order
@@ -515,7 +548,7 @@ func on_thawed(encounter_id: String, result: GameStateMachine.BattleResult) -> v
 			_resolve_victory(source)
 		GameStateMachine.BattleResult.FLED:
 			source.brain.on_fled(_leader_pos, _leader_facing, _grid, config)
-	_follower_trail.reset(_leader_pos)
+	_reform_followers()
 
 
 func _resolve_victory(source: EncounterSource) -> void:

@@ -1,7 +1,7 @@
 # Story 007: Followers snap into formation on map entry, teleport, redirect and battle thaw
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-5a [L] (R2, Edge Cases)** GIVEN a map entry, a teleport, a checkpoint redirect or a battle thaw, THEN on that frame the trail is cleared and followers sit at spacing behind the leader, opposite its facing, on walkable cells. When a wall blocks, the remaining followers share the last walkable point.
+- [x] **AC-5a [L] (R2, Edge Cases)** GIVEN a map entry, a teleport, a checkpoint redirect or a battle thaw, THEN on that frame the trail is cleared and followers sit at spacing behind the leader, opposite its facing, on walkable cells. When a wall blocks, the remaining followers share the last walkable point.
 
 ---
 
@@ -82,7 +82,7 @@ re-form behind the leader" (after `on_thawed`, for both Victory and Fled).
 **Required evidence**:
 - `tests/unit/overworld/follower_snap_on_reset_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (6 cases); evidence `production/qa/evidence/story-007-follower-snap/`
 
 ---
 

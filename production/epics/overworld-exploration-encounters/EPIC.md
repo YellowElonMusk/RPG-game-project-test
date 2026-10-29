@@ -70,7 +70,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 004 | [Diagonal walls slide the leader, and small corner overlaps get an assist](story-004-wall-slide-and-corner-assist.md) | Logic | Ready | ADR-0012 |
 | 005 | [Followers never collide, trigger exits or trigger interactions](story-005-followers-have-no-collision-or-triggers.md) | Logic | Ready | ADR-0012 |
 | 006 | [Followers hold formation on the leader's recorded trail at fixed spacing](story-006-follower-trail-spacing-formula.md) | Logic | Ready | ADR-0012 |
-| 007 | [Followers snap into formation on map entry, teleport, redirect and battle thaw](story-007-followers-snap-on-entry-teleport-redirect-thaw.md) | Logic | Ready | ADR-0012 |
+| 007 | [Followers snap into formation on map entry, teleport, redirect and battle thaw](story-007-followers-snap-on-entry-teleport-redirect-thaw.md) | Logic | Complete | ADR-0012 |
 | 008 | [A solo party still records a trail, and a mid-visit recruit joins at the first slot](story-008-solo-party-trail-and-mid-visit-recruit.md) | Logic | Ready | ADR-0012 |
 | 009 | [A follower's facing flips only after moving into the new direction, and copies the leader when idle](story-009-follower-facing-flip-hysteresis.md) | Logic | Ready | ADR-0012 |
 | 010 | [Followers are never saved, and reload rebuilds them from roster order](story-010-followers-not-saved-rebuilt-from-roster.md) | Logic | Ready | ADR-0012 |
