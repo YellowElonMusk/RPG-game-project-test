@@ -18,36 +18,49 @@ extends SceneTree
 const _TILESET_SOURCE: String = "res://data/maps/paris_segment_placeholder.tscn"
 const _OUT_DIR: String = "res://data/maps"
 
-## Dungeon: the first room (south) holds the segment entry and exit, the
-## pre-dungeon camp inside the entry's safe zone, and the Permit Counter in
-## front of the closed boom (rows 11-12, the only way north). The boss
-## chamber exit is at the top.
+## Dungeon: the first room (south, rows 23-33) holds the segment entry and
+## exit, the pre-dungeon camp inside the entry's safe zone, and the Permit
+## Counter in front of the closed boom (rows 21-22, the only way north). The
+## hall (rows 1-20) is split by a wall on row 11 with two gaps: the near one
+## (east, x 18-20) on the short route, watched by a Clerk, and the far one
+## (west, x 1-3), the longer safe detour (rule 12 pressure floor and bypass
+## lane, stories 083 and 085). The boss chamber exit is at the top.
 const _DUNGEON: Array[String] = [
-	"################",
-	"#..............#",
-	"#..............#",
-	"#..............#",
-	"#..............#",
-	"#..............#",
-	"#..............#",
-	"#..............#",
-	"#..............#",
-	"#..............#",
-	"#..............#",
-	"#######..#######",
-	"#######..#######",
-	"#..............#",
-	"#..............#",
-	"#..............#",
-	"#..............#",
-	"#..............#",
-	"#..............#",
-	"#..............#",
-	"#..............#",
-	"#..............#",
-	"#..............#",
-	"#..............#",
-	"################",
+	"########################",
+	"#......................#",
+	"#......................#",
+	"#......................#",
+	"#......................#",
+	"#......................#",
+	"#......................#",
+	"#......................#",
+	"#......................#",
+	"#......................#",
+	"#......................#",
+	"#...##############...###",
+	"#......................#",
+	"#......................#",
+	"#......................#",
+	"#......................#",
+	"#......................#",
+	"#......................#",
+	"#......................#",
+	"#......................#",
+	"#......................#",
+	"################..######",
+	"################..######",
+	"#......................#",
+	"#......................#",
+	"#......................#",
+	"#......................#",
+	"#......................#",
+	"#......................#",
+	"#......................#",
+	"#......................#",
+	"#......................#",
+	"#......................#",
+	"#......................#",
+	"########################",
 ]
 
 ## Boss chamber: the Supervisor stands at the far end, the dungeon entry and
@@ -82,19 +95,19 @@ func _initialize() -> void:
 
 func _build_dungeon(tile_set: TileSet) -> OverworldMap:
 	var map: OverworldMap = _map("ParisDungeonPlaceholder", "map_paris_dungeon_placeholder",
-			_DUNGEON, tile_set, Vector2i(8, 21), Color(0.5, 0.48, 0.46))
+			_DUNGEON, tile_set, Vector2i(17, 31), Color(0.5, 0.48, 0.46))
 	_exit(map, "ExitToSegment", &"exit_to_segment", "map_paris_segment_placeholder",
-			&"from_dungeon", Rect2(7, 23, 2, 1))
-	_entry(map, "EntryFromSegment", &"from_segment", Vector2(8.0, 21.0), Vector2.UP)
+			&"from_dungeon", Rect2(16, 33, 2, 1))
+	_entry(map, "EntryFromSegment", &"from_segment", Vector2(17.0, 31.0), Vector2.UP)
 	_exit(map, "ExitToBossChamber", &"exit_to_boss_chamber", "map_paris_boss_chamber_placeholder",
-			&"from_dungeon", Rect2(7, 1, 2, 1))
-	_entry(map, "EntryFromBossChamber", &"from_boss_chamber", Vector2(8.0, 3.5), Vector2.DOWN)
+			&"from_dungeon", Rect2(16, 1, 2, 1))
+	_entry(map, "EntryFromBossChamber", &"from_boss_chamber", Vector2(17.0, 3.5), Vector2.DOWN)
 	var camp := CampSpot.new()
 	camp.name = "CampPreDungeon"
 	camp.marker_id = &"camp_pre_dungeon"
 	camp.camp_id = "camp_paris_pre_dungeon"
 	camp.return_entry_id = &"from_segment"
-	_place(map, camp, Vector2(4.5, 19.5))
+	_place(map, camp, Vector2(13.5, 29.5))
 	var boom := CheckpointMarker.new()
 	boom.name = "PermitBoom"
 	boom.marker_id = &"cp_permit_boom"
@@ -102,30 +115,30 @@ func _build_dungeon(tile_set: TileSet) -> OverworldMap:
 	boom.obtained_at = "enc_paris_permit_counter"
 	boom.failure_outcome = CheckpointMarker.FailureOutcome.ENCOUNTER
 	boom.linked_encounter_id = "enc_paris_permit_counter"
-	boom.blocked_rect = Rect2(7, 11, 2, 2)
-	boom.return_marker = Vector2(7.5, 16.0)
+	boom.blocked_rect = Rect2(16, 21, 2, 2)
+	boom.return_marker = Vector2(16.5, 26.0)
 	boom.return_facing = Vector2.DOWN
-	_place(map, boom, Vector2(8.0, 12.0))
+	_place(map, boom, Vector2(17.0, 22.0))
 	var counter := EncounterSymbol.new()
 	counter.name = "SymbolPermitCounter"
 	counter.encounter_id = "enc_paris_permit_counter"
 	counter.symbol_id = "sym_paris_permit_counter"
-	counter.patrol_path = PackedVector2Array([Vector2(7.5, 13.5)])
+	counter.patrol_path = PackedVector2Array([Vector2(16.5, 23.5)])
 	counter.is_static = true
 	counter.start_on = EncounterSymbol.StartOn.CONFIRM
-	counter.return_marker = Vector2(7.5, 16.0)
+	counter.return_marker = Vector2(16.5, 26.0)
 	counter.checkpoint_id = &"cp_permit_boom"
 	counter.bark_line = "Take a number."
 	counter.fled_line = "Your number was called. You were absent. Please take a new number."
-	_place(map, counter, Vector2(7.5, 13.5))
+	_place(map, counter, Vector2(16.5, 23.5))
 	# Denser symbols than the segment (GDD rule 11): a Clerk pacing the first
-	# room's far side, clear of the camp, the entry and the return marker,
-	# and one pacing the hall's east side beyond the boom; both clear of
-	# every safe zone (story 077) and leave a bypass lane (story 083).
+	# room's east wall, and one in the hall's near gap, across the short
+	# route; both clear of every safe zone (story 077), the west gap left as
+	# the bypass lane (story 083) and the near gap as the pressure (085).
 	_patrol(map, "SymbolClerksFirstRoom", "enc_paris_clerks_east", "sym_dungeon_clerks_first_room",
-			PackedVector2Array([Vector2(13.5, 13.5), Vector2(13.5, 16.5)]))
+			PackedVector2Array([Vector2(21.5, 23.5), Vector2(21.5, 26.5)]))
 	_patrol(map, "SymbolClerksHall", "enc_paris_clerks_west", "sym_dungeon_clerks_hall",
-			PackedVector2Array([Vector2(13.5, 5.5), Vector2(13.5, 9.5)]))
+			PackedVector2Array([Vector2(18.5, 11.5), Vector2(20.5, 11.5)]))
 	return map
 
 

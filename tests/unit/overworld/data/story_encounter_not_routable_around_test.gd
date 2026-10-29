@@ -12,8 +12,8 @@ const _PATHS: Array[String] = [
 	"res://data/maps/paris_boss_chamber_placeholder.tscn",
 ]
 const _DUNGEON: String = "map_paris_dungeon_placeholder"
-## A wall pair west of the boom (rows 11-12), opened into a second doorway.
-const _GAP: Array[Vector2i] = [Vector2i(3, 11), Vector2i(3, 12)]
+## A wall pair west of the boom (rows 21-22), opened into a second doorway.
+const _GAP: Array[Vector2i] = [Vector2i(3, 21), Vector2i(3, 22)]
 
 
 func test_shipped_dungeon_cannot_be_routed_round_the_counter() -> void:
@@ -39,9 +39,9 @@ func test_a_second_doorway_behind_another_checkpoint_is_still_reported() -> void
 	var gate := CheckpointMarker.new()
 	gate.marker_id = &"cp_fixture_side_gate"
 	gate.requirement_item_id = "item_fixture_key"
-	gate.blocked_rect = Rect2(3, 11, 1, 2)
-	gate.return_marker = Vector2(3.5, 15.0)
-	gate.position = Vector3(3.5, 0.0, 12.0)
+	gate.blocked_rect = Rect2(3, 21, 1, 2)
+	gate.return_marker = Vector2(3.5, 25.0)
+	gate.position = Vector3(3.5, 0.0, 22.0)
 	dungeon.add_child(gate)
 	var errors: PackedStringArray = _validate(maps)
 	_free(maps)

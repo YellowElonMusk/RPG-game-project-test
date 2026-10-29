@@ -35,7 +35,7 @@ func test_segment_inside_an_entry_point_margin_is_reported() -> void:
 	var entry: Vector2 = dungeon.find_entry_point(&"from_boss_chamber").ground_position(dungeon)
 	# A horizontal segment passing just inside the radius below the entry.
 	var y: float = entry.y + cfg.safe_radius_m - 0.05
-	_hall(dungeon).patrol_path = PackedVector2Array([Vector2(2.5, y), Vector2(13.5, y)])
+	_hall(dungeon).patrol_path = PackedVector2Array([Vector2(entry.x - 3.0, y), Vector2(entry.x + 3.0, y)])
 	var errors: PackedStringArray = _validate(maps)
 	_free(maps)
 	assert_int(errors.size()).is_equal(1)
@@ -48,7 +48,7 @@ func test_segment_just_outside_the_margin_passes() -> void:
 	var dungeon: OverworldMap = maps[_DUNGEON]
 	var entry: Vector2 = dungeon.find_entry_point(&"from_boss_chamber").ground_position(dungeon)
 	var y: float = entry.y + cfg.safe_radius_m + 0.05
-	_hall(dungeon).patrol_path = PackedVector2Array([Vector2(2.5, y), Vector2(13.5, y)])
+	_hall(dungeon).patrol_path = PackedVector2Array([Vector2(entry.x - 3.0, y), Vector2(entry.x + 3.0, y)])
 	var errors: PackedStringArray = _validate(maps)
 	_free(maps)
 	assert_array(Array(errors)).is_empty()
@@ -58,9 +58,9 @@ func test_loop_closing_segment_is_checked() -> void:
 	var maps: Dictionary = _maps()
 	var dungeon: OverworldMap = maps[_DUNGEON]
 	var hall: EncounterSymbol = _hall(dungeon)
-	# Both open legs clear the boss-chamber entry at (8, 3.5); the leg from
-	# (13.5, 5) back to (2.5, 9.5) passes about 3.75 m from it.
-	hall.patrol_path = PackedVector2Array([Vector2(2.5, 9.5), Vector2(13.5, 9.5), Vector2(13.5, 5.0)])
+	# Both open legs clear the boss-chamber entry at (17, 3.5); the leg from
+	# (22, 5) back to (11, 9.5) passes about 3.5 m from it.
+	hall.patrol_path = PackedVector2Array([Vector2(11.0, 9.5), Vector2(22.0, 9.5), Vector2(22.0, 5.0)])
 	hall.path_mode = SymbolBrain.PathMode.PINGPONG
 	var pingpong_errors: PackedStringArray = _validate(maps)
 	hall.path_mode = SymbolBrain.PathMode.LOOP

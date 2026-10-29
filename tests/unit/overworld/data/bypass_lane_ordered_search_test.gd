@@ -23,7 +23,7 @@ func test_a_band_across_the_hall_fails_the_boss_leg() -> void:
 	var maps: Dictionary = _maps()
 	var dungeon: OverworldMap = maps["map_paris_dungeon_placeholder"]
 	_symbol(dungeon, "sym_dungeon_clerks_hall").patrol_path = \
-			PackedVector2Array([Vector2(2.5, 9.5), Vector2(13.5, 9.5)])
+			PackedVector2Array([Vector2(2.5, 11.5), Vector2(20.5, 11.5)])  # both hall gaps
 	var errors: PackedStringArray = BypassSearch.check(_record("dungeon"), dungeon, OverworldConfig.new())
 	_free(maps)
 	assert_int(errors.size()).is_equal(1)
@@ -60,7 +60,7 @@ func test_a_leg_to_the_counter_fails_when_a_band_covers_its_reach() -> void:
 	var maps: Dictionary = _maps()
 	var dungeon: OverworldMap = maps["map_paris_dungeon_placeholder"]
 	_symbol(dungeon, "sym_dungeon_clerks_first_room").patrol_path = \
-			PackedVector2Array([Vector2(9.5, 13.5), Vector2(9.5, 15.5)])
+			PackedVector2Array([Vector2(16.5, 25.0)])  # beside the counter
 	var errors: PackedStringArray = BypassSearch.check(_record("dungeon"), dungeon, OverworldConfig.new())
 	_free(maps)
 	assert_str(", ".join(errors)).contains("dungeon_to_counter")

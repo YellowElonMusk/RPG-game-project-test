@@ -1,7 +1,7 @@
 # Story 085: The dungeon's pressure floor — at least half the symbols' bands cross the shortest critical path
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-31b [D] (R12, pressure floor)** On the dungeon, at every reachable stage, at least ⌈N_sym/2⌉ symbols' bands cross the leg's `L_crit` path (no bands applied, checkpoints handled as in the ordered search), and `L_bypass ≥ bypass_ratio_min · L_crit`.
+- [x] **AC-31b [D] (R12, pressure floor)** On the dungeon, at every reachable stage, at least ⌈N_sym/2⌉ symbols' bands cross the leg's `L_crit` path (no bands applied, checkpoints handled as in the ordered search), and `L_bypass ≥ bypass_ratio_min · L_crit`.
 
 ---
 
@@ -75,7 +75,7 @@
 **Required evidence**:
 - `tests/unit/overworld/data/dungeon_pressure_floor_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -83,3 +83,10 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-083-bypass-lane-ordered-search.md`, `production/epics/overworld-exploration-encounters/story-082-patrol-legality-at-every-reachable-stage.md`
 - Unlocks: `production/epics/overworld-exploration-encounters/story-086-first-patrol-bypass-ratio-and-teaching-speaker.md`
+
+## Completion Notes (2026-10-30)
+
+- `BypassSearch.check_pressure()`, run in `validate_maps`. The tie-break is exact: the floor fails if any shortest route survives blocking any N - ceil(N/2) + 1 of the bands (every subset is tried; a map has few patrols).
+- The old dungeon could not meet it: the safe zones of the entry, camp and return marker left no spot for a band across the straight route, and the hall was too short for a 1.2x detour. **The dungeon was redesigned** (`tools/maps/build_paris_dungeon_maps.gd`): 24 wide, the hall split by a wall with a near east gap (watched by a Clerk) and a far west gap (the detour, ratio about 1.6). Boom, counter, camp and exits moved east.
+- Applied to legs ending at a MapExit on the map holding the story encounter (the counter leg is the first half of the boss leg). No stage variation yet (no stage system).
+- Evidence: `production/qa/evidence/story-085-pressure-floor/`.

@@ -68,8 +68,8 @@ func test_unresolved_story_encounter_boom_is_never_returned() -> void:
 	mode.encounter_catalog = catalog
 	mode.load_map((load("res://data/maps/paris_dungeon_placeholder.tscn") as PackedScene).instantiate() as OverworldMap)
 	# Sweep the cells around the boom, every facing.
-	for y in range(10, 16):
-		for x in range(5, 11):
+	for y in range(19, 27):
+		for x in range(13, 21):
 			for facing: Vector2 in [Vector2.UP, Vector2.DOWN, Vector2.LEFT, Vector2.RIGHT]:
 				ProbeFixture.stand(mode, Vector2(x + 0.5, y + 0.5), facing)
 				assert_bool(mode.probe() is CheckpointMarker).override_failure_message(

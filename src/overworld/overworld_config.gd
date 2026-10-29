@@ -170,3 +170,7 @@ func validate() -> PackedStringArray:
 ## only registers the camp and closes the prompt (for a build with no Camp
 ## mode scene).
 @export var camp_mode_enabled: bool = true
+## Dungeon pressure floor: the bypass lane must be at least this many times
+## the unbanded shortest route (GDD rule 12, Tuning Knobs `bypass_ratio_min`,
+## 1.2, range 1.1-1.5; story 085).
+@export var bypass_ratio_min: float = 1.2
