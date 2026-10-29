@@ -43,6 +43,16 @@ var _leader_pos: Vector2 = Vector2.ZERO
 ## path (story 003, AC-1c) instead of reaching into `_leader_pos`.
 var _last_distance_moved: float = 0.0
 
+## Cosmetic follower positions only (GDD rule 2: "Followers have no
+## collision and no logic, and nothing can touch them"; ADR-0012 §2 settles
+## the point left open -- only the leader has a position in logic). Empty
+## until story 006's trail-spacing formula starts calling
+## `set_follower_positions()` every frame; story 005 (this story) proves the
+## array's isolation, not its contents -- `_process()` never reads it.
+## Positions only, no `CharacterSprite`s (those are story 007's scope,
+## ADR-0012 §4 step 5); this is the seam stories 006-010 extend.
+var _follower_positions: Array[Vector2] = []
+
 
 func _init() -> void:
 	# Pinned ordering (ADR-0012 §2): GameRoot -20, OverworldMode -10,
@@ -86,3 +96,31 @@ func _process(delta: float) -> void:
 ## without reading `_leader_pos` directly.
 func get_last_distance_moved() -> float:
 	return _last_distance_moved
+
+
+## The leader's current ground-plane position (ADR-0012 §2). Story 006's
+## trail-spacing formula is the intended first caller -- it places each
+## follower relative to the leader's position (and, later, its recent
+## path) -- so this getter exists from story 005 rather than being added
+## alongside the formula itself.
+func get_leader_position() -> Vector2:
+	return _leader_pos
+
+
+## Replaces the cosmetic follower positions (story 005, AC-3; GDD rule 2).
+## Story 006's trail-spacing formula is the only intended caller once it
+## lands -- nothing calls this yet, so `_follower_positions` stays empty by
+## default. Positions only; building the `CharacterSprite`s that render them
+## is story 007's scope (ADR-0012 §4 step 5). Duplicates `positions` so the
+## caller's array and this mode's copy never alias.
+func set_follower_positions(positions: Array[Vector2]) -> void:
+	_follower_positions = positions.duplicate()
+
+
+## The cosmetic follower positions last set by `set_follower_positions()`
+## (empty until story 006 calls it). Returns a duplicate so the caller can
+## never mutate this mode's own copy through the returned array.
+## `_process()` itself never calls this (story 005, AC-3) -- only rendering
+## (story 007+) is meant to.
+func get_follower_positions() -> Array[Vector2]:
+	return _follower_positions.duplicate()

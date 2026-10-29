@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -28,11 +28,38 @@
 
 ---
 
+## Completion Notes
+
+Added the minimum follower model this AC needs to `OverworldMode`:
+`_follower_positions: Array[Vector2]` plus `set_follower_positions()` /
+`get_follower_positions()` (positions only, no `CharacterSprite`s -- story
+007's scope), and `get_leader_position()` (story 006's trail formula needs
+the leader's position as its input, so this getter is added now rather than
+alongside that formula). `_process()` reads/writes only `_leader_pos`; it
+never reads `_follower_positions`.
+
+No symbol/exit/interactable detection exists yet in this epic (that's
+stories 011, 038, 040, 074+), so `follower_no_collision_test.gd` uses local
+fixture doubles (a circle, a `Rect2`, a reach distance) standing in for an
+`EncounterSymbol`, a `MapExit` and an `Interactable`, rather than real
+production types. Three tests: (1) sanity that the fixtures overlap the
+follower's position and clear the leader's circle (non-vacuous setup), (2)
+a follower position set through `set_follower_positions()` is unchanged
+after any number of `_process()` calls (GDD rule 2, "no logic"), (3) the
+leader's real, non-zero movement through `_process()` is bit-for-bit
+identical with and without the follower sitting inside the trigger fixtures
+(the structural precondition AC-3's "no contact, exit or interaction fires"
+rests on, once those checks exist). All three pass; full suite 663/663, 0
+failures.
+
+**Test Evidence Status**: `tests/unit/overworld/follower_no_collision_test.gd`
+exists and passes (3/3).
+
 ## Acceptance Criteria
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-3 [L] (R2)** GIVEN a symbol, an exit and an interactable that overlap a follower's position but not the leader's circle, THEN no contact, exit or interaction fires.
+- [x] **AC-3 [L] (R2)** GIVEN a symbol, an exit and an interactable that overlap a follower's position but not the leader's circle, THEN no contact, exit or interaction fires.
 
 ---
 
@@ -82,7 +109,7 @@ position must produce zero effect.
 **Required evidence**:
 - `tests/unit/overworld/follower_no_collision_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (3/3)
 
 ---
 
