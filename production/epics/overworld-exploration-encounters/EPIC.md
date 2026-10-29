@@ -150,7 +150,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 084 | [No walk-grid route reaches the dungeon's boss-chamber exit without crossing the story encounter](story-084-story-encounter-not-routable-around.md) | Logic | Complete | ADR-0012 |
 | 085 | [The dungeon's pressure floor — at least half the symbols' bands cross the shortest critical path](story-085-dungeon-pressure-floor.md) | Logic | Complete | ADR-0012 |
 | 086 | [The first-encounter map's teaching bypass is visibly easy, and its speaker stands before the first notice radius](story-086-first-patrol-bypass-ratio-and-teaching-speaker.md) | Logic | Ready | ADR-0012 |
-| 087 | [Every symbol's patrol is on screen from every approach, before the leader can be noticed](story-087-patrol-visibility-before-the-notice-radius.md) | Visual/Feel | Ready | ADR-0012 |
+| 087 | [Every symbol's patrol is on screen from every approach, before the leader can be noticed](story-087-patrol-visibility-before-the-notice-radius.md) | Visual/Feel | In Review | ADR-0012 |
 | 088 | [Contact with the boss never finds it moved, and its descriptor forbids Flee but allows Retreat](story-088-boss-contact-descriptor-flags.md) | Integration | Complete | ADR-0012 |
 | 089 | [Defeat → Retreat against the boss goes to the pre-dungeon camp once it is passed, or the Town café before](story-089-story-encounter-flee-returns-to-registered-camp.md) | Integration | Complete | ADR-0012 |
 | 090 | [A later Retreat, a Save and a reload never un-resolve the boss](story-090-boss-stays-resolved-through-retreat-and-continue.md) | Integration | Ready | ADR-0012 |

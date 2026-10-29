@@ -27,6 +27,8 @@ func test_a_clerk_off_the_short_route_fails_the_floor() -> void:
 	for sym: EncounterSymbol in dungeon.symbol_markers():
 		if sym.symbol_id == "sym_dungeon_clerks_hall":
 			sym.patrol_path = PackedVector2Array([Vector2(2.5, 5.5), Vector2(2.5, 8.5)])
+		elif sym.symbol_id == "sym_dungeon_clerks_first_room":
+			sym.patrol_path = PackedVector2Array([Vector2(21.5, 30.5), Vector2(21.5, 32.5)])
 	var errors: PackedStringArray = BypassSearch.check_pressure(_record("dungeon"), dungeon, OverworldConfig.new())
 	_free(maps)
 	assert_str(", ".join(errors)).contains("dungeon_to_boss").contains("fewer than 1 of 2 patrol bands")

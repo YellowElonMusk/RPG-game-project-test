@@ -136,7 +136,7 @@ func _build_dungeon(tile_set: TileSet) -> OverworldMap:
 	# route; both clear of every safe zone (story 077), the west gap left as
 	# the bypass lane (story 083) and the near gap as the pressure (085).
 	_patrol(map, "SymbolClerksFirstRoom", "enc_paris_clerks_east", "sym_dungeon_clerks_first_room",
-			PackedVector2Array([Vector2(21.5, 23.5), Vector2(21.5, 26.5)]))
+			PackedVector2Array([Vector2(20.5, 23.5), Vector2(20.5, 26.5)]))
 	_patrol(map, "SymbolClerksHall", "enc_paris_clerks_west", "sym_dungeon_clerks_hall",
 			PackedVector2Array([Vector2(18.5, 11.5), Vector2(20.5, 11.5)]))
 	return map

@@ -1,7 +1,7 @@
 # Story 087: Every symbol's patrol is on screen from every approach, before the leader can be noticed
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: In Review (2026-10-30): built and passing; awaiting art-director sign-off on the walk-in captures
 > **Layer**: Feature
 > **Type**: Visual/Feel
 > **Estimate**: L
@@ -83,3 +83,10 @@
 
 - Depends on: `story-135-level-review-walkin-tool.md` (the level-review tool), `story-134-capture-id-tags-for-overworld-cues.md` (per-cue capture-ID tags), `production/epics/sprite-camera-presentation/story-002-capture-tool.md` (the presentation capture tool), `production/epics/overworld-exploration-encounters/story-086-first-patrol-bypass-ratio-and-teaching-speaker.md`, `production/epics/overworld-exploration-encounters/story-099-chase-visibility-validates-at-every-aspect.md`
 - Unlocks: None in this epic beyond the level-review tooling it consumes
+
+## Progress Notes (2026-10-30)
+
+- Built the parts of the owed tooling this AC needs: `PatrolApproaches` (story 135: approaches per 45-degree sector, the `see_m` disc measured along the walk grid so walls cut it) and `tools/level_review/walkin_capture.gd` (story 134 in miniature: per approach, four passes give the symbol mask and the share a set occluder hides). `OverworldConfig.see_lead_s` and `see_m()` added.
+- Shipped maps: 23 approaches, all 100% visible, none clipped by the frame (`production/qa/evidence/story-087-patrol-visibility/report.md`). The gate was watched failing (0%, exit 1) with the segment east Clerk moved behind the row-12 wall block.
+- The first capture run showed the dungeon first-room Clerk cut off by the camera clamp at the east wall (framing, AC-39, not an occluder); it moved from x 21.5 to 20.5. The report now flags any mask touching the frame edge.
+- **Open:** art-director sign-off on the captures, to be added to `signoff-overworld.md`.

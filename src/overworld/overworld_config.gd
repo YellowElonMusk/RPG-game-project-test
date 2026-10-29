@@ -174,3 +174,14 @@ func validate() -> PackedStringArray:
 ## the unbanded shortest route (GDD rule 12, Tuning Knobs `bypass_ratio_min`,
 ## 1.2, range 1.1-1.5; story 085).
 @export var bypass_ratio_min: float = 1.2
+## How long a patrolling symbol is on screen before the leader can reach its
+## notice radius, in seconds (GDD Formulas `chase_visibility`, Tuning Knobs
+## `see_lead_s`, 0.25, range 0.2-0.3). Sets `see_m()`.
+@export var see_lead_s: float = 0.25
+
+
+## `see_m = symbol_chase_m + body_radius + (walk_speed + v_patrol) * see_lead_s`
+## (GDD Formulas `chase_visibility`): the distance at which a patrolling
+## symbol must already be on screen. 4.70 m at the defaults.
+func see_m() -> float:
+	return symbol_chase_m + body_radius + (walk_speed + v_patrol()) * see_lead_s
