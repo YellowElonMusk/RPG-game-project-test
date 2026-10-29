@@ -13,7 +13,7 @@
 ## private field here, not in `WorldState`, because `world_state.gd` does not
 ## exist yet (no story in this epic has created it), and `GameRoot`'s
 ## `pre_setup` injector does not assign `world_state` or
-## `presentation_settings` yet either (both are TODOs in
+## `presentation_settings` yet either (both are tagged follow-ups in
 ## `src/game_state/game_root.gd`, pending ADR-0008/0009). `dt_max` therefore
 ## falls back to a local constant at the GDD's documented default (0.10 s)
 ## until `presentation_settings` wiring lands.
