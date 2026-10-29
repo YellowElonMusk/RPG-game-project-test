@@ -40,3 +40,4 @@ From the brief's Build order:
 | 004 | MegaCorp — subscription billing, drones, CEO boss | Logic | Ready | N/A (minimal) |
 | 005 | Battle HUD — bars, rule banner, floating numbers, tooltips | UI | Ready | N/A (minimal) |
 | 006 | Chapter flow — fight chain and boss, both planets | Integration | Ready | N/A (minimal) |
+| 007 | Battle command menu — Attack, Defend, specials, targets; the real squad | UI | Ready | N/A (minimal) |

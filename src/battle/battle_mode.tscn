@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://src/battle/battle_mode.gd" id="1_mode"]
 [ext_resource type="PackedScene" path="res://src/battle/ui/battle_hud.tscn" id="2_hud"]
+[ext_resource type="PackedScene" path="res://src/battle/ui/battle_command_menu.tscn" id="3_menu"]
 
 [node name="BattleMode" type="Control"]
 anchor_right = 1.0
@@ -11,4 +12,7 @@ grow_vertical = 2
 script = ExtResource("1_mode")
 
 [node name="BattleHud" parent="." instance=ExtResource("2_hud")]
+unique_name_in_owner = true
+
+[node name="BattleCommandMenu" parent="." instance=ExtResource("3_menu")]
 unique_name_in_owner = true

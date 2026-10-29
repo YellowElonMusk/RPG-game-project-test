@@ -27,6 +27,8 @@ var _battle: BattleCore = null
 var _party: Array[Combatant] = []
 var _machine: GameStateMachine = null
 var _hud: BattleHud = null
+## The command menu (Story 007): built once per scene instance, like `_hud`.
+var _command_menu: BattleCommandMenu = null
 ## One RNG per Battle-mode instance (ADR-0010 §3): never recreated, never
 ## restored on Retry, so a retried fight draws fresh variance.
 var _rng: RandomNumberGenerator = null
@@ -42,6 +44,7 @@ var _awaiting_results_done: bool = false
 func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 	_machine = machine
 	_hud = %BattleHud
+	_command_menu = %BattleCommandMenu
 	var entry: BattleEntryPayload = payload as BattleEntryPayload
 	if entry == null or entry.descriptor == null:
 		return
@@ -63,14 +66,19 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 	_battle.battle_ended.connect(_on_battle_ended)
 	_battle.start_battle(false)
 	_hud.setup(_battle)
+	_command_menu.setup(_battle)
 
 
-## `true` = consumed. No command menu exists yet (a later story's scope), so
-## every action but the end-banner confirm falls through.
+## `true` = consumed. The results-done confirm keeps priority while Victory
+## is pending (Implementation Notes); the command menu (Story 007) gets
+## every other action while it is visible, and hides itself outside
+## `SQUAD_TURN` (including while Victory's results confirm is pending).
 func handle_action(action: StringName, pressed: bool) -> bool:
 	if _awaiting_results_done and pressed and action == InputActions.CONFIRM:
 		_awaiting_results_done = false
 		_machine.report_results_done()
+		return true
+	if _command_menu != null and _command_menu.handle_action(action, pressed):
 		return true
 	return false
 

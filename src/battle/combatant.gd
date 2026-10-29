@@ -29,6 +29,14 @@ var is_enemy: bool
 ## faction stories (Story 002/004) can key boss-only behavior off it.
 var is_boss: bool = false
 
+## INTERIM (Story 007; `TODO(content-migration)`: content-migration story 028
+## replaces this with record-driven moves): the squad-specials move ids this
+## combatant's record names (`CharacterData.move_ids`), read by
+## `SquadMoves.moves_for()`. Empty for every enemy and for any squad member
+## built without a backing record (e.g. a test squad) -- both get Attack and
+## Defend only.
+var move_ids: PackedStringArray = PackedStringArray()
+
 ## Current HP/MP. Clamped to [0, max_*] by take_damage()/heal()/spend_mp().
 var hp: int
 var mp: int

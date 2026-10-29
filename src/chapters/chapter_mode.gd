@@ -68,14 +68,33 @@ func _request_next_battle() -> void:
 	_machine.request_transition(GameStateMachine.Mode.BATTLE, payload)
 
 
-## Interim demo squad (ADR-0002: the party is interim until Squad Roster &
-## Recruitment owns it) -- used only when no squad was injected before
-## `setup()`, matching the retired `ChapterFlowDemo`'s stat block.
+## The real squad (Story 007): the four `char_*` records, in sorted id order,
+## read through the `ContentCatalog` autoload the same way `GameRoot.catalog()`
+## does -- used only when no squad was injected before `setup()` (ADR-0002:
+## the party is interim until Squad Roster & Recruitment owns it). Stats come
+## from the records, never literals in code; each combatant's `move_ids`
+## carries over too, so `SquadMoves` can list its specials.
 func _default_squad() -> Array[Combatant]:
-	return [
-		Combatant.new("Hero A", 30, 10, 12, 8, 10, false),
-		Combatant.new("Hero B", 30, 10, 12, 8, 10, false),
-	]
+	var catalog: ContentCatalogService = _catalog()
+	var ids: Array[String] = []
+	for record: CharacterData in catalog.all_records(&"character"):
+		ids.append(record.id)
+	ids.sort()
+	var squad: Array[Combatant] = []
+	for id: String in ids:
+		var record: CharacterData = catalog.get_record(&"character", id)
+		var combatant := Combatant.new(record.display_name, record.max_hp,
+				record.max_mp, record.attack, record.defense, record.speed, false)
+		combatant.move_ids = record.move_ids
+		squad.append(combatant)
+	return squad
+
+
+## The `ContentCatalog` autoload, fetched the same way `GameRoot.catalog()`
+## does: by node path, not by its global identifier, so it also works before
+## this node is in the tree (`setup()` runs before `add_child()`).
+func _catalog() -> ContentCatalogService:
+	return (Engine.get_main_loop() as SceneTree).root.get_node(^"ContentCatalog") as ContentCatalogService
 
 
 ## The real trigger for "a step" (Implementation Notes: "on a step,

@@ -1,0 +1,56 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/battle/ui/battle_command_menu.gd" id="1_cmd"]
+
+[node name="BattleCommandMenu" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_cmd")
+
+[node name="CommandPanel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+anchor_left = 0.0
+anchor_right = 1.0
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_right = -16.0
+offset_top = -200.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="CommandVBox" type="VBoxContainer" parent="CommandPanel"]
+
+[node name="CommandTitle" type="Label" parent="CommandPanel/CommandVBox"]
+unique_name_in_owner = true
+text = "Command"
+
+[node name="CommandList" type="VBoxContainer" parent="CommandPanel/CommandVBox"]
+unique_name_in_owner = true
+
+[node name="TargetPanel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+anchor_left = 0.0
+anchor_right = 1.0
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_right = -16.0
+offset_top = -200.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="TargetVBox" type="VBoxContainer" parent="TargetPanel"]
+
+[node name="TargetTitle" type="Label" parent="TargetPanel/TargetVBox"]
+unique_name_in_owner = true
+text = "Target"
+
+[node name="TargetList" type="VBoxContainer" parent="TargetPanel/TargetVBox"]
+unique_name_in_owner = true
