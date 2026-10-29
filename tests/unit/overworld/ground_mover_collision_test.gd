@@ -116,7 +116,7 @@ func _step_with_displacement(pos: Vector2, displacement: Vector2, grid: WalkGrid
 	var magnitude: float = displacement.length()
 	var dir_vec: Vector2 = displacement / magnitude
 	var dt: float = magnitude / cfg.walk_speed
-	return GroundMover.step(pos, dir_vec, dt, grid, cfg, cfg.walk_speed, 0)
+	return GroundMover.step(pos, dir_vec, dt, grid, cfg, cfg.walk_speed, 0, true)
 
 
 ## Walks diagonally into `_WALL_COLUMN`'s face: starts `0.2 m` short of it

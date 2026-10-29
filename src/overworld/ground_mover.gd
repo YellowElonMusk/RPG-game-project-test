@@ -58,7 +58,10 @@ class _AxisResult:
 ##    reports for `blocked_mask`, that axis clamps to the wall face instead of
 ##    moving -- the untouched axis keeps its full velocity, which is the
 ##    slide (GDD AC-2, part 1).
-## 3. **Corner assist.** `grid.is_blocked()` is checked per cell, so a span
+## 3. **Corner assist (leader only, ADR-0012 §2.3).** Opt-in through
+##    `corner_assist`: the leader passes `true`; symbols keep the default
+##    `false`, so a graze with positive overlap blocks them like a wall.
+##    `grid.is_blocked()` is checked per cell, so a span
 ##    that straddles a cell boundary with exactly one side blocked is a
 ##    corner graze, not a flat wall: its overlap is `cfg.body_radius` minus
 ##    the distance from the span's centre to the boundary. Zero or negative
@@ -71,7 +74,7 @@ class _AxisResult:
 ## story injects a baked `WalkGrid`) skips collision entirely, matching the
 ## pre-story-004 behaviour.
 static func step(pos: Vector2, input_vec: Vector2, dt: float, grid: WalkGrid, cfg: OverworldConfig,
-		speed: float, blocked_mask: int) -> MoveResult:
+		speed: float, blocked_mask: int, corner_assist: bool = false) -> MoveResult:
 	var velocity: Vector2 = input_vec.limit_length(1.0) * speed
 	var candidate: Vector2 = pos + velocity * dt
 
@@ -79,7 +82,8 @@ static func step(pos: Vector2, input_vec: Vector2, dt: float, grid: WalkGrid, cf
 		return MoveResult.new(candidate, false, false, (candidate - pos).length())
 
 	var radius: float = cfg.body_radius
-	var corner_assist_m: float = cfg.corner_assist_m
+	# Corner assist is leader-only (ADR-0012 §2.3): opt-in via `corner_assist`.
+	var corner_assist_m: float = cfg.corner_assist_m if corner_assist else 0.0
 
 	var x_result: _AxisResult = _resolve_axis(
 			pos.x, candidate.x - pos.x, pos.y, radius, true, grid, blocked_mask, corner_assist_m)

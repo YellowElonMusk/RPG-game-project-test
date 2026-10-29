@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -30,7 +30,7 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-17 [L] (Edge Cases)** GIVEN two symbols in contact on the same frame, THEN the one with the smaller closest-approach distance starts the encounter. On an exact tie, the earlier one in marker order does. On `transition_finished` after the thaw, the other is in Returning.
+- [x] **AC-17 [L] (Edge Cases)** GIVEN two symbols in contact on the same frame, THEN the one with the smaller closest-approach distance starts the encounter. On an exact tie, the earlier one in marker order does. On `transition_finished` after the thaw, the other is in Returning.
 
 ---
 
@@ -71,7 +71,7 @@
 **Required evidence**:
 - `tests/unit/overworld/overworld_mode_contact_tiebreak_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -79,3 +79,14 @@
 
 - Depends on: `story-038-contact-starts-encounter-once.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29 (implemented, awaiting /story-done)
+
+- `_check_contact()` keeps the smallest closest-approach distance with a strict `<` over symbols kept sorted by marker index, so an exact tie goes to the earlier marker; one request per frame. `setup()` connects `machine.transition_finished`; on `OVERWORLD` the mode returns to Exploring and calls `on_grace_started()` on every brain (Noticing/Chasing -> Returning). Test: distance beats marker order, exact tie -> earlier marker, loser Noticing -> Returning after `transition_finished`, loser's `enc_` never requested.
+- Deviations (flagged): `start_encounter` returns the machine's `RequestResult` (ADR-0012 §4 Key Interfaces says `void`); a MapExit crossing only emits `map_exit_requested` and ends the frame (the MapChanging request is a TODO for the map-change stories); `grace_active` exists but nothing sets it yet (story 047); the battle party comes from an injected `party_source` Callable (empty by default) until the Squad Roster / ChapterFlow interim source is wired; the encounter catalog is injected (`encounter_catalog`, duck-typed `get_record`) and the game does not wire it or register symbols yet.
+- Also in this change: `GroundMover.step()` corner assist is now opt-in (`corner_assist = true`, leader only, ADR-0012 §2.3); tested by `tests/unit/overworld/ground_mover_corner_assist_leader_only_test.gd`.
+- Full suite: 780/780 passing.

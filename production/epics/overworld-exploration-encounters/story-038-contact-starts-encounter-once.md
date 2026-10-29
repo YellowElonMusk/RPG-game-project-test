@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -30,7 +30,7 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-13 [L] (R5, R6)** GIVEN contact, THEN `start_encounter` is called once with the record's `enc_` ID. The descriptor is identical whatever the contact direction or which body moved.
+- [x] **AC-13 [L] (R5, R6)** GIVEN contact, THEN `start_encounter` is called once with the record's `enc_` ID. The descriptor is identical whatever the contact direction or which body moved.
 
 ---
 
@@ -75,7 +75,7 @@ direction: Turn Battle's turn order is fixed regardless of who touched whom.
 **Required evidence**:
 - `tests/unit/overworld/overworld_mode_contact_start_encounter_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -83,3 +83,14 @@ direction: Turn Battle's turn order is fixed regardless of who touched whom.
 
 - Depends on: `story-036-chase-gives-up-at-safe-zone.md`, `game-state-scene-flow/story-001-overworld-to-battle-signal-order.md`
 - Unlocks: `story-039-encounter-descriptor-matches-record.md`, `story-040-exit-beats-contact-same-frame.md`, `story-041-rejected-request-holds-contact-pending.md`, `story-042-two-symbols-contact-tiebreak.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29 (implemented, awaiting /story-done)
+
+- `OverworldMode.step_frame()` runs ADR-0012 §5's frame order; `_check_contact()` is the swept circle test (`closest_approach()`, GDD frame_step_safety); `start_encounter(enc_id, source)` builds the descriptor from the `encounter` record (`build_descriptor()`) and calls `machine.request_transition(Mode.BATTLE, payload)`; accepted -> `State.FROZEN`, so a contact calls it once. New `src/overworld/encounter_source.gd`. Test: three contact directions (leader moves, symbol moves, both), descriptors field-for-field identical, plus a non-default config.
+- Deviations (flagged): `start_encounter` returns the machine's `RequestResult` (ADR-0012 §4 Key Interfaces says `void`); a MapExit crossing only emits `map_exit_requested` and ends the frame (the MapChanging request is a TODO for the map-change stories); `grace_active` exists but nothing sets it yet (story 047); the battle party comes from an injected `party_source` Callable (empty by default) until the Squad Roster / ChapterFlow interim source is wired; the encounter catalog is injected (`encounter_catalog`, duck-typed `get_record`) and the game does not wire it or register symbols yet.
+- Also in this change: `GroundMover.step()` corner assist is now opt-in (`corner_assist = true`, leader only, ADR-0012 §2.3); tested by `tests/unit/overworld/ground_mover_corner_assist_leader_only_test.gd`.
+- Full suite: 780/780 passing.

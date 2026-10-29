@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -30,7 +30,7 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-16 [L] (Edge Cases)** GIVEN `start_encounter` rejected for 30 frames while the bodies overlap, THEN the symbol does not move, the request is retried every frame, one rejection is logged, and the first accepted frame enters Frozen.
+- [x] **AC-16 [L] (Edge Cases)** GIVEN `start_encounter` rejected for 30 frames while the bodies overlap, THEN the symbol does not move, the request is retried every frame, one rejection is logged, and the first accepted frame enters Frozen.
 
 ---
 
@@ -72,7 +72,7 @@
 **Required evidence**:
 - `tests/unit/overworld/overworld_mode_contact_pending_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -80,3 +80,14 @@
 
 - Depends on: `story-038-contact-starts-encounter-once.md`, `game-state-scene-flow/story-008-busy-transition-rejects-requests.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29 (implemented, awaiting /story-done)
+
+- `SymbolBrain.contact_pending` (resolves story 027's TODO): `step()` holds the symbol still while set; `OverworldMode` retries `start_encounter` every frame the swept overlap holds, logs (push_warning + `rejections_logged`) only on the first rejection of a contact, and releases the hold when the overlap ends. `SymbolBrain.on_contact()` stores the resume point for a Patrol contact. Test: 30 REJECTED_BUSY frames then OK on frame 31 -> Frozen.
+- Deviations (flagged): `start_encounter` returns the machine's `RequestResult` (ADR-0012 §4 Key Interfaces says `void`); a MapExit crossing only emits `map_exit_requested` and ends the frame (the MapChanging request is a TODO for the map-change stories); `grace_active` exists but nothing sets it yet (story 047); the battle party comes from an injected `party_source` Callable (empty by default) until the Squad Roster / ChapterFlow interim source is wired; the encounter catalog is injected (`encounter_catalog`, duck-typed `get_record`) and the game does not wire it or register symbols yet.
+- Also in this change: `GroundMover.step()` corner assist is now opt-in (`corner_assist = true`, leader only, ADR-0012 §2.3); tested by `tests/unit/overworld/ground_mover_corner_assist_leader_only_test.gd`.
+- Full suite: 780/780 passing.

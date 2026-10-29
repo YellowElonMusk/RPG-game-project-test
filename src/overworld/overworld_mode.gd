@@ -39,6 +39,40 @@ const _DT_MAX_FALLBACK: float = 0.10
 ## this node when unset.
 @export var map_parent: Node3D
 
+## Emitted once when the leader crosses into a `MapExit` (enter edge only).
+signal map_exit_requested(exit_id: StringName)
+
+## The GDD States table rows this mode implements so far. EncounterStarting
+## is transient inside `start_encounter()`.
+enum State { EXPLORING, FROZEN }
+
+## GDD Formulas swept contact: below this `|b|^2` the bodies did not move
+## relative to each other (a formula constant, not a tuning knob).
+const _ZERO_REL_DISPLACEMENT_SQ: float = 1e-8
+
+## Duck-typed record source with `get_record(type, id) -> Resource` (the
+## `ContentCatalogService` in the game; injected, never the autoload).
+var encounter_catalog: Object = null
+## Returns the party (`Array[Combatant]`) for the battle payload.
+## TODO(overworld): ChapterFlow's interim party / Squad Roster (ADR-0012 §5).
+var party_source: Callable = Callable()
+## Encounter grace (GDD rule 7). TODO(overworld): story 047 drives it.
+var grace_active: bool = false
+## The symbol whose encounter was accepted, until `transition_finished`.
+var pending_source: EncounterSource = null
+## Diagnostic: `start_encounter()` calls that reached the machine.
+var encounter_requests: int = 0
+## Diagnostic: rejections logged (once per contact, story 041).
+var rejections_logged: int = 0
+## Diagnostic: map-exit requests made (story 040).
+var exit_requests: int = 0
+
+var _state: State = State.EXPLORING
+var _sources: Array[EncounterSource] = []
+var _exit_ids: Array[StringName] = []
+var _exit_rects: Array[Rect2] = []
+var _budget: QueryBudget = null
+
 var _machine: GameStateMachine = null
 
 ## The loaded map and its baked grid (ADR-0012 §2: baked once, at load).
@@ -82,6 +116,8 @@ func _init() -> void:
 
 func setup(machine: GameStateMachine, _payload: RefCounted) -> void:
 	_machine = machine
+	if machine != null and not machine.transition_finished.is_connected(_on_transition_finished):
+		machine.transition_finished.connect(_on_transition_finished)
 
 
 func _ready() -> void:
@@ -135,11 +171,195 @@ func _process(delta: float) -> void:
 	if _machine == null:
 		return
 	var ow_dt: float = minf(delta, _DT_MAX_FALLBACK)
-	var input_vec: Vector2 = _machine.get_move_vector(self)
+	step_frame(ow_dt, _machine.get_move_vector(self))
+
+
+## One Exploring frame in ADR-0012 §5's fixed order: move the leader (corner
+## assist on, leader only) -> check map exits (enter-edge; an exit request
+## ends the frame, so contact is never checked on it -- GDD Edge Cases,
+## story 040) -> step symbols in marker order under the shared query budget
+## -> swept contact, eligibility read after the steps (stories 038, 041,
+## 042). TODO(overworld): interaction requests (step 5). Does nothing
+## outside Exploring (Frozen while the battle request is accepted).
+func step_frame(ow_dt: float, input_vec: Vector2) -> void:
+	if _state != State.EXPLORING:
+		return
+	var leader_from: Vector2 = _leader_pos
 	var result: GroundMover.MoveResult = GroundMover.step(
-			_leader_pos, input_vec, ow_dt, _grid, config, config.walk_speed, 0)
+			_leader_pos, input_vec, ow_dt, _grid, config, config.walk_speed, 0, true)
 	_leader_pos = result.position
 	_last_distance_moved = result.distance_moved
+	if _check_exits(leader_from, _leader_pos):
+		return
+	if _budget == null:
+		_budget = QueryBudget.new(config.repath_per_frame_max)
+	_budget.begin_frame()
+	var symbol_from: Array[Vector2] = []
+	for source: EncounterSource in _sources:
+		symbol_from.append(source.brain.position)
+		if _grid != null:
+			source.brain.step(ow_dt, _leader_pos, _grid, grace_active, config, _budget)
+	_check_contact(leader_from, symbol_from)
+
+
+## Registers an encounter symbol (ADR-0012 §5): `enc_id` names its
+## `encounter` record and `brain` its AI. Kept sorted by
+## `brain.marker_index` (stable), which is the step order and the contact
+## tie-break order (GDD Edge Cases).
+func add_symbol(enc_id: String, brain: SymbolBrain) -> EncounterSource:
+	var source := EncounterSource.new(enc_id, brain)
+	var at: int = _sources.size()
+	for i in _sources.size():
+		if _sources[i].brain.marker_index > brain.marker_index:
+			at = i
+			break
+	_sources.insert(at, source)
+	return source
+
+
+## Registers a `MapExit` rectangle in ground metres. Crossing into it (enter
+## edge only) requests the exit via `map_exit_requested`.
+func add_map_exit(exit_id: StringName, rect: Rect2) -> void:
+	_exit_ids.append(exit_id)
+	_exit_rects.append(rect)
+
+
+## Injects a baked walk grid without a map scene (tests, ADR-0012 §2).
+func set_walk_grid(grid: WalkGrid) -> void:
+	_grid = grid
+
+
+## Places the leader (map entry, tests). Re-anchors the follower trail.
+func set_leader_position(pos: Vector2) -> void:
+	_leader_pos = pos
+	_follower_trail.reset(pos)
+
+
+## The registered symbols' brains, in marker order.
+func get_symbol_brains() -> Array[SymbolBrain]:
+	var brains: Array[SymbolBrain] = []
+	for source: EncounterSource in _sources:
+		brains.append(source.brain)
+	return brains
+
+
+## The mode's state (`EXPLORING` or `FROZEN`).
+func get_state() -> State:
+	return _state
+
+
+## ADR-0012 §5 `start_encounter(enc_id, source)`: builds the descriptor from
+## the `encounter` record, builds the `BattleEntryPayload`, remembers
+## `pending_source` and calls `machine.request_transition(Mode.BATTLE, ...)`.
+## Accepted -> Frozen. Rejected -> the touched symbol is held in contact
+## pending and contact is retried next frame; the rejection is logged once
+## per contact (GDD Edge Cases). Returns the machine's result (ADR-0012's
+## signature returns `void`; the result is returned for callers and tests).
+func start_encounter(enc_id: String, source: EncounterSource) -> GameStateMachine.RequestResult:
+	var rec: EncounterData = null
+	if encounter_catalog != null:
+		rec = encounter_catalog.get_record(&"encounter", enc_id) as EncounterData
+	if rec == null or _machine == null:
+		push_error("OverworldMode: no encounter record '%s' (or no machine)" % enc_id)
+		return GameStateMachine.RequestResult.REJECTED_INVALID_PAYLOAD
+	var payload := BattleEntryPayload.new()
+	payload.descriptor = build_descriptor(rec)
+	if party_source.is_valid():
+		payload.party.assign(party_source.call())
+	source.brain.on_contact()
+	encounter_requests += 1
+	var result: GameStateMachine.RequestResult = _machine.request_transition(
+			GameStateMachine.Mode.BATTLE, payload)
+	if result == GameStateMachine.RequestResult.OK:
+		source.brain.contact_pending = false
+		pending_source = source
+		_state = State.FROZEN
+		return result
+	if not source.brain.contact_pending:
+		rejections_logged += 1
+		push_warning("OverworldMode: start_encounter('%s') rejected (%d); contact pending" \
+				% [enc_id, result])
+	source.brain.contact_pending = true
+	return result
+
+
+## Copies an `encounter` record into a fresh `EncounterDescriptor`, field for
+## field (ADR-0012 §3: the record's fields are exactly the descriptor's).
+static func build_descriptor(rec: EncounterData) -> EncounterDescriptor:
+	var d := EncounterDescriptor.new()
+	d.encounter_id = rec.id
+	d.enemy_ids = rec.enemy_ids.duplicate()
+	d.battle_stage_id = rec.battle_stage_id
+	d.faction_id = rec.faction_id
+	d.is_boss = rec.is_boss
+	d.can_flee = rec.can_flee
+	d.retreat_allowed = rec.retreat_allowed
+	return d
+
+
+## GDD Formulas `frame_step_safety`, swept contact: the closest approach of
+## the leader and a symbol over one frame, `min over t in [0, 1] of
+## |a + t*b|` with `a = c_L0 - c_S0` and `b = d_L - d_S`; `|a|` when
+## `|b|^2 < 1e-8` (no division).
+static func closest_approach(leader_from: Vector2, leader_delta: Vector2,
+		symbol_from: Vector2, symbol_delta: Vector2) -> float:
+	var a: Vector2 = leader_from - symbol_from
+	var b: Vector2 = leader_delta - symbol_delta
+	var bb: float = b.length_squared()
+	if bb < _ZERO_REL_DISPLACEMENT_SQ:
+		return a.length()
+	var t: float = clampf(-a.dot(b) / bb, 0.0, 1.0)
+	return (a + b * t).length()
+
+
+func _check_exits(from: Vector2, to: Vector2) -> bool:
+	for i in _exit_rects.size():
+		if not _exit_rects[i].has_point(from) and _exit_rects[i].has_point(to):
+			exit_requests += 1
+			# TODO(overworld): MapChanging + the map-change request (map stories).
+			map_exit_requested.emit(_exit_ids[i])
+			return true
+	return false
+
+
+## GDD rule 5 Contact + Edge Cases: among eligible symbols whose swept
+## closest approach is <= 2 * body_radius, the smallest distance wins, ties
+## to the earlier marker; one `start_encounter` per frame. A contact-pending
+## symbol whose overlap ended is released.
+func _check_contact(leader_from: Vector2, symbol_from: Array[Vector2]) -> void:
+	var leader_delta: Vector2 = _leader_pos - leader_from
+	var leader_safe: bool = _grid != null and _grid.is_safe(_grid.cell_of(_leader_pos))
+	var reach: float = 2.0 * config.body_radius
+	var best: EncounterSource = null
+	var best_d: float = INF
+	for i in _sources.size():
+		var source: EncounterSource = _sources[i]
+		var touching: bool = false
+		var d: float = INF
+		if not grace_active and not leader_safe and source.brain.contact_eligible():
+			d = closest_approach(leader_from, leader_delta, symbol_from[i],
+					source.brain.position - symbol_from[i])
+			touching = d <= reach
+		if not touching:
+			source.brain.contact_pending = false
+			continue
+		if d < best_d:
+			best = source
+			best_d = d
+	if best != null:
+		start_encounter(best.enc_id, best)
+
+
+## ADR-0012 §5 `transition_finished`: back to Exploring after the thaw; grace
+## starts and Noticing/Chasing symbols switch to Returning (GDD rule 7).
+## TODO(overworld): the grace timer itself (story 047) and `on_thawed`.
+func _on_transition_finished(to: GameStateMachine.Mode) -> void:
+	if to != GameStateMachine.Mode.OVERWORLD:
+		return
+	_state = State.EXPLORING
+	pending_source = null
+	for source: EncounterSource in _sources:
+		source.brain.on_grace_started()
 
 
 ## This frame's `distance_moved` from the last `_process()` step, so a test

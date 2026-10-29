@@ -6,7 +6,7 @@
 > **Type**: Integration
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -30,7 +30,7 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-14 [I] (R4/R5 × Game State rule 6)** GIVEN contact with a symbol whose `enc_` record is a fixture, THEN the Encounter descriptor Game State receives equals the record field for field: `encounter_id`, enemy IDs, `battle_stage_id`, `faction_id`, `is_boss`, `can_flee`, `retreat_allowed`.
+- [x] **AC-14 [I] (R4/R5 × Game State rule 6)** GIVEN contact with a symbol whose `enc_` record is a fixture, THEN the Encounter descriptor Game State receives equals the record field for field: `encounter_id`, enemy IDs, `battle_stage_id`, `faction_id`, `is_boss`, `can_flee`, `retreat_allowed`.
 
 ---
 
@@ -76,7 +76,7 @@ prove the descriptor actually reaching Game State matches the record.
 **Required evidence**:
 - `tests/integration/overworld/encounter_descriptor_matches_record_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -84,3 +84,14 @@ prove the descriptor actually reaching Game State matches the record.
 
 - Depends on: `story-038-contact-starts-encounter-once.md`, `game-state-scene-flow/story-001-overworld-to-battle-signal-order.md`
 - Unlocks: `story-049-thaw-preserves-mid-chase-snapshot.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29 (implemented, awaiting /story-done)
+
+- Integration test against the real `GameStateMachine` (GameStateFixtures, stub loader/presenter): the payload captured at `begin_swap` carries a descriptor equal to the fixture `enc_` record on all seven fields (fixture sets `can_flee = false` against the descriptor's `true` default to catch a missed copy). `src/data/records/encounter_data.gd` needed no change.
+- Deviations (flagged): `start_encounter` returns the machine's `RequestResult` (ADR-0012 §4 Key Interfaces says `void`); a MapExit crossing only emits `map_exit_requested` and ends the frame (the MapChanging request is a TODO for the map-change stories); `grace_active` exists but nothing sets it yet (story 047); the battle party comes from an injected `party_source` Callable (empty by default) until the Squad Roster / ChapterFlow interim source is wired; the encounter catalog is injected (`encounter_catalog`, duck-typed `get_record`) and the game does not wire it or register symbols yet.
+- Also in this change: `GroundMover.step()` corner assist is now opt-in (`corner_assist = true`, leader only, ADR-0012 §2.3); tested by `tests/unit/overworld/ground_mover_corner_assist_leader_only_test.gd`.
+- Full suite: 780/780 passing.

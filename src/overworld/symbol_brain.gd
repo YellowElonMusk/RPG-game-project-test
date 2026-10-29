@@ -30,8 +30,12 @@
 ## - **Facing** (stories 026-027): snapped to the four displayed diagonals
 ##   with 45 + 5 degree hysteresis, held while not moving.
 ##
-## TODO(overworld): Stunned/Static behaviour, `on_fled()` and swept contact
-## (stories 038+).
+## - **Contact pending** (story 041): while `start_encounter` is rejected the
+##   touched symbol holds still and keeps its sub-state (`contact_pending`);
+##   `on_contact()` stores the resume point for a symbol touched in Patrol.
+##   The swept contact test itself lives in `OverworldMode` (story 038).
+##
+## TODO(overworld): Stunned/Static behaviour and `on_fled()` (stories 043+).
 class_name SymbolBrain
 extends RefCounted
 
@@ -113,6 +117,12 @@ var warnings_logged: int = 0
 ## Diagnostic: `true` when the most recent Chasing step used the final
 ## approach (straight at the target point) instead of the stored route.
 var used_final_approach: bool = false
+
+## GDD rule 5 "Contact pending": `true` while this symbol's encounter request
+## is rejected and the overlap holds. `step()` then holds the symbol still
+## (no movement, no timers; sub-state and facing kept). Set and cleared only
+## by `OverworldMode`'s contact check (ADR-0012 §5).
+var contact_pending: bool = false
 
 var _path: PackedVector2Array
 var _mode: PathMode
@@ -255,6 +265,17 @@ func contact_eligible() -> bool:
 			or sub_state == SubState.CHASING
 
 
+## Called by `OverworldMode` on the first frame of a contact (not on a
+## contact-pending retry): a symbol touched during Patrol stores its patrol
+## position as its resume point (GDD rule 5 Contact).
+func on_contact() -> void:
+	if contact_pending or sub_state != SubState.PATROL:
+		return
+	_resume_point = position
+	_resume_next = _next
+	_resume_dir = _dir
+
+
 ## ADR-0012 §5 `on_grace_started()`: a Noticing or Chasing symbol switches
 ## to Returning when encounter grace starts (GDD rule 7).
 func on_grace_started() -> void:
@@ -289,7 +310,7 @@ func step(dt: float, leader: Vector2, grid: WalkGrid, grace: bool, cfg: Overworl
 		budget: QueryBudget = null) -> void:
 	last_distance_moved = 0.0
 	used_final_approach = false
-	if dt <= 0.0:
+	if dt <= 0.0 or contact_pending:
 		return
 	match sub_state:
 		SubState.PATROL:
