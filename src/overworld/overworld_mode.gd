@@ -56,8 +56,23 @@ var encounter_catalog: Object = null
 ## Returns the party (`Array[Combatant]`) for the battle payload.
 ## TODO(overworld): ChapterFlow's interim party / Squad Roster (ADR-0012 §5).
 var party_source: Callable = Callable()
-## Encounter grace (GDD rule 7). TODO(overworld): story 047 drives it.
-var grace_active: bool = false
+## Persistent state (ADR-0012 §4), assigned by the composite `pre_setup`
+## injector. TODO(overworld): GameRoot does not inject it yet; null means
+## Victory removes the symbol for this visit only (logged as an error).
+var world_state: WorldState = null
+## Encounter grace (GDD rule 7): `true` while grace time is left. Started
+## only by `transition_finished` (story 047); setting it `true` starts a full
+## `config.encounter_grace_s`, `false` ends it.
+var grace_active: bool:
+	get:
+		return _grace_left > 0.0
+	set(value):
+		_grace_left = config.encounter_grace_s if value else 0.0
+## ADR-0012 §5: set in `on_thawed`, cleared on `transition_finished`, so step
+## 2 knows the reveal follows a battle (on-screen liberation, payoff card).
+var pending_thaw: bool = false
+## Diagnostic: how many times grace has started (story 047).
+var grace_starts: int = 0
 ## The symbol whose encounter was accepted, until `transition_finished`.
 var pending_source: EncounterSource = null
 ## Diagnostic: `start_encounter()` calls that reached the machine.
@@ -74,6 +89,16 @@ var _exit_rects: Array[Rect2] = []
 var _budget: QueryBudget = null
 
 var _machine: GameStateMachine = null
+
+## Seconds of encounter grace left (advanced only by `step_frame`).
+var _grace_left: float = 0.0
+## Exploring is suspended while any of these hold (story 048; GDD States).
+var _overlays_open: int = 0
+var _transitioning: bool = false
+var _camp_prompt_open: bool = false
+## The leader's facing: the last non-zero input direction (ADR-0012 §4
+## `party_facing`; the flee push's coincident-centres fallback).
+var _leader_facing: Vector2 = Vector2.DOWN
 
 ## The loaded map and its baked grid (ADR-0012 §2: baked once, at load).
 var _map: OverworldMap = null
@@ -116,8 +141,14 @@ func _init() -> void:
 
 func setup(machine: GameStateMachine, _payload: RefCounted) -> void:
 	_machine = machine
-	if machine != null and not machine.transition_finished.is_connected(_on_transition_finished):
+	if machine == null:
+		return
+	_transitioning = machine.phase != GameStateMachine.Phase.IDLE
+	if not machine.transition_finished.is_connected(_on_transition_finished):
 		machine.transition_finished.connect(_on_transition_finished)
+		machine.transition_started.connect(_on_transition_started)
+		machine.overlay_opened.connect(_on_overlay_opened)
+		machine.overlay_closed.connect(_on_overlay_closed)
 
 
 func _ready() -> void:
@@ -182,8 +213,12 @@ func _process(delta: float) -> void:
 ## 042). TODO(overworld): interaction requests (step 5). Does nothing
 ## outside Exploring (Frozen while the battle request is accepted).
 func step_frame(ow_dt: float, input_vec: Vector2) -> void:
-	if _state != State.EXPLORING:
+	if not is_exploring():
 		return
+	# Grace runs on `ow_dt` only (ADR-0012 §2), ticked before contact reads it.
+	_grace_left = maxf(0.0, _grace_left - ow_dt)
+	if not input_vec.is_zero_approx():
+		_leader_facing = input_vec.normalized()
 	var leader_from: Vector2 = _leader_pos
 	var result: GroundMover.MoveResult = GroundMover.step(
 			_leader_pos, input_vec, ow_dt, _grid, config, config.walk_speed, 0, true)
@@ -206,8 +241,14 @@ func step_frame(ow_dt: float, input_vec: Vector2) -> void:
 ## `encounter` record and `brain` its AI. Kept sorted by
 ## `brain.marker_index` (stable), which is the step order and the contact
 ## tie-break order (GDD Edge Cases).
-func add_symbol(enc_id: String, brain: SymbolBrain) -> EncounterSource:
-	var source := EncounterSource.new(enc_id, brain)
+##
+## Story 043: a symbol `world_state` holds resolved on the current map is not
+## registered (absent for the visit); returns null then. `symbol_id`
+## defaults to `enc_id`.
+func add_symbol(enc_id: String, brain: SymbolBrain, symbol_id: String = "") -> EncounterSource:
+	var source := EncounterSource.new(enc_id, brain, symbol_id)
+	if world_state != null and world_state.is_resolved(world_state.map_id, source.symbol_id):
+		return null
 	var at: int = _sources.size()
 	for i in _sources.size():
 		if _sources[i].brain.marker_index > brain.marker_index:
@@ -350,14 +391,100 @@ func _check_contact(leader_from: Vector2, symbol_from: Array[Vector2]) -> void:
 		start_encounter(best.enc_id, best)
 
 
-## ADR-0012 §5 `transition_finished`: back to Exploring after the thaw; grace
-## starts and Noticing/Chasing symbols switch to Returning (GDD rule 7).
-## TODO(overworld): the grace timer itself (story 047) and `on_thawed`.
+## `true` only in Exploring (story 048; GDD States): not Frozen, no overlay
+## (Menu, Dialogue), no CampPrompt and no transition running. Every symbol
+## and grace timer advances only inside `step_frame`, which does nothing
+## otherwise, so they all freeze together. No `Engine.time_scale`.
+func is_exploring() -> bool:
+	return _state == State.EXPLORING and _overlays_open == 0 and not _transitioning \
+			and not _camp_prompt_open
+
+
+## The CampPrompt state (GDD States: "Rest here?"). TODO(overworld): the
+## CampSpot `confirm` flow is the intended caller once it exists.
+func set_camp_prompt_open(open: bool) -> void:
+	_camp_prompt_open = open
+
+
+## Seconds of encounter grace left.
+func get_grace_left() -> float:
+	return _grace_left
+
+
+## The leader's facing (unit vector).
+func get_leader_facing() -> Vector2:
+	return _leader_facing
+
+
+## Sets the leader's facing (map entry, tests). A zero vector is ignored.
+func set_leader_facing(facing: Vector2) -> void:
+	if not facing.is_zero_approx():
+		_leader_facing = facing.normalized()
+
+
+## ADR-0002 §4 / ADR-0012 §5 step 1, under the reverse wipe, after
+## `mode_entered(OVERWORLD)`: VICTORY resolves the source per its record's
+## respawn policy in `world_state` and removes it for this visit (story
+## 043); FLED stuns and pushes it (story 044). The leader never moves;
+## followers re-form behind it. Grace is NOT started here (story 047).
+## TODO(overworld): the payoff (story 050), liberation (052) and the Static
+## Fled return marker.
+func on_thawed(encounter_id: String, result: GameStateMachine.BattleResult) -> void:
+	var source: EncounterSource = pending_source
+	if source == null or source.enc_id != encounter_id:
+		source = null
+		for s: EncounterSource in _sources:
+			if s.enc_id == encounter_id:
+				source = s
+				break
+	if source == null:
+		push_warning("OverworldMode: on_thawed('%s') has no source symbol" % encounter_id)
+		return
+	pending_thaw = true
+	match result:
+		GameStateMachine.BattleResult.VICTORY:
+			_resolve_victory(source)
+		GameStateMachine.BattleResult.FLED:
+			source.brain.on_fled(_leader_pos, _leader_facing, _grid, config)
+	_follower_trail.reset(_leader_pos)
+
+
+func _resolve_victory(source: EncounterSource) -> void:
+	var rec: EncounterData = null
+	if encounter_catalog != null:
+		rec = encounter_catalog.get_record(&"encounter", source.enc_id) as EncounterData
+	if world_state == null:
+		push_error("OverworldMode: no world_state; '%s' resolved for this visit only" % source.symbol_id)
+	else:
+		world_state.mark_resolved(world_state.map_id, source.symbol_id, WorldState.respawn_of(rec))
+	_sources.erase(source)
+
+
+func _on_transition_started(_from: GameStateMachine.Mode, _to: GameStateMachine.Mode) -> void:
+	_transitioning = true
+
+
+func _on_overlay_opened(_kind: GameStateMachine.OverlayKind) -> void:
+	_overlays_open += 1
+
+
+func _on_overlay_closed(_kind: GameStateMachine.OverlayKind) -> void:
+	_overlays_open = maxi(0, _overlays_open - 1)
+
+
+## ADR-0012 §5 step 2, `transition_finished` once the scene is revealed:
+## back to Exploring, encounter grace starts (`config.encounter_grace_s`,
+## story 047) and Noticing/Chasing symbols switch to Returning (GDD rule 7).
+## Fires after a battle thaw, any map load and a redirect alike.
 func _on_transition_finished(to: GameStateMachine.Mode) -> void:
+	_transitioning = false
 	if to != GameStateMachine.Mode.OVERWORLD:
 		return
 	_state = State.EXPLORING
 	pending_source = null
+	pending_thaw = false
+	_grace_left = config.encounter_grace_s
+	grace_starts += 1
 	for source: EncounterSource in _sources:
 		source.brain.on_grace_started()
 

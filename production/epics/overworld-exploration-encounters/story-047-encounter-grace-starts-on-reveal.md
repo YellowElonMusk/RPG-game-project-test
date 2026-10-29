@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -30,7 +30,7 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-20a [L] (R7)** GIVEN Victory, Fled, any map load or a redirect, THEN grace starts on `transition_finished`, not on `on_thawed`. An overlapping eligible symbol starts no encounter at `encounter_grace_s − dt` after that, and does start one at `encounter_grace_s + dt`.
+- [x] **AC-20a [L] (R7)** GIVEN Victory, Fled, any map load or a redirect, THEN grace starts on `transition_finished`, not on `on_thawed`. An overlapping eligible symbol starts no encounter at `encounter_grace_s − dt` after that, and does start one at `encounter_grace_s + dt`.
 
 ---
 
@@ -70,7 +70,7 @@
 **Required evidence**:
 - `tests/unit/overworld/overworld_mode_encounter_grace_timing_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (full suite 824/824, 2026-10-29)
 
 ---
 
@@ -78,3 +78,11 @@
 
 - Depends on: `story-043-victory-respawn-policy.md`, `story-044-fled-symbol-stun-and-push.md`
 - Unlocks: `story-048-timers-freeze-under-overlays.md`, `story-049-thaw-preserves-mid-chase-snapshot.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29 (implemented, awaiting /story-done)
+- `grace_active` is now a property over `_grace_left`, started only in `_on_transition_finished(OVERWORLD)` (thaw, map load and redirect alike), ticked on ow_dt at the start of `step_frame`. `pending_thaw` set in `on_thawed`, cleared there. `grace_starts` diagnostic.
+- Test: `tests/unit/overworld/overworld_mode_encounter_grace_timing_test.gd` (5 cases).

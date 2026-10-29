@@ -102,6 +102,20 @@ extends Resource
 @export var giveup_s: float = 1.5
 
 
+## Seconds a non-Static symbol stays Stunned after a Fled battle, deaf and
+## intangible (GDD rule 5 Stunned row; Tuning Knobs: safe range 2-4,
+## default 3; invariants I5, I6).
+@export var flee_grace_s: float = 3.0
+
+## Maximum distance a Fled symbol is pushed back along the leader-to-symbol
+## line, in metres (GDD Edge Cases, flee push; safe range 1-3; default 2).
+@export var flee_push_m: float = 2.0
+
+## Seconds of encounter grace started on `transition_finished` (GDD rule 7;
+## safe range 1.5-3; default 2; invariants I3, I6).
+@export var encounter_grace_s: float = 2.0
+
+
 ## `v_patrol = f_patrol * walk_speed`, in metres per second (GDD Formulas,
 ## `chase_escape`). The speed a Patrol (and Returning) symbol passes to
 ## `GroundMover.step()`.

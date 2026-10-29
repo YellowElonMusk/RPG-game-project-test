@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -30,7 +30,7 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-18 [L] (R7)** GIVEN Victory over a normal Clerk, THEN it is absent until the map is reloaded through a MapExit, and present after that. GIVEN Victory over a `respawn = never` record, THEN it is absent after any number of reloads.
+- [x] **AC-18 [L] (R7)** GIVEN Victory over a normal Clerk, THEN it is absent until the map is reloaded through a MapExit, and present after that. GIVEN Victory over a `respawn = never` record, THEN it is absent after any number of reloads.
 
 ---
 
@@ -72,7 +72,7 @@
 **Required evidence**:
 - `tests/unit/overworld/overworld_mode_victory_respawn_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (full suite 824/824, 2026-10-29)
 
 ---
 
@@ -80,3 +80,12 @@
 
 - Depends on: `story-038-contact-starts-encounter-once.md`, `game-state-scene-flow/story-015-victory-waits-for-results.md`
 - Unlocks: `story-050-first-victory-grants-payoff.md`, `story-052-offscreen-liberation-payoff-card.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29 (implemented, awaiting /story-done)
+- New `src/overworld/world_state.gd` (`WorldState`: map_id, party_pos/facing, per-map resolved set with `Respawn` policy, `on_map_entered` with `EntryKind`; Continue skips respawn). `OverworldMode.on_thawed` VICTORY marks the source resolved and removes it; `add_symbol` refuses a resolved symbol (absent for the visit). `EncounterSource.symbol_id` added (defaults to enc_id).
+- Deviation (flagged): `EncounterData.respawn` is still a bool, so true maps to ON_MAP_REENTER and false to NEVER (`WorldState.respawn_of`, TODO(content-data)). `mark_resolved` takes the policy as a third argument instead of a catalog lookup in `on_map_entered`. GameRoot does not inject `world_state` yet (null: removed for the visit only, logged).
+- Test: `tests/unit/overworld/overworld_mode_victory_respawn_test.gd` (5 cases).

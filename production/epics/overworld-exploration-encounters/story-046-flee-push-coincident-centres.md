@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -30,7 +30,7 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-19c [L] (Edge Cases)** GIVEN Fled with coincident centres, THEN the push goes along the direction opposite the leader's facing.
+- [x] **AC-19c [L] (Edge Cases)** GIVEN Fled with coincident centres, THEN the push goes along the direction opposite the leader's facing.
 
 ---
 
@@ -69,7 +69,7 @@
 **Required evidence**:
 - `tests/unit/overworld/symbol_brain_fled_coincident_push_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (full suite 824/824, 2026-10-29)
 
 ---
 
@@ -77,3 +77,11 @@
 
 - Depends on: `story-044-fled-symbol-stun-and-push.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29 (implemented, awaiting /story-done)
+- Coincident centres push along -leader_facing; with a zero facing as well the symbol is stunned with no push (never an arbitrary axis).
+- Test: `tests/unit/overworld/symbol_brain_fled_coincident_push_test.gd` (4 diagonals x 2 configs, blocker stop, zero facing).

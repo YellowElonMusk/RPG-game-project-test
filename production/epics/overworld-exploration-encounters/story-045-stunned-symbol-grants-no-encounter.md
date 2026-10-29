@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -30,7 +30,7 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-19b [L] (R5, R7)** GIVEN a Stunned symbol overlapping the leader at any time during `flee_grace_s`, THEN no encounter starts. It is Stunned at `flee_grace_s − dt` and Returning at `flee_grace_s + dt`.
+- [x] **AC-19b [L] (R5, R7)** GIVEN a Stunned symbol overlapping the leader at any time during `flee_grace_s`, THEN no encounter starts. It is Stunned at `flee_grace_s − dt` and Returning at `flee_grace_s + dt`.
 
 ---
 
@@ -70,7 +70,7 @@
 **Required evidence**:
 - `tests/unit/overworld/symbol_brain_stunned_no_contact_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (full suite 824/824, 2026-10-29)
 
 ---
 
@@ -78,3 +78,11 @@
 
 - Depends on: `story-044-fled-symbol-stun-and-push.md`, `story-033-returning-to-resume-point.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29 (implemented, awaiting /story-done)
+- STUNNED step ticks `flee_grace_s` then enters Returning; contact eligibility already excluded Stunned. A STUNNED state set without `on_fled` (no armed timer) holds, which keeps the older deaf-substate tests valid.
+- Test: `tests/unit/overworld/symbol_brain_stunned_no_contact_test.gd` (2 cases, default and custom config).

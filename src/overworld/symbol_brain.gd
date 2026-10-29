@@ -35,7 +35,12 @@
 ##   `on_contact()` stores the resume point for a symbol touched in Patrol.
 ##   The swept contact test itself lives in `OverworldMode` (story 038).
 ##
-## TODO(overworld): Stunned/Static behaviour and `on_fled()` (stories 043+).
+## - **Stunned** (stories 044-046): `on_fled()` enters Stunned and pushes the
+##   symbol back up to `cfg.flee_push_m` in 4-connected cell steps along the
+##   leader-to-symbol line (opposite the leader's facing when the centres
+##   coincide); deaf and intangible for `cfg.flee_grace_s`, then Returning.
+##
+## TODO(overworld): Static behaviour (`start_on`, the Fled return marker).
 class_name SymbolBrain
 extends RefCounted
 
@@ -136,6 +141,8 @@ var _notice_elapsed: float = 0.0
 var _cooldown_left: float = 0.0
 ## Seconds of turn pause left; > 0 while in the look-back pose.
 var _pause_left: float = 0.0
+## Seconds of stun left (Stunned only).
+var _stun_left: float = 0.0
 
 # Stored route (Chasing and Returning): remaining waypoints, in metres.
 var _route: Array[Vector2] = []
@@ -283,6 +290,94 @@ func on_grace_started() -> void:
 		_enter_returning()
 
 
+## Seconds left of the stun (0 outside Stunned).
+func stun_left() -> float:
+	return _stun_left
+
+
+## Seconds spent in Noticing since the entry frame.
+func notice_elapsed() -> float:
+	return _notice_elapsed
+
+
+## Seconds of re-notice cooldown left.
+func cooldown_left() -> float:
+	return _cooldown_left
+
+
+## ADR-0012 §5 `on_fled(leader, leader_facing, grid, cfg)`, applied in
+## `on_thawed` under the wipe (GDD rule 7 Fled, Edge Cases flee push). A
+## Static symbol is neither stunned nor pushed. Otherwise the symbol enters
+## Stunned for `cfg.flee_grace_s` and moves along `flee_push_direction()` by
+## `push_distance()`. The leader is never moved (it is not this brain's).
+func on_fled(leader: Vector2, leader_facing: Vector2, grid: WalkGrid, cfg: OverworldConfig) -> void:
+	if sub_state == SubState.STATIC:
+		return
+	sub_state = SubState.STUNNED
+	contact_pending = false
+	_stun_left = cfg.flee_grace_s
+	_pause_left = 0.0
+	_route.clear()
+	_repath_pending = false
+	_giveup_elapsed = -1.0
+	var dir: Vector2 = flee_push_direction(position, leader, leader_facing)
+	if dir == Vector2.ZERO or grid == null:
+		return
+	position += dir * push_distance(grid, position, dir, cfg.flee_push_m, cfg.body_radius)
+
+
+## The flee push's unit direction (GDD Edge Cases): along the leader-to-symbol
+## line; when the centres coincide, opposite `leader_facing`. `Vector2.ZERO`
+## (no push) only when both are zero, never an arbitrary axis.
+static func flee_push_direction(symbol: Vector2, leader: Vector2, leader_facing: Vector2) -> Vector2:
+	var away: Vector2 = symbol - leader
+	if not away.is_zero_approx():
+		return away.normalized()
+	if leader_facing.is_zero_approx():
+		return Vector2.ZERO
+	return -leader_facing.normalized()
+
+
+## How far the flee push carries a centre from `from` along unit `dir`, at
+## most `max_m` (GDD Edge Cases): the cells the line crosses are walked one
+## at a time, 4-connected (on an exact corner the x neighbour is tried
+## first, so the push never hops diagonally between two blocked corners).
+## At the first cell that is not symbol-legal the push stops, backed off by
+## `body_radius` so the body stays clear of it (never below 0). Every cell
+## entered is appended to `crossed` when given.
+static func push_distance(grid: WalkGrid, from: Vector2, dir: Vector2, max_m: float,
+		body_radius: float, crossed: Array[Vector2i] = []) -> float:
+	var cell: Vector2i = grid.cell_of(from)
+	crossed.append(cell)
+	var cm: float = grid.cell_m
+	var step_x: int = 1 if dir.x > 0.0 else -1
+	var step_y: int = 1 if dir.y > 0.0 else -1
+	var t_max_x: float = INF
+	var t_max_y: float = INF
+	var t_delta_x: float = INF
+	var t_delta_y: float = INF
+	if dir.x != 0.0:
+		t_max_x = (float(cell.x + (1 if dir.x > 0.0 else 0)) * cm - from.x) / dir.x
+		t_delta_x = cm / absf(dir.x)
+	if dir.y != 0.0:
+		t_max_y = (float(cell.y + (1 if dir.y > 0.0 else 0)) * cm - from.y) / dir.y
+		t_delta_y = cm / absf(dir.y)
+	while true:
+		var t_next: float = minf(t_max_x, t_max_y)
+		if t_next > max_m:
+			return max_m
+		if t_max_x <= t_max_y:
+			cell.x += step_x
+			t_max_x += t_delta_x
+		else:
+			cell.y += step_y
+			t_max_y += t_delta_y
+		if not grid.is_symbol_legal(cell):
+			return maxf(0.0, t_next - body_radius)
+		crossed.append(cell)
+	return max_m
+
+
 ## The Returning -> Patrol transition (GDD rule 5 Returning row): back in
 ## Patrol, with the notice test off for `cfg.renotice_cooldown_s`. Called by
 ## the Returning step on reaching the resume point.
@@ -331,6 +426,14 @@ func step(dt: float, leader: Vector2, grid: WalkGrid, grace: bool, cfg: Overworl
 			_step_chasing(dt, leader, grid, cfg, budget)
 		SubState.RETURNING:
 			_step_returning(dt, grid, cfg, budget)
+		SubState.STUNNED:
+			# Deaf and intangible (GDD rule 5): no notice test, no movement;
+			# Returning once `flee_grace_s` has run out. Only a stun armed by
+			# `on_fled()` runs out; a bare `sub_state = STUNNED` just holds.
+			if _stun_left > 0.0:
+				_stun_left = maxf(0.0, _stun_left - dt)
+				if _stun_left <= 0.0:
+					_enter_returning()
 		_:
 			pass
 

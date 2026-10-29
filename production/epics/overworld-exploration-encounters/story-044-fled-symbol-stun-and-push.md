@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -30,7 +30,7 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-19a [L] (R7, Edge Cases)** GIVEN Fled from a non-Static symbol, THEN in `on_thawed` the symbol is Stunned, and it is moved along the leader-to-symbol line by `flee_push_m` in 4-connected cell steps, or less if a non-symbol-legal cell comes first. The leader's position is unchanged.
+- [x] **AC-19a [L] (R7, Edge Cases)** GIVEN Fled from a non-Static symbol, THEN in `on_thawed` the symbol is Stunned, and it is moved along the leader-to-symbol line by `flee_push_m` in 4-connected cell steps, or less if a non-symbol-legal cell comes first. The leader's position is unchanged.
 
 ---
 
@@ -73,7 +73,7 @@
 **Required evidence**:
 - `tests/unit/overworld/symbol_brain_fled_push_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (full suite 824/824, 2026-10-29)
 
 ---
 
@@ -81,3 +81,11 @@
 
 - Depends on: `story-043-victory-respawn-policy.md`, `game-state-scene-flow/story-016-fled-rejected-when-not-allowed.md`
 - Unlocks: `story-045-stunned-symbol-grants-no-encounter.md`, `story-046-flee-push-coincident-centres.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29 (implemented, awaiting /story-done)
+- `SymbolBrain.on_fled`, `flee_push_direction`, `push_distance` (grid DDA, 4-connected, x neighbour first on an exact corner). Stops at the first non-symbol-legal cell, backed off by `body_radius` so the body stays clear (interpretation of the GDD stop rule, flagged). Static is never pushed. New knobs `flee_grace_s`, `flee_push_m`, `encounter_grace_s` in `OverworldConfig`. `OverworldMode` now tracks the leader facing (last non-zero input) and re-forms followers in `on_thawed`.
+- Test: `tests/unit/overworld/symbol_brain_fled_push_test.gd` (5 cases).

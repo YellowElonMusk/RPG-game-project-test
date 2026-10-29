@@ -8,8 +8,12 @@ extends RefCounted
 var enc_id: String = ""
 ## The symbol's AI; its `marker_index` is the marker order.
 var brain: SymbolBrain = null
+## The marker's symbol ID, the key `WorldState` resolves (story 043).
+## Defaults to `enc_id` when the caller gives none.
+var symbol_id: String = ""
 
 
-func _init(p_enc_id: String, p_brain: SymbolBrain) -> void:
+func _init(p_enc_id: String, p_brain: SymbolBrain, p_symbol_id: String = "") -> void:
 	enc_id = p_enc_id
 	brain = p_brain
+	symbol_id = p_symbol_id if not p_symbol_id.is_empty() else p_enc_id

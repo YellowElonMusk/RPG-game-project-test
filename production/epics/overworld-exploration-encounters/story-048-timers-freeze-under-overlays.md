@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -30,7 +30,7 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-20b [L] (R7)** Grace, notice, give-up, cooldown and stun timers do not advance while the Menu, Dialogue or CampPrompt is open, or while a transition runs.
+- [x] **AC-20b [L] (R7)** Grace, notice, give-up, cooldown and stun timers do not advance while the Menu, Dialogue or CampPrompt is open, or while a transition runs.
 
 ---
 
@@ -72,7 +72,7 @@
 **Required evidence**:
 - `tests/unit/overworld/overworld_mode_timers_freeze_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (full suite 824/824, 2026-10-29)
 
 ---
 
@@ -80,3 +80,12 @@
 
 - Depends on: `story-047-encounter-grace-starts-on-reveal.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29 (implemented, awaiting /story-done)
+- `OverworldMode.is_exploring()` gates `step_frame`: not Frozen, no overlay (counted from overlay_opened/closed), no transition (transition_started to transition_finished; seeded from `machine.phase` in setup) and no CampPrompt (`set_camp_prompt_open`, TODO: CampSpot flow). No Engine.time_scale anywhere.
+- Interpretation: a transition ends with transition_finished, which by rule 7 restarts grace and turns Noticing/Chasing into Returning, so those three cases assert the freeze and then the rule-7 outcome rather than an exact resume.
+- Test: `tests/unit/overworld/overworld_mode_timers_freeze_test.gd` (5 timers x 4 suspensions).
