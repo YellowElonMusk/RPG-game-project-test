@@ -37,6 +37,12 @@ var _machine: GameStateMachine = null
 ## (ADR-0012 §4); story 001 only proves `GroundMover`'s formula end to end.
 var _leader_pos: Vector2 = Vector2.ZERO
 
+## The most recent `GroundMover.step()` call's `distance_moved`, read by
+## `get_last_distance_moved()`. Exists so a test can derive this frame's
+## leader speed (`distance_moved / dt`) through the real `_process()` call
+## path (story 003, AC-1c) instead of reaching into `_leader_pos`.
+var _last_distance_moved: float = 0.0
+
 
 func _init() -> void:
 	# Pinned ordering (ADR-0012 §2): GameRoot -20, OverworldMode -10,
@@ -51,13 +57,19 @@ func setup(machine: GameStateMachine, _payload: RefCounted) -> void:
 
 ## No discrete action is handled yet (routing lands in story 010+); always
 ## falls through so a later `handle_action` override is additive, not a
-## rewrite.
+## rewrite. This call path never reads or writes `_leader_pos` -- AC-1c's own
+## proof that `confirm`/`cancel`/`menu` cannot change the leader's speed,
+## however they're driven (pressed or held), since `handle_action()` and the
+## movement step in `_process()` never share state
+## (`tests/unit/overworld/ground_mover_speed_test.gd`).
 func handle_action(_action: StringName, _pressed: bool) -> bool:
 	return false
 
 
 ## Reads movement only through `machine.get_move_vector(self)` (control
-## manifest; ADR-0012 §2) and steps on `ow_dt = min(delta, dt_max)`.
+## manifest; ADR-0012 §2) and steps on `ow_dt = min(delta, dt_max)`. Never
+## branches on a discrete action first (AC-1c) -- this function has no way to
+## see one; `handle_action()` is the only call path actions arrive through.
 func _process(delta: float) -> void:
 	if _machine == null:
 		return
@@ -66,3 +78,11 @@ func _process(delta: float) -> void:
 	var result: GroundMover.MoveResult = GroundMover.step(
 			_leader_pos, input_vec, ow_dt, null, config, config.walk_speed, 0)
 	_leader_pos = result.position
+	_last_distance_moved = result.distance_moved
+
+
+## This frame's `distance_moved` from the last `_process()` step, so a test
+## can derive leader speed as `get_last_distance_moved() / dt` (AC-1c)
+## without reading `_leader_pos` directly.
+func get_last_distance_moved() -> float:
+	return _last_distance_moved

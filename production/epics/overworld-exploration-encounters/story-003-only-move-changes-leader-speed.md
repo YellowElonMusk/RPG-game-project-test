@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -79,7 +79,44 @@ scale the leader's speed, however the other actions are driven.
 **Required evidence**:
 - `tests/unit/overworld/ground_mover_speed_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
+
+---
+
+## Completion Notes
+
+- `OverworldMode.handle_action()` was already a pure fall-through (`return false`)
+  that never touches `GroundMover` or `_leader_pos`, and `_process()` never
+  branches on an action -- AC-1c held from story 001's stub onward. This story
+  adds the proof: `get_last_distance_moved()` (backed by a new private
+  `_last_distance_moved` field, set from each step's `MoveResult`) so a test can
+  read this frame's speed through the real call path instead of reaching into
+  `_leader_pos`, plus doc comments on `handle_action()`/`_process()` naming
+  AC-1c explicitly.
+- Tests drive a real `OverworldMode` wired to a real `GameStateMachine`
+  (`GameStateFixtures.make_machine_in_overworld()`, with a bound
+  `SyntheticActionSource` only to supply the fixed move vector) through
+  `mode.handle_action()` directly, not by calling `GroundMover.step()` or
+  going through the machine's own action-source dispatch --
+  `confirm`/`cancel`/`menu` as discrete press/release, held across
+  `_N_FRAMES` frames, and in overlapping combinations/orders, while the move
+  vector stays fixed. Added to the existing `ground_mover_speed_test.gd` per
+  the story's own Files list rather than a new file.
+- **Deviation, flagged**: routing `menu` through the full machine's bound
+  `SyntheticActionSource` (as the Implementation Notes' "drive the fixture's
+  synthetic action source" literally reads) fails, not because of a bug in
+  this story's code, but because `GameStateMachine._on_source_action_pressed()`
+  intercepts `menu` *before* dispatch and opens the pause overlay itself
+  (game-state-scene-flow stories 024/025, already shipped) -- the overlay then
+  takes input ownership and `get_move_vector()` correctly returns `ZERO`, an
+  intentional pause-on-menu behavior this story does not own. Calling
+  `handle_action()` directly isolates exactly the call path AC-1c does own
+  (whether `OverworldMode` itself ever lets a discrete action reach
+  `GroundMover`) without conflating it with that other system. Watched the
+  unfixed version fail first (`distance 0.0 != ~0.0455` for `menu`) before
+  applying this fix, confirming the test was exercising a real path.
+- No deviations from the ADRs otherwise. No production logic changed besides
+  the new read-only getter and comments.
 
 ---
 
