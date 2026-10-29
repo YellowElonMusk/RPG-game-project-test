@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/overworld-exploration-encounters.md
 > **Architecture Module**: Overworld Exploration & Encounters
 > **Status**: Ready
-> **Stories**: 135 stories — see the table below
+> **Stories**: 136 stories — see the table below
 
 ## Overview
 
@@ -199,6 +199,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 133 | [Build the perf_overworld fixture, debug flags and the step_symbols() performance monitor](story-133-overworld-performance-fixture-tooling.md) | Integration | Ready | ADR-0012 |
 | 134 | [Tag every overworld cue with a capture-ID for the presentation capture tool](story-134-capture-id-tags-for-overworld-cues.md) | Integration | Ready | ADR-0005 |
 | 135 | [Build the level-review tool that lists approaches and junction nodes and drives walk-in captures](story-135-level-review-walkin-tool.md) | Integration | Ready | ADR-0012 |
+| 136 | [A placeholder Paris Town map you can walk around in, with the leader sprite, followers and the follow camera](story-136-walkable-placeholder-town-map.md) | Integration | Ready | ADR-0012 |
 
 ## Definition of Done
 
