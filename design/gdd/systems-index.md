@@ -48,7 +48,7 @@ A satirical turn-based RPG: the player recruits a squad of mismatched "misfit" h
 | 19 | Save/Load & Settings (inferred) | Persistence | Vertical Slice | Not Started | — | Game State & Scene Flow, Content Data Definitions |
 | 20 | Audio Manager (inferred) | Audio | Vertical Slice | Not Started | — | Game State & Scene Flow, Turn Battle System, Combo System & Codex, Faction Rule Modifiers, Overworld Exploration & Encounters |
 | 21 | Onboarding & Tutorial (inferred) | Meta | Vertical Slice | Not Started | — | Turn Battle System, Quirk State System, Combo System & Codex, UI Framework |
-| 22 | Beatbox Battle Score (split from Audio Manager, 2026-10-29) | Audio | Vertical Slice | Designed | design/gdd/beatbox-battle-score.md | Turn Battle System (via the replay controller), Faction Rule Modifiers, Content Data Definitions, Game State & Scene Flow, Audio Manager |
+| 22 | Beatbox Battle Score (split from Audio Manager, 2026-10-29) | Audio | Vertical Slice | In Review | design/gdd/beatbox-battle-score.md | Turn Battle System (via the replay controller), Faction Rule Modifiers, Content Data Definitions, Game State & Scene Flow, Audio Manager |
 
 > **UX flag — Stats & Damage Resolution:** has UI requirements (battle HUD, command menu, camp party screen, results screen). Run `/ux-design` for each before writing epics.
 

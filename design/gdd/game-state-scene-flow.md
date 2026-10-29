@@ -192,6 +192,7 @@ The transition_time formula is defined as:
 | Sprite & Camera Presentation | Hard | Mode announcements to apply lighting and camera |
 | UI Framework | Hard | Overlay lifecycle, transition phases, Title, Menu, Defeat Prompt |
 | Audio Manager | Soft | Mode announcements for music changes; works without them, just silently |
+| Beatbox Battle Score | Soft | `transition_started`, `mode_entered` and `transition_finished` for the battle and Retry wipes, rollback, overlay announcements and `t_in`, to start the battle score on the reveal (its R7, 2026-10-29) |
 | Save/Load & Settings | Soft (Vertical Slice) | Safe save moments; Continue on Title |
 
 **Bidirectional notes:** Content Data Definitions already lists this system as a hard dependent. The systems index row for this system is updated to depend on Content Data Definitions and Input System, and Input's own GDD must state that it does **not** depend on this system (so there is no cycle).
@@ -223,7 +224,7 @@ All knobs live in `TransitionConfig` (`data/config/transition_config.tres`, ADR-
 - **Fades** (camp, maps, title, retreat): neutral Ink Navy (#1B2440) fades, never a faction color.
 - **Retry flash**: a short cream (#F4EAD2) flash. It should feel like "rewind", not like a new fight. It counts toward the global photosensitivity limit (`flash_gate`, at most 3 full flashes per second, `design/gdd/sprite-camera-presentation.md`). If it would land inside that gap, for example right after a victory burst, it plays as a soft fade below the flash threshold; its timing never changes.
 - **Per-mode look**: on `mode_entered`, Presentation applies that mode's lighting signature from art bible §2 (golden-hour overworld, neutral battle key light, campfire camp, frozen blurred diorama behind menus).
-- **Audio**: each mode change cues Audio Manager. Battle music starts during the wipe's *out* phase, so the fight begins on the beat. The Defeat Prompt uses a short, wry sting, never a dirge.
+- **Audio**: each mode change cues Audio Manager. Battle music arms during the wipe's *out* phase, plays a short intro during *in*, and lands its first downbeat on `transition_finished`, so the fight begins on the beat (`beatbox-battle-score.md` R7). The Defeat Prompt uses a short, wry sting, never a dirge.
 
 ## Game Feel
 

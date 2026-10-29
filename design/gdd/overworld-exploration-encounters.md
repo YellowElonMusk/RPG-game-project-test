@@ -855,6 +855,7 @@ query (ADR-0012 amendment).
 | Dialogue, Banter & Quests | Soft | NPC spawns and dialogue references; story flags (moved out of world state when Dialogue is designed) |
 | Onboarding & Tutorial | Soft | Teaching through placement (no Clerks in Town; the first Clerk visible with a bypass lane) |
 | Audio Manager | Soft | Event hooks: notice, chase, contact, liberation, map ambience per stage |
+| Beatbox Battle Score | Soft (2026-10-29) | Two optional `enc_` fields whose meaning this GDD owns: `score_tier_override` (the story encounter's authored music tier) and `score_hold_for_escalation` (Paris: set on the Permit Counter story encounter and the Supervisor). Encounters field 1–8 enemies, and boss encounters at least 2 alien minions (its R4b–R4c) |
 
 **Bidirectional consistency (follow-ups for other documents):**
 - `game-state-scene-flow.md` lists Overworld as a dependent (Dependencies table, "Hard"). Consistent.

@@ -240,6 +240,8 @@ scene-tree dependency, matching every other battle class's convention).
   - **Open, owned here:** the `fast_forward` replay speed (`ff_mult`, proposed 2.0×).
   - **Open, owned here:** a possible `action_started` signal for a separate wind-up beat.
   - **Open, owned here:** a miss/evade flag, if misses become a mechanic.
+- Beatbox Battle Score (`design/gdd/beatbox-battle-score.md`, soft, 2026-10-29). It listens to the same `BattleReplayController` signals (knockout reactors at `beat_impact`, the released round and battle end) to drop each alien's layer of the music as its knockout lands. It never gates the replay.
+  - **Open, owned here (user direction 2026-10-29):** rosters of 1 to 8 enemies (typical 2–5, late game and hard areas up to 8, bosses with minions). Targeting and enemy-turn pacing must be specified for 8 (`beatbox-battle-score.md` OQ-12).
 
 ---
 

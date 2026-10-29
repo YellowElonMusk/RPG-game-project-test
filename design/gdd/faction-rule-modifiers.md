@@ -207,6 +207,9 @@ Resolution's, called through Turn Battle System's shared pipeline.
   itself *reserved* pending this GDD; migration in progress at the user's
   request).
 
+**Downstream dependents**:
+- Beatbox Battle Score (`design/gdd/beatbox-battle-score.md`, soft, 2026-10-29). *Owed interface:* an optional `score_escalation_round()` on `FactionRule` (Bureaucratia returns `permit_rounds + 1` from its record's `params`; neutral rules return none). The score drops on that round in encounters authored to hold for it.
+
 **Content Dependencies**: enemy rosters and named-attack tuning (see Tuning
 Knobs) — currently in-code, migrating to data now.
 
