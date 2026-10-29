@@ -63,7 +63,7 @@ ADR-0005's Migration Plan sets the order: the windowed spike (Step 1, verificati
 | # | Story | Type | Status | ADR |
 |---|-------|------|--------|-----|
 | 001 | [Windowed engine spike settles sprite-shader and camera verification on 4.7.2](story-001-windowed-engine-spike.md) | Visual/Feel | Ready | ADR-0005 |
-| 002 | [The capture tool renders the deterministic passes the [C] acceptance criteria measure](story-002-capture-tool.md) | Integration | Ready | ADR-0005 |
+| 002 | [The capture tool renders the deterministic passes the \[C\] acceptance criteria measure](story-002-capture-tool.md) | Integration | Ready | ADR-0005 |
 | 003 | [Actors are lit only by their key and rim light, never ambient, fill or set light](story-003-actor-key-and-rim-lighting-only.md) | Logic | Ready | ADR-0005 |
 | 004 | [SpriteProjection returns an exact, pixel-snapped quad at the foot anchor for any camera and frame size](story-004-sprite-projection-pixel-exact-quad.md) | Logic | Ready | ADR-0005 |
 | 005 | [no_mirror animations use authored opposite-facing art instead of the shader flip](story-005-no-mirror-animations-use-authored-art.md) | Logic | Ready | ADR-0005 |
