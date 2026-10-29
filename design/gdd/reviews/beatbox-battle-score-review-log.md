@@ -35,3 +35,33 @@ Reviewed-Content-Hash: design/gdd/overworld-exploration-encounters.md 7a44660f28
 Reviewed-Content-Hash: design/narrative/narrative-bible.md 004b0c144abc39bb5ce7b014530fe1264c347d7e
 Reviewed-Content-Hash: design/accessibility-requirements.md d189369b593125eb126ab47313b12e3f1f5ea02d
 Reviewed-Content-Hash: docs/architecture/adr-0006-battle-replay-ownership.md e0850122343bf2036da37a113b75e78492f9f30a
+
+## Review — 2026-10-29 — Verdict: NEEDS REVISION
+Review mode: lean · Workflow: standard
+Scope signal: L
+Specialists: none (lean mode)
+Blocking items: 4 | Recommended: 6
+Summary: Revision 2 resolves all six earlier blockers: the replay signals, the choke tail, the per-enemy alien test, the Paris held/unheld split and the bidirectional dependencies are all correct against ADR-0006, Game State and the data. Four new defects block. The last-alien rule sounds the victory sting while humans still stand. F2's stated output, and AC-2g, contradict its own pass order. Nothing names which faction record supplies the kit and tier, now that alien-ness is decided per enemy. And bar 1 can't "follow transition_finished" after it has already been scheduled.
+Prior verdict resolved: Yes (all 6 prior blockers addressed; residuals below)
+Findings:
+- [BLOCKING] R9/R14/Edge mixed roster/AC-10: "last alien's knockout" cuts the stems and plays the victory sting, but in a mixed roster humans still stand (the Edge case says the floor pulse plays on); and the sting has two triggers (R9's knockout and R14's battle_ended_after_replay(true)) with no rule for which fires it or how the second is ignored
+- [BLOCKING] F2 output range/AC-2g: pass 3 (doublers) runs before pass 4 (free roles), so 8 aliens on kick/snare/bass/hats give 4 holders + 4 extras with lead and fx empty, not "6 holders and 2 extras"; decide the intended order and fix the claim and AC-2g's unspecified fixture
+- [BLOCKING] R1/R15/F1: with alien-ness per enemy, nothing says which faction record supplies score_kit_id and score_base_tier (enc_.faction_id? the first alien's?), what a roster from two alien factions does, or where band mode's tier comes from (score_base_tier is alien-only)
+- [BLOCKING] R7/F6/States: bar 1 is scheduled ahead at mode_entered + t_in, then must "follow transition_finished" if they differ by more than one mix block; a started downbeat can't move, and a frame-quantised signal routinely differs by more than one block (16.7 ms vs ~10 ms). Pick one source and make the tolerance match AC-6's 20 ms
+- [RECOMMENDED] R8: display_resynced also fires during SWAP at first entry and on Retry (ADR-0006 §5 step 8, Retry step 7), while the score is Armed; say it is ignored outside Playing and add an AC
+- [RECOMMENDED] Edge two bosses/AC-21/F2/F4: ADR-0006 §5 step 3 fails a boss encounter with more than one is_boss enemy; scope the edge to non-boss encounters and use boss_combatant for lead and R11
+- [RECOMMENDED] States: Ducked is a state that exits only to Playing, so a pause during Break loses the break; make it a flag. Also say whether Ending -> Armed on a Retry pressed during the defeat sting, and that the Defeat Prompt overlay doesn't duck
+- [RECOMMENDED] R3/R11/R15: say whether the lead hook belongs to the kit or the boss enemy, where hooks A/B live in data, and what a non-boss lead holder sings
+- [RECOMMENDED] F5: ceil gives zero lead time for an event exactly on a beat; add a minimum scheduling lead (one mix block) before the boundary, else take the next one
+- [RECOMMENDED] Ducked/AC-15/Visual-Audio: the duck is on the Music bus in AC-15 but the stings share that bus; say whether duck_db applies to the score submix or the bus
+Reviewed-Content-Hash: design/gdd/beatbox-battle-score.md 01db337bfefff9401ebee2de96e7693f3375d470
+Reviewed-Content-Hash: design/registry/entities.yaml b7efb174ffc61286e6bbb670ecef6dd143c578b5
+Reviewed-Content-Hash: .claude/skills/design-review/SKILL.md a63d8fba9b7142eeb43791f061e2e1533c429b43
+Reviewed-Content-Hash: design/gdd/game-state-scene-flow.md c757b301c857826be59addc3e21b98851103c02c
+Reviewed-Content-Hash: design/gdd/turn-battle-system.md eb7148a0607e41c959c12152725ea00a4398a651
+Reviewed-Content-Hash: design/gdd/faction-rule-modifiers.md 2e711a51a5b94753efcbd7784a71afd1ee95adbd
+Reviewed-Content-Hash: design/gdd/content-data-definitions.md 496b2a01d759b8200b11bdf5681dce8be00589ef
+Reviewed-Content-Hash: design/gdd/sprite-camera-presentation.md 1a951d3366b993a0af286da7eae803c16ba3c89b
+Reviewed-Content-Hash: design/gdd/overworld-exploration-encounters.md ef9da0fe8878bea2f6d2768eb8985d5f388aa120
+Reviewed-Content-Hash: design/narrative/narrative-bible.md 004b0c144abc39bb5ce7b014530fe1264c347d7e
+Reviewed-Content-Hash: docs/architecture/adr-0006-battle-replay-ownership.md e0850122343bf2036da37a113b75e78492f9f30a

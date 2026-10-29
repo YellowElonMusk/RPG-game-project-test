@@ -1,6 +1,6 @@
 # Beatbox Battle Score
 
-> **Status**: In Review. Revision 2 (2026-10-29) answers the first `/design-review` (NEEDS REVISION, `reviews/beatbox-battle-score-review-log.md`); it needs a re-review in a fresh session.
+> **Status**: In Review. Revision 3 (2026-10-29) answers the second `/design-review` (NEEDS REVISION, 4 blocking, `reviews/beatbox-battle-score-review-log.md`); revision 2 answered the first. It needs a re-review in a fresh session.
 > **Creative Director Review (CD-GDD-ALIGN)**: skipped — lean mode. Acceptance criteria validated by qa-lead (2026-10-29).
 > **Author**: user + agents (main session, audio-director, systems-designer; the consults were merged on 2026-10-29, and the rejected proposals are listed under Open Questions)
 > **Last Updated**: 2026-10-29
@@ -30,6 +30,8 @@ The Beatbox Battle Score turns each battle's alien roster into the battle music.
 - at least one alien → **beatbox mode**: the aliens on the field are the only music. There is no background track. Human enemies in the roster hold no role.
 - no alien (the Rat Catchers) → **band mode**: an ordinary composed battle track that sounds scrappy and human: distorted guitar and bass, a live-feeling kit, and an outlaw harmonica or whistle motif for the bounty hunters. It is deliberately *not* beatbox, so a human fight sounds different within a second, and it is plainer than the beatbox tracks; it never out-cools them.
 
+**Which kit and tier.** The *encounter's* faction picks the music, never an enemy's: the kit is `enc_.faction_id`'s `score_kit_id` and the base tier its `score_base_tier` (F1). Every faction that fields enemies carries both fields. An alien faction's kit is a beat kit (R15); a human faction's kit is a **band kit**, one composed track per tier. Mode still comes from the roster (above), so content validation fails at boot, naming the encounter, when a roster with an alien enemy has a human encounter faction, or an all-human roster has an alien one. When a roster mixes two alien factions, every alien plays its own `beat_role` in the encounter faction's kit.
+
 *(Content Data today constrains `enemy_.faction_id` to `alien` factions; the Rat Catchers need a non-alien faction kind. That is an owed Content Data change, see Dependencies.)*
 
 **R2. Beat roles.** Each alien enemy record has a `beat_role` and a `fallback_role`, from this fixed set, in **assignment priority order**:
@@ -43,11 +45,11 @@ The Beatbox Battle Score turns each battle's alien roster into the battle music.
 | 5 | `lead` | Vocal hook: a sung or chopped phrase | Identity; the boss's voice |
 | 6 | `fx` | Scratches, sirens, zips, drops | Punctuation and transitions |
 
-**R3. Assigning the layers** (Formula F2). At fight start, each role is held by at most one alien. A **boss** is an enemy whose own record has `is_boss = true` (the `enemy_` field, not the encounter's). A boss always takes `lead`. Every other alien first claims its `beat_role`. Only then do the still-unassigned aliens try their `fallback_role`, so one alien's fallback never steals another's first choice. An alien left over becomes an **extra** on its `beat_role`:
+**R3. Assigning the layers** (Formula F2). At fight start, each role is held by at most one alien. A **boss** is an enemy whose own record has `is_boss = true` (the `enemy_` field, not the encounter's). In a boss encounter it is ADR-0006's `boss_combatant`, of which there is exactly one (a second fails the swap, ADR-0006 §5 step 3). A boss always takes `lead`. Every other alien first claims its `beat_role`. Only then do the still-unassigned aliens try their `fallback_role`, so one alien's fallback never steals another's first choice. An alien left over becomes an **extra** on its `beat_role`:
 - on `kick`, `snare`, `bass` or `hats`, it is that role's **doubler** and adds the role's ad-lib stem, never a second copy of the same stem;
 - on `lead` or `fx`, it plays **one-shot hits** on its own attack beats (`beat_impact` with it as the actor), with no persistent stem, so it never clashes with the hook.
 
-Each role has at most one doubler. **Every alien on stage plays** (the Incredibox rule): an alien still unplaced after its own two roles takes the first free role in R2 order, then the first free doubler slot. Six roles with a doubler each give 12 slots, so up to the 8-enemy maximum nobody is left out. The assignment is fixed for the fight: a knockout never hands a role to another alien.
+Each role has at most one doubler. **Every alien on stage plays** (the Incredibox rule): an alien still unplaced after its own two roles and its doubler slot takes the first free role in R2 order, then the first free doubler slot. Six roles with a doubler each give 12 slots, so up to the 8-enemy maximum nobody is left out. Preference wins over fullness: a pack whose roles all sit in the rhythm section doubles those roles before anyone is pushed onto `lead` or `fx`, so an 8-pack can play with `lead` and `fx` empty (F2 Output Range). The assignment is fixed for the fight: a knockout never hands a role to another alien.
 
 **R4. The floor pulse.** If no alien holds `kick`, the score plays the faction kit's **floor pulse**, a quiet, minimal kick-only stem. A one-enemy fight is never silent, and never sounds like a full band.
 
@@ -71,7 +73,7 @@ The tier sets each stem's complexity, not how many roles play: the roster decide
 **R7. Starting on the beat.** Game State's battle wipe runs *out*, then a *swap* of unbounded length (the battle scene loads), then *in* (`t_in`, 0.30 s by default). The score can't know when the reveal lands until the swap ends, so it starts in three steps:
 1. **Arm** on `transition_started(→ battle)`: load the kit, assign roles, compute the tier. No sound.
 2. **Intro** on `mode_entered(battle)`, the end of the swap: play the kit's `intro` one-shot (an inhale and a single "ts"), timed by Formula F6 to end on the reveal. If the intro is longer than `t_in`, it is skipped.
-3. **Bar 1** on `transition_finished(battle)`: bar 1's downbeat is the reveal, corrected for output latency.
+3. **Bar 1** at `t_mode_entered + t_in` (F6), scheduled on the audio clock at step 2 and never moved. That is the reveal: `transition_finished(battle)` arrives on the first frame at or after it. The score uses that signal only as a check: if it lands more than `reveal_tolerance_ms` (20 ms) from bar 1, a warning is logged and nothing is rescheduled, because a downbeat that has already sounded cannot move.
 
 If the swap fails and the transition rolls back (Game State Edge Cases), the score disarms silently.
 
@@ -84,12 +86,14 @@ If the swap fails and the transition rolls back (Game State Edge Cases), the sco
 | HP for the boss hook (R11) | `beat_finished(plan)` | the displayed snapshot, which becomes current before the signal |
 | Escalation round (R10) | `round_advanced_after_replay(n)` | `n` |
 | Victory / Defeat (R14) | `battle_ended_after_replay(won)` | `won` |
-| Resync | `display_resynced()` | the live layers are rebuilt from the displayed state at the next bar, with no tails |
+| Resync | `display_resynced()` | in `Playing` or `Break` only: the live layers are rebuilt from the displayed state at the next bar, with no tails. It also fires during the swap at first entry and on Retry (ADR-0006 §5), while the score is `Armed`; there it is ignored, because arming already builds the layers from the encounter |
 | Cancel | `replay_cancelled()` | any scheduled change not yet applied is discarded; the ending (R14) decides what plays |
 
 The player's speed-up latch changes **nothing** in the score: the tempo stays fixed, and only the quantised event times arrive sooner.
 
-**R9. Knockout.** When an alien's knockout event arrives, its stem (or its doubler stem or one-shot slot) **leaves at the next beat** (F5) with a `layer_fade_ms` fade. At that same boundary a separate **choke tail** one-shot plays for `ko_tail_beats`: the foundation roles, `kick` and `bass`, get a longer tail (default 4 beats), so the floor audibly drains away rather than vanishing. The knocked-out alien's loop never keeps playing after the beat it was hit on. If that was the `kick` holder, the floor pulse comes in at the same boundary (R4). When the last alien's knockout arrives, there is **no choke tail**: every stem cuts on the next beat and the **victory sting** plays (Audio Manager owns the sting).
+**R9. Knockout.** When an alien's knockout event arrives, its stem (or its doubler stem or one-shot slot) **leaves at the next beat** (F5) with a `layer_fade_ms` fade. At that same boundary a separate **choke tail** one-shot plays for `ko_tail_beats`: the foundation roles, `kick` and `bass`, get a longer tail (default 4 beats), so the floor audibly drains away rather than vanishing. The knocked-out alien's loop never keeps playing after the beat it was hit on. If that was the `kick` holder, the floor pulse comes in at the same boundary (R4).
+
+**The final knockout.** The score keeps its own set of enemies shown standing, humans included, and removes each KNOCKOUT reactor as its `beat_impact` arrives. When a knockout empties that set, there is **no choke tail**: every stem, the floor pulse included, cuts on the next beat and the **victory sting** plays there (Audio Manager owns the sting), and the score enters `Ending`. A knockout that leaves only humans standing is an ordinary knockout: tail, floor pulse, and the beat plays on (Edge Cases). The released `battle_ended_after_replay(true)` that follows is then a no-op; it plays the cut and sting itself (R14) only when it arrives with the score still in `Playing` or `Break`.
 
 **R10. Escalation drop.** A faction rule may declare one **escalation round** (Faction Rule Modifiers); for Bureaucratia it is the round the Permit Ban lifts, `permit_rounds + 1` = round 4, the same moment as the "all-out war" banner. The drop only happens in an encounter authored to build to it, `enc_.score_hold_for_escalation = true`:
 - **Held encounter** (the faction has an escalation round and the flag is set): stems play their `base` variant, and Bureaucratia plays them through a low-pass "waiting room" filter (`prewait_lowpass_hz`, default 800 Hz), matching the Permit Ban's hunker-down mood. When the replay releases the escalation round, the filter opens and all live stems switch to their `full` variant on the next bar, with an `fx` riser into it if anyone holds `fx`. Tier and tempo don't change. There is at most one drop per fight.
@@ -97,14 +101,14 @@ The player's speed-up latch changes **nothing** in the score: the tempo stays fi
 
 Paris sets the flag on the Permit Counter story encounter and the Supervisor. The filter sits on the score's own submix (Visual/Audio), never on the shared Music bus, so a fight won before its drop plays the victory sting unfiltered.
 
-**R11. Boss second hook.** A boss's `lead` has two hooks. When the boss's shown HP falls to or below the F4 threshold, the lead switches to hook B on the next bar. This happens once, and healing never switches it back.
+**R11. Boss second hook.** A boss whose record names a `score_hook_id` sings that hook's A stem as its `lead`, and the hook has a B stem. A boss without one sings the kit's generic `lead` stem and never switches. When the boss's shown HP falls to or below the F4 threshold, the lead switches to hook B on the next bar. This happens once, and healing never switches it back.
 
 **R12. Originality (a hard content rule).** Every stem is original. No sample, melody, riff or recognisable rhythm is taken from "Sandstorm", from Dharni, from Incredibox, or from any other existing track or game. Incredibox is a reference for structure (each character a part) only. The references describe *energy and layering* only, they appear in no player-facing or marketing text, and every kit passes a "could anyone name the source?" listen check before it ships. Every beatbox stem is mouth-made: recorded beatboxing, which processing (pitch, filtering, effects) may alter, but which is never replaced with drum-machine samples. The aliens *are* beatboxing.
 
 **R13. The battle cry break.** The squad's battle cry plays at the start of about 1 fight in 4 (the roll and the line belong to Dialogue, Banter & Quests; narrative bible §5). When it fires, the score mutes all stems for `cry_break_bars` (default 1) starting at the next bar boundary **after bar 1**, so bar 1 always plays and establishes the beat, then slams back in on the following downbeat. The cry is timed into that silent bar. Authored openers (the story encounter and the boss, narrative bible §5) get no break in MVP. In band mode, the cry never plays (not used against human targets).
 
 **R14. Ending a fight.**
-- **Victory**: R9's cut and the sting.
+- **Victory**: R9's cut and the sting, started by the final knockout. If `battle_ended_after_replay(true)` arrives while the score is still in `Playing` or `Break` (a victory with no KNOCKOUT reaction), it starts the same cut and sting at the next beat.
 - **Defeat**: all stems cut on the next beat, then the Defeat Prompt's wry sting.
 - **Fled**: a record-scratch `fx` (always available, even with no `fx` holder), and all stems cut at once, unquantised.
 - **Retry**: the score re-arms on the retry wipe (R7), with the original assignment, the held state restored if the encounter is held, and no carried-over drop or hook B.
@@ -115,7 +119,10 @@ Paris sets the flag on the Permit Counter story encounter and the Supervisor. Th
 - the hats are typewriter clacks;
 - the bass is a photocopier drone;
 - the fx are the ticket dispenser's "ding" and paper rips;
-- the Supervisor's lead is a monotone stamped chant ("Take a number. NEXT."), and hook B speeds it up ("NEXT. NEXT. NEXT.").
+- the generic `lead` stem, sung by any non-boss alien that holds `lead`, is a mumbled form-reading drone;
+- the Supervisor's hook (`enemy_supervisor.score_hook_id`) is a monotone stamped chant ("Take a number. NEXT."), and hook B speeds it up ("NEXT. NEXT. NEXT.").
+
+Boss hooks live in their faction's kit, one A and one B stem per tier the boss uses; the boss's enemy record only names which hook it sings.
 
 MVP ships this one kit, at the tiers Paris uses (1–3). Later factions add their own.
 
@@ -125,13 +132,12 @@ MVP ships this one kit, at the tiers Paris uses (1–3). Later factions add thei
 |---|---|---|
 | `Idle` | No battle | `Armed` on `transition_started(→ battle)` |
 | `Armed` | Kit loaded, roles and tier computed | `Intro` on `mode_entered(battle)`; `Idle` on a rolled-back transition |
-| `Intro` | The intro one-shot is scheduled (F6), or skipped | `Playing` on `transition_finished(battle)` |
-| `Playing` | Bar 1 downbeat | `Break` (cry), `Ending` (end of battle), `Ducked` (overlay) |
-| `Break` | Battle cry, at the next bar after bar 1 | `Playing` after `cry_break_bars` |
-| `Ducked` | A pause or menu overlay opens (Game State overlay broadcast) | `Playing` when it closes. The loop keeps running at `duck_db`, so the beat never restarts |
-| `Ending` | The released `battle_ended`, or Fled | `Idle` after the sting or cut |
+| `Intro` | The intro one-shot and bar 1 are scheduled (F6), or the intro is skipped | `Playing` at the bar 1 downbeat on the audio clock |
+| `Playing` | Bar 1 downbeat | `Break` (cry), `Ending` (final knockout, released `battle_ended`, or Fled) |
+| `Break` | Battle cry, at the next bar after bar 1 | `Playing` after `cry_break_bars`; `Ending` as from `Playing` |
+| `Ending` | The final knockout (R9), the released `battle_ended`, or Fled | `Idle` after the sting or cut; `Armed` on `transition_started(→ battle)` (a Retry pressed during the defeat sting cuts the sting) |
 
-Sub-state flags held during `Playing`: `held` (R10, until the drop), `boss_hook_b` (R11, once), and the set of live layers.
+Flags: `ducked` is set by `overlay_opened(Menu)` and cleared by `overlay_closed(Menu)` in any state from `Armed` to `Ending`. The loop keeps running with the score submix at `duck_db`, so the beat never restarts and the state underneath (a break, the intro) keeps its times. The Defeat Prompt overlay never ducks: the score is already in `Ending` or `Idle`. Held during `Playing` and `Break`: `held` (R10, until the drop), `boss_hook_b` (R11, once), the set of live layers, and the set of enemies shown standing (R9).
 
 ### Interactions with Other Systems
 
@@ -139,7 +145,7 @@ Sub-state flags held during `Playing`: `held` (R10, until the drop), `boss_hook_
 |---|---|---|
 | **Turn Battle System** via `BattleReplayController` (ADR-0006) | The gated signals in R8's table | Nothing back. The score never gates or delays the replay |
 | **Faction Rule Modifiers** | The faction's escalation round, if any (Bureaucratia: `permit_rounds + 1`) | — |
-| **Content Data Definitions** | Enemy `faction_id`, `is_boss`, `beat_role`, `fallback_role`, `max_hp`; faction `kind`, `score_kit_id`, `score_base_tier`; encounter `score_tier_override`, `score_hold_for_escalation`; the `score_config` record (new fields, see Dependencies) | — |
+| **Content Data Definitions** | Enemy `faction_id`, `is_boss`, `beat_role`, `fallback_role`, `score_hook_id`, `max_hp`; faction `kind`, `score_kit_id`, `score_base_tier`; encounter `faction_id`, `score_tier_override`, `score_hold_for_escalation`; the `score_config` record (new fields, see Dependencies) | — |
 | **Overworld Exploration & Encounters** | The encounter's meaning (it owns `enc_`), including the two new score fields | — |
 | **Game State & Scene Flow** | `transition_started`, `mode_entered`, `transition_finished` for the battle and retry wipes, the rollback, overlay broadcasts, `t_in` | — |
 | **Audio Manager** | The Music bus, volume settings, the duck level, victory and defeat stings | Requests to play on the score's submix of the Music bus |
@@ -156,7 +162,7 @@ Sub-state flags held during `Playing`: `held` (R10, until the drop), `boss_hook_
 | Variable | Type | Range | Source | Description |
 |----------|------|-------|--------|-------------|
 | score_tier_override | int | 0–4 | data file (`enc_` record) | Authored tier for a specific fight, such as the story encounter; 0 means none |
-| score_base_tier | int | 1–3 | data file (`faction_` record) | The tier of the faction's ordinary street fights; rises with the region's place in the game |
+| score_base_tier | int | 1–3 | data file (the `faction_` record named by `enc_.faction_id`, R1) | The tier of the faction's ordinary street fights; rises with the region's place in the game. Human factions carry it too, for band mode |
 | is_boss | bool | — | data file (`enc_` record) | The encounter's boss flag (R3's per-enemy flag picks who sings `lead`; this one picks the tier) |
 | boss_tier_bonus | int | 0–2 | data file (`score_config`) | How far a boss sits above its faction's street fights; default 2 |
 | tier_max | int | 4 | constant | The top tier |
@@ -166,7 +172,7 @@ Sub-state flags held during `Playing`: `held` (R10, until the drop), `boss_hook_
 
 **F2. Role assignment.** The `assign_roles` procedure is defined as:
 
-`holder[lead] = first boss in line_order (if any)`; `line_order` below **excludes that boss and every human**; **pass 1**: `for e in line_order: if holder[e.beat_role] is empty: holder[e.beat_role] = e`; **pass 2**: `for e unassigned in line_order: if holder[e.fallback_role] is empty: holder[e.fallback_role] = e`; **pass 3**: `for e unassigned in line_order: if extra[e.beat_role] is empty and doubler_enabled: extra[e.beat_role] = e` (a doubler stem on kick/snare/bass/hats; one-shots on lead/fx); **pass 4** (every alien plays, R3): `for e unassigned in line_order: holder[first empty role in R2 order] = e, else if doubler_enabled: extra[first empty extra slot in R2 order] = e, else e plays nothing`
+`holder[lead] = boss_combatant in a boss encounter, else the first is_boss enemy in line_order (if any)`; `line_order` below **excludes that boss and every human**; **pass 1**: `for e in line_order: if holder[e.beat_role] is empty: holder[e.beat_role] = e`; **pass 2**: `for e unassigned in line_order: if holder[e.fallback_role] is empty: holder[e.fallback_role] = e`; **pass 3**: `for e unassigned in line_order: if extra[e.beat_role] is empty and doubler_enabled: extra[e.beat_role] = e` (a doubler stem on kick/snare/bass/hats; one-shots on lead/fx); **pass 4** (every alien plays, R3): `for e unassigned in line_order: holder[first empty role in R2 order] = e, else if doubler_enabled: extra[first empty extra slot in R2 order] = e, else e plays nothing`
 
 **Variables:**
 | Variable | Type | Range | Source | Description |
@@ -176,7 +182,7 @@ Sub-state flags held during `Playing`: `held` (R10, until the drop), `boss_hook_
 | doubler_enabled | bool | — | data file (`score_config`) | Whether extras exist at all: false turns off doubler stems, lead/fx one-shots and pass 4's extra slots; default true |
 | holder[r], extra[r] | map | 0–1 per role | calculated | Who plays each role, and who is its extra |
 
-**Output Range:** with at most 8 aliens on the field, 1 to 6 holders and 0 to 4 extras. Pass 4 fills holders before extras, so 8 aliens give 6 holders and 2 extras. Every alien gets a slot whenever `doubler_enabled` (12 slots ≥ 8). Live streams: at most 8 alien streams (holders plus doubler stems), plus the floor pulse when nobody holds `kick` and the Full House layer (R4b). Choke tails, the intro and one-shots are short hits, not loops.
+**Output Range:** with at most 8 aliens on the field, 1 to 6 holders and 0 to 4 extras. An extra always sits on a held role, so extras never outnumber holders, and 8 aliens give 4 to 6 holders and 2 to 4 extras. Pass 3 runs before pass 4 (R3: preference wins over fullness), so 8 aliens whose roles are all `kick`/`snare`/`bass`/`hats` give 4 holders and 4 doublers with `lead` and `fx` empty, while 8 aliens all on `snare`/`hats` give 6 holders and 2 extras. Every alien gets a slot whenever `doubler_enabled` (12 slots ≥ 8). Live streams: at most 8 alien streams (holders plus doubler stems), plus the floor pulse when nobody holds `kick` and the Full House layer (R4b). Choke tails, the intro and one-shots are short hits, not loops.
 **Example:** The Supervisor (`lead`) plus Clerk A (`snare`/`hats`), Clerk B (`snare`/`hats`) and Clerk C (`snare`/`hats`). The Supervisor holds `lead`. Pass 1: A takes `snare`. Pass 2: B takes `hats`. Pass 3: C doubles `snare`. Nobody holds `kick`, so the floor pulse plays. **Two-pass case:** A (`kick`/`snare`), B (`kick`/`bass`), C (`bass`/`hats`). Pass 1: A `kick`, C `bass`. Pass 2: B's `bass` is taken, so B doubles `kick` in pass 3. A single pass would have handed B the `bass` and pushed C off its first choice.
 
 **F3. Tempo.** The `bpm` formula is defined as:
@@ -208,17 +214,18 @@ Sub-state flags held during `Playing`: `held` (R10, until the drop), `boss_hook_
 
 **F5. Quantised change time.** The `change_time` formula is defined as:
 
-`change_time = loop_start + ceil((now - loop_start) / unit) * unit`, where `unit = seconds_per_beat` for knockouts and `unit = 4 * seconds_per_beat` for drops, breaks, the boss hook, a resync and a revived layer. A knockout's choke tail starts at `change_time` and lasts `ko_tail_beats * seconds_per_beat`.
+`change_time = loop_start + ceil((now + schedule_lead - loop_start) / unit) * unit`, where `schedule_lead` is one audio mix block, so a change never lands less than one block after it is requested (an event exactly on a beat takes the next one), and `unit = seconds_per_beat` for knockouts and `unit = 4 * seconds_per_beat` for drops, breaks, the boss hook, a resync and a revived layer. A knockout's choke tail starts at `change_time` and lasts `ko_tail_beats * seconds_per_beat`.
 
 **Variables:**
 | Variable | Type | Range | Source | Description |
 |----------|------|-------|--------|-------------|
 | now | float (s) | ≥ loop_start | calculated (the stream's playback position, corrected for output latency) | The current musical time |
 | loop_start | float (s) | — | calculated | The time of bar 1's downbeat |
+| schedule_lead | float (s) | one mix block (~0.01) | constant (the output's mix block length) | The least time the mixer needs to apply a change sample-accurately |
 | ko_tail_beats | float | 0.5–4 | data file (`score_config`) | The choke tail's length: `ko_tail_beats_foundation` (default 4) for `kick` and `bass`, `ko_tail_beats_other` (default 1) for the rest; 0 for the last knockout |
 | layer_fade_ms | int | 30–250 | data file (`score_config`) | A short fade at `change_time` so a stem never clicks off; default 120 |
 
-**Output Range:** a knockout's stem leaves 0 to one beat after the event (at most 0.652 s at 92 BPM), and its tail ends at most 3.26 s after it (one beat plus a 4-beat tail at 92 BPM). Bar-quantised changes land 0 to one bar after the event (at most 2.61 s at 92 BPM).
+**Output Range:** a knockout's stem leaves one mix block to one beat after the event (at most 0.652 s at 92 BPM), and its tail ends at most 3.26 s after it (one beat plus a 4-beat tail at 92 BPM). Bar-quantised changes land 0 to one bar after the event (at most 2.61 s at 92 BPM).
 **Example:** At 124 BPM (0.484 s per beat), the `snare` holder's knockout lands at 3.30 s into the loop: `ceil(3.30 / 0.484) = 7` beats, so the stem leaves at 3.387 s, fading over 120 ms, and its 1-beat tail ends at 3.871 s. Had it held `bass`, the stem would leave at the same 3.387 s and its 4-beat tail would end at 5.323 s.
 
 **F6. Intro timing.** The `intro_start` formula is defined as:
@@ -232,19 +239,21 @@ Sub-state flags held during `Playing`: `held` (R10, until the drop), `boss_hook_
 | t_in | float (s) | 0.05–0.50 | data file (Game State's per-transition `t_in`: battle wipe 0.30, Retry 0.05–0.25) | The reveal's length |
 | intro_len_s | float (s) | 0.10–0.50 | data file (kit) | The intro one-shot's length |
 
-**Output Range:** the intro ends on the reveal, or doesn't play. The reveal time is also checked against `transition_finished`; if they differ by more than one mix block, bar 1 follows `transition_finished`.
+**Output Range:** the intro ends on the reveal, or doesn't play. Bar 1 is never rescheduled; `transition_finished` is only checked against it, and a gap over `reveal_tolerance_ms` (20 ms, more than one 60 Hz frame) logs a warning (R7).
 **Example:** The battle wipe's `t_in` is 0.30 s and the Bureaucratia intro is 0.25 s, so the intro starts 0.05 s after `mode_entered` and bar 1 lands on the reveal. On a 0.15 s Retry reveal, the 0.25 s intro is skipped and bar 1 starts clean on the reveal.
 
 ## Edge Cases
 
-- **If a roster mixes aliens and humans**: beatbox mode; the humans hold no role and bob to nothing. If every alien is knocked out while humans remain, the floor pulse plays alone until the fight ends. That is the joke: the humans have no rhythm.
+- **If a roster mixes aliens and humans**: beatbox mode; the humans hold no role and bob to nothing. If every alien is knocked out while humans remain, the last alien's knockout is an ordinary one (R9: tail, no sting), and the floor pulse plays alone until the final knockout cuts it. That is the joke: the humans have no rhythm.
 - **If an alien enemy record has no `beat_role`**: content validation fails at boot (Content Data's fail-fast rule), naming the record. A human enemy needs none.
 - **If `beat_role == fallback_role`**: a validation error.
-- **If two bosses are on the field**: the first in line order takes `lead`; the second is treated as a non-boss with its own roles. Only the first drives R11.
+- **If two bosses are on the field**: impossible in a boss encounter (ADR-0006 §5 step 3 fails the swap, so the score disarms from `Armed`). In a non-boss encounter, the first `is_boss` enemy in line order takes `lead`; the second is treated as a non-boss with its own roles. Only the first drives R11.
+- **If the encounter's faction kind doesn't match the roster's mode** (R1): a content validation error at boot, naming the encounter.
 - **If a knockout and a drop land on the same bar**: the knockout applies first (on its beat), then the drop switches only the live layers.
 - **If the last alien is knocked out during the battle-cry break**: the break ends early and the victory sting plays at the next beat. It never waits out the silent bar.
 - **If a held fight ends before its escalation round**: the drop never happens; the sting plays unfiltered (R10's submix).
-- **If the replay resyncs** (`display_resynced`): at the next bar, exactly the layers of aliens shown standing are live, with no tails, and the floor pulse follows R4.
+- **If `display_resynced` arrives while `Armed`** (first entry and Retry, both during the swap): ignored (R8).
+- **If the replay resyncs mid-fight** (`display_resynced` in `Playing` or `Break`): at the next bar, exactly the layers of aliens shown standing are live, with no tails, and the floor pulse follows R4.
 - **If the replay is cancelled** (`replay_cancelled`, an exit path): changes not yet applied are dropped and R14's ending plays. A layer never leaves for a knockout the player didn't see.
 - **If the battle transition rolls back** (the swap fails): the score disarms from `Armed`; nothing has played.
 - **If a revive is ever added** (none exists in Turn Battle today): its layer returns at the next bar on its original role, and the floor pulse leaves if that role is `kick`. Specify and test it with the move.
@@ -261,7 +270,7 @@ Sub-state flags held during `Playing`: `held` (R10, until the drop), `boss_hook_
 |---|---|---|---|---|
 | Turn Battle System (via `BattleReplayController`) | Upstream | Hard | Gated replay signals (R8, ADR-0006 §3); a listener only, so ADR-0006 needs no change | GDD reverse-documented, lists this system (2026-10-29); ADR-0006 Accepted; the replay controller is not built yet |
 | Faction Rule Modifiers | Upstream | Soft | **New**: `FactionRule` gains an optional `score_escalation_round()` (Bureaucratia returns `permit_rounds + 1`, read from the rule record's `params`) | Listed in its Dependencies (2026-10-29); interface owed |
-| Content Data Definitions | Upstream | Hard | **New fields**: `enemy_.beat_role`, `enemy_.fallback_role` (alien enemies); `faction_.score_kit_id`, `faction_.score_base_tier` (alien factions); `enc_.score_tier_override` (default 0), `enc_.score_hold_for_escalation` (default false); a `score_config` record; R1 needs enemies from a non-alien faction (the Rat Catchers) | Added to its rule 1 table as owed (2026-10-29) |
+| Content Data Definitions | Upstream | Hard | **New fields**: `enemy_.beat_role`, `enemy_.fallback_role` (alien enemies); `enemy_.score_hook_id` (optional, bosses); `faction_.score_kit_id`, `faction_.score_base_tier` (every faction that fields enemies; a human faction's kit is a band kit); a validation rule that the encounter faction's kind matches the roster's mode (R1); `enc_.score_tier_override` (default 0), `enc_.score_hold_for_escalation` (default false); a `score_config` record; R1 needs enemies from a non-alien faction (the Rat Catchers) | Added to its rule 1 table as owed (2026-10-29) |
 | Overworld Exploration & Encounters | Upstream | Soft | Owns the meaning of the two new `enc_` fields; Paris sets the hold on its story encounter and the Supervisor | Listed in its Dependencies (2026-10-29) |
 | Game State & Scene Flow | Upstream | Soft | `transition_started`, `mode_entered`, `transition_finished`, rollback, overlay announcements, `t_in` | Approved; Visual/Audio and Dependencies updated (2026-10-29) |
 | Audio Manager | Upstream | Hard | The Music bus and the score's submix under it, settings volumes, the duck level, stings | Not designed (index #20) |
@@ -283,7 +292,8 @@ All live in the `score_config` record unless marked. None carries gameplay infor
 | `boss_hook_threshold` | 0.5 | 0.25–0.75 | Hook B arrives too late to enjoy | Hook B arrives before the fight has turned | F4, R11 |
 | `prewait_lowpass_hz` (kit) | 800 | 500–3000 | Held stems read as broken audio | No audible "waiting room"; the drop loses its contrast | R10 |
 | `cry_break_bars` | 1 | 1–2 | — | The silence outlasts the cry and the fight feels stalled | R13 |
-| `duck_db` | −12 dB | −24 to −6 dB | The beat vanishes under menus | The menu fights the music | `Ducked` |
+| `duck_db` | −12 dB | −24 to −6 dB | The beat vanishes under menus | The menu fights the music | the `ducked` flag (score submix only) |
+| `reveal_tolerance_ms` | 20 | 17–50 | Warnings on every normal frame hitch | A late reveal goes unnoticed | R7, F6 |
 | `sfx_duck_db` | −3 dB (150 ms release) | −6 to 0 dB | Hits are buried in a tier 4 mix | The score pumps on every hit | Visual/Audio |
 | `full_house_min` | 7 | 6–8 | Ordinary big fights all sound like the club remix and it stops being special | The remix never plays (8 is the cap) | R4b |
 | `boss_min_minions` (validation) | 2 | 0–4 | Solo bosses sing over the floor pulse only | Boss fights crowd the stage | R4c |
@@ -296,7 +306,7 @@ All live in the `score_config` record unless marked. None carries gameplay infor
 - **Every sound here has a visual twin** (accessibility rule: no audio-only information). A layer leaving = the visible knockout. The drop = the visible "all-out war" banner. Boss hook B = the visible HP bar. The battle cry = its text line. The score adds no new information.
 - **Bobbing (Vertical Slice)**: each alien's idle loop bobs on its own role's hits from the beat clock, so the player can *see* who is playing what. A non-playing alien bobs on the kick. Under Reduce Motion, bobbing is replaced by a small static "♪" glyph on each playing alien (shape, not colour).
 - **Alien speech captions**: when an alien "speaks" in battle text (barks), its line is shown as a caption such as *[aggressive boots-and-cats]*. Dialogue owns the text; this system only names the convention.
-- **Bus and mix**: the stems play on a **score submix** under the Music bus; the waiting-room filter (R10) sits on that submix only. Stings play on the Music bus outside it. The SFX bus (hits, `beat_impact`) ducks the score by `sfx_duck_db`, so hits always read, even over a dense tier 4 mix. The battle cry needs no separate duck: the stems' own one-bar break (R13) is the duck, so it can never drift out of sync. Victory and defeat stings hard-cut the score, with no crossfade bleed. The score never ducks the UI bus. All stems in a kit share one sample rate and identical loop points, which synchronised playback requires (OQ-2). All stems are mono-compatible, because mono is a planned accessibility option.
+- **Bus and mix**: the stems play on a **score submix** under the Music bus; the waiting-room filter (R10) sits on that submix only. Stings play on the Music bus outside it. The menu duck (`duck_db`) also sits on that submix, so it never touches a sting. The SFX bus (hits, `beat_impact`) ducks the score by `sfx_duck_db`, so hits always read, even over a dense tier 4 mix. The battle cry needs no separate duck: the stems' own one-bar break (R13) is the duck, so it can never drift out of sync. Victory and defeat stings hard-cut the score, with no crossfade bleed. The score never ducks the UI bus. All stems in a kit share one sample rate and identical loop points, which synchronised playback requires (OQ-2). All stems are mono-compatible, because mono is a planned accessibility option.
 - **Rat Catcher band mode**: one composed track per tier used, with the same start-on-the-beat rule (R7) and the same victory/defeat/flee endings (R14). There is no per-enemy layering.
 
 ## Game Feel
@@ -338,26 +348,30 @@ None of its own. It shows no HUD element. Volume lives in the Audio Manager's se
 - **AC-2c [I] (R3 one-shots)** GIVEN a non-boss alien whose `beat_role` is `lead` while the boss holds `lead`, WHEN a `beat_impact` arrives with it as the actor, THEN one `lead` one-shot is scheduled at that time, and no persistent stem is loaded for it.
 - **AC-2d [U] (R3, F2 boss)** GIVEN an enemy record with `is_boss = true` and `beat_role = kick`, WHEN roles are assigned, THEN it holds `lead` only, and `kick` is free for another alien.
 - **AC-2e [U] (R3 everyone plays)** GIVEN 4 aliens all `snare`/`hats`, WHEN roles are assigned, THEN `snare` and `hats` are held, `snare` has a doubler, and the fourth alien holds `kick` (pass 4, the first free role). GIVEN `doubler_enabled = false`, THEN no doubler and no one-shot slot exists, and the third and fourth aliens hold `kick` and `bass`.
-- **AC-2g [U] (R3, F2 eight)** GIVEN 8 aliens, THEN every alien has exactly one slot, all 6 roles are held, and there are 2 extras.
+- **AC-2f [U] (R3 fixed)** GIVEN any assignment, WHEN a role holder is knocked out, THEN no other alien's role or slot changes.
+- **AC-2g [U] (R3, F2 eight)** GIVEN 8 aliens all `snare`/`hats`, THEN every alien has exactly one slot, all 6 roles are held, and there are 2 extras (`snare` and `hats` doublers). GIVEN 8 aliens, two each of `kick`/`snare`, `snare`/`kick`, `bass`/`hats` and `hats`/`bass` in that line order, THEN `kick`, `snare`, `bass` and `hats` each have a holder and a doubler, and `lead` and `fx` are unheld.
 - **AC-2h [U] (R4b Full House)** GIVEN 8 live aliens and `full_house_min = 7`, THEN the `full_house` layer is live from bar 1. WHEN the second knockout lands (6 live), THEN the layer leaves at the next bar boundary. GIVEN 5 aliens, THEN the layer is never loaded.
 - **AC-2i [U] (R4c)** GIVEN a boss encounter with fewer than `boss_min_minions` alien minions, THEN boot validation logs a warning naming the encounter and boot continues.
-- **AC-2f [U] (R3 fixed)** GIVEN any assignment, WHEN a role holder is knocked out, THEN no other alien's role or slot changes.
+- **AC-2j [U] (R1 kit source)** GIVEN an encounter whose `faction_id` is Bureaucratia and whose roster holds aliens of two alien factions, THEN the Bureaucratia kit and base tier are used and each alien plays its own `beat_role`. GIVEN a roster with an alien enemy and a human encounter faction, or an all-human roster with an alien encounter faction, THEN content validation fails at boot naming the encounter. GIVEN an all-human roster with a human faction, THEN its band kit plays at that faction's `score_base_tier` (F1).
+- **AC-2k [U] (R11 hooks)** GIVEN a non-boss alien holding `lead`, THEN the kit's generic `lead` stem is live. GIVEN a boss with no `score_hook_id`, THEN the generic `lead` stem is live and hook B is never scheduled at any HP.
 - **AC-3 [U] (R4)** GIVEN a one-enemy fight whose alien holds `hats`, WHEN bar 1 starts, THEN exactly 2 sub-streams are live: `hats` and the floor pulse.
 
 **Tier, tempo and start**
 - **AC-4 [U] (F1)** GIVEN `score_base_tier = 1`, THEN a street fight is tier 1, an encounter with `score_tier_override = 2` is tier 2, and a boss encounter with `boss_tier_bonus = 2` is tier 3. GIVEN base 3 and a boss, THEN the tier is 4 (clamped). An override of 5, or a computed tier of 4 against a kit holding tiers 1–3, fails boot validation naming the encounter.
 - **AC-5 [U] (F3)** GIVEN tier 3 and the default config, THEN `seconds_per_beat == 60 / 124` (±1e-6).
 - **AC-5b [M, scriptable] (F3, R6, R15)** GIVEN the Bureaucratia kit, THEN every tier-3 stem is tagged 124 BPM, its length is `loop_bars × 4 × 60 / 124` s (±1 sample), and all stems share one sample rate. The kit holds tiers 1–3 only.
-- **AC-6 [U] (R7, F6)** GIVEN `mode_entered(battle)` at time m, `t_in = 0.30` and a 0.25 s intro, THEN the intro is scheduled at `m + 0.05` and bar 1 at `m + 0.30`. **[I]** on device: bar 1's downbeat is within 20 ms of `transition_finished`.
+- **AC-6 [U] (R7, F6)** GIVEN `mode_entered(battle)` at time m, `t_in = 0.30` and a 0.25 s intro, THEN the intro is scheduled at `m + 0.05` and bar 1 at `m + 0.30`. WHEN `transition_finished` arrives at `m + 0.33`, THEN bar 1 is not rescheduled and one warning is logged; at `m + 0.31`, no warning. **[I]** on device: bar 1's downbeat is within `reveal_tolerance_ms` (20 ms) of `transition_finished`.
 - **AC-6b [U] (F6 skip)** GIVEN `t_in = 0.15` and a 0.25 s intro, THEN no intro is scheduled and bar 1 starts at `m + 0.15`.
-- **AC-6c [U] (States)** GIVEN `Idle`, WHEN `transition_started(→ battle)` arrives, THEN the state is `Armed` and no sub-stream is live. WHEN the transition rolls back, THEN the state is `Idle` and nothing was scheduled. GIVEN `Ending`, WHEN the sting finishes, THEN the state is `Idle` and no sub-stream is live.
+- **AC-6c [U] (States)** GIVEN `Idle`, WHEN `transition_started(→ battle)` arrives, THEN the state is `Armed` and no sub-stream is live. WHEN the transition rolls back, THEN the state is `Idle` and nothing was scheduled. GIVEN `Ending`, WHEN the sting finishes, THEN the state is `Idle` and no sub-stream is live. GIVEN `Ending` with the defeat sting playing, WHEN `transition_started(→ battle)` arrives (Retry), THEN the sting is cut and the state is `Armed`. GIVEN `Armed`, WHEN `display_resynced` arrives, THEN the scheduler emits 0 commands.
 
 **During the fight**
 - **AC-7 [U] (R8, R9, F5)** GIVEN 124 BPM and a `beat_impact` whose plan has the `snare` holder as a KNOCKOUT reactor at 3.30 s into the loop, THEN the stem's fade is scheduled at 3.387 s (±1 block) and reaches −80 dB 120 ms later, and a 1-beat choke tail is scheduled at 3.387 s. GIVEN the same for the `bass` holder, THEN its fade is also at 3.387 s and its tail lasts 1.935 s.
 - **AC-7b [U] (R8)** GIVEN a `BattleCore` knockout with no matching replay signal, THEN the scheduler emits 0 commands.
 - **AC-8 [U] (R8)** GIVEN the speed-up latch set mid-fight, THEN `seconds_per_beat` and the stream tempo are unchanged.
 - **AC-9 [U] (R9)** GIVEN the `kick` holder's knockout, THEN the floor pulse's fade-in is scheduled for the same `change_time` as the kick's fade-out.
-- **AC-10 [U] (R9, R14)** GIVEN the last alien's knockout at time t, THEN every sub-stream fades out at the next beat after t, no choke tail is scheduled, and the victory sting is scheduled at that same time.
+- **AC-7c [U] (F5 lead)** GIVEN 124 BPM and a knockout event exactly on beat 7 (3.387 s), THEN the stem's fade is scheduled at beat 8 (3.871 s), not at 3.387 s.
+- **AC-10 [U] (R9, R14)** GIVEN an all-alien roster and the final knockout at time t, THEN every sub-stream fades out at the next beat after t, no choke tail is scheduled, the victory sting is scheduled at that same time, and the state is `Ending`. WHEN `battle_ended_after_replay(true)` then arrives, THEN the scheduler emits 0 commands (exactly one sting).
+- **AC-10b [U] (R14 backstop)** GIVEN the score in `Playing` with 2 aliens shown standing, WHEN `battle_ended_after_replay(true)` arrives, THEN every sub-stream cuts at the next beat and exactly one victory sting is scheduled there.
 - **AC-11 [U] (R10)** GIVEN a held Bureaucratia encounter, WHILE rounds 1–3 play, THEN the score submix's low-pass is enabled at 800 Hz and the stems are on `base`. WHEN the replay releases round 4, THEN at the next bar the filter is disabled, every live stem is on `full`, and an `fx` riser is scheduled if `fx` is held. A later `round_advanced_after_replay` schedules nothing. GIVEN a Bureaucratia street fight (not held), or a neutral-rule fight, THEN the stems are on `full` from bar 1, the filter is never enabled and no variant switch is scheduled. GIVEN a held fight won in round 2, THEN the victory sting plays on the Music bus outside the filtered submix.
 - **AC-12 [U] (R11, F4)** GIVEN the Supervisor at 110 max HP, WHEN shown HP at `beat_finished` is 56, THEN no switch. WHEN it is 55, THEN hook B is scheduled at the next bar. WHEN he is healed to 110 afterwards, THEN hook B stays.
 - **AC-13 [U] (R13, score side)** GIVEN a battle-cry event before bar 1, THEN bar 1 plays, every sub-stream is silent for exactly `cry_break_bars` bars from bar 2's downbeat, and live again at the following downbeat. GIVEN the event mid-bar 3, THEN the break starts at bar 4. **[I]** the cry's audio starts inside the silent bar.
@@ -365,13 +379,13 @@ None of its own. It shows no HUD element. Volume lives in the Audio Manager's se
 
 **Endings and states**
 - **AC-14 [U] (R14)** GIVEN Fled, THEN the record scratch is scheduled at once, and every sub-stream fades within 50 ms, with no quantise wait. GIVEN Defeat, THEN every sub-stream cuts at the next beat and the defeat sting is scheduled there. GIVEN Retry, THEN the score re-arms with the same assignment, the held state restored for a held encounter, no drop and no hook B.
-- **AC-15 [U] (Ducked)** GIVEN a pause overlay opens mid-bar, WHEN it closes 3.0 s later, THEN the loop position advanced 3.0 s (±1 block), the Music bus was at `duck_db` while it was open, and the loop never restarted.
+- **AC-15 [U] (Ducked)** GIVEN a pause overlay opens mid-bar, WHEN it closes 3.0 s later, THEN the loop position advanced 3.0 s (±1 block), the score submix was at `duck_db` while it was open, the Music bus outside it was not ducked, and the loop never restarted. GIVEN the Menu opens during a cry break and closes after it, THEN the break still ends on its scheduled downbeat. GIVEN the Defeat Prompt opens, THEN the `ducked` flag stays clear.
 
 **Edge cases**
 - **AC-16 [I] (Edge: stems missing)** GIVEN a kit ID with no stems on disk and an injected logger, WHEN the battle runs to its end, THEN it completes, no sub-stream is live, and the logger got exactly one error containing the kit ID. The same holds for a missing band-mode track.
-- **AC-17 [U] (Edge: mixed roster)** GIVEN 1 alien (`snare`) and 1 enemy from a non-alien faction, THEN the human holds no role. WHEN the alien is knocked out first, THEN only the floor pulse is live until the battle ends.
+- **AC-17 [U] (Edge: mixed roster)** GIVEN 1 alien (`snare`) and 1 enemy from a non-alien faction, THEN the human holds no role. WHEN the alien is knocked out first, THEN its choke tail is scheduled, no victory sting is scheduled, and only the floor pulse is live. WHEN the human is then knocked out, THEN the floor pulse cuts at the next beat and the victory sting is scheduled there.
 - **AC-20 [U] (Edge: validation)** GIVEN an alien enemy record with no `beat_role`, or with `beat_role == fallback_role`, THEN content validation fails at boot, naming the record. GIVEN a non-alien enemy with no `beat_role`, THEN validation passes.
-- **AC-21 [U] (Edge: two bosses)** GIVEN two `is_boss` enemies in line order, THEN the first holds `lead` and drives R11. The second is assigned as a non-boss.
+- **AC-21 [U] (Edge: two bosses)** GIVEN a non-boss encounter with two `is_boss` enemies in line order, THEN the first holds `lead` and drives R11. The second is assigned as a non-boss.
 - **AC-22 [U] (Edge: same bar)** GIVEN a knockout and the round-4 release in the same bar, THEN the knockout's fade is scheduled before the variant switch, and the switch applies only to stems still live.
 - **AC-23 [U] (Edge: last knockout in the break)** GIVEN the cry break is active, WHEN the last alien's knockout arrives, THEN the break ends and the victory sting is scheduled at the next beat, not at the end of the bar.
 - **AC-25 [U] (Edge: speed-up burst)** GIVEN three knockout events inside one beat, THEN three fades are scheduled, each at its own F5 time, and none is dropped.
@@ -382,7 +396,7 @@ None of its own. It shows no HUD element. Volume lives in the Audio Manager's se
 
 **Content and performance**
 - **AC-18 [M] (R12)** GIVEN any kit submitted for shipping, THEN its review record shows the originality listen check passed (the "removed label" test), a composer declaration of no third-party samples, and that every stem is mouth-made. For tiers 3–4, the record also shows the user's listen sign-off (OQ-7).
-- **AC-19 [I] (Performance)** GIVEN the worst case (8 alien streams + the Full House layer, with tails and one-shots firing), WHEN it plays for a 10-minute soak on the min-spec target, THEN the `MusicClock`, sampled every frame, never stalls for more than 2 mix blocks while unpaused and drifts no more than 5 ms from the wall clock; and the kit's stems total 24 MB or less on disk, streamed OGG. The engine API the clock reads is pinned by the Audio ADR (OQ-2).
+- **AC-19 [I] (Performance)** GIVEN the worst case (8 alien streams + the Full House layer, with tails and one-shots firing), WHEN it plays for a 10-minute soak on the min-spec target, THEN the `MusicClock`, sampled every frame, never stalls for more than 2 mix blocks while unpaused and drifts no more than 5 ms from the wall clock; and the kit's stems total 24 MB or less on disk, streamed OGG (a placeholder planning budget with no measured basis yet; OQ-8 sizes the real Paris matrix and confirms or replaces it). The engine API the clock reads is pinned by the Audio ADR (OQ-2).
 
 ## Open Questions
 
