@@ -271,7 +271,9 @@ func _on_round_advanced(_round_number: int) -> void:
 
 
 func _on_battle_ended(won: bool) -> void:
-	_banner_label.text = "VICTORY!" if won else "DEFEAT"
+	# The continue hint matters: after a win BattleMode waits for a confirm,
+	# and a bare "VICTORY!" read as the game being over (playtest 2026-10-29).
+	_banner_label.text = "VICTORY! Press Enter to continue" if won else "DEFEAT"
 
 
 ## Spawns a floating number for MP spent and/or HP changed by one resolved
