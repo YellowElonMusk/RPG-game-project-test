@@ -1,8 +1,9 @@
 ## The lighting rig a 3D mode scene owns (ADR-0005 Decision §3, abridged here
-## to the key/rim/set/fill setup Story 003's AC needs). Camera, sky card and
-## the `active_diorama_stage` group membership are later stories' scope
-## (§6 camera stories, the capture tool's sky card, ADR §3's `mode_entered`
-## wiring) -- this file only owns the light rig and the profile pipeline.
+## to the key/rim/set/fill setup Story 003's AC needs, plus Story 008's
+## `active_diorama_stage` group membership so `PresentationDirector` can find
+## the live stage on `mode_entered`). Camera and the sky card remain later
+## stories' scope (§6 camera stories, the capture tool's sky card) -- this
+## file owns the light rig, the profile pipeline and group membership only.
 ##
 ## The rig is fixed at `_ready()`, never from profile data (ADR-0005 §3, §5):
 ## `key_light` is culled to `ACTORS` and never casts shadows (only the key
@@ -18,6 +19,17 @@ extends Node3D
 const LAYER_SET := 1
 ## Cull mask bit for actors (`CharacterSprite` instances).
 const LAYER_ACTORS := 2
+## Group every live stage joins on `_enter_tree()` (ADR-0005 §3). At most one
+## member at a time -- ADR-0002 keeps exactly one mode in the tree.
+## `PresentationDirector` is the only reader, and only on `mode_entered`.
+const GROUP: StringName = &"active_diorama_stage"
+
+## This stage's entry profile id (ADR-0005 §3): the owning mode sets it
+## before the stage enters the tree. Every battle stage enters on `battle`
+## (never a `boss_<faction>` entry profile -- the boss light is always a
+## later `request_profile()`, never this). `PresentationDirector` reads it
+## on `mode_entered`, resolving it through its own profile lookup.
+@export var profile_id: StringName
 
 ## The actor key light. Culled to `ACTORS` only, never casts shadows.
 @export var key_light: DirectionalLight3D
@@ -37,8 +49,22 @@ var current_rim_strength: float = 0.0
 var _resolver: Callable
 
 
+## Joins `GROUP` (ADR-0005 §3) so `PresentationDirector` can find this stage
+## on `mode_entered`, including re-entry (e.g. the Overworld re-attached after
+## a Battle retreat).
+## TODO(sprite-camera-presentation): `camera.current = true` also belongs here
+## (ADR-0005 §3) once this file gains a `camera` export -- a §6 camera
+## story's scope, not Story 008's.
+func _enter_tree() -> void:
+	add_to_group(GROUP)
+
+
 func _ready() -> void:
 	_configure_light_rig()
+
+
+func _exit_tree() -> void:
+	remove_from_group(GROUP)
 
 
 ## Pins the light rig's cull masks and shadow casters (ADR-0005 §3). Runs

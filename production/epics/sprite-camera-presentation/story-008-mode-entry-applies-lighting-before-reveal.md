@@ -6,7 +6,7 @@
 > **Type**: Integration
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -76,7 +76,7 @@
 **Required evidence**:
 - Integration: `tests/integration/presentation/mode_entry_lighting_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -84,3 +84,16 @@
 
 - Depends on: `production/epics/sprite-camera-presentation/story-001-windowed-engine-spike.md`, `production/epics/sprite-camera-presentation/story-003-actor-key-and-rim-lighting-only.md`
 - Unlocks: `production/epics/sprite-camera-presentation/story-009-lighting-blend-completes-without-popping.md`, `production/epics/sprite-camera-presentation/story-026-lighting-blend-formula-is-exact.md`
+
+---
+
+## Completion Notes
+
+- `src/presentation/presentation_director.gd` (new): `PresentationDirector extends Node`. `setup(machine, config, sink)` connects `transition_started` (records `from`/`to`) and `mode_entered`. On `mode_entered`, finds the single `active_diorama_stage` group member (none: silent no-op for a 2D mode; more than one: `push_error`, applies none), calls `stage.bind_profiles(_resolve_profile)` always, then — only when `from != to` — resolves `stage.profile_id` and calls `stage.apply_profile(profile, 0.0)`. "One door" (ADR-0005 §3): never calls `stage.request_profile()`. `_resolve_profile()` loads `data/presentation/profiles/<id>.tres` directly by convention (the profile table in the full `PresentationConfig` is a later story — `config`/`sink` are stored, unused, per the ADR's exact `setup()` shape). `TODO(scene-flow)` on `setup()` marks the `GameRoot` wiring as out of scope here.
+- `src/presentation/global_uniform_sink.gd` (new): `GlobalUniformSink extends RefCounted`. The base class IS the production sink (`set_global()` calls `RenderingServer.global_shader_parameter_set()` directly); a test double would subclass and override. Unused by the Director this story (`TODO`: story 010's per-frame `mode_time`/rim writes) — built because `setup()`'s ADR-0005 §4 signature requires the type.
+- `src/presentation/diorama_stage.gd`: added `const GROUP := &"active_diorama_stage"` and `_enter_tree()`/`_exit_tree()` joining/leaving it (ADR-0005 §3), closing the "later story" TODO Story 003 left on group membership. `camera.current = true` on re-entry stays deferred (`TODO`) — no `camera` export exists yet (a §6 camera story).
+- `tests/integration/presentation/mode_entry_lighting_test.gd` (new): drives the real `GameStateMachine` via `GameStateFixtures`, with one `DioramaStage` (real light-rig children, added to the test's own tree) standing in for whichever stage a real scene swap would have live. Three tests: (1) Overworld→Battle entry — a probe connected after the Director's own `mode_entered` listener confirms `machine.phase` is still `SWAP` (pre-reveal) at the moment the rig already matches `battle.tres` within `1e-4`, and the rig is unchanged after 120 further ticks with no blend requested; (2) Defeat→Retry (Battle→Battle, `retry_flash`) — simulates the owning Battle mode's own hidden-SWAP `request_profile(&"boss_bureaucratia", 0.0)` call, then asserts the Director's `mode_entered` handler did **not** overwrite it back to `battle`; (3) no `DioramaStage` in the tree (2D mode) — the transition still completes with no crash/error.
+- Deviations: none from the ADR's §3/§4 Key Interfaces shapes. `PresentationConfig`'s profile table and the every-frame global-uniform writes are explicitly out of this story's scope (later stories), as called out above.
+- Verified: see Test Evidence Status below.
+
+**Test Evidence Status**: `tests/integration/presentation/mode_entry_lighting_test.gd` — 3/3 passing. Full suite: 666/666 green, 0 orphans (`$TEMP/scp008_full.log`).
