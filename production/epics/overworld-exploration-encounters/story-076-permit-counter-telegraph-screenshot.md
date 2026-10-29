@@ -1,7 +1,7 @@
 # Story 076: Retained walk-in screenshot — the Permit Counter is on screen from the pre-dungeon camp
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Visual/Feel
 > **Estimate**: S
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-30i [VF] (R13a, telegraph)** A retained walk-in screenshot with the leader at the pre-dungeon CampSpot's safe-zone edge, facing the Counter, shows the Permit Counter on screen; art-director sign-off in `production/qa/evidence/signoff-overworld.md`.
+- [x] **AC-30i [VF] (R13a, telegraph)** A retained walk-in screenshot with the leader at the pre-dungeon CampSpot's safe-zone edge, facing the Counter, shows the Permit Counter on screen; art-director sign-off in `production/qa/evidence/signoff-overworld.md`.
 
 ---
 
