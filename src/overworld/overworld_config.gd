@@ -34,6 +34,25 @@ extends Resource
 ## (`FollowerTrail`'s `N_buf`).
 @export var trail_sample_m: float = 0.15
 
+## Patrol speed as a fraction of `walk_speed` (GDD Formulas, `chase_escape`'s
+## `f_patrol`; GDD Tuning Knobs; safe range 0.4-0.7; default 0.6; invariant
+## I1). `v_patrol()` turns it into metres per second.
+@export var f_patrol: float = 0.6
+
+## How close, in metres, a symbol following a path must come to a waypoint
+## for it to count as reached (ADR-0012 §2: "A symbol following a path
+## treats a waypoint as reached within `cfg.waypoint_tol_m`"). Not a GDD
+## Tuning Knob -- ADR-0012 §9 adds it on top of the table and names no
+## value; default 0.05 m (a sixth of the default `body_radius`).
+@export var waypoint_tol_m: float = 0.05
+
+
+## `v_patrol = f_patrol * walk_speed`, in metres per second (GDD Formulas,
+## `chase_escape`). The speed a Patrol (and Returning) symbol passes to
+## `GroundMover.step()`.
+func v_patrol() -> float:
+	return f_patrol * walk_speed
+
 
 ## Invariants I1-I18 (GDD Formulas, "Load-time invariants"). Returns one
 ## message per failed invariant, naming its ID -- empty when every checked
