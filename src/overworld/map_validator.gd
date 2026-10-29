@@ -46,6 +46,10 @@ static func validate_catalog(catalog: ContentCatalogService, cfg: OverworldConfi
 			errors.append("%s: scene map_id is '%s'" % [map_id, map.map_id])
 		maps[map_id] = map
 	errors.append_array(validate_maps(maps, cfg))
+	for rec: Resource in catalog.all_records(&"map"):
+		var rec_map: OverworldMap = maps.get(String(rec.get("id"))) as OverworldMap
+		if rec_map != null and rec is MapData:
+			errors.append_array(validate_legs(rec as MapData, rec_map))
 	for map: OverworldMap in maps.values():
 		map.free()
 	return errors
@@ -75,6 +79,9 @@ static func validate_maps(maps: Dictionary, cfg: OverworldConfig,
 			elif target.find_entry_point(exit.target_entry_id) == null:
 				errors.append("%s: exit '%s' names unknown EntryPoint '%s' on %s"
 						% [map_id, exit.marker_id, exit.target_entry_id, exit.target_map_id])
+			if target != null and not _has_exit_to(target, map_id):
+				errors.append("%s: exit '%s' leads to %s, which has no exit back (story 074)"
+						% [map_id, exit.marker_id, exit.target_map_id])
 		var grid: WalkGrid = map.bake_walk_grid(cfg)
 		for entry: EntryPoint in map.entry_points():
 			var pos: Vector2 = entry.ground_position(map)
@@ -95,3 +102,39 @@ static func distance_to_rect(p: Vector2, rect: Rect2) -> float:
 	var nearest := Vector2(clampf(p.x, rect.position.x, rect.end.x),
 			clampf(p.y, rect.position.y, rect.end.y))
 	return p.distance_to(nearest)
+
+
+## Story 074, AC-30a (GDD rule 0): every `critical_path` leg of `rec` has a
+## unique ID, starts at an EntryPoint on `map` and ends at one of its
+## MapExits, Static symbols (`symbol_id`) or CampSpots (`marker_id`).
+static func validate_legs(rec: MapData, map: OverworldMap) -> PackedStringArray:
+	var errors := PackedStringArray()
+	var ends: Dictionary = {}
+	for exit: MapExit in map.map_exits():
+		ends[String(exit.marker_id)] = true
+	for camp: CampSpot in map.camp_spots():
+		ends[String(camp.marker_id)] = true
+	for sym: EncounterSymbol in map.symbol_markers():
+		if sym.is_static:
+			ends[sym.symbol_id if not sym.symbol_id.is_empty() else sym.encounter_id] = true
+	var seen: Dictionary = {}
+	for leg: CriticalPathLeg in rec.critical_path:
+		if leg == null:
+			errors.append("%s: a critical_path entry is empty" % rec.id)
+			continue
+		if seen.has(leg.id) or leg.id.is_empty():
+			errors.append("%s: critical_path leg id '%s' is empty or repeated" % [rec.id, leg.id])
+		seen[leg.id] = true
+		if map.find_entry_point(leg.from_entry) == null:
+			errors.append("%s: leg '%s' starts at unknown EntryPoint '%s'" % [rec.id, leg.id, leg.from_entry])
+		if not ends.has(leg.to):
+			errors.append("%s: leg '%s' ends at '%s', which is no MapExit, Static symbol or CampSpot on the map"
+					% [rec.id, leg.id, leg.to])
+	return errors
+
+
+static func _has_exit_to(map: OverworldMap, target_map_id: String) -> bool:
+	for exit: MapExit in map.map_exits():
+		if exit.target_map_id == target_map_id:
+			return true
+	return false

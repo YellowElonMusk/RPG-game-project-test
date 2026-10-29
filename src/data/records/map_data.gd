@@ -23,8 +23,8 @@ extends Resource
 @export var base_stage: int = 1
 ## Story flag name → occupation stage (1–3).
 @export var stage_table: Dictionary[String, int] = {}
-## Ordered leg IDs of the critical path.
-@export var critical_path: PackedStringArray = PackedStringArray()
+## The critical path's legs, in order (GDD rule 0; story 074).
+@export var critical_path: Array[CriticalPathLeg] = []
 ## Story flag that marks the region liberated.
 @export var region_liberation_flag: String = ""
 ## Asset ID of the lighting profile once liberated.

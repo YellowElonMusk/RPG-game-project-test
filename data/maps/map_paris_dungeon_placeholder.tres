@@ -1,6 +1,19 @@
-[gd_resource type="Resource" script_class="MapData" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="MapData" load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://src/data/records/map_data.gd" id="1_a"]
+[ext_resource type="Script" path="res://src/data/records/critical_path_leg.gd" id="2_leg"]
+
+[sub_resource type="Resource" id="leg_1"]
+script = ExtResource("2_leg")
+id = "dungeon_to_counter"
+from_entry = &"from_segment"
+to = "sym_paris_permit_counter"
+
+[sub_resource type="Resource" id="leg_2"]
+script = ExtResource("2_leg")
+id = "dungeon_to_boss"
+from_entry = &"from_segment"
+to = "exit_to_boss_chamber"
 
 [resource]
 script = ExtResource("1_a")
@@ -8,4 +21,5 @@ id = "map_paris_dungeon_placeholder"
 display_name = "Paris - The Prefecture"
 faction_id = "faction_bureaucratia"
 base_stage = 3
+critical_path = Array[ExtResource("2_leg")]([SubResource("leg_1"), SubResource("leg_2")])
 new_game_entry = false

@@ -58,6 +58,7 @@ static func validate(maps: Dictionary, cfg: OverworldConfig,
 					grid.set_blocked(OverworldMode.checkpoint_cells(cp, grid), true)
 			if sym.start_on == EncounterSymbol.StartOn.CONFIRM:
 				_check_story_encounter(map, grid, sym, cfg, presentation, errors)
+				_check_not_routable_around(maps, map, sym, cfg, errors)
 			else:
 				_check_boss(map, grid, sym, cfg, errors)
 	return errors
@@ -250,3 +251,43 @@ static func walk_distances(grid: WalkGrid, starts: Array[Vector2i]) -> Dictionar
 
 static func _sym_id(sym: EncounterSymbol) -> String:
 	return sym.symbol_id if not sym.symbol_id.is_empty() else sym.encounter_id
+
+
+## Story 084, AC-31d (GDD rule 12 "The story encounter cannot be routed
+## round"): with every other checkpoint open (the most generous case; bands
+## are not applied, this is topology), and only the story encounter's own
+## checkpoint closed, no walk-grid route from the camp's EntryPoint reaches
+## an exit to a map holding the boss. The payoff half of the AC (symbols
+## whose `open` payoff opens the dungeon shortcut lie beyond the checkpoint)
+## has nothing to check until `victory_payoff` exists (story 050); it is
+## recorded here so that story extends this function.
+static func _check_not_routable_around(maps: Dictionary, map: OverworldMap,
+		sym: EncounterSymbol, cfg: OverworldConfig, errors: PackedStringArray) -> void:
+	var cp: CheckpointMarker = map.find_checkpoint(sym.checkpoint_id)
+	if cp == null or map.camp_spots().is_empty():
+		return
+	var entry: EntryPoint = map.find_entry_point(map.camp_spots()[0].return_entry_id)
+	if entry == null:
+		return
+	var grid: WalkGrid = map.bake_walk_grid(cfg)
+	grid.set_blocked(OverworldMode.checkpoint_cells(cp, grid), true)
+	var reach: Dictionary = walk_distances(grid, [grid.cell_of(entry.ground_position(map))])
+	for exit: MapExit in map.map_exits():
+		if not _holds_boss(maps.get(exit.target_map_id) as OverworldMap):
+			continue
+		var r: Rect2 = exit.trigger_rect
+		for y in range(floori(r.position.y / grid.cell_m), ceili(r.end.y / grid.cell_m)):
+			for x in range(floori(r.position.x / grid.cell_m), ceili(r.end.x / grid.cell_m)):
+				if reach.has(Vector2i(x, y)):
+					errors.append("%s: exit '%s' to the boss is reachable from '%s' without crossing checkpoint '%s'"
+							% [map.map_id, exit.marker_id, entry.marker_id, cp.marker_id])
+					return
+
+
+static func _holds_boss(map: OverworldMap) -> bool:
+	if map == null:
+		return false
+	for s: EncounterSymbol in map.symbol_markers():
+		if s.is_static and s.start_on == EncounterSymbol.StartOn.CONTACT_OR_CONFIRM:
+			return true
+	return false

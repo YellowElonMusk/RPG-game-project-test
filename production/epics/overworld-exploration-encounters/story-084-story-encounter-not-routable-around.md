@@ -1,7 +1,7 @@
 # Story 084: No walk-grid route reaches the dungeon's boss-chamber exit without crossing the story encounter
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-31d [D] (R12, no route round the story encounter)** On the dungeon, with every `open` and `item` checkpoint opened, every walk-grid route from its EntryPoint to its boss-chamber exit crosses the story encounter's checkpoint cells, and every symbol whose payoff opens the dungeon shortcut is reachable only beyond that checkpoint.
+- [x] **AC-31d [D] (R12, no route round the story encounter)** On the dungeon, with every `open` and `item` checkpoint opened, every walk-grid route from its EntryPoint to its boss-chamber exit crosses the story encounter's checkpoint cells, and every symbol whose payoff opens the dungeon shortcut is reachable only beyond that checkpoint.
 
 ---
 
@@ -75,7 +75,7 @@
 **Required evidence**:
 - `tests/unit/overworld/data/story_encounter_unbypassable_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -83,3 +83,7 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-083-bypass-lane-ordered-search.md`, `story-078-overworld-reference-integrity-check.md` (AC-30d, reference resolution for payoff → checkpoint links), `story-079-no-physics-nodes-in-shipped-maps.md` (AC-30e, no-physics scene baseline)
 - Unlocks: `production/epics/overworld-exploration-encounters/story-091-permit-counter-static-behavior.md`
+
+## Completion Notes (2026-10-30)
+
+- The topology half is checked in `MapStructureValidator._check_not_routable_around()`. The payoff half (symbols whose `open` payoff opens the dungeon shortcut lie beyond the checkpoint) has nothing to check until `victory_payoff` exists (story 050), which should extend that function.

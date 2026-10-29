@@ -1,7 +1,7 @@
 # Story 074: Every MapExit, critical-path leg and ChapterFlow step reference resolves
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: In Progress (2026-10-30): exits and legs done; ChapterFlow step clause blocked on step data
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -75,7 +75,7 @@
 **Required evidence**:
 - `tests/unit/overworld/data/map_exit_and_leg_reference_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (exit and leg clauses)
 
 ---
 
@@ -83,3 +83,8 @@
 
 - Depends on: None
 - Unlocks: `production/epics/overworld-exploration-encounters/story-075-town-dungeon-story-encounter-and-boss-placement.md`, `story-080-entry-point-exit-clearance.md`
+
+## Progress Notes (2026-10-30)
+
+- Done: reciprocal exits (`MapValidator.validate_maps`) and leg references (`MapValidator.validate_legs`). `MapData.critical_path` is now `Array[CriticalPathLeg]` (`{id, from_entry, to}`); the four Paris records carry seven legs.
+- **Blocked:** "every ChapterFlow step names an existing `{map_id, leg_id}`". No step list exists (`chapter_flow.gd` TODO(dialogue-quests)); `tools/ci/validate_maps.gd` prints NOT ASSESSED for it on every run.

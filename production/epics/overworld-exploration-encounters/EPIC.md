@@ -137,7 +137,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 071 | [Redirect and queue failures lock input, snap the party to the return marker and start grace](story-071-checkpoint-redirect-and-queue-failure.md) | Logic | Complete | ADR-0012 |
 | 072 | [An encounter-outcome checkpoint starts its linked fight, and Victory opens it](story-072-checkpoint-encounter-outcome.md) | Logic | Complete | ADR-0012 |
 | 073 | [Every checkpoint has exactly one resolving requirement, reachable fight-free on the critical path](story-073-checkpoint-requirement-and-critical-path-reachability.md) | Logic | Ready | ADR-0012 |
-| 074 | [Every MapExit, critical-path leg and ChapterFlow step reference resolves](story-074-map-exit-and-critical-path-reference-integrity.md) | Logic | Ready | ADR-0012 |
+| 074 | [Every MapExit, critical-path leg and ChapterFlow step reference resolves](story-074-map-exit-and-critical-path-reference-integrity.md) | Logic | In Progress | ADR-0012 |
 | 075 | [Town, dungeon, story-encounter and boss placement match the map-structure rules](story-075-town-dungeon-story-encounter-and-boss-placement.md) | Logic | Complete | ADR-0012 |
 | 076 | [Retained walk-in screenshot — the Permit Counter is on screen from the pre-dungeon camp](story-076-permit-counter-telegraph-screenshot.md) | Visual/Feel | Ready | ADR-0012 |
 | 077 | [No spawn point or patrol segment crowds a safe zone or a return marker](story-077-patrol-and-spawn-safe-zone-clearance.md) | Logic | Complete | ADR-0012 |
@@ -147,7 +147,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 081 | [A MapExit re-fires only after the leader leaves and re-enters its rectangle](story-081-map-exit-reentry-requires-leaving-the-rectangle.md) | Logic | Ready | ADR-0012 |
 | 082 | [Every symbol's patrol sweep and resume point are symbol-legal at every reachable stage](story-082-patrol-legality-at-every-reachable-stage.md) | Logic | Ready | ADR-0012 |
 | 083 | [The ordered search finds a bypass lane round every patrol band on every critical-path leg](story-083-bypass-lane-ordered-search.md) | Logic | Ready | ADR-0012 |
-| 084 | [No walk-grid route reaches the dungeon's boss-chamber exit without crossing the story encounter](story-084-story-encounter-not-routable-around.md) | Logic | Ready | ADR-0012 |
+| 084 | [No walk-grid route reaches the dungeon's boss-chamber exit without crossing the story encounter](story-084-story-encounter-not-routable-around.md) | Logic | Complete | ADR-0012 |
 | 085 | [The dungeon's pressure floor — at least half the symbols' bands cross the shortest critical path](story-085-dungeon-pressure-floor.md) | Logic | Ready | ADR-0012 |
 | 086 | [The first-encounter map's teaching bypass is visibly easy, and its speaker stands before the first notice radius](story-086-first-patrol-bypass-ratio-and-teaching-speaker.md) | Logic | Ready | ADR-0012 |
 | 087 | [Every symbol's patrol is on screen from every approach, before the leader can be noticed](story-087-patrol-visibility-before-the-notice-radius.md) | Visual/Feel | Ready | ADR-0012 |
