@@ -1,0 +1,11 @@
+# Warnings that name a migrated record (stories 013-018) when
+# tools/ci/validate-content.gd runs on res://data, one per line as
+# "record_id | field", where an empty field is written as nothing between the
+# delimiters. Lines starting with # are ignored.
+#
+# Empty since 2026-10-29: the story expected five unreferenced warnings, one
+# for each move_* squad special, because no Character record referenced them
+# while story 019 was blocked. Story 019 was merged into 018, and the four
+# char_* records now reference all five moves through move_ids, so the
+# migrated set produces no warnings. Fix the test's expectation or the data
+# here, never the validator.
