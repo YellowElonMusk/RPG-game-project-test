@@ -15,7 +15,7 @@ func test_moves_for_karen_returns_attack_defend_and_speak_to_the_manager() -> vo
 
 func test_moves_for_michelin_chef_returns_attack_defend_and_both_specials() -> void:
 	var chef: Combatant = _make_squad_member(
-			"Michelin Chef", PackedStringArray(["move_appetizer", "move_family_meal"]))
+			"Five-Star Chef", PackedStringArray(["move_appetizer", "move_family_meal"]))
 
 	var moves: Array[Move] = SquadMoves.moves_for(chef)
 

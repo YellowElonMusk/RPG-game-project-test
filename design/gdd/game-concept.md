@@ -32,7 +32,7 @@
 ## Core Fantasy
 
 You assemble the most ridiculous resistance squad on Earth — a baguette
-thrower, a Michelin chef, Karen, Florida Man — and turn their worst traits into
+thrower, a Five-Star Chef, Karen, Florida Man — and turn their worst traits into
 the exact weapons needed to beat alien civilizations at their own absurd games.
 The promise: being the one person clever enough to see through every
 ideology's nonsense, and laughing at all of them on the way.
@@ -42,7 +42,8 @@ ideology's nonsense, and laughing at all of them on the way.
 ## Unique Hook
 
 Like Dragon Quest, **and also** every enemy faction's satire *is* a combat rule
-set — Bureaucratia enemies ignore damage until they're *Approved*, Influencia
+set — Bureaucratia bans special moves for both sides until the permit comes
+through after round 3 (the *Permit Ban*), Influencia
 enemies grow stronger the more attention you give them, MegaCorp bills you per
 turn. Your misfit squad's quirk combos are how you break those rules: the joke
 is the mechanic, and the punchline is figuring it out.
@@ -77,7 +78,7 @@ is the mechanic, and the punchline is figuring it out.
 2. **Quirk states & combos** — character moves apply comedic states (*Complained*, *Unionized*, *Gone Viral*, *Notarized*) that teammates cash in for named combos, logged in a **Combo Codex**.
 3. **Faction rule sets** — each alien civilization modifies combat rules in a telegraphed way.
 4. **Squad recruitment & loyalty** — Mass Effect-style roster; pick an active party at camp; loyalty quests unlock signature quirks.
-5. **Faction reputation** — story choices shift standing with human and alien factions, changing recruits, dialogue and endings (not battle rules).
+5. **Faction reputation** — after each alien boss, finish him (human street cred) or let him go (alien points); reputation changes prices, recruit likelihood, who hunts you and the ending, never battle rules. Human (bounty-hunter) bosses and ordinary fights get no prompt.
 
 ---
 
@@ -100,7 +101,7 @@ is the mechanic, and the punchline is figuring it out.
 
 ### Flow State Design
 
-- **Onboarding curve**: First 10 minutes in occupied Paris — one recruit, one obvious state (*Complained*), one obvious combo, then the first Bureaucratia enemy whose *Approved* rule is shown on-screen.
+- **Onboarding curve**: First 10 minutes in occupied Paris — one recruit, one obvious state (*Complained*), one obvious combo, then the first Bureaucratia enemy whose *Permit Ban* rule is shown on-screen.
 - **Difficulty scaling**: New factions introduce new rules rather than bigger numbers; later fights layer two rules or demand specific combos.
 - **Feedback clarity**: Every state is iconified on the target; every combo fires a named punchline + animation and a "New Combo!" Codex entry.
 - **Recovery from failure**: Retry from the start of the battle instantly; losing teaches the faction's rule rather than punishing.
@@ -112,7 +113,7 @@ is the mechanic, and the punchline is figuring it out.
 ### Moment-to-Moment (30 seconds)
 Pick each squad member's action from a third-person DQ-style menu. Quirk moves
 apply comedic states; teammates cash them in for combos while the faction's rule
-bends the fight (e.g., damage ignored until the target is *Approved*). The
+bends the fight (e.g., no special moves for anyone until the permit arrives). The
 satisfaction is the "aha" of a synergy landing, paid off with a named punchline.
 
 ### Short-Term (5-15 minutes)
@@ -222,7 +223,7 @@ A new player understands any fight's rules within one turn.
 | **Key Technical Challenges** | Data-driven quirk-state/combo system; per-faction rule modifiers on a shared combat core; third-person battle camera staging |
 | **Art Style** | Pixel-art sprite characters (~48–64 px) in lit low-poly 3D dioramas (HD-2D family; Godot `Sprite3D`/`AnimatedSprite3D`). See `design/art/art-bible.md` |
 | **Art Pipeline Complexity** | Medium. No character rigging; each character is a sprite sheet. Environments are simple low-poly blockouts. Cost drivers are frame-by-frame reaction animation and sprite facings (a fixed battle-camera arc keeps it to ~2 facings) |
-| **Audio Needs** | Moderate — comedic SFX, per-faction music themes, optional barks |
+| **Audio Needs** | Moderate — comedic SFX, no fight BGM (layered beatbox stems, one per alien enemy; needs an audio GDD), optional barks |
 | **Networking** | None |
 | **Content Volume** | Full vision: 4 regions, 4 alien factions, ~10 recruits, 2–3 endings, ~8–10 hours |
 | **Procedural Systems** | None |
@@ -261,10 +262,10 @@ A new player understands any fight's rules within one turn.
 **Required for MVP**:
 1. Turn-based party combat with third-person camera and command menus.
 2. Quirk states and ~8 combos, with a Combo Codex.
-3. One faction rule set: Bureaucratia (*Approved* / forms).
+3. One faction rule set: Bureaucratia (the *Permit Ban*: no special moves until round 4).
 4. One region: occupied Paris — town, overworld segment, one dungeon.
-5. 4 recruits (e.g., Baguette Thrower, Michelin Chef, Karen, Florida Man), ~8 enemy types, one boss (the Minister of Forms).
-6. One reputation choice that wins or loses one recruit.
+5. 4 recruits (e.g., Baguette Thrower, Five-Star Chef, Karen, Florida Man), ~8 enemy types, one boss (the Supervisor).
+6. The boss spare-or-finish prompt and the two meters (human street cred, alien points); price and recruit hooks may follow.
 
 **Explicitly NOT in MVP** (defer to later):
 - Additional factions (Influencia, Liberty-7, MegaCorp) and regions.
@@ -276,7 +277,7 @@ A new player understands any fight's rules within one turn.
 
 | Tier | Content | Features | Timeline |
 | ---- | ---- | ---- | ---- |
-| **MVP** | Paris, Bureaucratia, 4 recruits, 1 boss | Core combat + combos + 1 choice | ~6 weeks |
+| **MVP** | Paris, Bureaucratia, 4 recruits, 1 boss | Core combat + combos + boss spare/finish prompt and two meters | ~6 weeks |
 | **Vertical Slice** | Paris polished, 6 recruits | + art pass, 1 loyalty quest, banter | +6 weeks |
 | **Alpha** | 4 regions / 4 factions, placeholder art | All features, rough | +3 months |
 | **Full Vision** | ~10 recruits, 2–3 endings, ~8–10 hrs | All features, polished | ~8–10 months total |

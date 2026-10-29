@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_a")
 id = "char_michelin_chef"
-display_name = "Michelin Chef"
+display_name = "Five-Star Chef"
 max_hp = 30
 max_mp = 14
 attack = 11

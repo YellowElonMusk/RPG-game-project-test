@@ -1,5 +1,5 @@
 ## The squad's four named Specials (design/game-brief.md MVP feature 2;
-## Story 003): Karen's *Speak to the Manager*, the Michelin Chef's *Family
+## Story 003): Karen's *Speak to the Manager*, the Five-Star Chef's *Family
 ## Meal* and *Appetizer*, Florida Man's *Viral Stunt*, and the Baguette
 ## Thrower's *Home Run*.
 ##
@@ -61,7 +61,7 @@ static func make_speak_to_the_manager() -> Move:
 			Move.SpecialEffect.STUN)
 
 
-## The Michelin Chef's *Family Meal*: heals every living squad member at once
+## The Five-Star Chef's *Family Meal*: heals every living squad member at once
 ## using F4 (Acceptance Criterion 3). Targets SELF (like Defend) since it has
 ## no single external target to pick.
 static func make_family_meal() -> Move:
@@ -69,7 +69,7 @@ static func make_family_meal() -> Move:
 			FAMILY_MEAL_POWER, Move.TargetType.SELF, Move.SpecialEffect.HEAL_PARTY)
 
 
-## The Michelin Chef's *Appetizer*: heals one chosen ally using F4
+## The Five-Star Chef's *Appetizer*: heals one chosen ally using F4
 ## (Acceptance Criterion 4) — Family Meal's single-target sibling.
 static func make_appetizer() -> Move:
 	return Move.new("Appetizer", Move.Category.SPECIAL, APPETIZER_MP_COST,

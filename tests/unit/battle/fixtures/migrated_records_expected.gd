@@ -157,6 +157,13 @@ const CHARACTER_IDS: PackedStringArray = [
 	"char_karen", "char_michelin_chef", "char_florida_man", "char_baguette_thrower",
 ]
 
+## char id -> a display_name renamed after migration, overriding the frozen
+## prototype name in `CharacterizationExpected` (narrative bible X-5, user
+## ruling 2026-10-29: "Michelin Chef" -> "Five-Star Chef").
+const RENAMED_DISPLAY_NAMES: Dictionary = {
+	"char_michelin_chef": "Five-Star Chef",
+}
+
 ## char id -> this character's starting move_ids (ADR-0001 Migration Step 4;
 ## Q1, approved: sourced from prototypes/battle-concept/battle.gd iteration 3,
 ## moved as-is). Stat blocks are the already-frozen `CharacterizationExpected.

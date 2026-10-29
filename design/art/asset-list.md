@@ -79,7 +79,7 @@ accusing pointing finger; phone held up like a weapon.
 > teal-grey and cream, oversized sunglasses pushed up on her head, posture
 > stiff with indignation.
 
-### 2.2 Michelin Chef — `char_michelin_chef`
+### 2.2 Five-Star Chef (formerly Michelin Chef) — `char_michelin_chef`
 **Prop / pose:** a towering chef's toque (taller than his head) and a giant
 ladle or plate held high.
 

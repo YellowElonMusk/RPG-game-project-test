@@ -2,7 +2,8 @@
 
 > **Status**: Draft
 > **Created**: 2026-10-13
-> **Last Updated**: 2026-10-21
+> **Last Updated**: 2026-10-29
+> **Revision (2026-10-29, narrative bible §10)**: Reputation scope changed from "one choice that wins or loses one recruit" to the post-alien-boss spare-or-finish prompt and two meters; audio GDD flagged as needed.
 > **Source Concept**: design/gdd/game-concept.md
 > **TD-SYSTEM-BOUNDARY**: skipped — lean mode · **PR-SCOPE**: skipped — lean mode · **CD-SYSTEMS**: skipped — lean mode
 
@@ -10,14 +11,14 @@
 
 ## Overview
 
-A satirical turn-based RPG: the player recruits a squad of mismatched "misfit" heroes and fights alien factions whose ideologies rewrite the rules of battle, while choices shift standing with human and alien factions. The mechanical scope is a classic Dragon Quest-style battle loop (Pillar 4, Readable in One Turn) extended with three bespoke layers: **quirk states** that characters apply to targets, **combos** that cash those states into named punchlines (Pillars 1 and 3), and **faction rule modifiers** that bend the battle rules per alien civilization (Pillars 1 and 2). Around it sit a small overworld, a camp for squad selection, recruitment and loyalty, and a light reputation system that selects recruits, dialogue and 2–3 endings. The 21 systems below are sized for a solo first-time developer: several are deliberately "lite" at MVP (Enemy AI uses scripted patterns, Reputation is one choice, Camp is a squad swap).
+A satirical turn-based RPG: the player recruits a squad of mismatched "misfit" heroes and fights alien factions whose ideologies rewrite the rules of battle, while choices shift standing with human and alien factions. The mechanical scope is a classic Dragon Quest-style battle loop (Pillar 4, Readable in One Turn) extended with three bespoke layers: **quirk states** that characters apply to targets, **combos** that cash those states into named punchlines (Pillars 1 and 3), and **faction rule modifiers** that bend the battle rules per alien civilization (Pillars 1 and 2). Around it sit a small overworld, a camp for squad selection, recruitment and loyalty, and a light reputation system, fed by a spare-or-finish choice after each alien boss, that changes prices, recruit likelihood, who hunts the squad and the 2–3 endings. The 21 systems below are sized for a solo first-time developer: several are deliberately "lite" at MVP (Enemy AI uses scripted patterns, Reputation is the boss prompt and two meters, Camp is a squad swap).
 
 **Per-system notes (what each is for):**
 - **Content Data Definitions** — characters, quirks, combos, enemies, factions and items as external data, not code; the bottleneck every other system reads.
 - **Turn Battle System** — turn order, command menus, targeting, win/lose, instant retry; defines the hook contract the rule systems plug into.
 - **Quirk State / Combo & Codex / Faction Rule Modifiers** — the game's identity; each one is a plug-in to Turn Battle through events.
 - **Squad Roster, Camp, Leveling & Loyalty** — the Mass Effect-style misfit squad: who joins, who fights, how they grow.
-- **Faction Reputation & Endings** — choices that change recruits and dialogue, not battle rules (anti-pillar: no Fallout-scale branching).
+- **Faction Reputation & Endings** — after each alien boss, finish him (human street cred) or let him go (alien points); no prompt after human bosses or ordinary fights. Reputation changes prices, recruit likelihood, who hunts you and the ending, never battle rules (anti-pillar: no Fallout-scale branching).
 - **UI Framework** — one set of UI specs covering battle UI, menus, HUD, dialogue UI and accessibility, built to the art bible's shape and color grammar.
 
 ---
@@ -77,7 +78,7 @@ A satirical turn-based RPG: the player recruits a squad of mismatched "misfit" h
 | **Alpha** | All features present in rough form. Complete mechanical scope, placeholder content OK. | Alpha milestone (4 regions / 4 factions) | Design THIRD |
 | **Full Vision** | Polish, edge cases, nice-to-haves, and content-complete features. | Beta / Release | Design as needed |
 
-**Scope note.** 16 MVP systems is heavy for a solo first-time developer's ~6-week MVP. Several are "lite" at MVP: Enemy AI (scripted patterns), Faction Reputation (one choice that wins or loses one recruit), Camp (squad swap only), UI Framework (battle UI first). If the MVP proves too large, cut in this order: Camp, Reputation, Enemy AI complexity.
+**Scope note.** 16 MVP systems is heavy for a solo first-time developer's ~6-week MVP. Several are "lite" at MVP: Enemy AI (scripted patterns), Faction Reputation (the boss spare-or-finish prompt and two meters; price and recruit hooks may follow), Camp (squad swap only), UI Framework (battle UI first). If the MVP proves too large, cut in this order: Camp, Reputation, Enemy AI complexity.
 
 **Alpha / Full Vision content (not new systems):** the rule sets for Influencia, MegaCorp and Liberty-7 reuse Faction Rule Modifiers; full multi-faction Reputation and Endings and the remaining accessibility options arrive at Alpha / Full Vision.
 
@@ -161,7 +162,7 @@ Effort: S = 1 session, M = 2–3 sessions, L = 4+ sessions (a session is one foc
 ## Circular Dependencies
 
 - **Turn Battle System ↔ Quirk State / Combo / Faction Rule Modifiers**: Battle needs the rules to run, and the rules run on Battle. *Resolution*: the Turn Battle GDD defines hook points (before turn, on damage, on state applied, on turn end); the rule systems plug into them through events, so Battle never depends on them.
-- **Squad Roster ↔ Faction Reputation**: Reputation can make the player lose a recruit, and a recruit's presence changes what Reputation offers. *Resolution*: Roster exposes join/leave events; Reputation drives them; Roster never depends on Reputation.
+- **Squad Roster ↔ Faction Reputation**: Reputation changes how likely a recruit is to join, and a recruit's presence changes what Reputation offers. *Resolution*: Roster exposes join/leave events; Reputation drives them; Roster never depends on Reputation.
 
 ---
 

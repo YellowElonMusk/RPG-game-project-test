@@ -293,7 +293,8 @@ func test_character_records_match_approved_source() -> void:
 
 		var squad: Dictionary = squads[id]
 		assert_str(character.display_name).override_failure_message(
-				"%s display_name" % id).is_equal(squad["name"])
+				"%s display_name" % id).is_equal(
+				MigratedRecordsExpected.RENAMED_DISPLAY_NAMES.get(id, squad["name"]))
 		assert_int(character.max_hp).override_failure_message("%s max_hp" % id).is_equal(squad["max_hp"])
 		assert_int(character.max_mp).override_failure_message("%s max_mp" % id).is_equal(squad["max_mp"])
 		assert_int(character.attack).override_failure_message("%s attack" % id).is_equal(squad["attack"])
