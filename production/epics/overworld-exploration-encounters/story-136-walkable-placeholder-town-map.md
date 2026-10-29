@@ -6,7 +6,7 @@
 > **Type**: Integration
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -80,9 +80,23 @@
 - `tests/integration/overworld/overworld_walkable_map_test.gd`, which must pass (BLOCKING).
 - Retained windowed screenshots in `production/qa/evidence/story-136-walkable-placeholder-town-map/`.
 
-**Status**: [ ] Not yet created
+**Status**: [x] `overworld_walkable_map_test.gd` 7/7 pass; full suite 682/682 (2026-10-29). The screenshots are retained in `production/qa/evidence/story-136-walkable-placeholder-town-map/`.
 
 ---
+
+## Completion Notes
+
+*Implemented 2026-10-29, awaiting /story-done.*
+
+- **Launch:** `godot --path . res://src/overworld/overworld_demo.tscn` (or F6 in the editor). Debug builds only. It runs the real GameRoot chain: content boot, `InputResolver`, `ModeHostSceneLoader` with `pre_setup`, the machine and `PresentationDirector`. A copied `TransitionConfig` points OVERWORLD at `overworld_mode.tscn`, and the demo requests Title -> Overworld automatically. `run/main_scene` and `ChapterMode` are unchanged. Move with the arrow keys.
+- **Screenshots (read back):**
+  - `01`: tan floor, wall boxes and the back wall. All four actors stand on the spawn cell, so only the top one (orange) shows.
+  - `02`: after real Right-key input, the red leader stands at the left face of a wall block (x = 15.7 = 16 - body_radius). Blue, green and orange trail to its left at even spacing, and the camera has panned right.
+- **Engine finding / deviation:** with the `overworld` profile's `key_rotation_deg`, the key light points away from the camera, and the sprites rendered solid black. `KeyLight` now sits under a `KeyRig` pivot yawed 180°, and the sprites are lit. Escalate to `godot-shader-specialist` (ADR-0005): which way does the card normal and profile convention face?
+- **Test note:** the headless viewport is 64x64, so the camera clamp is asserted through the formula and as a fixed point of `clamp_to_footprint`. It is not asserted as inside the map, because `clamp_or_centre` centres a footprint that is larger than the map.
+
+- **Files.** New: `src/overworld/overworld_mode.tscn`, `overworld_map.gd` (`OverworldMap`: bakes the walk layer, builds the set boxes from the grid), `overworld_view.gd` (`OverworldView`: follower trail, `FollowCamera`, sprite placement), `placeholder_actor_frames.gd`, `overworld_demo.gd` and `.tscn`, `data/maps/paris_town_placeholder.tscn` (a 24x16 `TileMapLayer` with a `walk` custom data layer), and `tests/integration/overworld/overworld_walkable_map_test.gd`. Changed: `overworld_mode.gd` gains `map_scene`, `map_parent`, `load_map()`, `get_walk_grid()` and `get_map()`, and `_process()` now passes the baked grid in place of `null`.
+- **Deviation.** Followers and the camera live in `OverworldView`, not in `OverworldMode._process()`. Stories 005 and 006 lock `_process()` to leader-only movement.
 
 ## Dependencies
 

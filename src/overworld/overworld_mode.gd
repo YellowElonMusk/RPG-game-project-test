@@ -31,7 +31,19 @@ const _DT_MAX_FALLBACK: float = 0.10
 ## exists for the Overworld.
 @export var config: OverworldConfig = OverworldConfig.new()
 
+## The map this mode loads in `_ready()` (story 136). Null leaves the mode
+## mapless: `GroundMover.step()` then runs with a null grid (no collision),
+## the pre-story-136 behaviour every unit test relies on.
+@export var map_scene: PackedScene
+## Where the instanced map is parented (the stage's set root). Falls back to
+## this node when unset.
+@export var map_parent: Node3D
+
 var _machine: GameStateMachine = null
+
+## The loaded map and its baked grid (ADR-0012 §2: baked once, at load).
+var _map: OverworldMap = null
+var _grid: WalkGrid = null
 
 ## TODO(ow-epic): moves to `WorldState.party_pos` once that type exists
 ## (ADR-0012 §4); story 001 only proves `GroundMover`'s formula end to end.
@@ -72,6 +84,38 @@ func setup(machine: GameStateMachine, _payload: RefCounted) -> void:
 	_machine = machine
 
 
+func _ready() -> void:
+	if map_scene != null and _map == null:
+		load_map(map_scene.instantiate() as OverworldMap)
+
+
+## Loads `map` (story 136; ADR-0012 §2): parents it under `map_parent` if it
+## has no parent yet, bakes its `WalkGrid` once, builds the set geometry,
+## places the leader on the map's spawn cell and re-anchors the follower
+## trail there.
+func load_map(map: OverworldMap) -> void:
+	if map == null:
+		push_error("OverworldMode: load_map() given a null or non-OverworldMap scene")
+		return
+	_map = map
+	if map.get_parent() == null:
+		(map_parent if map_parent != null else self).add_child(map)
+	_grid = map.bake_walk_grid(config)
+	map.build_set(_grid)
+	_leader_pos = map.spawn_position(_grid)
+	_follower_trail.reset(_leader_pos)
+
+
+## The baked walk grid, or null while no map is loaded.
+func get_walk_grid() -> WalkGrid:
+	return _grid
+
+
+## The loaded map, or null while no map is loaded.
+func get_map() -> OverworldMap:
+	return _map
+
+
 ## No discrete action is handled yet (routing lands in story 010+); always
 ## falls through so a later `handle_action` override is additive, not a
 ## rewrite. This call path never reads or writes `_leader_pos` -- AC-1c's own
@@ -93,7 +137,7 @@ func _process(delta: float) -> void:
 	var ow_dt: float = minf(delta, _DT_MAX_FALLBACK)
 	var input_vec: Vector2 = _machine.get_move_vector(self)
 	var result: GroundMover.MoveResult = GroundMover.step(
-			_leader_pos, input_vec, ow_dt, null, config, config.walk_speed, 0)
+			_leader_pos, input_vec, ow_dt, _grid, config, config.walk_speed, 0)
 	_leader_pos = result.position
 	_last_distance_moved = result.distance_moved
 

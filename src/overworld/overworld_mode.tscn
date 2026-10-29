@@ -1,0 +1,81 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://src/overworld/overworld_mode.gd" id="1_mode"]
+[ext_resource type="Script" path="res://src/presentation/diorama_stage.gd" id="2_stage"]
+[ext_resource type="Script" path="res://src/presentation/character_sprite.gd" id="3_sprite"]
+[ext_resource type="Shader" path="res://src/presentation/shaders/sprite_actor.gdshader" id="4_shader"]
+[ext_resource type="Script" path="res://src/overworld/overworld_view.gd" id="5_view"]
+[ext_resource type="PackedScene" path="res://data/maps/paris_town_placeholder.tscn" id="6_map"]
+
+[sub_resource type="Environment" id="Env_1"]
+background_mode = 1
+background_color = Color(0.42, 0.55, 0.72, 1)
+ambient_light_source = 2
+ambient_light_color = Color(1, 1, 1, 1)
+tonemap_mode = 0
+
+[sub_resource type="ShaderMaterial" id="Mat_leader"]
+shader = ExtResource("4_shader")
+
+[sub_resource type="ShaderMaterial" id="Mat_f1"]
+shader = ExtResource("4_shader")
+
+[sub_resource type="ShaderMaterial" id="Mat_f2"]
+shader = ExtResource("4_shader")
+
+[sub_resource type="ShaderMaterial" id="Mat_f3"]
+shader = ExtResource("4_shader")
+
+[node name="OverworldMode" type="Node" node_paths=PackedStringArray("map_parent")]
+script = ExtResource("1_mode")
+map_scene = ExtResource("6_map")
+map_parent = NodePath("DioramaStage/Set")
+
+[node name="DioramaStage" type="Node3D" parent="." node_paths=PackedStringArray("key_light", "set_light", "fill_light", "world_environment")]
+script = ExtResource("2_stage")
+profile_id = &"overworld"
+key_light = NodePath("KeyRig/KeyLight")
+set_light = NodePath("SetLight")
+fill_light = NodePath("FillLight")
+world_environment = NodePath("WorldEnvironment")
+
+[node name="KeyRig" type="Node3D" parent="DioramaStage"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
+
+[node name="KeyLight" type="DirectionalLight3D" parent="DioramaStage/KeyRig"]
+
+[node name="SetLight" type="DirectionalLight3D" parent="DioramaStage"]
+transform = Transform3D(1, 0, 0, 0, 0.5, 0.866025, 0, -0.866025, 0.5, 0, 0, 0)
+
+[node name="FillLight" type="DirectionalLight3D" parent="DioramaStage"]
+transform = Transform3D(1, 0, 0, 0, -0.5, 0.866025, 0, -0.866025, -0.5, 0, 0, 0)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="DioramaStage"]
+environment = SubResource("Env_1")
+
+[node name="Set" type="Node3D" parent="DioramaStage"]
+
+[node name="Actors" type="Node3D" parent="DioramaStage"]
+
+[node name="Leader" type="AnimatedSprite3D" parent="DioramaStage/Actors"]
+material_override = SubResource("Mat_leader")
+script = ExtResource("3_sprite")
+
+[node name="Follower1" type="AnimatedSprite3D" parent="DioramaStage/Actors"]
+material_override = SubResource("Mat_f1")
+script = ExtResource("3_sprite")
+
+[node name="Follower2" type="AnimatedSprite3D" parent="DioramaStage/Actors"]
+material_override = SubResource("Mat_f2")
+script = ExtResource("3_sprite")
+
+[node name="Follower3" type="AnimatedSprite3D" parent="DioramaStage/Actors"]
+material_override = SubResource("Mat_f3")
+script = ExtResource("3_sprite")
+
+[node name="OverworldView" type="Node" parent="." node_paths=PackedStringArray("mode", "stage", "leader_sprite", "follower_sprites")]
+script = ExtResource("5_view")
+mode = NodePath("..")
+stage = NodePath("../DioramaStage")
+leader_sprite = NodePath("../DioramaStage/Actors/Leader")
+follower_sprites = [NodePath("../DioramaStage/Actors/Follower1"), NodePath("../DioramaStage/Actors/Follower2"), NodePath("../DioramaStage/Actors/Follower3")]
