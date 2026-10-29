@@ -19,6 +19,10 @@ var checkpoint_id: StringName = &""
 var return_marker: Vector2 = Vector2.ZERO
 ## The leader's facing at `return_marker`.
 var return_facing: Vector2 = Vector2.ZERO
+## The bark the first touch plays, once ever (rule 13a); empty for none.
+var bark_line: String = ""
+## The automatic line on the reveal after Fled (rule 13a); empty for none.
+var fled_line: String = ""
 
 
 func _init(p_enc_id: String, p_brain: SymbolBrain, p_symbol_id: String = "") -> void:

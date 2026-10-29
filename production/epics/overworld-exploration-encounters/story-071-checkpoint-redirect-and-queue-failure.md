@@ -1,7 +1,7 @@
 # Story 071: Redirect and queue failures lock input, snap the party to the return marker and start grace
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-28b [L] (R10)** GIVEN an unmet requirement with `redirect` or `queue`, THEN after the line the state is Redirecting, input is locked, and the leader is placed at the return marker facing away. The camera and followers snap, and grace starts on `transition_finished`, when every Noticing or Chasing symbol switches to Returning (rule 7). Every other symbol's sub-state, position and timers equal their pre-redirect values, and no `mode_entered` fires (same-instance transition). `queue` uses no timed or held input.
+- [x] **AC-28b [L] (R10)** GIVEN an unmet requirement with `redirect` or `queue`, THEN after the line the state is Redirecting, input is locked, and the leader is placed at the return marker facing away. The camera and followers snap, and grace starts on `transition_finished`, when every Noticing or Chasing symbol switches to Returning (rule 7). Every other symbol's sub-state, position and timers equal their pre-redirect values, and no `mode_entered` fires (same-instance transition). `queue` uses no timed or held input.
 
 ---
 
@@ -76,7 +76,7 @@
 **Required evidence**:
 - `tests/unit/overworld/checkpoint_redirect_and_queue_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -84,3 +84,9 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-070-checkpoint-opens-on-met-requirement.md`, `production/epics/game-state-scene-flow/` (done; `request_in_mode_fade`)
 - Unlocks: `production/epics/overworld-exploration-encounters/story-072-checkpoint-encounter-outcome.md`
+
+## Completion Notes (2026-10-29)
+
+- The line plays through an **interim** Dialogue overlay (`src/game_state/overlays/interim_line_dialogue.gd`, registered for `OverlayKind.DIALOGUE`) until Dialogue, Banter & Quests (#17) is designed. It refuses `confirm` for `input_guard` (0.15 s) after opening (P2).
+- `CheckpointMarker.failure_line` holds the line as plain text until LocText exists; an empty one falls back to a default naming the requirement.
+- The camera snap is the view snapping on `OverworldMode.party_placed`.

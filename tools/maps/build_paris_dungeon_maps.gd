@@ -115,6 +115,8 @@ func _build_dungeon(tile_set: TileSet) -> OverworldMap:
 	counter.start_on = EncounterSymbol.StartOn.CONFIRM
 	counter.return_marker = Vector2(7.5, 16.0)
 	counter.checkpoint_id = &"cp_permit_boom"
+	counter.bark_line = "Take a number."
+	counter.fled_line = "Your number was called. You were absent. Please take a new number."
 	_place(map, counter, Vector2(7.5, 13.5))
 	return map
 

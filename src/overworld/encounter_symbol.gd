@@ -41,6 +41,11 @@ enum StartOn { CONTACT_OR_CONFIRM, CONFIRM }
 @export var return_marker: Vector2 = Vector2.ZERO
 ## The `CheckpointMarker` its Victory opens (the story encounter's boom).
 @export var checkpoint_id: StringName = &""
+## Static, `confirm`-started only: the bark the first touch plays, once ever
+## (rule 13a: "Take a number.").
+@export var bark_line: String = ""
+## Static only: the automatic line on the reveal after Fled (rule 13a).
+@export_multiline var fled_line: String = ""
 
 
 ## `true` when the marker names a record and has a patrol path.

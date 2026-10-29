@@ -1,7 +1,7 @@
 # Story 091: The Permit Counter notices nothing, barks once, and only `confirm` starts its fight
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: L
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-33d [L] (R13a)** The Permit Counter is Static and notices nothing. Contact with it starts nothing on any frame over 10 s of overlap, and the first contact plays the "Take a number." bark once; `confirm` at it starts its encounter, and the prompt shows the ticket icon. After Fled: it is not stunned or pushed, the leader is at its return marker in a `SAFE` cell when the wipe reveals, the "number called" line opens as an automatic Dialogue on `transition_finished` and a `confirm` held from the battle does not skip it (`input_guard`), the checkpoint stays closed, and no encounter starts until a new `confirm`. Victory opens the checkpoint and it never respawns. Its camp decree is inactive before the leader first has the Counter on screen and active after.
+- [x] **AC-33d [L] (R13a)** The Permit Counter is Static and notices nothing. Contact with it starts nothing on any frame over 10 s of overlap, and the first contact plays the "Take a number." bark once; `confirm` at it starts its encounter, and the prompt shows the ticket icon. After Fled: it is not stunned or pushed, the leader is at its return marker in a `SAFE` cell when the wipe reveals, the "number called" line opens as an automatic Dialogue on `transition_finished` and a `confirm` held from the battle does not skip it (`input_guard`), the checkpoint stays closed, and no encounter starts until a new `confirm`. Victory opens the checkpoint and it never respawns. Its camp decree is inactive before the leader first has the Counter on screen and active after.
 
 ---
 
@@ -78,7 +78,7 @@
 **Required evidence**:
 - `tests/unit/overworld/symbol_brain_static_story_encounter_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -86,3 +86,8 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-084-story-encounter-not-routable-around.md`, `production/epics/game-state-scene-flow/story-027-dialogue-closes-before-transition.md`
 - Unlocks: `production/epics/overworld-exploration-encounters/story-092-story-flag-order-after-battle.md`, `production/epics/overworld-exploration-encounters/story-097-state-table-transitions.md`, `production/epics/overworld-exploration-encounters/story-108-ui-screenshots-prompts-cards-and-prompts.md`
+
+## Completion Notes (2026-10-29)
+
+- **Deviation:** the camp decree gag marker does not exist yet (gags are stories 016/122). The first-sight trigger is built: the first frame the Counter is within the camera visibility edge sets `seen:<symbol_id>` (`OverworldMode.is_first_seen()`), which the decree will read.
+- The ticket prompt and the bark window are placeholder labels in `OverworldView` (stories 015 and 130 own the real widgets). Evidence: `production/qa/evidence/story-091-permit-counter/`.

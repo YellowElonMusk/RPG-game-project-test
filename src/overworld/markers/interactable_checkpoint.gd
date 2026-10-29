@@ -39,6 +39,9 @@ enum FailureOutcome { REDIRECT, QUEUE, ENCOUNTER }
 @export var return_marker: Vector2 = Vector2.ZERO
 ## Leader facing at the return marker: away from the checkpoint.
 @export var return_facing: Vector2 = Vector2.DOWN
+## The `redirect` or `queue` line spoken before the redirect (rule 10:
+## "No Form 27-B? Back of the queue."). Plain text until LocText exists.
+@export_multiline var failure_line: String = ""
 
 
 ## Ground position (`x`, `z`) relative to `map_root`: the probe target.

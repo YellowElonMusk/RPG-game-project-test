@@ -44,7 +44,7 @@ signal map_exit_requested(exit_id: StringName)
 
 ## The GDD States table rows this mode implements so far. EncounterStarting
 ## is transient inside `start_encounter()`.
-enum State { EXPLORING, FROZEN }
+enum State { EXPLORING, FROZEN, REDIRECTING }
 
 ## GDD Formulas swept contact: below this `|b|^2` the bodies did not move
 ## relative to each other (a formula constant, not a tuning knob).
@@ -100,6 +100,23 @@ var _grace_left: float = 0.0
 var _overlays_open: int = 0
 var _transitioning: bool = false
 var _camp_prompt_open: bool = false
+## Runs on the same frame as the open line's `overlay_closed` (`say()`).
+var _after_line: Callable = Callable()
+## A line to open automatically on the next reveal (rule 13a Fled).
+var _line_on_reveal: String = ""
+## Flags kept for the visit when there is no `world_state` (tests).
+var _flags_this_visit: Dictionary = {}
+## Every line opened through `say()`, in order (tests read it).
+var lines_said: Array[String] = []
+## The follow camera's settings, for the first-sight check (rule 13a); the
+## view assigns its own on start.
+var presentation: PresentationConfig = PresentationConfig.new()
+
+## The leader was placed outside walking (map entry, teleport, redirect,
+## thaw): followers re-formed and the camera snaps (GDD rule 2, rule 10).
+signal party_placed(at: Vector2)
+## A `confirm`-started Static symbol barked on first touch (rule 13a).
+signal barked(text: String, at: Vector2)
 ## The CampSpot the open prompt belongs to.
 var _camp_prompt_camp: CampSpot = null
 ## The CampSpot whose safe zone the leader stood in last frame.
@@ -276,6 +293,8 @@ func _place_symbols(map: OverworldMap) -> void:
 			source.checkpoint_id = marker.checkpoint_id
 			source.return_marker = marker.return_marker
 			source.return_facing = (marker.return_marker - marker.patrol_path[0]).normalized()
+			source.bark_line = marker.bark_line
+			source.fled_line = marker.fled_line
 
 
 ## The baked walk grid, or null while no map is loaded.
@@ -337,6 +356,7 @@ func step_frame(ow_dt: float, input_vec: Vector2) -> void:
 	if _check_exits(leader_from, _leader_pos):
 		return
 	_check_camp_registration()
+	_check_barks_and_sight()
 	if _budget == null:
 		_budget = QueryBudget.new(config.repath_per_frame_max)
 	_budget.begin_frame()
@@ -407,7 +427,11 @@ func redirect_leader(pos: Vector2, facing: Vector2 = Vector2.ZERO) -> GameStateM
 	if _machine == null:
 		push_error("OverworldMode: redirect_leader() with no GameStateMachine")
 		return GameStateMachine.RequestResult.REJECTED_INVALID_PAYLOAD
-	return _machine.request_in_mode_fade(teleport_leader.bind(pos, facing))
+	var result: GameStateMachine.RequestResult = _machine.request_in_mode_fade(
+			teleport_leader.bind(pos, facing))
+	if result == GameStateMachine.RequestResult.OK:
+		_state = State.REDIRECTING
+	return result
 
 
 ## The one routine every position reset outside walking funnels into (story
@@ -420,6 +444,7 @@ func redirect_leader(pos: Vector2, facing: Vector2 = Vector2.ZERO) -> GameStateM
 func _reform_followers() -> void:
 	_follower_trail.snap(_leader_pos, _leader_facing, config.max_followers, config, _grid)
 	_follower_positions = _follower_trail.step(_leader_pos, config.max_followers, config)
+	party_placed.emit(_leader_pos)
 
 
 ## The registered encounter sources (symbol + record id), in marker order
@@ -620,6 +645,7 @@ func on_thawed(encounter_id: String, result: GameStateMachine.BattleResult) -> v
 				_leader_pos = source.return_marker
 				if not source.return_facing.is_zero_approx():
 					_leader_facing = source.return_facing.normalized()
+				_line_on_reveal = source.fled_line
 	_reform_followers()
 
 
@@ -642,8 +668,14 @@ func _on_overlay_opened(_kind: GameStateMachine.OverlayKind) -> void:
 	_overlays_open += 1
 
 
-func _on_overlay_closed(_kind: GameStateMachine.OverlayKind) -> void:
+func _on_overlay_closed(kind: GameStateMachine.OverlayKind) -> void:
 	_overlays_open = maxi(0, _overlays_open - 1)
+	# ADR-0012 §6: a checkpoint's redirect follows its line on the same frame
+	# as `overlay_closed`.
+	if kind == GameStateMachine.OverlayKind.DIALOGUE and _after_line.is_valid():
+		var then: Callable = _after_line
+		_after_line = Callable()
+		then.call()
 
 
 ## ADR-0012 §5 step 2, `transition_finished` once the scene is revealed:
@@ -661,6 +693,12 @@ func _on_transition_finished(to: GameStateMachine.Mode) -> void:
 	grace_starts += 1
 	for source: EncounterSource in _sources:
 		source.brain.on_grace_started()
+	# Rule 13a: after Fled from the story encounter, its line opens as an
+	# automatic Dialogue on the reveal, guarded against a held confirm.
+	if not _line_on_reveal.is_empty():
+		var line: String = _line_on_reveal
+		_line_on_reveal = ""
+		say(line)
 
 
 ## This frame's `distance_moved` from the last `_process()` step, so a test
@@ -789,8 +827,10 @@ func confirm_checkpoint(marker_id: StringName) -> void:
 		CheckpointMarker.FailureOutcome.ENCOUNTER:
 			start_encounter(cp.linked_encounter_id, checkpoint_source(cp, _map))
 		_:
-			# TODO(overworld): story 071, the redirect/queue Dialogue line first.
-			redirect_leader(cp.return_marker, cp.return_facing)
+			# Story 071: the line, then on the same frame as its close the
+			# input-locked redirect to the return marker. `queue` differs only
+			# in its line; neither waits on a timed or held input.
+			say(_failure_line(cp), redirect_leader.bind(cp.return_marker, cp.return_facing))
 
 
 ## The encounter source a checkpoint's `encounter` outcome fights from: a
@@ -941,3 +981,84 @@ func _check_camp_registration() -> void:
 	if inside != null and inside != _camp_zone:
 		_machine.register_camp(inside.camp_id)
 	_camp_zone = inside
+
+
+# -- Lines, barks and first sight (stories 071, 091) -------------------------
+
+## Opens `text` as a Dialogue line (the interim line overlay until the
+## Dialogue system exists). `then` runs on the same frame as the line's
+## `overlay_closed` (ADR-0012 §6). Returns Game State's result; on a
+## rejection `then` is dropped.
+func say(text: String, then: Callable = Callable()) -> GameStateMachine.RequestResult:
+	if _machine == null:
+		return GameStateMachine.RequestResult.REJECTED_INVALID_PAYLOAD
+	var result: GameStateMachine.RequestResult = _machine.open_overlay(
+			GameStateMachine.OverlayKind.DIALOGUE, DialogueLinePayload.new(text))
+	if result == GameStateMachine.RequestResult.OK:
+		_after_line = then
+		lines_said.append(text)
+	return result
+
+
+## The checkpoint's authored failure line, or a plain default that names the
+## missing requirement (rule 10).
+func _failure_line(cp: CheckpointMarker) -> String:
+	if not cp.failure_line.is_empty():
+		return cp.failure_line
+	var missing: String = cp.requirement_flag if not cp.requirement_flag.is_empty() else cp.requirement_item_id
+	if cp.failure_outcome == CheckpointMarker.FailureOutcome.QUEUE:
+		return "Please take a number and wait to be called. (%s)" % missing
+	return "No %s? Back of the queue." % missing
+
+
+## Rule 13a, each frame in Exploring. A `confirm`-started Static symbol
+## barks its `bark_line` the first time the leader touches it, once ever;
+## and the first frame it is on screen (within the camera's visibility edge
+## in its direction) sets its first-sight flag, which activates its camp
+## decree (`is_first_seen()`).
+func _check_barks_and_sight() -> void:
+	var reach: float = 2.0 * config.body_radius
+	for source: EncounterSource in _sources:
+		if not source.brain.is_static() or source.brain.contact_eligible():
+			continue
+		var offset: Vector2 = source.brain.position - _leader_pos
+		if not source.bark_line.is_empty() and offset.length() <= reach \
+				and not _has_flag("barked:" + source.symbol_id):
+			_set_flag("barked:" + source.symbol_id)
+			barked.emit(source.bark_line, source.brain.position)
+		if not _has_flag("seen:" + source.symbol_id) and offset.length() \
+				<= ChaseVisibility.edge_reach(offset, presentation, config.walk_speed):
+			_set_flag("seen:" + source.symbol_id)
+
+
+## `true` once `symbol_id` has been on screen (rule 13a first sight; its
+## camp decree is active from then on). TODO(overworld): the decree gag
+## marker itself (stories 016/122).
+func is_first_seen(symbol_id: String) -> bool:
+	return _has_flag("seen:" + symbol_id)
+
+
+func _has_flag(flag: String) -> bool:
+	return world_state.has_flag(flag) if world_state != null else _flags_this_visit.has(flag)
+
+
+func _set_flag(flag: String) -> void:
+	if world_state != null:
+		world_state.set_flag(flag)
+	else:
+		_flags_this_visit[flag] = true
+
+
+## What the interact prompt shows over `probe()`'s target (GDD UI
+## Requirements kind icons): `&"rest"` for a CampSpot, `&"ticket"` for a
+## `confirm`-started Static symbol (the story encounter), `&"fight"` for
+## the boss, `&"check"` for a checkpoint, `&""` for nothing in reach.
+func probe_kind() -> StringName:
+	var target: Object = probe()
+	if target is CampSpot:
+		return &"rest"
+	if target is EncounterSource:
+		return &"fight" if (target as EncounterSource).brain.contact_eligible() else &"ticket"
+	if target is CheckpointMarker:
+		return &"check"
+	return &""

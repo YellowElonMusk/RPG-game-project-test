@@ -47,6 +47,19 @@ var _last_aspect: float = 0.0
 var _symbol_sprites: Dictionary = {}
 ## The placeholder camp prompt (`_build_prompt()`).
 var _prompt_label: Label = null
+## Interact prompt text per `OverworldMode.probe_kind()` (placeholder for
+## the kind icons, story 015).
+const INTERACT_TEXT: Dictionary = {
+	&"rest": "[Confirm] Rest",
+	&"ticket": "[Confirm] Take a ticket",
+	&"fight": "[Confirm] Challenge",
+	&"check": "[Confirm] Check",
+}
+## How long a bark stays up, in seconds (placeholder for `text_hold`).
+@export var bark_hold_s: float = 2.5
+var _interact_label: Label = null
+var _bark_label: Label = null
+var _bark_left: float = 0.0
 
 
 func _init() -> void:
@@ -76,6 +89,9 @@ func _ready() -> void:
 
 func _start() -> void:
 	set_process(true)
+	mode.presentation = presentation_config
+	mode.party_placed.connect(_on_party_placed)
+	mode.barked.connect(_on_barked)
 	_camera = FollowCamera.from_config(presentation_config)
 	_camera.name = "FollowCamera"
 	stage.add_child(_camera)
@@ -117,6 +133,7 @@ func _present(delta: float) -> void:
 			_camera.height, _camera.pitch_degrees, _camera.fov_degrees, aspect))
 
 	_update_prompt()
+	_update_interact_prompt(delta)
 	_place(leader_sprite, mode.get_leader_position())
 	var followers: Array[Vector2] = mode.get_follower_positions()
 	for i: int in mini(followers.size(), follower_sprites.size()):
@@ -184,6 +201,7 @@ func _build_prompt() -> void:
 	_prompt_label.add_theme_font_size_override(&"font_size", 28)
 	_prompt_label.visible = false
 	layer.add_child(_prompt_label)
+	_build_hud_labels(layer)
 
 
 func _update_prompt() -> void:
@@ -199,3 +217,65 @@ func _update_prompt() -> void:
 ## The camp prompt label (tests).
 func get_prompt_label() -> Label:
 	return _prompt_label
+
+
+## GDD rule 10 / 13a: a redirect, teleport or thaw snaps the camera to the
+## leader under the fade (no smoothing frames, sprite-camera AC-27).
+func _on_party_placed(at: Vector2) -> void:
+	if _camera != null:
+		_camera.snap_to(at)
+
+
+## Placeholder bark window (rule 13a "Take a number."): the line above the
+## speaker for `bark_hold_s`. The real window and `text_hold()` are story
+## 130's.
+func _on_barked(text: String, _at: Vector2) -> void:
+	if _bark_label == null:
+		return
+	_bark_label.text = text
+	_bark_label.visible = true
+	_bark_left = bark_hold_s
+
+
+## Placeholder interact prompt (GDD rule 3, UI Requirements): the kind of
+## what `confirm` would act on, drawn while something is in reach. Story
+## 015 replaces it with the icon prompt over the target.
+func _update_interact_prompt(delta: float) -> void:
+	if _bark_label != null and _bark_left > 0.0:
+		_bark_left = maxf(0.0, _bark_left - delta)
+		_bark_label.visible = _bark_left > 0.0
+	if _interact_label == null:
+		return
+	var kind: StringName = mode.probe_kind() if mode.is_exploring() else &""
+	_interact_label.visible = kind != &""
+	_interact_label.text = String(INTERACT_TEXT.get(kind, ""))
+
+
+func _build_hud_labels(layer: CanvasLayer) -> void:
+	_interact_label = Label.new()
+	_interact_label.name = "InteractPrompt"
+	_interact_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_interact_label.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	_interact_label.position = Vector2(-160.0, -64.0)
+	_interact_label.size = Vector2(320.0, 40.0)
+	_interact_label.add_theme_font_size_override(&"font_size", 22)
+	_interact_label.visible = false
+	layer.add_child(_interact_label)
+	_bark_label = Label.new()
+	_bark_label.name = "Bark"
+	_bark_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_bark_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_bark_label.position = Vector2(-220.0, 40.0)
+	_bark_label.size = Vector2(440.0, 48.0)
+	_bark_label.add_theme_font_size_override(&"font_size", 26)
+	_bark_label.visible = false
+	layer.add_child(_bark_label)
+
+
+## The interact prompt and bark labels (tests).
+func get_interact_label() -> Label:
+	return _interact_label
+
+
+func get_bark_label() -> Label:
+	return _bark_label

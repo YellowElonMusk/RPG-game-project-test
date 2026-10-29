@@ -196,6 +196,13 @@ func current_mode_node() -> Node:
 	return _loader.current_mode_node()
 
 
+## The top overlay's node, or null (tests drive an open Dialogue line).
+func current_overlay_node() -> Node:
+	if _loader == null:
+		return null
+	return _loader.current_overlay_node()
+
+
 ## `--data-root=<path>` overrides the default `res://data` (QA fix, Check 5).
 ## Pure: reads only the given `args`, never `OS` directly, so a test can call
 ## it with a literal array.
