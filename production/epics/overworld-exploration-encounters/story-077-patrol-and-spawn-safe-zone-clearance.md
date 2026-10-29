@@ -1,7 +1,7 @@
 # Story 077: No spawn point or patrol segment crowds a safe zone or a return marker
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-30c [D] (R12)** No spawn point or patrol segment (closing segment included) lies within `safe_radius_m` of any EntryPoint or CampSpot (segment-to-point) or MapExit trigger rectangle (segment-to-rectangle), or within `symbol_chase_m + body_radius` of any return marker.
+- [x] **AC-30c [D] (R12)** No spawn point or patrol segment (closing segment included) lies within `safe_radius_m` of any EntryPoint or CampSpot (segment-to-point) or MapExit trigger rectangle (segment-to-rectangle), or within `symbol_chase_m + body_radius` of any return marker.
 
 ---
 
@@ -74,7 +74,7 @@
 **Required evidence**:
 - `tests/unit/overworld/data/patrol_and_spawn_safe_zone_clearance_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 

@@ -186,7 +186,8 @@ func test_permit_counter_confirm_fight_and_victory_open_the_boom() -> void:
 	assert_bool(dungeon.get_walk_grid().is_walkable(boom_cell)).is_true()
 	assert_bool(root.world_state.is_checkpoint_open("map_paris_dungeon_placeholder", &"cp_permit_boom")).is_true()
 	assert_bool(root.world_state.is_resolved("map_paris_dungeon_placeholder", "sym_paris_permit_counter")).is_true()
-	assert_int(dungeon.get_encounter_sources().size()).is_equal(0)
+	for source: EncounterSource in dungeon.get_encounter_sources():
+		assert_str(source.symbol_id).is_not_equal("sym_paris_permit_counter")
 
 
 func _assert_party_at_entry(ow: OverworldMode, entry: EntryPoint) -> void:

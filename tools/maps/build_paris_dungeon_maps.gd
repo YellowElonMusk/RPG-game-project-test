@@ -118,7 +118,24 @@ func _build_dungeon(tile_set: TileSet) -> OverworldMap:
 	counter.bark_line = "Take a number."
 	counter.fled_line = "Your number was called. You were absent. Please take a new number."
 	_place(map, counter, Vector2(7.5, 13.5))
+	# Denser symbols than the segment (GDD rule 11): a Clerk pacing the first
+	# room's far side, clear of the camp, the entry and the return marker,
+	# and one across the hall beyond the boom (story 077 clearance).
+	_patrol(map, "SymbolClerksFirstRoom", "enc_paris_clerks_east", "sym_dungeon_clerks_first_room",
+			PackedVector2Array([Vector2(13.5, 13.5), Vector2(13.5, 16.5)]))
+	_patrol(map, "SymbolClerksHall", "enc_paris_clerks_west", "sym_dungeon_clerks_hall",
+			PackedVector2Array([Vector2(2.5, 9.5), Vector2(13.5, 9.5)]))
 	return map
+
+
+func _patrol(map: OverworldMap, node_name: String, enc_id: String, symbol_id: String,
+		path: PackedVector2Array) -> void:
+	var sym := EncounterSymbol.new()
+	sym.name = node_name
+	sym.encounter_id = enc_id
+	sym.symbol_id = symbol_id
+	sym.patrol_path = path
+	_place(map, sym, path[0])
 
 
 func _build_boss_chamber(tile_set: TileSet) -> OverworldMap:

@@ -45,6 +45,8 @@ static func validate(maps: Dictionary, cfg: OverworldConfig,
 		errors.append("region default camp: expected exactly 1 CampSpot with is_region_default, found %d %s"
 				% [defaults.size(), defaults])
 	for map_id: String in maps:
+		_check_patrol_clearance(maps[map_id], cfg, errors)
+	for map_id: String in maps:
 		var map: OverworldMap = maps[map_id]
 		var grid: WalkGrid = null
 		for sym: EncounterSymbol in map.symbol_markers():
@@ -139,6 +141,75 @@ static func _check_boss(map: OverworldMap, grid: WalkGrid, sym: EncounterSymbol,
 		if d < min_d:
 			errors.append("%s is %.2f m from a safe-zone source at %s (< %.2f)"
 					% [tag, d, (source["rect"] as Rect2).position, min_d])
+
+
+## Story 077, AC-30c (GDD rule 12 "Safe zones"): no spawn point or patrol
+## segment of a patrolling symbol (a `loop` path's closing segment
+## included) comes within `safe_radius_m` of an EntryPoint or CampSpot
+## (segment to point) or a MapExit rectangle (segment to rectangle), or
+## within `symbol_chase_m + body_radius` of a return marker. Static symbols
+## are placed by rules 13 and 13a instead.
+static func _check_patrol_clearance(map: OverworldMap, cfg: OverworldConfig,
+		errors: PackedStringArray) -> void:
+	var points: Array = []  # [label, point, margin]
+	var rects: Array = []   # [label, rect, margin]
+	for entry: EntryPoint in map.entry_points():
+		points.append(["EntryPoint '%s'" % entry.marker_id, entry.ground_position(map), cfg.safe_radius_m])
+	for camp: CampSpot in map.camp_spots():
+		points.append(["CampSpot '%s'" % camp.marker_id, camp.ground_position(map), cfg.safe_radius_m])
+	for exit: MapExit in map.map_exits():
+		rects.append(["MapExit '%s'" % exit.marker_id, exit.trigger_rect, cfg.safe_radius_m])
+	var return_margin: float = cfg.symbol_chase_m + cfg.body_radius
+	for cp: CheckpointMarker in map.checkpoints():
+		points.append(["return marker of '%s'" % cp.marker_id, cp.return_marker, return_margin])
+	for sym: EncounterSymbol in map.symbol_markers():
+		if sym.is_static and sym.return_marker != Vector2.ZERO:
+			points.append(["return marker of '%s'" % _sym_id(sym), sym.return_marker, return_margin])
+	for sym: EncounterSymbol in map.symbol_markers():
+		if sym.is_static or sym.patrol_path.is_empty():
+			continue
+		var path: PackedVector2Array = sym.patrol_path
+		var segments: Array = []
+		if path.size() == 1:
+			segments.append([path[0], path[0], "spawn point"])
+		for i in path.size() - 1:
+			segments.append([path[i], path[i + 1], "segment %d" % i])
+		if path.size() > 2 and sym.path_mode == SymbolBrain.PathMode.LOOP:
+			segments.append([path[path.size() - 1], path[0], "closing segment"])
+		for seg: Array in segments:
+			for p: Array in points:
+				var d: float = segment_point_distance(seg[0], seg[1], p[1])
+				if d < float(p[2]):
+					errors.append("%s: symbol '%s' %s is %.2f m from %s (< %.2f)"
+							% [map.map_id, _sym_id(sym), seg[2], d, p[0], p[2]])
+			for r: Array in rects:
+				var d: float = segment_rect_distance(seg[0], seg[1], r[1])
+				if d < float(r[2]):
+					errors.append("%s: symbol '%s' %s is %.2f m from %s (< %.2f)"
+							% [map.map_id, _sym_id(sym), seg[2], d, r[0], r[2]])
+
+
+## Distance from point `p` to segment `a`-`b`.
+static func segment_point_distance(a: Vector2, b: Vector2, p: Vector2) -> float:
+	return p.distance_to(Geometry2D.get_closest_point_to_segment(p, a, b))
+
+
+## Distance from segment `a`-`b` to `rect` (0 when they touch or cross).
+static func segment_rect_distance(a: Vector2, b: Vector2, rect: Rect2) -> float:
+	if rect.has_point(a) or rect.has_point(b):
+		return 0.0
+	var corners: Array[Vector2] = [rect.position, Vector2(rect.end.x, rect.position.y),
+			rect.end, Vector2(rect.position.x, rect.end.y)]
+	var best: float = INF
+	for i in 4:
+		var c: Vector2 = corners[i]
+		var n: Vector2 = corners[(i + 1) % 4]
+		if Geometry2D.segment_intersects_segment(a, b, c, n) != null:
+			return 0.0
+		best = minf(best, segment_point_distance(a, b, c))
+	best = minf(best, WalkGrid.rect_distance(Rect2(a, Vector2.ZERO), rect))
+	best = minf(best, WalkGrid.rect_distance(Rect2(b, Vector2.ZERO), rect))
+	return best
 
 
 ## Walk-grid distances in metres from `starts` (each at 0) to every
