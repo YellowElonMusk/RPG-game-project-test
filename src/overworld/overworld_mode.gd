@@ -86,6 +86,10 @@ var _state: State = State.EXPLORING
 var _sources: Array[EncounterSource] = []
 var _exit_ids: Array[StringName] = []
 var _exit_rects: Array[Rect2] = []
+# Story 138: per exit, its map-change target (null for a test-only exit).
+var _exit_targets: Array[MapEntryPayload] = []
+# Story 138: the entry payload this instance was set up with, or null.
+var _entry_payload: MapEntryPayload = null
 var _budget: QueryBudget = null
 
 var _machine: GameStateMachine = null
@@ -139,8 +143,10 @@ func _init() -> void:
 	process_priority = -10
 
 
-func setup(machine: GameStateMachine, _payload: RefCounted) -> void:
+func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 	_machine = machine
+	if payload is MapEntryPayload:
+		_entry_payload = payload as MapEntryPayload
 	if machine == null:
 		return
 	_transitioning = machine.phase != GameStateMachine.Phase.IDLE
@@ -151,16 +157,30 @@ func setup(machine: GameStateMachine, _payload: RefCounted) -> void:
 		machine.overlay_closed.connect(_on_overlay_closed)
 
 
+## Story 138: a `MapEntryPayload` loads its map by the scene-path
+## convention and places the party at its EntryPoint; otherwise (New Game)
+## the exported `map_scene` at its spawn cell.
 func _ready() -> void:
-	if map_scene != null and _map == null:
+	if _map != null:
+		return
+	if _entry_payload != null:
+		var path: String = OverworldMap.scene_path(_entry_payload.map_id, config.map_scene_dir)
+		var scene: PackedScene = ResourceLoader.load(path) as PackedScene if ResourceLoader.exists(path) else null
+		if scene == null:
+			push_error("OverworldMode: no map scene at %s" % path)
+			return
+		load_map(scene.instantiate() as OverworldMap, _entry_payload.entry_marker_id)
+	elif map_scene != null:
 		load_map(map_scene.instantiate() as OverworldMap)
 
 
 ## Loads `map` (story 136; ADR-0012 §2): parents it under `map_parent` if it
 ## has no parent yet, bakes its `WalkGrid` once, builds the set geometry,
 ## places the leader on the map's spawn cell and re-anchors the follower
-## trail there.
-func load_map(map: OverworldMap) -> void:
+## trail there. Story 138: with `entry_marker_id`, the leader starts at that
+## EntryPoint facing its `facing`, followers snap into formation behind it
+## (story 007's rule), and the map's `MapExit` markers are registered.
+func load_map(map: OverworldMap, entry_marker_id: StringName = &"") -> void:
 	if map == null:
 		push_error("OverworldMode: load_map() given a null or non-OverworldMap scene")
 		return
@@ -170,7 +190,19 @@ func load_map(map: OverworldMap) -> void:
 	_grid = map.bake_walk_grid(config)
 	map.build_set(_grid)
 	_leader_pos = map.spawn_position(_grid)
-	_follower_trail.reset(_leader_pos)
+	var entry: EntryPoint = map.find_entry_point(entry_marker_id) \
+			if entry_marker_id != &"" else null
+	if entry_marker_id != &"" and entry == null:
+		push_error("OverworldMode: %s has no EntryPoint '%s'" % [map.map_id, entry_marker_id])
+	if entry != null:
+		_leader_pos = entry.ground_position(map)
+		if not entry.facing.is_zero_approx():
+			_leader_facing = entry.facing.normalized()
+	_follower_trail.snap(_leader_pos, _leader_facing, config.max_followers, config, _grid)
+	_follower_positions = _follower_trail.step(_leader_pos, config.max_followers, config)
+	for exit: MapExit in map.map_exits():
+		add_map_exit(exit.marker_id, exit.trigger_rect,
+				MapEntryPayload.new(exit.target_map_id, exit.target_entry_id))
 	if world_state != null and world_state.map_id != map.map_id:
 		world_state.on_map_entered(map.map_id, WorldState.EntryKind.MAP_ENTRY)
 	_place_symbols(map)
@@ -277,9 +309,10 @@ func add_symbol(enc_id: String, brain: SymbolBrain, symbol_id: String = "") -> E
 
 ## Registers a `MapExit` rectangle in ground metres. Crossing into it (enter
 ## edge only) requests the exit via `map_exit_requested`.
-func add_map_exit(exit_id: StringName, rect: Rect2) -> void:
+func add_map_exit(exit_id: StringName, rect: Rect2, target: MapEntryPayload = null) -> void:
 	_exit_ids.append(exit_id)
 	_exit_rects.append(rect)
+	_exit_targets.append(target)
 
 
 ## Injects a baked walk grid without a map scene (tests, ADR-0012 §2).
@@ -380,10 +413,23 @@ func _check_exits(from: Vector2, to: Vector2) -> bool:
 	for i in _exit_rects.size():
 		if not _exit_rects[i].has_point(from) and _exit_rects[i].has_point(to):
 			exit_requests += 1
-			# TODO(overworld): MapChanging + the map-change request (map stories).
 			map_exit_requested.emit(_exit_ids[i])
+			_request_map_change(_exit_targets[i])
 			return true
 	return false
+
+
+## Story 138 (ADR-0012 §4): asks Game State for the `OVERWORLD -> OVERWORLD`
+## fresh-instance map change. A rejected request leaves the leader in the
+## rectangle; it fires again only after leaving and re-entering (story 081).
+func _request_map_change(target: MapEntryPayload) -> void:
+	if target == null or _machine == null:
+		return
+	var result: GameStateMachine.RequestResult = _machine.request_transition(
+			GameStateMachine.Mode.OVERWORLD,
+			MapEntryPayload.new(target.map_id, target.entry_marker_id))
+	if result != GameStateMachine.RequestResult.OK:
+		rejections_logged += 1
 
 
 ## GDD rule 5 Contact + Edge Cases: among eligible symbols whose swept

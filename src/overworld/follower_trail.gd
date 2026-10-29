@@ -56,6 +56,32 @@ func reset(leader_pos: Vector2) -> void:
 	_initialized = true
 
 
+## Map-entry snap (story 007's rule, GDD rule 2 + Edge Cases; story 138):
+## clears the trail and fills it with points behind `leader_pos`, opposite
+## `facing`, every `trail_sample_m`, far enough for `n_followers` at
+## `follower_spacing_m`. The backward walk stops at the first point whose
+## cell `grid` reports non-walkable, so the remaining followers share the
+## last walkable point. A null `grid` or zero `facing` snaps everyone onto
+## the leader.
+func snap(leader_pos: Vector2, facing: Vector2, n_followers: int,
+		cfg: OverworldConfig, grid: WalkGrid) -> void:
+	reset(leader_pos)
+	if grid == null or facing.is_zero_approx() or n_followers <= 0:
+		return
+	var back: Vector2 = -facing.normalized()
+	var reach_m: float = float(n_followers) * cfg.follower_spacing_m
+	var behind: Array[Vector2] = []  # nearest first
+	var d: float = cfg.trail_sample_m
+	while d <= reach_m + cfg.trail_sample_m + _EPSILON:
+		var p: Vector2 = leader_pos + back * d
+		if not grid.is_walkable(grid.cell_of(p)):
+			break
+		behind.append(p)
+		d += cfg.trail_sample_m
+	behind.reverse()  # oldest first, as `_append_samples` stores them
+	_points = behind
+
+
 ## Advances the trail by the leader's move since the last call
 ## (`_prev_pos` -> `leader_pos`) and returns `n_followers` positions,
 ## nearest follower first: index `i` is at arc length `(i + 1) *

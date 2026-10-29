@@ -8,8 +8,9 @@
 ## minimum used cell of `walk_layer` (`WalkGrid.bake()`), and the ground
 ## origin is that cell's corner, so the map spans `[0, size * cell_m]`.
 ##
-## TODO(ow-epic): `map_` records, entry points and exits are story 055/073+'s
-## scope; this map carries only what the walkable placeholder needs.
+## Story 138: `MapExit` and `EntryPoint` children, and the scene-path
+## convention `scene_path()`. TODO(ow-epic): stages and the remaining
+## marker kinds (stories 055, 070+).
 class_name OverworldMap
 extends Node3D
 
@@ -29,6 +30,8 @@ extends Node3D
 ## Floor and wall albedo for the placeholder set geometry.
 @export var floor_color: Color = Color(0.62, 0.58, 0.5)
 @export var wall_color: Color = Color(0.78, 0.7, 0.55)
+## Placeholder tint of a MapExit rectangle's floor patch (story 138).
+@export var exit_color: Color = Color(0.35, 0.6, 0.85)
 
 
 ## Bakes this map's `WalkGrid` from `walk_layer` (the only read of the
@@ -42,7 +45,6 @@ func bake_walk_grid(cfg: OverworldConfig) -> WalkGrid:
 	return WalkGrid.bake(walk_layer, cell_m, [], cfg)
 
 
-## The ground-plane centre of `leader_spawn_cell` in `grid`.
 ## The map's `EncounterSymbol` markers in child order (story 137;
 ## ADR-0012 §4-5). The order is the symbols' marker order.
 func symbol_markers() -> Array[EncounterSymbol]:
@@ -53,6 +55,50 @@ func symbol_markers() -> Array[EncounterSymbol]:
 	return out
 
 
+## The map's `MapExit` markers in child order (story 138).
+func map_exits() -> Array[MapExit]:
+	var out: Array[MapExit] = []
+	for child: Node in get_children():
+		if child is MapExit:
+			out.append(child as MapExit)
+	return out
+
+
+## The map's `EntryPoint` markers in child order (story 138).
+func entry_points() -> Array[EntryPoint]:
+	var out: Array[EntryPoint] = []
+	for child: Node in get_children():
+		if child is EntryPoint:
+			out.append(child as EntryPoint)
+	return out
+
+
+## The EntryPoint with `marker_id`, or null.
+func find_entry_point(marker_id: StringName) -> EntryPoint:
+	for entry: EntryPoint in entry_points():
+		if entry.marker_id == marker_id:
+			return entry
+	return null
+
+
+## Every MapExit and EntryPoint `marker_id`, in child order (duplicates kept,
+## for `MapValidator`).
+func marker_ids() -> Array[StringName]:
+	var out: Array[StringName] = []
+	for exit: MapExit in map_exits():
+		out.append(exit.marker_id)
+	for entry: EntryPoint in entry_points():
+		out.append(entry.marker_id)
+	return out
+
+
+## The scene path of `map_id` by convention (story 138): `map_<name>` ->
+## `<dir>/<name>.tscn`. Records never store paths (ADR-0012 §3).
+static func scene_path(map_id: String, dir: String) -> String:
+	return dir.path_join(map_id.trim_prefix("map_") + ".tscn")
+
+
+## The ground-plane centre of `leader_spawn_cell` in `grid`.
 func spawn_position(grid: WalkGrid) -> Vector2:
 	return (Vector2(leader_spawn_cell) + Vector2(0.5, 0.5)) * grid.cell_m
 
@@ -98,6 +144,19 @@ func build_set(grid: WalkGrid) -> void:
 			wall.position = Vector3((x + 0.5) * grid.cell_m, wall_height_m * 0.5,
 					(y + 0.5) * grid.cell_m)
 			set_root.add_child(wall)
+
+	# Story 138: a flat tinted patch per MapExit rectangle (placeholder only).
+	for exit: MapExit in map_exits():
+		var patch_mesh := PlaneMesh.new()
+		patch_mesh.size = exit.trigger_rect.size
+		patch_mesh.material = _flat_material(exit_color)
+		var patch := MeshInstance3D.new()
+		patch.name = "ExitPatch_%s" % exit.marker_id
+		patch.mesh = patch_mesh
+		patch.layers = DioramaStage.LAYER_SET
+		var c: Vector2 = exit.trigger_rect.get_center()
+		patch.position = Vector3(c.x, 0.01, c.y)
+		set_root.add_child(patch)
 
 
 func _flat_material(color: Color) -> StandardMaterial3D:

@@ -137,3 +137,14 @@ func v_chase() -> float:
 ## later story adds those fields and their checks.
 func validate() -> PackedStringArray:
 	return PackedStringArray()
+
+## Minimum extra gap, in metres, between an EntryPoint and every MapExit
+## rectangle beyond `body_radius` (GDD Tuning Knobs `entry_clearance_m`,
+## 1.0 m, range 0.5-2.0; GDD rule 11; checked by `MapValidator`).
+@export var entry_clearance_m: float = 1.0
+## Directory holding the map scenes; a `map_<name>` record's scene is
+## `<map_scene_dir>/<name>.tscn` (story 138; deviation from ADR-0012's
+## `res://scenes/maps/<map_id>/<map_id>.tscn`, flagged).
+@export var map_scene_dir: String = "res://data/maps"
+## Followers snapped behind the leader on map entry (GDD rule 2: up to 3).
+@export var max_followers: int = 3

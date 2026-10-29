@@ -11,4 +11,4 @@ faction_id = "faction_bureaucratia"
 is_boss = false
 can_flee = true
 retreat_allowed = false
-respawn = false
+respawn = true

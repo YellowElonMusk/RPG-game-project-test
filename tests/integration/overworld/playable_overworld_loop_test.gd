@@ -8,7 +8,9 @@ extends GdUnitTestSuite
 const _GAME_ROOT_SCENE: String = "res://src/game_state/game_root.tscn"
 ## The real data root: the shipped enc_ records and squad are under test.
 const _DATA_ROOT: String = "res://data"
-const _MAP_ID: String = "map_paris_town_placeholder"
+const _TOWN_ID: String = "map_paris_town_placeholder"
+## Story 138: the Clerk symbols live on the overworld segment.
+const _MAP_ID: String = "map_paris_segment_placeholder"
 const _DT: float = 1.0 / 60.0
 const _MIN_SYMBOLS: int = 2
 
@@ -17,9 +19,9 @@ func test_new_game_enters_overworld_mode_with_injections() -> void:
 	var root: GameRoot = _boot()
 	var ow: OverworldMode = _new_game(root)
 	assert_object(ow).is_not_null()
-	assert_str(ow.get_map().map_id).is_equal(_MAP_ID)
+	assert_str(ow.get_map().map_id).is_equal(_TOWN_ID)
 	assert_bool(is_same(ow.world_state, root.world_state)).is_true()
-	assert_str(ow.world_state.map_id).is_equal(_MAP_ID)
+	assert_str(ow.world_state.map_id).is_equal(_TOWN_ID)
 	assert_bool(is_same(ow.encounter_catalog, root.catalog())).is_true()
 	var party: Array = ow.party_source.call()
 	assert_int(party.size()).is_equal(root.catalog().all_records(&"character").size())
@@ -30,7 +32,7 @@ func test_new_game_enters_overworld_mode_with_injections() -> void:
 
 func test_symbols_name_records_and_sprites_follow_brains() -> void:
 	var root: GameRoot = _boot()
-	var ow: OverworldMode = _new_game(root)
+	var ow: OverworldMode = _new_game_on_segment(root)
 	var markers: Array[EncounterSymbol] = ow.get_map().symbol_markers()
 	assert_int(markers.size()).is_greater_equal(_MIN_SYMBOLS)
 	for marker: EncounterSymbol in markers:
@@ -60,7 +62,7 @@ func test_symbols_name_records_and_sprites_follow_brains() -> void:
 
 func test_victory_returns_to_map_without_the_symbol() -> void:
 	var root: GameRoot = _boot()
-	var ow: OverworldMode = _new_game(root)
+	var ow: OverworldMode = _new_game_on_segment(root)
 	var machine: GameStateMachine = root.machine
 	var source: EncounterSource = ow.get_encounter_sources()[0]
 	var battle_mode: BattleMode = _touch_and_enter_battle(root, ow, source)
@@ -78,7 +80,7 @@ func test_victory_returns_to_map_without_the_symbol() -> void:
 
 func test_fled_returns_with_the_symbol_stunned() -> void:
 	var root: GameRoot = _boot()
-	var ow: OverworldMode = _new_game(root)
+	var ow: OverworldMode = _new_game_on_segment(root)
 	var machine: GameStateMachine = root.machine
 	var source: EncounterSource = ow.get_encounter_sources()[0]
 	_touch_and_enter_battle(root, ow, source)
@@ -94,7 +96,7 @@ func test_fled_returns_with_the_symbol_stunned() -> void:
 
 func test_defeat_retry_restarts_the_same_fight() -> void:
 	var root: GameRoot = _boot()
-	var ow: OverworldMode = _new_game(root)
+	var ow: OverworldMode = _new_game_on_segment(root)
 	var machine: GameStateMachine = root.machine
 	var source: EncounterSource = ow.get_encounter_sources()[1]
 	var battle_mode: BattleMode = _touch_and_enter_battle(root, ow, source)
@@ -151,6 +153,18 @@ func _new_game(root: GameRoot) -> OverworldMode:
 	assert_int(root.machine.current_mode).is_equal(GameStateMachine.Mode.OVERWORLD)
 	var ow: OverworldMode = root.current_mode_node() as OverworldMode
 	ow.set_process(false)  # the test steps frames itself
+	return ow
+
+
+## Story 138: New Game in Town, then the real map change to the segment.
+func _new_game_on_segment(root: GameRoot) -> OverworldMode:
+	var town: OverworldMode = _new_game(root)
+	assert_int(root.machine.request_transition(GameStateMachine.Mode.OVERWORLD,
+			MapEntryPayload.new(_MAP_ID, &"from_town"))).is_equal(GameStateMachine.RequestResult.OK)
+	_run_to_idle(root.machine)
+	var ow: OverworldMode = root.current_mode_node() as OverworldMode
+	assert_bool(is_same(ow, town)).is_false()
+	ow.set_process(false)
 	return ow
 
 

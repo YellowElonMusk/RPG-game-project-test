@@ -57,6 +57,7 @@ var world_state: WorldState:
 		return _world_state
 
 var _world_state: WorldState = null
+var _squad: Array[Combatant] = []
 var _machine: GameStateMachine = null
 var _loader: ModeHostSceneLoader = null
 var _resolver: InputResolver = null
@@ -106,7 +107,7 @@ func _ready() -> void:
 	var machine_box: Array = [null]
 	var pre_setup := func(mode: GameMode, payload: RefCounted) -> void:
 		if mode is OverworldMode:
-			_inject_overworld(mode as OverworldMode)
+			_inject_overworld(mode as OverworldMode, payload)
 		mode.setup(machine_box[0], payload)
 	# The loader's result getter: the thawed Overworld's on_thawed() needs the
 	# battle result, and the return swap carries no payload (story 014).
@@ -137,6 +138,7 @@ func _ready() -> void:
 	# TODO(save-load): SaveService once ADR-0009 ships -- the loader's
 	# payload_commit slot carries the battle-result getter until then.
 
+	_validate_maps()
 	machine.tick(0.0)
 
 
@@ -144,14 +146,27 @@ func _ready() -> void:
 ## a fresh `WorldState`, the content catalog as the `enc_` record source and
 ## ChapterFlow's interim squad as the party source. The squad is built once
 ## per OverworldMode instance, so every battle gets the same `Combatant`s
-## and HP/MP carry over (ADR-0002 §7).
-func _inject_overworld(overworld: OverworldMode) -> void:
-	_world_state = WorldState.new()
-	var squad: Array[Combatant] = ChapterFlow.build_squad(catalog())
+## and HP/MP carry over (ADR-0002 §7). Story 138: a map change
+## (`MapEntryPayload`) keeps the same `WorldState` and squad; any other entry
+## (New Game) builds fresh ones.
+func _inject_overworld(overworld: OverworldMode, payload: RefCounted = null) -> void:
+	if not (payload is MapEntryPayload) or _world_state == null:
+		_world_state = WorldState.new()
+		_squad = ChapterFlow.build_squad(catalog())
+	var squad: Array[Combatant] = _squad
 	overworld.world_state = _world_state
 	overworld.encounter_catalog = catalog()
 	overworld.party_source = func() -> Array[Combatant]:
 		return squad
+
+
+## Story 138 (ADR-0012 §3; story 080): the load-time map validator. Each
+## problem is a `push_error`; a `FAILED` catalog is skipped.
+func _validate_maps() -> void:
+	if catalog().state == ContentCatalogService.State.FAILED:
+		return
+	for err: String in MapValidator.validate_catalog(catalog(), OverworldConfig.new()):
+		push_error("MapValidator: " + err)
 
 
 func _process(delta: float) -> void:

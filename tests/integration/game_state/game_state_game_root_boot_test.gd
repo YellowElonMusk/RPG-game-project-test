@@ -85,6 +85,10 @@ func test_quit_mid_battle_no_orphans() -> void:
 	_run_to_idle(machine)
 	machine.request_transition(GameStateMachine.Mode.OVERWORLD, null)
 	_run_to_idle(machine)
+	# Story 138: Town holds no symbols; the Clerks are on the segment.
+	machine.request_transition(GameStateMachine.Mode.OVERWORLD,
+			MapEntryPayload.new("map_paris_segment_placeholder", &"from_town"))
+	_run_to_idle(machine)
 	var overworld: OverworldMode = game_root.current_mode_node() as OverworldMode
 	overworld.set_process(false)
 	var source: EncounterSource = overworld.get_encounter_sources()[0]
