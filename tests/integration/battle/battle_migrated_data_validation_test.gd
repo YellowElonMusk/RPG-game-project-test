@@ -78,7 +78,7 @@ func _entry_keys(output: String) -> Array[String]:
 	for line: String in output.split("\n"):
 		var parts: PackedStringArray = line.split(" | ")
 		if parts.size() >= 3:
-			keys.append("%s | %s" % [parts[0].strip_edges(), parts[1].strip_edges()])
+			keys.append(("%s | %s" % [parts[0].strip_edges(), parts[1].strip_edges()]).strip_edges())
 	return keys
 
 

@@ -1,6 +1,6 @@
 ## QA Test Cases 1-4 (game-state-scene-flow story 035): the real `GameRoot`
 ## main scene -- production `GameStateMachine`, `ModeHostSceneLoader`,
-## `ChapterMode` and `BattleMode` -- so the production wiring is what is
+## `OverworldMode` and `BattleMode` -- so the production wiring is what is
 ## under test (same choice as `game_state_battle_mode_test.gd`, story 034).
 ## Written to the QA Test Cases in
 ## production/epics/game-state-scene-flow/story-035-game-root-main-scene.md
@@ -49,10 +49,9 @@ func test_boots_to_title_on_valid_root() -> void:
 			+ " -- the bound action source is not this resolver instance").is_not_equal(
 			GameStateMachine.Phase.IDLE)
 	_run_to_idle(machine)
-	# With the real data root, ChapterMode (the Overworld stand-in) starts
-	# fight 0 as soon as it is entered, so the loop settles in BATTLE; what
-	# this check pins is that New Game left Title through this resolver.
-	assert_int(machine.current_mode).is_equal(GameStateMachine.Mode.BATTLE)
+	# Story 137: New Game settles in the real OverworldMode (no auto fight).
+	assert_int(machine.current_mode).is_equal(GameStateMachine.Mode.OVERWORLD)
+	assert_object(game_root.current_mode_node() as OverworldMode).is_not_null()
 
 
 func test_boots_to_content_error_on_failed_root() -> void:
@@ -78,50 +77,6 @@ func test_boots_to_content_error_on_failed_root() -> void:
 	assert_bool(FileAccess.file_exists(ContentErrorMode.LOG_PATH)).is_true()
 
 
-func test_demo_loop_scripted() -> void:
-	var game_root: GameRoot = _boot_game_root(_VALID_FIXTURE)
-	var machine: GameStateMachine = game_root.machine
-
-	assert_int(machine.request_transition(GameStateMachine.Mode.OVERWORLD, null)) \
-			.is_equal(GameStateMachine.RequestResult.OK)
-	_run_to_idle(machine)
-	assert_int(machine.current_mode).is_equal(GameStateMachine.Mode.BATTLE)
-
-	# Fight 0: scripted DEFEAT -> Retry -> VICTORY, mid-chapter (QA Check 3).
-	var battle_mode: BattleMode = game_root.current_mode_node() as BattleMode
-	assert_object(battle_mode).is_not_null()
-	DebugLaunchArgs.force_outcome(battle_mode.battle, DebugLaunchArgs.DEFEAT)
-	assert_int(machine.overlay_stack.back()).is_equal(GameStateMachine.OverlayKind.DEFEAT_PROMPT)
-	assert_int(machine.choose_retry()).is_equal(GameStateMachine.RequestResult.OK)
-	_run_to_idle(machine)
-	assert_int(machine.current_mode).is_equal(GameStateMachine.Mode.BATTLE)
-	assert_bool(is_same(game_root.current_mode_node(), battle_mode)).override_failure_message(
-			"Retry rebuilt the BattleMode node instead of reusing it").is_true()
-	DebugLaunchArgs.force_outcome(battle_mode.battle, DebugLaunchArgs.VICTORY)
-	assert_int(machine.report_results_done()).is_equal(GameStateMachine.RequestResult.OK)
-	_run_to_idle(machine)
-
-	# Fights 1-3 (fight 3 is the boss): straight VICTORY each -- four
-	# scripted fights total, ending the chapter.
-	for fight_index: int in range(3):
-		assert_int(machine.current_mode).override_failure_message(
-				"expected BATTLE at fight index %d" % (fight_index + 1)).is_equal(
-				GameStateMachine.Mode.BATTLE)
-		battle_mode = game_root.current_mode_node() as BattleMode
-		assert_object(battle_mode).is_not_null()
-		DebugLaunchArgs.force_outcome(battle_mode.battle, DebugLaunchArgs.VICTORY)
-		assert_int(machine.report_results_done()).is_equal(GameStateMachine.RequestResult.OK)
-		_run_to_idle(machine)
-
-	assert_int(machine.current_mode).override_failure_message(
-			"chapter_won did not stop ChapterMode from requesting a fifth fight").is_equal(
-			GameStateMachine.Mode.OVERWORLD)
-	var chapter_mode: ChapterMode = game_root.current_mode_node() as ChapterMode
-	assert_object(chapter_mode).is_not_null()
-	assert_bool(chapter_mode.chapter.chapter_complete).override_failure_message(
-			"chapter_won was never reached").is_true()
-
-
 func test_quit_mid_battle_no_orphans() -> void:
 	var game_root: GameRoot = preload(_GAME_ROOT_SCENE).instantiate()
 	game_root.data_root_override = _VALID_FIXTURE
@@ -130,10 +85,15 @@ func test_quit_mid_battle_no_orphans() -> void:
 	_run_to_idle(machine)
 	machine.request_transition(GameStateMachine.Mode.OVERWORLD, null)
 	_run_to_idle(machine)
+	var overworld: OverworldMode = game_root.current_mode_node() as OverworldMode
+	overworld.set_process(false)
+	var source: EncounterSource = overworld.get_encounter_sources()[0]
+	overworld.start_encounter(source.enc_id, source)
+	_run_to_idle(machine)
 	assert_int(machine.current_mode).is_equal(GameStateMachine.Mode.BATTLE)
 
 	# E8 (manifest advisory): freeing GameRoot mid-battle -- with a detached,
-	# frozen Overworld (ChapterMode) held only by the loader -- must not
+	# frozen Overworld (OverworldMode) held only by the loader -- must not
 	# orphan it. No auto_free(): queue_free() is the point under test, and
 	# gdUnit4's own orphan scan at teardown is what proves it worked (exit
 	# 101 on a leak).

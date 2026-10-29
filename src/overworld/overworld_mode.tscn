@@ -73,9 +73,11 @@ script = ExtResource("3_sprite")
 material_override = SubResource("Mat_f3")
 script = ExtResource("3_sprite")
 
-[node name="OverworldView" type="Node" parent="." node_paths=PackedStringArray("mode", "stage", "leader_sprite", "follower_sprites")]
+[node name="OverworldView" type="Node" parent="." node_paths=PackedStringArray("mode", "stage", "leader_sprite", "follower_sprites", "symbol_root")]
 script = ExtResource("5_view")
 mode = NodePath("..")
 stage = NodePath("../DioramaStage")
 leader_sprite = NodePath("../DioramaStage/Actors/Leader")
 follower_sprites = [NodePath("../DioramaStage/Actors/Follower1"), NodePath("../DioramaStage/Actors/Follower2"), NodePath("../DioramaStage/Actors/Follower3")]
+symbol_root = NodePath("../DioramaStage/Actors")
+symbol_shader = ExtResource("4_shader")

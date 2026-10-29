@@ -171,6 +171,23 @@ func load_map(map: OverworldMap) -> void:
 	map.build_set(_grid)
 	_leader_pos = map.spawn_position(_grid)
 	_follower_trail.reset(_leader_pos)
+	if world_state != null and world_state.map_id != map.map_id:
+		world_state.on_map_entered(map.map_id, WorldState.EntryKind.MAP_ENTRY)
+	_place_symbols(map)
+
+
+## Story 137: one `SymbolBrain` per valid `EncounterSymbol` marker, in
+## marker order. `add_symbol()` skips symbols `world_state` holds resolved.
+func _place_symbols(map: OverworldMap) -> void:
+	var markers: Array[EncounterSymbol] = map.symbol_markers()
+	for i: int in markers.size():
+		var marker: EncounterSymbol = markers[i]
+		if not marker.is_valid_marker():
+			push_error("OverworldMode: symbol marker '%s' names no enc_ record or has no patrol path" \
+					% marker.name)
+			continue
+		add_symbol(marker.encounter_id,
+				SymbolBrain.new(marker.patrol_path, marker.path_mode, i), marker.symbol_id)
 
 
 ## The baked walk grid, or null while no map is loaded.
@@ -274,6 +291,12 @@ func set_walk_grid(grid: WalkGrid) -> void:
 func set_leader_position(pos: Vector2) -> void:
 	_leader_pos = pos
 	_follower_trail.reset(pos)
+
+
+## The registered encounter sources (symbol + record id), in marker order
+## (story 137: GameRoot tests and the view read them).
+func get_encounter_sources() -> Array[EncounterSource]:
+	return _sources.duplicate()
 
 
 ## The registered symbols' brains, in marker order.

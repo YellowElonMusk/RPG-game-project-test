@@ -28,7 +28,7 @@ transition_budget = {
 mode_scene_paths = {
 1: "res://src/game_state/modes/content_error_mode.tscn",
 2: "res://src/game_state/modes/title_mode.tscn",
-3: "res://src/chapters/chapter_mode.tscn",
+3: "res://src/overworld/overworld_mode.tscn",
 4: "res://src/battle/battle_mode.tscn"
 }
 overlay_scene_paths = {

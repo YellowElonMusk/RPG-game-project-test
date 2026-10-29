@@ -9,3 +9,9 @@
 # char_* records now reference all five moves through move_ids, so the
 # migrated set produces no warnings. Fix the test's expectation or the data
 # here, never the validator.
+#
+# Story 137: the Paris street-fight encounters are referenced by the map
+# scene's EncounterSymbol markers, which are not records, so the validator
+# truthfully reports them unreferenced until map records exist.
+enc_paris_clerks_east |
+enc_paris_clerks_west |

@@ -15,6 +15,9 @@ extends Node3D
 
 ## The walk layer: a `TileSet` with a `walk: bool` custom data layer. Hidden
 ## at load (it is a 2D node; drawing it would overlay the 3D diorama).
+## Persistent map id (`WorldState.map_id`; story 137). Matches the map's
+## record id once map records exist.
+@export var map_id: String = ""
 @export var walk_layer: TileMapLayer
 ## Metres per walk cell, passed to `WalkGrid.bake()`. Map authoring data.
 @export var cell_m: float = 1.0
@@ -40,6 +43,16 @@ func bake_walk_grid(cfg: OverworldConfig) -> WalkGrid:
 
 
 ## The ground-plane centre of `leader_spawn_cell` in `grid`.
+## The map's `EncounterSymbol` markers in child order (story 137;
+## ADR-0012 §4-5). The order is the symbols' marker order.
+func symbol_markers() -> Array[EncounterSymbol]:
+	var out: Array[EncounterSymbol] = []
+	for child: Node in get_children():
+		if child is EncounterSymbol:
+			out.append(child as EncounterSymbol)
+	return out
+
+
 func spawn_position(grid: WalkGrid) -> Vector2:
 	return (Vector2(leader_spawn_cell) + Vector2(0.5, 0.5)) * grid.cell_m
 

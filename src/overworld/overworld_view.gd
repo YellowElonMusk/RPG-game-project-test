@@ -37,6 +37,15 @@ extends Node
 var _camera: FollowCamera = null
 var _last_aspect: float = 0.0
 
+## Where symbol sprites are parented (story 137); null draws no symbols.
+@export var symbol_root: Node3D
+## The actor shader for symbol sprites' `ShaderMaterial`s.
+@export var symbol_shader: Shader
+## Placeholder tint for symbol sprites (art placeholder, not a tuning knob).
+@export var symbol_tint: Color = Color(0.25, 0.25, 0.3)
+## SymbolBrain -> CharacterSprite, one per registered symbol.
+var _symbol_sprites: Dictionary = {}
+
 
 func _init() -> void:
 	process_priority = 0
@@ -108,6 +117,38 @@ func _present(delta: float) -> void:
 	var followers: Array[Vector2] = mode.get_follower_positions()
 	for i: int in mini(followers.size(), follower_sprites.size()):
 		_place(follower_sprites[i], followers[i])
+	sync_symbol_sprites()
+
+
+## Story 137 (AC-137b): one placeholder `CharacterSprite` per registered
+## symbol, placed at its `SymbolBrain` position; a symbol the mode dropped
+## (Victory) loses its sprite. Called every presentation frame.
+func sync_symbol_sprites() -> void:
+	if symbol_root == null or _camera == null:
+		return
+	var live: Array[SymbolBrain] = mode.get_symbol_brains()
+	for brain: SymbolBrain in _symbol_sprites.keys():
+		if not live.has(brain):
+			var gone: CharacterSprite = _symbol_sprites[brain]
+			_symbol_sprites.erase(brain)
+			gone.queue_free()
+	for brain: SymbolBrain in live:
+		var sprite: CharacterSprite = _symbol_sprites.get(brain) as CharacterSprite
+		if sprite == null:
+			sprite = CharacterSprite.new()
+			sprite.name = "Symbol%d" % brain.marker_index
+			var mat := ShaderMaterial.new()
+			mat.shader = symbol_shader
+			sprite.material_override = mat
+			symbol_root.add_child(sprite)
+			_setup_sprite(sprite, symbol_tint)
+			_symbol_sprites[brain] = sprite
+		_place(sprite, brain.position)
+
+
+## The live symbol sprites, keyed by `SymbolBrain` (tests).
+func get_symbol_sprites() -> Dictionary:
+	return _symbol_sprites.duplicate()
 
 
 func _place(sprite: CharacterSprite, ground: Vector2) -> void:

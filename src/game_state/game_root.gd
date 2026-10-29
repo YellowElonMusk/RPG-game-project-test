@@ -50,6 +50,13 @@ var resolver: InputResolver:
 	get:
 		return _resolver
 
+## Read-only: the `WorldState` injected into the current `OverworldMode`
+## (story 137); a fresh one per New Game.
+var world_state: WorldState:
+	get:
+		return _world_state
+
+var _world_state: WorldState = null
 var _machine: GameStateMachine = null
 var _loader: ModeHostSceneLoader = null
 var _resolver: InputResolver = null
@@ -98,6 +105,8 @@ func _ready() -> void:
 	# once it exists (mode_host_scene_loader.gd's own documented pattern).
 	var machine_box: Array = [null]
 	var pre_setup := func(mode: GameMode, payload: RefCounted) -> void:
+		if mode is OverworldMode:
+			_inject_overworld(mode as OverworldMode)
 		mode.setup(machine_box[0], payload)
 	# The loader's result getter: the thawed Overworld's on_thawed() needs the
 	# battle result, and the return swap carries no payload (story 014).
@@ -117,6 +126,11 @@ func _ready() -> void:
 	machine.mode_entered.connect(loader.on_mode_entered)
 	machine.bind_action_source(resolver)
 
+	# Mode-entry lighting (sprite-camera story 008), as overworld_demo.gd.
+	var director := PresentationDirector.new()
+	_services.add_child(director)
+	director.setup(machine, PresentationConfig.new(), GlobalUniformSink.new())
+
 	# TODO(ui-framework): PresentationDirector / UiService once ADR-0008
 	# ships -- pre_setup and the overlay pre_setup above stay no-op Callables
 	# until then (ADR-0008 §8).
@@ -124,6 +138,20 @@ func _ready() -> void:
 	# payload_commit slot carries the battle-result getter until then.
 
 	machine.tick(0.0)
+
+
+## Story 137 (AC-137a; ADR-0012 §4-5): the Overworld slot's injections --
+## a fresh `WorldState`, the content catalog as the `enc_` record source and
+## ChapterFlow's interim squad as the party source. The squad is built once
+## per OverworldMode instance, so every battle gets the same `Combatant`s
+## and HP/MP carry over (ADR-0002 §7).
+func _inject_overworld(overworld: OverworldMode) -> void:
+	_world_state = WorldState.new()
+	var squad: Array[Combatant] = ChapterFlow.build_squad(catalog())
+	overworld.world_state = _world_state
+	overworld.encounter_catalog = catalog()
+	overworld.party_source = func() -> Array[Combatant]:
+		return squad
 
 
 func _process(delta: float) -> void:
