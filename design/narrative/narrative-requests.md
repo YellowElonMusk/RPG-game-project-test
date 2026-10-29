@@ -147,7 +147,7 @@ Recorded on 2026-10-29 from the user's chat message, keeping close to their own 
 
 - **Permit and faction combat conditions work like Pokémon abilities.** They only affect combat, by imposing conditions or effects, and carry little story weight.
 - **Reputation only changes how NPCs see you.** It affects shop prices and how likely someone is to join you.
-- **After each fight you choose:** free the aliens, or finish them off.
+- **After each boss fight you choose** (boss-only, user 2026-10-29; ordinary fights have no prompt): let him go, or finish him off.
   - **Finish them:** you gain **human street cred**.
   - **Free them:** you gain **alien points**.
 - **The human-famous route** is easier early, with more allies and cheaper prices. It is harder late: the aliens retaliate harder, and you fight more professional alien peacekeepers.
@@ -172,7 +172,7 @@ These get resolved in the narrative bible and the GDDs.
 |---|---|---|---|
 | C-1 | "Resistance" is banned from player-facing text. But the player's own cell organises a resistance, and the squad fights "human resistance bounty hunters". | Overworld GDD, guardrail 3 word list (`resistance`, `maquis`, `underground`, `collaborator`) | The user's answer wins: allow "resistance". Keep "maquis" and "collaborator" banned, since they point at WWII, which N-8 still bars. |
 | C-2 | The boss is named the Minister of Forms. | `game-concept.md` MVP item 5; Overworld GDD | Rename it to the Supervisor (N-5 C). |
-| C-3 | The MVP has "one reputation choice that wins or loses one recruit", and reputation is "not battle rules". | `game-concept.md` MVP item 6, Core Mechanic 5 | Replace it with the per-fight spare-or-finish choice and the two meters (§5.1). Reputation still never changes battle rules, so that part holds. **Scope grows:** two meters, a post-battle prompt, price and recruit hooks, late-game retaliation, and a bounty-hunter enemy group. The MVP can ship the prompt and the meters first. |
+| C-3 | The MVP has "one reputation choice that wins or loses one recruit", and reputation is "not battle rules". | `game-concept.md` MVP item 6, Core Mechanic 5 | Replace it with the boss spare-or-finish choice and the two meters (§5.1). Reputation still never changes battle rules, so that part holds. **Scope grows:** two meters, a post-boss prompt, price and recruit hooks, late-game retaliation, and a bounty-hunter enemy group. The MVP can ship the prompt and the meters first. |
 | C-4 | No street civilian may say "go back" or "your planet". | Overworld GDD guardrail 6, OQ-21 | Still holds: only the squad's battle cry says it (N-3). This closes OQ-21. |
 | C-5 | Pillar 2, Nobody Is Right, against a premise in which the aliens are mostly right. | `game-concept.md` Pillars | Still holds. The aliens are right about the danger but condescending, slow and smug about the fix, so both sides get mocked. |
 | C-6 | Battle audio assumes a music track. | Audio direction, not yet designed | Use layered beatbox stems, one per enemy (§5.2). This needs an audio design doc before any fight sound work starts. |
