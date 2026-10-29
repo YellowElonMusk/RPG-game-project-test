@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -83,7 +83,40 @@ run button and no held-input modifier (GDD rule 1).
 **Required evidence**:
 - `tests/unit/overworld/ground_mover_speed_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing; full suite green, 631/631 (tag ow001)
+
+---
+
+## Completion Notes
+
+- `GroundMover.step()` implemented as a pure static function in
+  `src/overworld/ground_mover.gd`, with `MoveResult` as a nested class
+  (no separate file in ADR-0012's Key Interfaces). `velocity =
+  input_vec.limit_length(1) * speed`; `pos` advances by `velocity * dt`.
+  `grid`, `cfg` and `blocked_mask` are accepted per the ADR's declared
+  signature but not yet read -- collision is story 004's scope.
+- `grid` is typed `Object`, not `WalkGrid`: `walk_grid.gd` is story 004's
+  file and does not exist yet. Narrow this parameter's type the same story
+  that adds it.
+- `OverworldConfig` (`src/overworld/overworld_config.gd`) is a minimal stub
+  with only `walk_speed` (default 3.5, GDD Tuning Knobs), following the
+  same precedent as `src/presentation/presentation_config.gd`. `validate()`
+  exists per the ADR's declared surface but returns `[]`: every I1-I18
+  invariant that reads `walk_speed` also reads a field this stub does not
+  yet declare.
+- `OverworldMode` (`src/overworld/overworld_mode.gd`) wires
+  `machine.get_move_vector(self)` into `GroundMover.step()` on
+  `ow_dt = min(delta, dt_max)`, satisfying the control manifest's movement
+  rule. Flagged deviation: the leader's position is a private field, not
+  `WorldState.party_pos` -- `world_state.gd` does not exist yet, and
+  `GameRoot`'s `pre_setup` injector does not assign `world_state` or
+  `presentation_settings` yet either (both are open TODOs in
+  `src/game_state/game_root.gd` pending ADR-0008/0009). `dt_max` falls back
+  to a local constant at the GDD default (0.10 s) until that injection
+  lands.
+- Test: `tests/unit/overworld/ground_mover_speed_test.gd`, two cases (AC-1a
+  default config, and a non-default `walk_speed` per the formula-test
+  harness rule), `N = 37` frames at `dt = 0.013 s` (not a clean threshold).
 
 ---
 
