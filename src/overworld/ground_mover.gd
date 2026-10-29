@@ -28,7 +28,13 @@ class MoveResult:
 ## 1. **Velocity.** `velocity = input_vec.limit_length(1) * speed` -- the
 ##    leader passes `cfg.walk_speed`; a symbol passes `v_patrol` or
 ##    `v_chase`. `speed` is its own parameter (not read off `cfg`) because
-##    the caller, not this function, picks which speed applies.
+##    the caller, not this function, picks which speed applies. This clamp is
+##    what makes magnitude scale speed linearly below 1 and cap at `speed`
+##    for any `input_vec` longer than 1 -- e.g. a diagonal keyboard vector
+##    before `InputResolver.get_move_vector()`'s own normalization (story
+##    002, AC-1b). The two layers compose rather than double-scale because
+##    this function clamps the *post-normalization* vector it is handed, not
+##    a second time on top of ADR-0003's own clamp.
 ## 2. **Axis-separated collision** against `grid`/`blocked_mask`, using
 ##    `cfg.body_radius`, and **3. corner assist** (leader only) via
 ##    `cfg.corner_assist_m` -- both land in story 004. Until then, `grid`,

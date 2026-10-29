@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-1b [L] (R1)** GIVEN `move` at magnitude 0.5, THEN speed is `0.5 · walk_speed`. GIVEN magnitude 1.4 (a diagonal keyboard vector before normalising), THEN speed is `walk_speed`.
+- [x] **AC-1b [L] (R1)** GIVEN `move` at magnitude 0.5, THEN speed is `0.5 · walk_speed`. GIVEN magnitude 1.4 (a diagonal keyboard vector before normalising), THEN speed is `walk_speed`.
 
 ---
 
@@ -82,7 +82,22 @@ correctly rather than double-scaling.
 **Required evidence**:
 - `tests/unit/overworld/ground_mover_speed_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Passing — 6/6 test cases in file (4 new for this story), full suite 635/635 green
+
+---
+
+## Completion Notes
+
+`GroundMover.step()` already implemented `velocity = input_vec.limit_length(1.0) * speed`
+in story 001, so AC-1b held with no behavior change: `limit_length(1.0)` is a
+no-op below magnitude 1 (linear scaling) and clamps to length 1 above it (full
+`speed`). This story added the missing tests exercising both ends directly —
+`test_partial_tilt_speed_scales_linearly_with_magnitude` (0.5) and
+`test_magnitude_above_one_clamps_to_full_walk_speed` (1.4), each also run once
+against a non-default `walk_speed` per the formula-test harness rule — and a
+doc-comment note on `GroundMover.step()` tying the clamp to story 002 and
+explaining why it composes with ADR-0003's diagonal normalization rather than
+double-scaling. No change to `src/input/input_resolver.gd` was needed or made.
 
 ---
 
