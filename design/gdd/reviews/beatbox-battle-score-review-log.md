@@ -65,3 +65,30 @@ Reviewed-Content-Hash: design/gdd/sprite-camera-presentation.md 1a951d3366b993a0
 Reviewed-Content-Hash: design/gdd/overworld-exploration-encounters.md ef9da0fe8878bea2f6d2768eb8985d5f388aa120
 Reviewed-Content-Hash: design/narrative/narrative-bible.md 004b0c144abc39bb5ce7b014530fe1264c347d7e
 Reviewed-Content-Hash: docs/architecture/adr-0006-battle-replay-ownership.md e0850122343bf2036da37a113b75e78492f9f30a
+
+## Review — 2026-10-29 — Verdict: NEEDS REVISION
+Review mode: lean · Workflow: standard
+Scope signal: L
+Specialists: none (lean mode)
+Blocking items: 3 | Recommended: 7
+Summary: Revision 3 fixes all four rev-2 blockers. The humans-still-standing sting, the kit and tier source, bar-1 scheduling and F2's pass order are now correct, and every formula example checks out. Three new defects block. AC-2g's first fixture contradicts F2: the eighth alien doubles `kick`, not `hats`. Nothing triggers Fled, because ADR-0010 adds `battle_fled_after_replay()` and R8 doesn't read it. And no state exits on leaving battle while Playing (Quit to Title from the Menu), so the loop would play on into the title screen.
+Prior verdict resolved: Yes (all 4 rev-2 blockers addressed)
+Findings:
+- [BLOCKING] AC-2g/F2: 8 aliens all snare/hats give extras on snare (pass 3) and kick (pass 4, the first empty extra slot in R2 order), not snare and hats
+- [BLOCKING] R8/R14/States: Fled has no source signal; ADR-0010 §5 adds battle_fled_after_replay(), absent from R8's table
+- [BLOCKING] States/R8: transition_started(BATTLE → non-battle) is unhandled; replay_cancelled fires only if something was queued and R14 has no branch for Quit/exit, so Playing never ends
+- [RECOMMENDED] R8: replay_cancelled also fires at the start of the Retry OUT (ADR-0006 Retry) while the score is Ending or Armed; say it is ignored outside Playing/Break
+- [RECOMMENDED] R7: "scheduled on the audio clock" needs a mechanism; a player can't start at a future mix time (NOT SOURCEABLE for 4.7.2), so say the stream starts at mode_entered with lead-in silence, or fold it into OQ-2's ADR
+- [RECOMMENDED] R7 Arm: loading a kit synchronously on transition_started hitches the wipe-out; load threaded across out+swap, and say what happens if it isn't ready at mode_entered
+- [RECOMMENDED] R13: a non-final knockout during the cry break (its fade and tail in silence) is unspecified
+- [RECOMMENDED] F5: `now` is the stream's playback position, which wraps every loop; define a monotonic music time so bar numbers stay meaningful
+- [RECOMMENDED] R14/States: the defeat sting's timing against the Defeat Prompt (opens after defeat_hold), and how Ending knows the sting finished, are unstated
+- [RECOMMENDED] R10/R4b: say whether the full_house layer has a base variant and sits under the held filter
+Reviewed-Content-Hash: design/gdd/beatbox-battle-score.md 98a49dc273752f6efcd5d2c9258c713e2c6c28b0
+Reviewed-Content-Hash: design/registry/entities.yaml b7efb174ffc61286e6bbb670ecef6dd143c578b5
+Reviewed-Content-Hash: .claude/skills/design-review/SKILL.md a63d8fba9b7142eeb43791f061e2e1533c429b43
+Reviewed-Content-Hash: design/gdd/game-state-scene-flow.md c757b301c857826be59addc3e21b98851103c02c
+Reviewed-Content-Hash: design/gdd/content-data-definitions.md f4ea2de1495f757543cdbecf870cb627e901670a
+Reviewed-Content-Hash: design/gdd/overworld-exploration-encounters.md ef9da0fe8878bea2f6d2768eb8985d5f388aa120
+Reviewed-Content-Hash: docs/architecture/adr-0006-battle-replay-ownership.md e0850122343bf2036da37a113b75e78492f9f30a
+Reviewed-Content-Hash: docs/architecture/adr-0010-turn-battle-system.md dd7e58e6e387ec673a7f550dc09047c599366e7d
