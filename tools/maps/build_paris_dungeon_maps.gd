@@ -120,11 +120,12 @@ func _build_dungeon(tile_set: TileSet) -> OverworldMap:
 	_place(map, counter, Vector2(7.5, 13.5))
 	# Denser symbols than the segment (GDD rule 11): a Clerk pacing the first
 	# room's far side, clear of the camp, the entry and the return marker,
-	# and one across the hall beyond the boom (story 077 clearance).
+	# and one pacing the hall's east side beyond the boom; both clear of
+	# every safe zone (story 077) and leave a bypass lane (story 083).
 	_patrol(map, "SymbolClerksFirstRoom", "enc_paris_clerks_east", "sym_dungeon_clerks_first_room",
 			PackedVector2Array([Vector2(13.5, 13.5), Vector2(13.5, 16.5)]))
 	_patrol(map, "SymbolClerksHall", "enc_paris_clerks_west", "sym_dungeon_clerks_hall",
-			PackedVector2Array([Vector2(2.5, 9.5), Vector2(13.5, 9.5)]))
+			PackedVector2Array([Vector2(13.5, 5.5), Vector2(13.5, 9.5)]))
 	return map
 
 

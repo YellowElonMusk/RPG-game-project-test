@@ -1,7 +1,7 @@
 # Story 083: The ordered search finds a bypass lane round every patrol band on every critical-path leg
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: L
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-31 [D] (R12, bypass lane)** For every non-boss map, at every reachable stage, rule 12's **ordered search** succeeds on every critical-path leg: patrol bands and blocked cells closed; a checkpoint opened only after its fight-free source is reached earlier on the leg; `open`-payoff checkpoints closed; and a leg that crosses the story encounter split into its two searches (before it, to any cell within `interact_reach_m` of it, with bands; beyond its checkpoint with the checkpoint open). Legs ending at a symbol end within `interact_reach_m` of it. Nothing else is exempt.
+- [x] **AC-31 [D] (R12, bypass lane)** For every non-boss map, at every reachable stage, rule 12's **ordered search** succeeds on every critical-path leg: patrol bands and blocked cells closed; a checkpoint opened only after its fight-free source is reached earlier on the leg; `open`-payoff checkpoints closed; and a leg that crosses the story encounter split into its two searches (before it, to any cell within `interact_reach_m` of it, with bands; beyond its checkpoint with the checkpoint open). Legs ending at a symbol end within `interact_reach_m` of it. Nothing else is exempt.
 
 ---
 
@@ -77,7 +77,7 @@
 **Required evidence**:
 - `tests/unit/overworld/data/bypass_lane_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -85,3 +85,9 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-082-patrol-legality-at-every-reachable-stage.md`, `story-074-map-exit-and-critical-path-reference-integrity.md` (AC-30a, rule 0 groundwork for the ordered search), `story-080-entry-point-exit-clearance.md` (AC-30f, map exits as leg ends)
 - Unlocks: `production/epics/overworld-exploration-encounters/story-084-story-encounter-not-routable-around.md`, `production/epics/overworld-exploration-encounters/story-085-dungeon-pressure-floor.md`, `production/epics/overworld-exploration-encounters/story-086-first-patrol-bypass-ratio-and-teaching-speaker.md`, `production/epics/overworld-exploration-encounters/story-087-patrol-visibility-before-the-notice-radius.md`
+
+## Completion Notes (2026-10-30)
+
+- `src/overworld/bypass_search.gd`, run by `MapValidator.validate_catalog()` (so the boot check and `tools/ci/validate_maps.gd`).
+- On its first run it failed three shipped legs: the dungeon hall Clerk banded the whole hall, and the segment Clerks sealed the top-right exit. Fixed by moving the hall Clerk to the east side and the segment west Clerk one row south.
+- **Not yet varied:** stages (no `min_stage` or stage system exists, so one configuration per map; stories 053-058) and fight-free checkpoint sources (none exist; every non-story checkpoint stays closed, stories 016/070). Both are TODOs in the file.

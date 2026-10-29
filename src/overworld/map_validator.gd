@@ -50,6 +50,7 @@ static func validate_catalog(catalog: ContentCatalogService, cfg: OverworldConfi
 		var rec_map: OverworldMap = maps.get(String(rec.get("id"))) as OverworldMap
 		if rec_map != null and rec is MapData:
 			errors.append_array(validate_legs(rec as MapData, rec_map))
+			errors.append_array(BypassSearch.check(rec as MapData, rec_map, cfg))
 	for map: OverworldMap in maps.values():
 		map.free()
 	return errors

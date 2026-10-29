@@ -57,7 +57,7 @@ facing = Vector2(1, 0)
 [node name="SymbolClerksWest" type="Marker3D" parent="." unique_id=88134525]
 script = ExtResource("4_kglc8")
 encounter_id = "enc_paris_clerks_west"
-patrol_path = PackedVector2Array(8.5, 4.5, 14.5, 4.5)
+patrol_path = PackedVector2Array(9.5, 5.5, 14.5, 5.5)
 
 [node name="SymbolClerksEast" type="Marker3D" parent="." unique_id=208026303]
 script = ExtResource("4_kglc8")

@@ -146,7 +146,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 080 | [Every EntryPoint sits clear of every MapExit rectangle, facing into the map](story-080-entry-point-exit-clearance.md) | Logic | Complete | ADR-0012 |
 | 081 | [A MapExit re-fires only after the leader leaves and re-enters its rectangle](story-081-map-exit-reentry-requires-leaving-the-rectangle.md) | Logic | Ready | ADR-0012 |
 | 082 | [Every symbol's patrol sweep and resume point are symbol-legal at every reachable stage](story-082-patrol-legality-at-every-reachable-stage.md) | Logic | Ready | ADR-0012 |
-| 083 | [The ordered search finds a bypass lane round every patrol band on every critical-path leg](story-083-bypass-lane-ordered-search.md) | Logic | Ready | ADR-0012 |
+| 083 | [The ordered search finds a bypass lane round every patrol band on every critical-path leg](story-083-bypass-lane-ordered-search.md) | Logic | Complete | ADR-0012 |
 | 084 | [No walk-grid route reaches the dungeon's boss-chamber exit without crossing the story encounter](story-084-story-encounter-not-routable-around.md) | Logic | Complete | ADR-0012 |
 | 085 | [The dungeon's pressure floor — at least half the symbols' bands cross the shortest critical path](story-085-dungeon-pressure-floor.md) | Logic | Ready | ADR-0012 |
 | 086 | [The first-encounter map's teaching bypass is visibly easy, and its speaker stands before the first notice radius](story-086-first-patrol-bypass-ratio-and-teaching-speaker.md) | Logic | Ready | ADR-0012 |
