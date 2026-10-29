@@ -1,7 +1,7 @@
 # Story 082: Every symbol's patrol sweep and resume point are symbol-legal at every reachable stage
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-30h [D] (R5, patrol legality)** For every symbol, at every reachable stage where it is active, every cell its patrol segments sweep (± `body_radius`) and its patrol origin are symbol-legal.
+- [x] **AC-30h [D] (R5, patrol legality)** For every symbol, at every reachable stage where it is active, every cell its patrol segments sweep (± `body_radius`) and its patrol origin are symbol-legal.
 
 ---
 
@@ -76,7 +76,7 @@
 **Required evidence**:
 - `tests/unit/overworld/data/patrol_legality_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -84,3 +84,8 @@
 
 - Depends on: `story-073-checkpoint-requirement-and-critical-path-reachability.md` (the `validate_maps.gd` CI harness and its first `[D]` criterion), `story-128-safe-cell-bake-boundary-precision.md` (the `SAFE` bake that `is_symbol_legal` reads)
 - Unlocks: `production/epics/overworld-exploration-encounters/story-083-bypass-lane-ordered-search.md`
+
+## Completion Notes (2026-10-30)
+
+- `MapStructureValidator._check_patrol_legality()` / `swept_illegal_cell()`, run in `validate_maps`. Cells strictly within `body_radius` of a segment count (a body exactly touching a cell edge does not).
+- Static symbols are excluded (rule 13a exempts the story encounter; story 075 checks the boss). **Stages:** one configuration per map until markers carry `min_stage` (stories 053-058), as in story 083.

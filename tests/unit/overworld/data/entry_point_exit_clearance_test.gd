@@ -72,8 +72,13 @@ func test_entry_inside_a_second_exit_is_reported_against_that_exit() -> void:
 	seg.add_child(trap)
 	var errors: PackedStringArray = MapValidator.validate_maps(maps, OverworldConfig.new())
 	_free(maps)
-	assert_int(errors.size()).is_equal(1)
-	assert_str(errors[0]).contains("exit_fixture_trap").contains("0.00 m")
+	# The trap's own safe zone also makes the nearby Clerk's patrol illegal
+	# (story 082); only the clearance error is this test's subject.
+	var named: Array[String] = []
+	for err: String in errors:
+		if err.contains("is 0.00 m from exit 'exit_fixture_trap'"):
+			named.append(err)
+	assert_int(named.size()).is_equal(1)
 
 
 func test_entry_facing_a_wall_is_reported() -> void:

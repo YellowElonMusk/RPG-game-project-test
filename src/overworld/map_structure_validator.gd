@@ -46,6 +46,7 @@ static func validate(maps: Dictionary, cfg: OverworldConfig,
 				% [defaults.size(), defaults])
 	for map_id: String in maps:
 		_check_patrol_clearance(maps[map_id], cfg, errors)
+		_check_patrol_legality(maps[map_id], cfg, errors)
 	for map_id: String in maps:
 		var map: OverworldMap = maps[map_id]
 		var grid: WalkGrid = null
@@ -291,3 +292,55 @@ static func _holds_boss(map: OverworldMap) -> bool:
 		if s.is_static and s.start_on == EncounterSymbol.StartOn.CONTACT_OR_CONFIRM:
 			return true
 	return false
+
+
+## Story 082, AC-30h (GDD rule 5 "Patrol legality"): every cell a patrolling
+## symbol's segments sweep within `body_radius` (a loop's closing segment
+## included), and its origin cell, is symbol-legal: walkable, not `SAFE`,
+## not under a closed checkpoint. Reports the first offending cell per
+## symbol. Static symbols are placed by rules 13 and 13a instead. Stages:
+## one configuration per map until markers carry `min_stage`
+## (TODO(overworld): repeat per reachable stage, stories 053-058).
+static func _check_patrol_legality(map: OverworldMap, cfg: OverworldConfig,
+		errors: PackedStringArray) -> void:
+	var grid: WalkGrid = null
+	for sym: EncounterSymbol in map.symbol_markers():
+		if sym.is_static or sym.patrol_path.is_empty():
+			continue
+		if grid == null:
+			grid = map.bake_walk_grid(cfg)
+			for cp: CheckpointMarker in map.checkpoints():
+				grid.set_blocked(OverworldMode.checkpoint_cells(cp, grid), true)
+		var bad: Vector2i = swept_illegal_cell(grid, sym, cfg.body_radius)
+		if bad != Vector2i(-1, -1):
+			errors.append("%s: symbol '%s' patrol sweeps cell %s, which is not symbol-legal (%s)"
+					% [map.map_id, _sym_id(sym), bad,
+					"SAFE" if grid.is_walkable(bad) else "blocked"])
+
+
+## The first cell `sym`'s patrol sweeps within `radius` (or its origin
+## cell) that is not symbol-legal on `grid`, or (-1, -1) when all are.
+static func swept_illegal_cell(grid: WalkGrid, sym: EncounterSymbol, radius: float) -> Vector2i:
+	var path: PackedVector2Array = sym.patrol_path
+	var origin: Vector2i = grid.cell_of(path[0])
+	if not grid.is_symbol_legal(origin):
+		return origin
+	var segs: Array = []
+	for i in maxi(path.size() - 1, 1):
+		segs.append([path[i], path[mini(i + 1, path.size() - 1)]])
+	if path.size() > 2 and sym.path_mode == SymbolBrain.PathMode.LOOP:
+		segs.append([path[path.size() - 1], path[0]])
+	for s: Array in segs:
+		var a: Vector2 = s[0]
+		var b: Vector2 = s[1]
+		var lo := Vector2i(floori((minf(a.x, b.x) - radius) / grid.cell_m), floori((minf(a.y, b.y) - radius) / grid.cell_m))
+		var hi := Vector2i(floori((maxf(a.x, b.x) + radius) / grid.cell_m), floori((maxf(a.y, b.y) + radius) / grid.cell_m))
+		for y in range(lo.y, hi.y + 1):
+			for x in range(lo.x, hi.x + 1):
+				var cell := Vector2i(x, y)
+				var rect := Rect2(Vector2(cell) * grid.cell_m, Vector2.ONE * grid.cell_m)
+				# Strictly inside the swept body, so a body exactly touching a
+				# neighbouring cell's edge does not count that cell.
+				if segment_rect_distance(a, b, rect) < radius and not grid.is_symbol_legal(cell):
+					return cell
+	return Vector2i(-1, -1)
