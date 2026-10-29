@@ -108,6 +108,10 @@ var _line_on_reveal: String = ""
 var _flags_this_visit: Dictionary = {}
 ## Every line opened through `say()`, in order (tests read it).
 var lines_said: Array[String] = []
+## `probe()` calls so far (story 013 asserts none run while locked out).
+var probe_calls: int = 0
+## Codex rumours added by clue gags (story 016).
+var rumours_added: int = 0
 ## The follow camera's settings, for the first-sight check (rule 13a); the
 ## view assigns its own on start.
 var presentation: PresentationConfig = PresentationConfig.new()
@@ -229,6 +233,9 @@ func load_map(map: OverworldMap, entry_marker_id: StringName = &"") -> void:
 	_grid = map.bake_walk_grid(config)
 	map.build_set(_grid)
 	_setup_checkpoints(map)
+	for gag: GagInteractable in map.gags():
+		if _has_flag(_gag_flag("changed", gag)):
+			map.set_gag_shown(gag.marker_id, false)
 	_leader_pos = map.spawn_position(_grid)
 	var entry: EntryPoint = map.find_entry_point(entry_marker_id) \
 			if entry_marker_id != &"" else null
@@ -863,56 +870,105 @@ func _map_id() -> String:
 # -- Interaction (GDD rule 3) -----------------------------------------------
 
 ## The nearest eligible target within `interact_reach_m` of the probe point
-## (`facing * body_radius` ahead of the leader), or null (GDD rule 3).
-## Targets: CampSpots (always eligible), Static symbols (eligible while
-## unresolved) and closed checkpoints, except a story encounter's own
-## checkpoint while its Static symbol stands. Exact ties go CampSpot, then
-## Static symbol, then checkpoint. Returns a `CampSpot`, an
-## `EncounterSource` or a `CheckpointMarker`. TODO(overworld): NPCs and
-## gags (stories 011-016).
+## (`facing * body_radius` ahead of the leader), or null (GDD rule 3,
+## stories 011 and 016). Targets and eligibility:
+## - NPCs and CampSpots: always;
+## - Static symbols: while unresolved;
+## - checkpoints: while closed, except a story encounter's own while its
+##   Static symbol stands;
+## - gags: `line` and `clue` always (they repeat), `change` until changed.
+## On an exact tie the order is NPC, CampSpot, Static symbol, then
+## Interactable (checkpoint or gag): candidates are visited in that order and
+## only a strictly nearer one replaces the best. Returns an `NpcSpawn`,
+## `CampSpot`, `EncounterSource`, `CheckpointMarker` or `GagInteractable`.
+## TODO(overworld): liberated markers drop out too, once liberation exists
+## (rule 9, stories 059-060).
 func probe() -> Object:
+	probe_calls += 1
 	var point: Vector2 = _leader_pos + _leader_facing.normalized() * config.body_radius
-	var best: Object = null
-	var best_d: float = INF
-	var reach: float = config.interact_reach_m + 1e-6
+	var candidates: Array = []  # [target, ground position], in tie order
 	if _map != null:
+		for npc: NpcSpawn in _map.npc_spawns():
+			candidates.append([npc, npc.ground_position(_map)])
 		for camp: CampSpot in _map.camp_spots():
-			var d: float = point.distance_to(camp.ground_position(_map))
-			if d <= reach and d < best_d:
-				best = camp
-				best_d = d
+			candidates.append([camp, camp.ground_position(_map)])
 	var guarded: Dictionary = {}
 	for source: EncounterSource in _sources:
 		if not source.brain.is_static():
 			continue
 		if source.checkpoint_id != &"":
 			guarded[source.checkpoint_id] = true
-		var d: float = point.distance_to(source.brain.position)
-		if d <= reach and d < best_d:
-			best = source
-			best_d = d
+		candidates.append([source, source.brain.position])
 	for marker_id: StringName in _checkpoints:
-		var cp: CheckpointMarker = _checkpoints[marker_id]
-		if is_checkpoint_open(marker_id) or guarded.has(marker_id):
-			continue
-		var d: float = point.distance_to(cp.ground_position(_map))
+		if not is_checkpoint_open(marker_id) and not guarded.has(marker_id):
+			var cp: CheckpointMarker = _checkpoints[marker_id]
+			candidates.append([cp, cp.ground_position(_map)])
+	if _map != null:
+		for gag: GagInteractable in _map.gags():
+			if gag.response != GagInteractable.Response.CHANGE or not _has_flag(_gag_flag("changed", gag)):
+				candidates.append([gag, gag.ground_position(_map)])
+	var best: Object = null
+	var best_d: float = INF
+	var reach: float = config.interact_reach_m + 1e-6
+	for c: Array in candidates:
+		var d: float = point.distance_to(c[1])
 		if d <= reach and d < best_d:
-			best = cp
+			best = c[0]
 			best_d = d
 	return best
 
 
 ## `confirm` in Exploring acts on `probe()`'s result (GDD rule 3). Nothing
-## in reach does nothing.
+## in reach does nothing (story 012: no line, no sound).
 func confirm() -> void:
 	var target: Object = probe()
-	if target is CampSpot:
+	if target is NpcSpawn:
+		var npc: NpcSpawn = target
+		say(npc.line, Callable(), npc.speaker)
+	elif target is CampSpot:
 		_open_camp_prompt(target as CampSpot)
 	elif target is EncounterSource:
 		var source: EncounterSource = target
 		start_encounter(source.enc_id, source)
 	elif target is CheckpointMarker:
 		confirm_checkpoint((target as CheckpointMarker).marker_id)
+	elif target is GagInteractable:
+		confirm_gag(target as GagInteractable)
+
+
+## `confirm` at a gag (GDD rule 16; story 016). `LINE` repeats, its
+## `alt_text` from the second time on; `CHANGE` shows its line once and
+## drops out of `probe()` for good; `CLUE` repeats its line and adds its
+## rumour only the first time.
+func confirm_gag(gag: GagInteractable) -> void:
+	var used: bool = _has_flag(_gag_flag("used", gag))
+	_set_flag(_gag_flag("used", gag))
+	match gag.response:
+		GagInteractable.Response.LINE:
+			say(gag.alt_text if used and not gag.alt_text.is_empty() else gag.text)
+		GagInteractable.Response.CHANGE:
+			if _has_flag(_gag_flag("changed", gag)):
+				return
+			_set_flag(_gag_flag("changed", gag))
+			if _map != null:
+				_map.set_gag_shown(gag.marker_id, false)
+			say(gag.text)
+		GagInteractable.Response.CLUE:
+			if not gag.rumour_id.is_empty() and not _has_flag("rumour:" + gag.rumour_id):
+				_set_flag("rumour:" + gag.rumour_id)
+				rumours_added += 1
+			say(gag.text)
+
+
+## `true` once rumour `rumour_id` is in the Codex (GDD rule 7a clue).
+## TODO(codex): the Combo System & Codex owns the rumour list itself.
+func has_rumour(rumour_id: String) -> bool:
+	return _has_flag("rumour:" + rumour_id)
+
+
+func _gag_flag(kind: String, gag: GagInteractable) -> String:
+	return "gag_%s:%s:%s" % [kind, _map_id(), gag.marker_id]
+
 
 
 # -- Camps (GDD rule 13a, States CampPrompt; story 113) ----------------------
@@ -989,11 +1045,11 @@ func _check_camp_registration() -> void:
 ## Dialogue system exists). `then` runs on the same frame as the line's
 ## `overlay_closed` (ADR-0012 §6). Returns Game State's result; on a
 ## rejection `then` is dropped.
-func say(text: String, then: Callable = Callable()) -> GameStateMachine.RequestResult:
+func say(text: String, then: Callable = Callable(), speaker: String = "") -> GameStateMachine.RequestResult:
 	if _machine == null:
 		return GameStateMachine.RequestResult.REJECTED_INVALID_PAYLOAD
 	var result: GameStateMachine.RequestResult = _machine.open_overlay(
-			GameStateMachine.OverlayKind.DIALOGUE, DialogueLinePayload.new(text))
+			GameStateMachine.OverlayKind.DIALOGUE, DialogueLinePayload.new(text, speaker))
 	if result == GameStateMachine.RequestResult.OK:
 		_after_line = then
 		lines_said.append(text)
@@ -1054,11 +1110,29 @@ func _set_flag(flag: String) -> void:
 ## `confirm`-started Static symbol (the story encounter), `&"fight"` for
 ## the boss, `&"check"` for a checkpoint, `&""` for nothing in reach.
 func probe_kind() -> StringName:
-	var target: Object = probe()
+	return kind_of(probe())
+
+
+## The prompt kind of a `probe()` result (see `probe_kind()`).
+static func kind_of(target: Object) -> StringName:
+	if target is NpcSpawn:
+		return &"talk"
 	if target is CampSpot:
 		return &"rest"
 	if target is EncounterSource:
 		return &"fight" if (target as EncounterSource).brain.contact_eligible() else &"ticket"
 	if target is CheckpointMarker:
 		return &"check"
+	if target is GagInteractable:
+		return &"look"
 	return &""
+
+
+## The ground position of a `probe()` result, where the prompt is drawn
+## (story 015).
+func target_position(target: Object) -> Vector2:
+	if target is EncounterSource:
+		return (target as EncounterSource).brain.position
+	if target is Node3D and _map != null:
+		return OverworldMap.ground_position_of(target as Node3D, _map)
+	return _leader_pos

@@ -1,7 +1,7 @@
 # Story 012: With nothing in reach, confirm does nothing and makes no sound
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-7b [L] (R3)** With nothing in reach, `confirm` opens nothing and the audio spy records zero events. Pointer events cause no interaction.
+- [x] **AC-7b [L] (R3)** With nothing in reach, `confirm` opens nothing and the audio spy records zero events. Pointer events cause no interaction.
 
 ---
 
@@ -79,7 +79,7 @@ simplest probe outcome and the one every eligibility and lockout story (013,
 **Required evidence**:
 - `tests/unit/overworld/probe_empty_reach_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -87,3 +87,7 @@ simplest probe outcome and the one every eligibility and lockout story (013,
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-011-probe-nearest-target-tie-order.md`
 - Unlocks: None
+
+## Completion Notes (2026-10-30)
+
+- No audio system exists, so the audio-spy clause has nothing to count (TODO in `probe_empty_reach_test.gd`). Pointer input is dropped by the input system before routing; the test covers non-confirm actions reaching the mode.

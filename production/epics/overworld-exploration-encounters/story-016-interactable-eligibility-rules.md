@@ -1,7 +1,7 @@
 # Story 016: Spent and resolved interactables drop out of probe(); repeatable ones stay targetable
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-7f [L] (R3, eligibility)** GIVEN an open checkpoint, a `change` gag already changed and a liberated marker within reach, THEN `probe()` returns none of them and no prompt is drawn. GIVEN a `line` gag already used, THEN it is still targeted and repeats its line (or its alternate). GIVEN a `clue` gag used again, THEN no second rumour is added.
+- [x] **AC-7f [L] (R3, eligibility)** GIVEN an open checkpoint, a `change` gag already changed and a liberated marker within reach, THEN `probe()` returns none of them and no prompt is drawn. GIVEN a `line` gag already used, THEN it is still targeted and repeats its line (or its alternate). GIVEN a `clue` gag used again, THEN no second rumour is added.
 
 ---
 
@@ -81,7 +81,7 @@ second rumour."
 **Required evidence**:
 - `tests/unit/overworld/probe_eligibility_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -89,3 +89,8 @@ second rumour."
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-011-probe-nearest-target-tie-order.md`
 - Unlocks: None
+
+## Completion Notes (2026-10-30)
+
+- Liberated markers do not exist yet (rule 9; stories 059-060), so that clause has nothing to check. Open checkpoints, changed `change` gags, repeating `line` gags (alternate line) and once-only `clue` rumours are covered.
+- New: `NpcSpawn` and `GagInteractable` markers; the segment carries a civilian with the rule 16 teaching line and the permit clue poster (`faction_clue`, rumour `rumour_permit_ban`).

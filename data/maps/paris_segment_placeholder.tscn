@@ -4,6 +4,8 @@
 [ext_resource type="Script" path="res://src/overworld/map_exit.gd" id="2_3qdwj"]
 [ext_resource type="Script" path="res://src/overworld/entry_point.gd" id="3_xrel5"]
 [ext_resource type="Script" path="res://src/overworld/encounter_symbol.gd" id="4_kglc8"]
+[ext_resource type="Script" path="res://src/overworld/npc_spawn.gd" id="5_npc"]
+[ext_resource type="Script" path="res://src/overworld/markers/interactable_gag.gd" id="6_gag"]
 
 [sub_resource type="Image" id="Image_aqlvq"]
 data = {
@@ -77,3 +79,19 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 0, 3.5)
 script = ExtResource("3_xrel5")
 marker_id = &"from_dungeon"
 facing = Vector2(0, 1)
+
+[node name="NpcUnionRegular" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 0, 9.5)
+script = ExtResource("5_npc")
+marker_id = &"npc_union_regular"
+speaker = "Café regular"
+line = "They won't follow you past the café paving. Union rules."
+
+[node name="GagPermitPoster" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0, 12.5)
+script = ExtResource("6_gag")
+marker_id = &"gag_permit_poster"
+response = 2
+text = "SPECIAL MOVES REQUIRE A PERMIT. NO PERMIT, NO SPECIAL MOVES. PLEASE TAKE A NUMBER."
+rumour_id = "rumour_permit_ban"
+faction_clue = true

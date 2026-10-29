@@ -1,7 +1,7 @@
 # Story 013: No probe or interaction starts during a transition or while any overlay is open
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-7c [L] (R3)** During a transition, or with any overlay open (Menu, Dialogue, CampPrompt), `probe()` is not called and `confirm` starts nothing.
+- [x] **AC-7c [L] (R3)** During a transition, or with any overlay open (Menu, Dialogue, CampPrompt), `probe()` is not called and `confirm` starts nothing.
 
 ---
 
@@ -78,7 +78,7 @@ itself, not what the overlay does with the input once it owns it (story 014).
 **Required evidence**:
 - `tests/unit/overworld/probe_lockout_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 

@@ -1,7 +1,7 @@
 # Story 014: The confirm that closes a Dialogue is consumed, and a held press starts nothing new
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-7d [L] (R3)** GIVEN a Dialogue line opened at an NPC, WHEN the `confirm` that closes it is pressed and then **held for at least 10 frames**, THEN the overlay closes and no new interaction starts while it is held. A release followed by a new press starts one.
+- [x] **AC-7d [L] (R3)** GIVEN a Dialogue line opened at an NPC, WHEN the `confirm` that closes it is pressed and then **held for at least 10 frames**, THEN the overlay closes and no new interaction starts while it is held. A release followed by a new press starts one.
 
 ---
 
@@ -81,7 +81,7 @@ sustained press, not just a one-frame overlap.
 **Required evidence**:
 - `tests/unit/overworld/probe_overlay_close_guard_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 

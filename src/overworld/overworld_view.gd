@@ -50,6 +50,8 @@ var _prompt_label: Label = null
 ## Interact prompt text per `OverworldMode.probe_kind()` (placeholder for
 ## the kind icons, story 015).
 const INTERACT_TEXT: Dictionary = {
+	&"talk": "[Confirm] Talk",
+	&"look": "[Confirm] Look",
 	&"rest": "[Confirm] Rest",
 	&"ticket": "[Confirm] Take a ticket",
 	&"fight": "[Confirm] Challenge",
@@ -58,6 +60,11 @@ const INTERACT_TEXT: Dictionary = {
 ## How long a bark stays up, in seconds (placeholder for `text_hold`).
 @export var bark_hold_s: float = 2.5
 var _interact_label: Label = null
+## The `probe()` result the interact prompt is drawn for this frame, or
+## null when hidden (story 015).
+var interact_target: Object = null
+## Height above a target's feet the prompt is drawn at, in metres.
+@export var prompt_height_m: float = 1.6
 var _bark_label: Label = null
 var _bark_left: float = 0.0
 
@@ -246,17 +253,21 @@ func _update_interact_prompt(delta: float) -> void:
 		_bark_label.visible = _bark_left > 0.0
 	if _interact_label == null:
 		return
-	var kind: StringName = mode.probe_kind() if mode.is_exploring() else &""
-	_interact_label.visible = kind != &""
-	_interact_label.text = String(INTERACT_TEXT.get(kind, ""))
+	# Story 015: one `probe()` per frame, only while Exploring (rule 3
+	# lockouts), and the prompt drawn above that same target.
+	interact_target = mode.probe() if mode.is_exploring() else null
+	_interact_label.visible = interact_target != null
+	if interact_target == null or _camera == null:
+		return
+	_interact_label.text = String(INTERACT_TEXT.get(OverworldMode.kind_of(interact_target), ""))
+	var above: Vector3 = ground_to_world(mode.target_position(interact_target)) + Vector3(0.0, prompt_height_m, 0.0)
+	_interact_label.position = _camera.unproject_position(above) - _interact_label.size * Vector2(0.5, 1.0)
 
 
 func _build_hud_labels(layer: CanvasLayer) -> void:
 	_interact_label = Label.new()
 	_interact_label.name = "InteractPrompt"
 	_interact_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_interact_label.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	_interact_label.position = Vector2(-160.0, -64.0)
 	_interact_label.size = Vector2(320.0, 40.0)
 	_interact_label.add_theme_font_size_override(&"font_size", 22)
 	_interact_label.visible = false

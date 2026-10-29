@@ -74,12 +74,12 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 008 | [A solo party still records a trail, and a mid-visit recruit joins at the first slot](story-008-solo-party-trail-and-mid-visit-recruit.md) | Logic | Ready | ADR-0012 |
 | 009 | [A follower's facing flips only after moving into the new direction, and copies the leader when idle](story-009-follower-facing-flip-hysteresis.md) | Logic | Ready | ADR-0012 |
 | 010 | [Followers are never saved, and reload rebuilds them from roster order](story-010-followers-not-saved-rebuilt-from-roster.md) | Logic | Ready | ADR-0012 |
-| 011 | [probe() finds the nearest eligible target with a fixed tie order](story-011-probe-nearest-target-tie-order.md) | Logic | Ready | ADR-0012 |
-| 012 | [With nothing in reach, confirm does nothing and makes no sound](story-012-confirm-does-nothing-with-no-target.md) | Logic | Ready | ADR-0012 |
-| 013 | [No probe or interaction starts during a transition or while any overlay is open](story-013-probe-blocked-during-transition-or-overlay.md) | Logic | Ready | ADR-0012 |
-| 014 | [The confirm that closes a Dialogue is consumed, and a held press starts nothing new](story-014-confirm-close-overlay-held-press-guard.md) | Logic | Ready | ADR-0012 |
-| 015 | [The interact prompt is drawn over exactly the current probe() result](story-015-interact-prompt-follows-probe-result.md) | Logic | Ready | ADR-0012 |
-| 016 | [Spent and resolved interactables drop out of probe(); repeatable ones stay targetable](story-016-interactable-eligibility-rules.md) | Logic | Ready | ADR-0012 |
+| 011 | [probe() finds the nearest eligible target with a fixed tie order](story-011-probe-nearest-target-tie-order.md) | Logic | Complete | ADR-0012 |
+| 012 | [With nothing in reach, confirm does nothing and makes no sound](story-012-confirm-does-nothing-with-no-target.md) | Logic | Complete | ADR-0012 |
+| 013 | [No probe or interaction starts during a transition or while any overlay is open](story-013-probe-blocked-during-transition-or-overlay.md) | Logic | Complete | ADR-0012 |
+| 014 | [The confirm that closes a Dialogue is consumed, and a held press starts nothing new](story-014-confirm-close-overlay-held-press-guard.md) | Logic | Complete | ADR-0012 |
+| 015 | [The interact prompt is drawn over exactly the current probe() result](story-015-interact-prompt-follows-probe-result.md) | Logic | Complete | ADR-0012 |
+| 016 | [Spent and resolved interactables drop out of probe(); repeatable ones stay targetable](story-016-interactable-eligibility-rules.md) | Logic | Complete | ADR-0012 |
 | 017 | [Every MVP map record ships with zone_rate = 0, enforced in CI](story-017-zone-rate-zero-on-every-mvp-map.md) | Logic | Ready | ADR-0012 |
 | 018 | [At runtime, a non-zero zone_rate logs an error and no zone roll ever fires](story-018-zone-roll-suppressed-at-runtime.md) | Logic | Ready | ADR-0012 |
 | 019 | [Every faction record used by a shipped map names a resolving patrol_archetype_id](story-019-faction-patrol-archetype-id-resolves.md) | Logic | Ready | ADR-0012 |

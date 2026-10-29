@@ -1,7 +1,7 @@
 # Story 011: probe() finds the nearest eligible target with a fixed tie order
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-7a [L] (R3)** GIVEN an NPC, a CampSpot and an Interactable within `interact_reach_m` of the probe point, THEN `confirm` targets the one nearest the probe point. On an exact tie the order is NPC, CampSpot, `confirm`-started Static symbol, Interactable (the fixture includes one of each). GIVEN an unresolved story encounter, THEN its boom checkpoint is never returned. GIVEN a target within reach of the leader's centre but not of the probe point, THEN it is not targeted.
+- [x] **AC-7a [L] (R3)** GIVEN an NPC, a CampSpot and an Interactable within `interact_reach_m` of the probe point, THEN `confirm` targets the one nearest the probe point. On an exact tie the order is NPC, CampSpot, `confirm`-started Static symbol, Interactable (the fixture includes one of each). GIVEN an unresolved story encounter, THEN its boom checkpoint is never returned. GIVEN a target within reach of the leader's centre but not of the probe point, THEN it is not targeted.
 
 ---
 
@@ -80,7 +80,7 @@ AC's third clause tests: a target in reach of the centre but not of the
 **Required evidence**:
 - `tests/unit/overworld/probe_tie_order_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 

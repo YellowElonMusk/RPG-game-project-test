@@ -36,6 +36,9 @@ extends Node3D
 @export var camp_color: Color = Color(0.45, 0.7, 0.4)
 ## Placeholder colour of a closed checkpoint's barrier boxes.
 @export var checkpoint_color: Color = Color(0.85, 0.3, 0.25)
+## Placeholder colours of an NPC's box and a gag's poster board.
+@export var npc_color: Color = Color(0.3, 0.55, 0.75)
+@export var gag_color: Color = Color(0.95, 0.9, 0.6)
 
 
 ## Bakes this map's `WalkGrid` from `walk_layer` (the only read of the
@@ -83,6 +86,24 @@ func camp_spots() -> Array[CampSpot]:
 	for child: Node in get_children():
 		if child is CampSpot:
 			out.append(child as CampSpot)
+	return out
+
+
+## The map's `NpcSpawn` markers in child order.
+func npc_spawns() -> Array[NpcSpawn]:
+	var out: Array[NpcSpawn] = []
+	for child: Node in get_children():
+		if child is NpcSpawn:
+			out.append(child as NpcSpawn)
+	return out
+
+
+## The map's gag `Interactable`s in child order.
+func gags() -> Array[GagInteractable]:
+	var out: Array[GagInteractable] = []
+	for child: Node in get_children():
+		if child is GagInteractable:
+			out.append(child as GagInteractable)
 	return out
 
 
@@ -156,6 +177,10 @@ func marker_ids() -> Array[StringName]:
 		out.append(camp.marker_id)
 	for cp: CheckpointMarker in checkpoints():
 		out.append(cp.marker_id)
+	for npc: NpcSpawn in npc_spawns():
+		out.append(npc.marker_id)
+	for gag: GagInteractable in gags():
+		out.append(gag.marker_id)
 	return out
 
 
@@ -250,6 +275,31 @@ func build_set(grid: WalkGrid) -> void:
 		bar.position = Vector3(bc.x, wall_height_m * 0.3, bc.y)
 		set_root.add_child(bar)
 
+	for npc: NpcSpawn in npc_spawns():
+		_marker_box(set_root, "Npc_%s" % npc.marker_id, npc.ground_position(self),
+				Vector3(0.4, 1.4, 0.4), npc_color)
+	for gag: GagInteractable in gags():
+		_marker_box(set_root, "Gag_%s" % gag.marker_id, gag.ground_position(self),
+				Vector3(0.8, 1.0, 0.1), gag_color)
+
+
+func _marker_box(parent: Node3D, node_name: String, at: Vector2, size: Vector3, color: Color) -> void:
+	var mesh := BoxMesh.new()
+	mesh.size = size
+	mesh.material = _flat_material(color)
+	var box := MeshInstance3D.new()
+	box.name = node_name
+	box.mesh = mesh
+	box.layers = DioramaStage.LAYER_SET
+	box.position = Vector3(at.x, size.y * 0.5, at.y)
+	parent.add_child(box)
+
+
+## Hides gag `marker_id`'s placeholder once its `change` is done.
+func set_gag_shown(marker_id: StringName, shown: bool) -> void:
+	var box: Node3D = get_node_or_null("PlaceholderSet/Gag_%s" % marker_id) as Node3D
+	if box != null:
+		box.visible = shown
 
 ## Shows or hides checkpoint `marker_id`'s placeholder barrier.
 func set_checkpoint_shown(marker_id: StringName, shown: bool) -> void:

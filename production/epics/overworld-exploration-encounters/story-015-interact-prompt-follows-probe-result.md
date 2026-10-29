@@ -1,7 +1,7 @@
 # Story 015: The interact prompt is drawn over exactly the current probe() result
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-7e [L] (R3, UI)** On every frame of a scripted walk past 3 targets, the interact prompt is drawn above exactly one target, the `probe()` result (or is hidden when there is none). It is hidden while a transition, overlay or redirect runs. (Absorbs the former AC-44c.)
+- [x] **AC-7e [L] (R3, UI)** On every frame of a scripted walk past 3 targets, the interact prompt is drawn above exactly one target, the `probe()` result (or is hidden when there is none). It is hidden while a transition, overlay or redirect runs. (Absorbs the former AC-44c.)
 
 ---
 
@@ -82,7 +82,7 @@ not a single-frame snapshot, because the prompt must track a moving
 **Required evidence**:
 - `tests/unit/overworld/interact_prompt_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
