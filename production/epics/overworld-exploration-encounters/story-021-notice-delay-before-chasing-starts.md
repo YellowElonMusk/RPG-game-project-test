@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-9b [L] (R5, notice)** GIVEN the leader entering the front half-plane at a centre distance below `symbol_chase_m`, with a reachable path, THEN the symbol is in Noticing on that frame's step. It is still in Noticing at `notice_delay_s − dt` and in Chasing at `notice_delay_s + dt`. GIVEN the leader leaving the radius during the delay, THEN Chasing still starts.
+- [x] **AC-9b [L] (R5, notice)** GIVEN the leader entering the front half-plane at a centre distance below `symbol_chase_m`, with a reachable path, THEN the symbol is in Noticing on that frame's step. It is still in Noticing at `notice_delay_s − dt` and in Chasing at `notice_delay_s + dt`. GIVEN the leader leaving the radius during the delay, THEN Chasing still starts.
 
 ---
 
@@ -82,7 +82,7 @@ query-budget stories outside this batch own those).
 **Required evidence**:
 - `tests/unit/overworld/symbol_brain_notice_delay_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (full suite 726/726 after stories 021-027, 2026-10-29)
 
 ---
 
@@ -90,3 +90,16 @@ query-budget stories outside this batch own those).
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-020-patrol-loop-and-pingpong-traversal.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Implemented**: 2026-10-29
+- `src/overworld/symbol_brain.gd`: Patrol runs the notice test before moving; a pass enters Noticing on that frame without moving. Noticing accumulates `dt` and enters Chasing once `cfg.notice_delay_s` has elapsed, ignoring the leader. `src/overworld/overworld_config.gd`: `notice_delay_s` (0.4) and the other notice/turn knobs (GDD defaults).
+- Tests: `tests/unit/overworld/symbol_brain_notice_delay_test.gd` (5): Noticing at `delay - dt`, Chasing at `delay + dt` (dt 0.013), leader leaving mid-delay, patrolling symbol stops on the entry frame; default + custom config.
+- `SymbolBrain.step()` widened to `step(dt, leader, grid, grace, cfg)` (stories 021-025 share one notice-test implementation in `src/overworld/symbol_brain.gd`). `tests/unit/overworld/symbol_brain_patrol_test.gd` (story 020) updated to the new signature, `heading` (the raw movement direction, renamed from `facing`), and `turn_pause_s = 0` so its uninterrupted arc-length checks still hold.
+
+**Deviations**:
+- Chasing has no movement yet: TODO(overworld), stories 031+.
+- `leader_safe` is read from `grid` (`WalkGrid.is_safe()`) rather than passed in; `QueryBudget` is not in the signature yet (stories 028-030).

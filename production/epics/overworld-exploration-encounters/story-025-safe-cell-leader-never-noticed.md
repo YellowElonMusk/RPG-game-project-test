@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-9f [L] (R5, SAFE)** GIVEN the leader in a `SAFE` cell inside a patrolling symbol's front radius with a reachable path, THEN no notice on any frame over 10 s.
+- [x] **AC-9f [L] (R5, SAFE)** GIVEN the leader in a `SAFE` cell inside a patrolling symbol's front radius with a reachable path, THEN no notice on any frame over 10 s.
 
 ---
 
@@ -82,7 +82,7 @@ only the `SAFE` flag can be responsible for the suppression.
 **Required evidence**:
 - `tests/unit/overworld/symbol_brain_safe_cell_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (full suite 726/726 after stories 021-027, 2026-10-29)
 
 ---
 
@@ -90,3 +90,14 @@ only the `SAFE` flag can be responsible for the suppression.
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-020-patrol-loop-and-pingpong-traversal.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Implemented**: 2026-10-29
+- Check 2: `WalkGrid.is_safe(cell)` (new) on the leader's cell, before any search.
+- Tests: `tests/unit/overworld/symbol_brain_safe_cell_test.gd` (3): SAFE leader never noticed over 10 s at 1/60 and `dt_max` with 0 searches while a legal neighbour is reachable within the cap; non-SAFE control noticed; default + custom.
+- `SymbolBrain.step()` widened to `step(dt, leader, grid, grace, cfg)` (stories 021-025 share one notice-test implementation in `src/overworld/symbol_brain.gd`). `tests/unit/overworld/symbol_brain_patrol_test.gd` (story 020) updated to the new signature, `heading` (the raw movement direction, renamed from `facing`), and `turn_pause_s = 0` so its uninterrupted arc-length checks still hold.
+
+**Deviations**: none.

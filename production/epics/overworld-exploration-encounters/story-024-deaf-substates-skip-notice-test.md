@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-9e [L] (R5, deaf states)** GIVEN a symbol in Returning, Stunned or the re-notice cooldown, or any symbol during encounter grace, THEN the notice test does not run, whatever the leader's position.
+- [x] **AC-9e [L] (R5, deaf states)** GIVEN a symbol in Returning, Stunned or the re-notice cooldown, or any symbol during encounter grace, THEN the notice test does not run, whatever the leader's position.
 
 ---
 
@@ -81,7 +81,7 @@ notice **and** contact independent of sub-state.
 **Required evidence**:
 - `tests/unit/overworld/symbol_brain_deaf_substates_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (full suite 726/726 after stories 021-027, 2026-10-29)
 
 ---
 
@@ -89,3 +89,15 @@ notice **and** contact independent of sub-state.
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-020-patrol-loop-and-pingpong-traversal.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Implemented**: 2026-10-29
+- The notice test runs only in Patrol, outside `renotice_cooldown_s` and when `grace` is false; `rejoin_patrol(cfg)` is the Returning -> Patrol transition that starts the cooldown.
+- Tests: `tests/unit/overworld/symbol_brain_deaf_substates_test.gd` (5): Returning, Stunned, grace in every sub-state (`notice_tests_run` stays 0), cooldown deaf at `c - dt` and noticing at `c + dt`; default + custom cooldown.
+- `SymbolBrain.step()` widened to `step(dt, leader, grid, grace, cfg)` (stories 021-025 share one notice-test implementation in `src/overworld/symbol_brain.gd`). `tests/unit/overworld/symbol_brain_patrol_test.gd` (story 020) updated to the new signature, `heading` (the raw movement direction, renamed from `facing`), and `turn_pause_s = 0` so its uninterrupted arc-length checks still hold.
+
+**Deviations**:
+- Returning has no movement yet, so `rejoin_patrol()` is called by tests only (TODO(overworld), stories 031+). `on_grace_started()` (Noticing/Chasing -> Returning) is out of scope.

@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-9c [L] (R5, facing)** GIVEN the leader in the rear half-plane at a distance between `symbol_notice_rear_m` and `symbol_chase_m`, THEN no notice. Inside `symbol_notice_rear_m`, THEN notice.
+- [x] **AC-9c [L] (R5, facing)** GIVEN the leader in the rear half-plane at a distance between `symbol_notice_rear_m` and `symbol_chase_m`, THEN no notice. Inside `symbol_notice_rear_m`, THEN notice.
 
 ---
 
@@ -82,7 +82,7 @@ capped at `symbol_chase_m` (I12: "Sneaking is impossible" at the high end).
 **Required evidence**:
 - `tests/unit/overworld/symbol_brain_notice_radius_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (full suite 726/726 after stories 021-027, 2026-10-29)
 
 ---
 
@@ -90,3 +90,15 @@ capped at `symbol_chase_m` (I12: "Sneaking is impossible" at the high end).
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-020-patrol-loop-and-pingpong-traversal.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Implemented**: 2026-10-29
+- Check 1 in `SymbolBrain._notice_test()`: `symbol_chase_m` when `offset.dot(diagonal) >= 0`, else `symbol_notice_rear_m`; `notice_tests_run`/`notice_searches_run` diagnostic counters prove check 1 rejects before any search.
+- Config: `symbol_chase_m` 3.0, `symbol_notice_rear_m` 1.5.
+- Tests: `tests/unit/overworld/symbol_brain_notice_radius_test.gd` (5): rear band rejected with 0 searches, inside rear noticed, same distance in front noticed; default + custom.
+- `SymbolBrain.step()` widened to `step(dt, leader, grid, grace, cfg)` (stories 021-025 share one notice-test implementation in `src/overworld/symbol_brain.gd`). `tests/unit/overworld/symbol_brain_patrol_test.gd` (story 020) updated to the new signature, `heading` (the raw movement direction, renamed from `facing`), and `turn_pause_s = 0` so its uninterrupted arc-length checks still hold.
+
+**Deviations**: none.

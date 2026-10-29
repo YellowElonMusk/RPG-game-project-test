@@ -16,6 +16,11 @@ const FLAG_WALKABLE: int = 1 << 0
 const FLAG_SAFE: int = 1 << 1
 const FLAG_RUNTIME_BLOCKED: int = 1 << 2
 
+## The eight neighbour offsets `bounded_search()` expands.
+const _NEIGHBOURS: Array[Vector2i] = [
+	Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1),
+	Vector2i(1, 1), Vector2i(1, -1), Vector2i(-1, 1), Vector2i(-1, -1)]
+
 ## Grid extent, in cells.
 var size: Vector2i = Vector2i.ZERO
 
@@ -125,6 +130,68 @@ func revision() -> int:
 ## Converts a ground-plane position, in metres, to its containing cell.
 func cell_of(ground: Vector2) -> Vector2i:
 	return Vector2i(floori(ground.x / cell_m), floori(ground.y / cell_m))
+
+
+## Ground-plane centre of `cell`, in metres.
+func cell_center(cell: Vector2i) -> Vector2:
+	return (Vector2(cell) + Vector2(0.5, 0.5)) * cell_m
+
+
+## `true` iff `cell` is in bounds and carries the `SAFE` bit (GDD rule 5
+## notice test check 2: "the leader is not in a `SAFE` cell"; rule 12).
+## Out-of-bounds cells are not safe.
+func is_safe(cell: Vector2i) -> bool:
+	if not _in_bounds(cell):
+		return false
+	return (cells[_index(cell)] & FLAG_SAFE) != 0
+
+
+## The notice test's bounded search (GDD rule 5 check 4; ADR-0012 §5):
+## uniform-cost (Dijkstra-style) over symbol-legal cells, 8-connected with
+## `cell_m * sqrt(2)` diagonal steps, a diagonal allowed only when both
+## orthogonal cells it cuts past are symbol-legal (the A* diagonal rule).
+## Returns the route length between the two cell centres, in metres, or
+## `INF` when `to` is not reached within `cap_m`. No cell whose route length
+## exceeds `cap_m` is ever expanded, so the cost is bounded by the cap.
+## TODO(overworld): the per-symbol waypoint cache cleared by `set_blocked`
+## (AC-9k) is outside stories 021-027.
+func bounded_search(from: Vector2i, to: Vector2i, cap_m: float) -> float:
+	if cap_m < 0.0 or not is_symbol_legal(from) or not is_symbol_legal(to):
+		return INF
+	if from == to:
+		return 0.0
+	var dist: Dictionary[Vector2i, float] = {from: 0.0}
+	var done: Dictionary[Vector2i, bool] = {}
+	var frontier: Array[Vector2i] = [from]
+	while not frontier.is_empty():
+		var best: int = 0
+		for i in range(1, frontier.size()):
+			if dist[frontier[i]] < dist[frontier[best]]:
+				best = i
+		var cell: Vector2i = frontier[best]
+		frontier[best] = frontier[frontier.size() - 1]
+		frontier.pop_back()
+		if done.has(cell):
+			continue
+		done[cell] = true
+		var d: float = dist[cell]
+		if cell == to:
+			return d
+		for off: Vector2i in _NEIGHBOURS:
+			var n: Vector2i = cell + off
+			if done.has(n) or not is_symbol_legal(n):
+				continue
+			var diagonal: bool = off.x != 0 and off.y != 0
+			if diagonal and (not is_symbol_legal(Vector2i(n.x, cell.y))
+					or not is_symbol_legal(Vector2i(cell.x, n.y))):
+				continue
+			var nd: float = d + cell_m * (sqrt(2.0) if diagonal else 1.0)
+			if nd > cap_m:
+				continue
+			if not dist.has(n) or nd < dist[n]:
+				dist[n] = nd
+				frontier.append(n)
+	return INF
 
 
 func _in_bounds(cell: Vector2i) -> bool:

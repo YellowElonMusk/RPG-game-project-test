@@ -46,6 +46,37 @@ extends Resource
 ## value; default 0.05 m (a sixth of the default `body_radius`).
 @export var waypoint_tol_m: float = 0.05
 
+## Front-half-plane notice radius, centre to centre, in metres (GDD rule 5
+## notice test check 1; GDD Tuning Knobs; safe range 2.5-3.5; default 3.0;
+## invariants I4, I7, I12, I14, I15).
+@export var symbol_chase_m: float = 3.0
+
+## Rear-half-plane notice radius, centre to centre, in metres (GDD rule 5
+## notice test check 1; GDD Tuning Knobs; safe range 1.5-3.0, capped at
+## `symbol_chase_m`; default 1.5; invariant I12).
+@export var symbol_notice_rear_m: float = 1.5
+
+## Longest route, in metres, the notice test's bounded uniform-cost search
+## explores before giving up (GDD rule 5 notice test check 4; GDD Tuning
+## Knobs; safe range 4.3-5.0; default 4.5; invariants I15, I16).
+@export var notice_path_cap_m: float = 4.5
+
+## How long, in seconds, the notice test stays off after a symbol rejoins
+## Patrol from Returning (GDD rule 5 Returning row; GDD Tuning Knobs; safe
+## range 2-5; default 3).
+@export var renotice_cooldown_s: float = 3.0
+
+## How long, in seconds, a symbol holds in Noticing before Chasing starts,
+## whatever the leader does meanwhile (GDD rule 5 Noticing row; GDD Tuning
+## Knobs; safe range 0.3-0.6; default 0.4; invariant I16).
+@export var notice_delay_s: float = 0.4
+
+## How long, in seconds, a patrolling symbol stands in its look-back pose at
+## a `pingpong` end or a `loop` vertex turning by more than 90 degrees before
+## its facing flips (GDD rule 5 Patrol row; GDD Tuning Knobs; safe range
+## 0.9-1.4; default 0.9; invariant I17). 0 disables the pause.
+@export var turn_pause_s: float = 0.9
+
 
 ## `v_patrol = f_patrol * walk_speed`, in metres per second (GDD Formulas,
 ## `chase_escape`). The speed a Patrol (and Returning) symbol passes to

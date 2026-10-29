@@ -13,6 +13,8 @@ const _DT: float = 0.013
 const _POS_TOL: float = 1e-3
 const _DIST_TOL: float = 1e-4
 const _GRID_SIZE: Vector2i = Vector2i(12, 10)
+## Far outside every notice radius, so the notice test never passes.
+const _FAR_LEADER: Vector2 = Vector2(-100.0, -100.0)
 
 ## Triangle loop; its closing segment (vertex 2 -> 0) is diagonal.
 const _LOOP_PATH: Array[Vector2] = [Vector2(2.0, 2.0), Vector2(8.0, 2.0), Vector2(5.0, 7.0)]
@@ -22,7 +24,7 @@ const _PINGPONG_PATH: Array[Vector2] = [
 
 
 func test_loop_path_walks_every_segment_including_closing_at_v_patrol() -> void:
-	_assert_loop_traversal(OverworldConfig.new())
+	_assert_loop_traversal(_default_cfg())
 
 
 ## Formula test harness rule: run once more against a non-default config.
@@ -31,7 +33,7 @@ func test_loop_path_walks_every_segment_including_closing_at_v_patrol_with_custo
 
 
 func test_pingpong_path_reverses_at_each_end_at_v_patrol() -> void:
-	_assert_pingpong_traversal(OverworldConfig.new())
+	_assert_pingpong_traversal(_default_cfg())
 
 
 ## Formula test harness rule: run once more against a non-default config.
@@ -52,7 +54,7 @@ func test_single_vertex_path_holds_still() -> void:
 	var origin: Vector2 = _LOOP_PATH[0]
 	var brain := SymbolBrain.new(PackedVector2Array([origin]), SymbolBrain.PathMode.LOOP)
 	for i in 10:
-		brain.step(_DT, _open_grid(), cfg)
+		brain.step(_DT, _FAR_LEADER, _open_grid(), false, cfg)
 	assert_vector(brain.position).is_equal(origin)
 	assert_float(brain.last_distance_moved).is_equal(0.0)
 
@@ -84,8 +86,8 @@ func _assert_pingpong_traversal(cfg: OverworldConfig) -> void:
 	var s: float = 0.0
 	for i in frames:
 		var prev_next: int = brain.next_index()
-		var prev_facing: Vector2 = brain.facing
-		brain.step(_DT, _open_grid(), cfg)
+		var prev_facing: Vector2 = brain.heading
+		brain.step(_DT, _FAR_LEADER, _open_grid(), false, cfg)
 		s += cfg.v_patrol() * _DT
 		_check_frame(brain, unfolded, s, cfg)
 		if brain.next_index() != prev_next:
@@ -94,7 +96,7 @@ func _assert_pingpong_traversal(cfg: OverworldConfig) -> void:
 				facing_before_end = prev_facing
 				reversed_at_end = true
 				# Retraces the same final segment backward.
-				assert_vector(brain.facing).is_equal_approx(-facing_before_end, Vector2(_POS_TOL, _POS_TOL))
+				assert_vector(brain.heading).is_equal_approx(-facing_before_end, Vector2(_POS_TOL, _POS_TOL))
 		if brain.direction() != prev_dir:
 			dirs_at_flip.append(brain.direction())
 			prev_dir = brain.direction()
@@ -112,7 +114,7 @@ func _run_and_check(brain: SymbolBrain, unfolded: PackedVector2Array, frames: in
 	var s: float = 0.0
 	for i in frames:
 		var prev_next: int = brain.next_index()
-		brain.step(_DT, _open_grid(), cfg)
+		brain.step(_DT, _FAR_LEADER, _open_grid(), false, cfg)
 		s += cfg.v_patrol() * _DT
 		_check_frame(brain, unfolded, s, cfg)
 		if brain.next_index() != prev_next:
@@ -171,4 +173,14 @@ func _custom_cfg() -> OverworldConfig:
 	cfg.walk_speed = 3.1
 	cfg.f_patrol = 0.5
 	cfg.waypoint_tol_m = 0.1
+	cfg.turn_pause_s = 0.0
+	return cfg
+
+
+## Default config with the turn pause off: story 026 owns the pause
+## (`symbol_brain_turn_pause_test.gd`); this suite checks uninterrupted
+## arc-length traversal.
+func _default_cfg() -> OverworldConfig:
+	var cfg := OverworldConfig.new()
+	cfg.turn_pause_s = 0.0
 	return cfg

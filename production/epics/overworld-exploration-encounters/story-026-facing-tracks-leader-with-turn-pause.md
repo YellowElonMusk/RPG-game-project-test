@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-9g [L] (R5, facing and turns)** GIVEN Noticing, THEN the symbol's facing points at the leader (snapped to the displayed facing). GIVEN a `pingpong` end, and separately a `loop` vertex turning by more than 90°, THEN the symbol is stationary in its look-back pose from arrival to `turn_pause_s − dt` with the **old** facing deciding the half-planes, and its facing has flipped at `turn_pause_s + dt`. A `loop` vertex turning by 90° or less causes no pause. GIVEN the leader exactly on the half-plane boundary, THEN the front radius applies.
+- [x] **AC-9g [L] (R5, facing and turns)** GIVEN Noticing, THEN the symbol's facing points at the leader (snapped to the displayed facing). GIVEN a `pingpong` end, and separately a `loop` vertex turning by more than 90°, THEN the symbol is stationary in its look-back pose from arrival to `turn_pause_s − dt` with the **old** facing deciding the half-planes, and its facing has flipped at `turn_pause_s + dt`. A `loop` vertex turning by 90° or less causes no pause. GIVEN the leader exactly on the half-plane boundary, THEN the front radius applies.
 
 ---
 
@@ -83,7 +83,7 @@ dividing line (dot product 0) counts as in front."
 **Required evidence**:
 - `tests/unit/overworld/symbol_brain_turn_pause_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (full suite 726/726, 2026-10-29)
 
 ---
 
@@ -91,3 +91,15 @@ dividing line (dot product 0) counts as in front."
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-020-patrol-loop-and-pingpong-traversal.md`
 - Unlocks: `production/epics/overworld-exploration-encounters/story-027-facing-hysteresis-holds-through-noise.md`
+
+---
+
+## Completion Notes
+
+**Implemented**: 2026-10-29
+- `src/overworld/symbol_brain.gd`: `Facing { NE, SE, SW, NW }` and `DIAGONALS` (unnormalized, so a dividing-line dot product is exactly 0, which counts as in front). Entering Noticing sets `facing = nearest_facing(leader - position, facing)`. When a waypoint is reached, `_on_waypoint_reached()` starts a `turn_pause_s` pause at a PINGPONG end or a LOOP vertex whose path-vertex legs have a negative dot product (strictly over 90 degrees). The pause eats `dt`, and leftover time carries on. The facing flips only when the pause ends. The notice test keeps running during the pause with the old facing. `is_turn_pausing()` added. Config: `turn_pause_s` 0.9.
+- Tests: `tests/unit/overworld/symbol_brain_turn_pause_test.gd` (8): Noticing snap, the pingpong and the 135-degree loop pause at `T - dt` / `T + dt` (dt 0.013), no pause on a 90-degree square, the old facing deciding half-planes, the dividing line using the front radius. Default + custom config.
+
+**Deviations**:
+- The raw movement direction is now `heading` and `facing` is the snapped diagonal enum. The story 020 test was updated for this and sets `turn_pause_s = 0`.
+- The diagonals assume ground +x = screen right and +y = screen down (camera yaw 0). TODO(overworld) for a non-zero yaw.

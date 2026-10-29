@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-9d [L] (R5, reachability)** GIVEN the leader within the notice radius but behind a fence with no path within `notice_path_cap_m`, THEN no notice on any frame over 10 s.
+- [x] **AC-9d [L] (R5, reachability)** GIVEN the leader within the notice radius but behind a fence with no path within `notice_path_cap_m`, THEN no notice on any frame over 10 s.
 
 ---
 
@@ -82,7 +82,7 @@ reach, such as one on the far side of a fence."
 **Required evidence**:
 - `tests/unit/overworld/symbol_brain_notice_path_cap_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (full suite 726/726 after stories 021-027, 2026-10-29)
 
 ---
 
@@ -90,3 +90,16 @@ reach, such as one on the far side of a fence."
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-020-patrol-loop-and-pingpong-traversal.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Implemented**: 2026-10-29
+- `src/overworld/walk_grid.gd`: `bounded_search(from, to, cap_m)` (uniform-cost, 8-connected, sqrt(2) diagonals only when both orthogonal cells are legal, never expands past the cap), plus `cell_center()`. Check 4 pays the two end gaps (symbol to its cell centre, target cell centre to leader) out of `notice_path_cap_m` first.
+- Tests: `tests/unit/overworld/symbol_brain_notice_path_cap_test.gd` (5): fenced leader never noticed over 10 s at 1/60 and `dt_max` (search runs every frame), unfenced control noticed, `bounded_search` lengths and INF past cap; default + custom.
+- `SymbolBrain.step()` widened to `step(dt, leader, grid, grace, cfg)` (stories 021-025 share one notice-test implementation in `src/overworld/symbol_brain.gd`). `tests/unit/overworld/symbol_brain_patrol_test.gd` (story 020) updated to the new signature, `heading` (the raw movement direction, renamed from `facing`), and `turn_pause_s = 0` so its uninterrupted arc-length checks still hold.
+
+**Deviations**:
+- Check 3 (component labels, AC-9h) is not implemented (TODO(overworld)); check 4 also rejects a disconnected leader, at cap-bounded cost.
+- The chase target is the leader's own cell; the nearest-legal-cell fallback and sideways offset land with Chasing. The waypoint cache (AC-9k) is out of batch.
