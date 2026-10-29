@@ -191,6 +191,21 @@ static func clamp_to_footprint(cam: Vector2, footprint: Footprint, map_min: Vect
 			clamp_or_centre(cam.y, map_min.y + footprint.a_near, map_max.y - footprint.a_far))
 
 
+## `clamp_to_footprint()` for a focus and bounds in map ground coordinates
+## (`x`, world `z`). The GDD's ground `y` points away from the camera, but
+## map `y` is world `z`, which at yaw 0 (the camera looks along -Z, sitting
+## on the +Z side of its focus, `apply_transform()`) points toward it. So the
+## clamp runs in the camera's frame: flip `y`, clamp, flip back. The near
+## edge then bounds the map's +y (south) side and the far edge its -y side,
+## and the bottom rows of a map stay reachable on screen. Only yaw 0 ships
+## (TODO(presentation): rotate the bounds for another yaw).
+static func clamp_to_map(cam: Vector2, footprint: Footprint, map_min: Vector2,
+		map_max: Vector2) -> Vector2:
+	var flip := Vector2(1.0, -1.0)
+	return clamp_to_footprint(cam * flip, footprint, Vector2(map_min.x, -map_max.y),
+			Vector2(map_max.x, -map_min.y)) * flip
+
+
 ## One full frame: eases `cam_ground` toward `target`, then clamps the
 ## result to the ground footprint at `aspect` (GDD `follow_camera`). The
 ## caller passes a stable `aspect` across a run of frames and a changed one
@@ -200,7 +215,7 @@ func advance(target: Vector2, dt: float, aspect: float, map_min: Vector2, map_ma
 	var footprint: Footprint = compute_footprint(height, pitch_degrees, fov_degrees, aspect)
 	var dz: Vector2 = dead_zone(footprint, dead_zone_fraction)
 	var eased: Vector2 = ease_step(cam_ground, target, dz, tau, dt, dt_max)
-	cam_ground = clamp_to_footprint(eased, footprint, map_min, map_max)
+	cam_ground = clamp_to_map(eased, footprint, map_min, map_max)
 	return cam_ground
 
 

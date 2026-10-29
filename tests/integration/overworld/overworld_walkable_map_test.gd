@@ -116,15 +116,37 @@ func test_follow_camera_is_clamped_to_map_bounds() -> void:
 	view._process(_DT)
 	var eased: Vector2 = FollowCamera.ease_step(
 			far_outside, mode.get_leader_position(), dz, camera.tau, _DT, camera.dt_max)
-	var expected: Vector2 = FollowCamera.clamp_to_footprint(eased, fp, bounds.position, bounds.end)
+	var expected: Vector2 = FollowCamera.clamp_to_map(eased, fp, bounds.position, bounds.end)
 	assert_vector(camera.cam_ground).is_equal_approx(expected, Vector2(_EPSILON, _EPSILON))
 	# The clamp engaged (the eased point lay outside the allowed range), and
 	# the result is a fixed point of the clamp: per axis inside
-	# [min + near edge, max - far edge], or centred on that range when the
+	# [min + far edge, max - near edge] (map y points toward the camera), or
+	# centred on that range when the
 	# footprint is larger than the map (`clamp_or_centre`).
 	assert_bool(camera.cam_ground.is_equal_approx(eased)).is_false()
-	assert_vector(FollowCamera.clamp_to_footprint(camera.cam_ground, fp, bounds.position, bounds.end)) \
+	assert_vector(FollowCamera.clamp_to_map(camera.cam_ground, fp, bounds.position, bounds.end)) \
 			.is_equal_approx(camera.cam_ground, Vector2(_EPSILON, _EPSILON))
+
+
+## Regression (2026-10-29): the clamp read map `y` as pointing away from the
+## camera, so the focus could never move toward a map's south (+y) edge and
+## a leader on the bottom rows walked off screen. A leader one cell from the
+## south wall must stay within the footprint's near edge of the focus.
+func test_leader_on_the_south_rows_stays_on_screen() -> void:
+	var ctx: Dictionary = _make(OverworldConfig.new())
+	var mode: OverworldMode = ctx["mode"]
+	var view: OverworldView = ctx["view"]
+	var camera: FollowCamera = view.get_camera()
+	var grid: WalkGrid = mode.get_walk_grid()
+	var size: Vector2 = Vector2(view.get_viewport().get_visible_rect().size)
+	var fp: FollowCamera.Footprint = FollowCamera.compute_footprint(
+			camera.height, camera.pitch_degrees, camera.fov_degrees, size.x / size.y)
+	var south := Vector2(grid.size.x * 0.5, (grid.size.y - 1.5) * grid.cell_m)
+	mode.teleport_leader(south, Vector2.DOWN)
+	camera.snap_to(south)
+	for i: int in 120:
+		view._process(_DT)
+	assert_float(mode.get_leader_position().y - camera.cam_ground.y).is_less_equal(fp.a_near)
 
 
 func test_followers_render_on_the_trail() -> void:
