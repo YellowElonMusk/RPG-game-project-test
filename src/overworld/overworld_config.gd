@@ -21,6 +21,19 @@ extends Resource
 ## corner assist.
 @export var corner_assist_m: float = 0.25
 
+## Arc-length gap between neighbouring party members on the follower trail,
+## in metres (GDD Formulas, `follower_trail`'s `follower_spacing_m`; GDD
+## Tuning Knobs; safe range 0.7-1.1; default 0.9). `FollowerTrail.step()`
+## places follower `i` at `(i + 1) * follower_spacing_m` behind the leader.
+@export var follower_spacing_m: float = 0.9
+
+## Distance between recorded follower-trail points, in metres (GDD
+## Formulas, `follower_trail`'s `trail_sample_m`; GDD Tuning Knobs; safe
+## range 0.05-0.25; default 0.15). Bounds how far a follower can cut a
+## corner (`trail_sample_m / 2`) and how large the trail buffer grows
+## (`FollowerTrail`'s `N_buf`).
+@export var trail_sample_m: float = 0.15
+
 
 ## Invariants I1-I18 (GDD Formulas, "Load-time invariants"). Returns one
 ## message per failed invariant, naming its ID -- empty when every checked

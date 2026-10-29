@@ -1,12 +1,12 @@
 # Story 006: Followers hold formation on the leader's recorded trail at fixed spacing
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Implemented, awaiting /story-done
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -70,7 +70,20 @@ newest→oldest]`; `N_buf = ⌈n_f · follower_spacing_m / trail_sample_m − ε
 ## Files
 
 - `src/overworld/overworld_mode.gd`
+- `src/overworld/follower_trail.gd` (new -- the pure, testable trail unit the build brief asked for)
+- `src/overworld/overworld_config.gd` (`follower_spacing_m`, `trail_sample_m`)
 - `tests/unit/overworld/follower_trail_test.gd`
+
+---
+
+## Completion Notes
+
+- `FollowerTrail` (new `RefCounted`, `src/overworld/follower_trail.gd`) implements the formula exactly: resamples each frame's `[p_prev, p_leader]` segment at `trail_sample_m` arc length (carrying leftover distance across frames so spacing never exceeds `trail_sample_m`), looks up each follower's position by walking backward from `p_leader` through the trail, and caps the buffer at `N_buf = ceil(n_f * follower_spacing_m / trail_sample_m - eps) + 2`.
+- `OverworldMode` gained `_follower_trail: FollowerTrail` and a new public `step_followers(n_followers: int) -> void`, which is a **separate call from `_process()`**, not a step inside it. Deviation, flagged: story 005's `follower_no_collision_test.gd` fixes `_process()`'s behaviour as leader-movement only and is not in this story's Files list, so wiring the trail into `_process()` directly would have overwritten that test's `_follower_positions` fixture every frame (no roster exists yet to supply `n_followers` automatically -- that's story 008/010). `step_followers()` is the seam a future story's per-frame orchestration (or a roster-aware caller) drives; `test_process_alone_does_not_touch_follower_positions` in the new test file locks the non-regression in.
+- `OverworldConfig` gained `follower_spacing_m` (default 0.9, range 0.7-1.1) and `trail_sample_m` (default 0.15, range 0.05-0.25), per GDD Tuning Knobs.
+- `follower_trail_test.gd`: 9 tests -- the GDD's worked example (single frame appends 2 points 0.15 m apart; `N_buf` = 20 for defaults, re-run with a custom config), the main AC-4 polyline/spacing bound at `dt` = 1/60 s, `dt_max`, and a custom config (walks a real 90-degree-corner path, checks every follower against an independently-computed nearest-point-on-polyline arc length, gated on the buffer reaching steady-state `N_buf` rather than a raw distance threshold -- an earlier distance-based gate false-failed during bootstrap, before `N_buf` points of history existed), same-frame stop, and the `OverworldMode` integration plus its non-regression guard.
+
+**Test Evidence Status**: `tests/unit/overworld/follower_trail_test.gd` exists and passes -- [x] Created and passing. Full suite: 675/675 (0 failures), run foreground via the standard harness.
 
 ---
 
@@ -86,7 +99,7 @@ newest→oldest]`; `N_buf = ⌈n_f · follower_spacing_m / trail_sample_m − ε
 **Required evidence**:
 - `tests/unit/overworld/follower_trail_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (9 test cases; full suite 675/675)
 
 ---
 

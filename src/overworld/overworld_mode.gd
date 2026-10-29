@@ -45,13 +45,20 @@ var _last_distance_moved: float = 0.0
 
 ## Cosmetic follower positions only (GDD rule 2: "Followers have no
 ## collision and no logic, and nothing can touch them"; ADR-0012 §2 settles
-## the point left open -- only the leader has a position in logic). Empty
-## until story 006's trail-spacing formula starts calling
-## `set_follower_positions()` every frame; story 005 (this story) proves the
-## array's isolation, not its contents -- `_process()` never reads it.
-## Positions only, no `CharacterSprite`s (those are story 007's scope,
-## ADR-0012 §4 step 5); this is the seam stories 006-010 extend.
+## the point left open -- only the leader has a position in logic). Set by
+## `step_followers()` (story 006's trail-spacing formula); story 005 proved
+## the array's isolation from `_process()`, which still never reads or
+## writes it directly -- only `step_followers()` does, and only when a
+## caller invokes it. Positions only, no `CharacterSprite`s (those are
+## story 007's scope, ADR-0012 §4 step 5); this is the seam stories 007-010
+## extend.
 var _follower_positions: Array[Vector2] = []
+
+## The follower-trail replay (GDD Formulas, `follower_trail`). Owns its own
+## recorded-point buffer across frames; `step_followers()` is the only
+## caller. TODO(ow-epic): `reset()` this on map entry, teleport, redirect
+## and thaw once that wiring exists (story 007).
+var _follower_trail: FollowerTrail = FollowerTrail.new()
 
 
 func _init() -> void:
@@ -118,9 +125,23 @@ func set_follower_positions(positions: Array[Vector2]) -> void:
 
 
 ## The cosmetic follower positions last set by `set_follower_positions()`
-## (empty until story 006 calls it). Returns a duplicate so the caller can
-## never mutate this mode's own copy through the returned array.
-## `_process()` itself never calls this (story 005, AC-3) -- only rendering
-## (story 007+) is meant to.
+## or `step_followers()` (empty until one of them is called). Returns a
+## duplicate so the caller can never mutate this mode's own copy through
+## the returned array. `_process()` itself never calls this (story 005,
+## AC-3) -- only rendering (story 007+) and `step_followers()` are meant to.
 func get_follower_positions() -> Array[Vector2]:
 	return _follower_positions.duplicate()
+
+
+## Drives the follower trail for this frame (GDD Formulas,
+## `follower_trail`; ADR-0012 §2) and refreshes `_follower_positions` to
+## `n_followers` cosmetic positions, nearest follower first, replaying
+## `get_leader_position()`'s recorded path at `config`'s spacing and sample
+## knobs. A separate call from `_process()`, not a step inside it -- GDD
+## rule 2 and story 005's `follower_no_collision_test.gd` fix `_process()`'s
+## own behaviour as leader-movement only, and no roster exists yet (story
+## 008/010) to supply `n_followers` automatically, so the caller (today, a
+## test; later, whichever system holds the roster) passes it explicitly and
+## calls this once per frame alongside `_process()`.
+func step_followers(n_followers: int) -> void:
+	set_follower_positions(_follower_trail.step(_leader_pos, n_followers, config))
