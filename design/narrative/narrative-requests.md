@@ -1,6 +1,6 @@
 # Narrative Requests — what the story needs from you
 
-> **Status**: Open — waiting on the user's answers
+> **Status**: Answered 2026-10-29 (N-4 left to default). See §4 and §5.
 > **Created**: 2026-10-29
 > **Owner of the answers**: the user (creative authority); `narrative-director` turns them into the narrative bible
 > **Companion to**: `design/art/asset-list.md` (the same idea, for art)
@@ -125,17 +125,60 @@ Pillar 2, and rule 18 tick (b), require at least one place where the occupiers h
 
 ## 4. Your answers
 
-*Write them here, or just tell me in the chat; I'll copy them in.*
+Recorded on 2026-10-29 from the user's chat message, keeping close to their own words. Anything marked *Interpretation* is mine, and the user can veto it.
 
 | ID | Answer | Date |
 |---|---|---|
-| N-1 | | |
-| N-2 | | |
-| N-3 | | |
-| N-4 | | |
-| N-5 | | |
-| N-6 | | |
-| N-7 | | |
-| N-8 | | |
-| N-9 | | |
-| N-10 | | |
+| N-1 | **D, own idea: the Great Filter is ASI.** The answer to the Fermi paradox is that the filter is artificial superintelligence. An alien alliance saw Earth on the verge of ASI while humans still kill each other over Earth's finite resources, instead of going out for the universe's unlimited living space, energy and resources. The alliance puts it at 99% that ASI wipes us out, or leaves Earth and drops humanity back to feudal states. So they stepped in and took over, because in their eyes we are done for. Every alien faction is a civilisation that grew socially and politically alongside its technology, until it reached symbiosis with its own AI or ASI. | 2026-10-29 |
+| N-2 | **D, own idea: a hidden alien cell.** The player is a shadowy figure or organisation that people believe is the Illuminati. It is really a small group of aliens who love Earth culture, believe humanity is worth saving, and are organising a resistance. *Interpretation:* the cell is the unseen handler. On the map, the squad member up front leads, which is option B mechanically, so the overworld's leader with three followers needs no change. | 2026-10-29 |
+| N-3 | **A, with a rate: the squad's battle cry.** The squad shouts "Go back to your planet!" at the start of about 1 combat in 4. | 2026-10-29 |
+| N-4 | *(not answered)* **DEFAULT — not user-approved:** the four lines in §2 N-4. | 2026-10-29 |
+| N-5 | **C: the Supervisor is the Paris boss.** Update the docs that say Minister of Forms. | 2026-10-29 |
+| N-6 | **C: both.** They look slow as hell but are well organised, like Japanese society. In Japan everyone queues to board the metro; in the West everyone rushes in. Rushing looks faster, but the orderly way fills the train more, and better. | 2026-10-29 |
+| N-7 | **C, own idea: spare or finish, with two reputations.** The full rule set is in §5.1. | 2026-10-29 |
+| N-8 | **Strong profanity, bleeped by substitution** ("frak" for "fuck", and so on). Otherwise nothing is off limits, **except** Jews, WWII, religion in general, and LGBTQ topics. Heavy parody. No real-world brands, politicians or celebrities unless the use is certain to be legally and publicly safe. Tone reference: Duke Nukem-style macho, sexist humour, played so it is obvious the game does not take itself seriously. | 2026-10-29 |
+| N-9 | **A, widened:** English, with a little light French in Paris, light Spanish in Mexico, and the same for each other region. | 2026-10-29 |
+| N-10 | **A: Dragon Quest-light.** | 2026-10-29 |
+| Bonus | **The aliens speak in beatbox.** See §5.2. | 2026-10-29 |
+
+## 5. What the answers change
+
+### 5.1 N-7 in full: spare or finish, and two reputations
+
+- **Permit and faction combat conditions work like Pokémon abilities.** They only affect combat, by imposing conditions or effects, and carry little story weight.
+- **Reputation only changes how NPCs see you.** It affects shop prices and how likely someone is to join you.
+- **After each fight you choose:** free the aliens, or finish them off.
+  - **Finish them:** you gain **human street cred**.
+  - **Free them:** you gain **alien points**.
+- **The human-famous route** is easier early, with more allies and cheaper prices. It is harder late: the aliens retaliate harder, and you fight more professional alien peacekeepers.
+- **The alien-friendly route** is harder early. Late in the game you have alien tech and alien allies.
+- **Not every enemy is an alien.** Human resistance bounty hunters sometimes come after you too, believing you are a treasonous rat.
+- **The true ending needs the alien side.** Only by siding with the aliens can you later convince them that humanity deserves another chance and should not be wiped out.
+
+### 5.2 Bonus: beatboxing aliens are the fight music
+
+- Aliens speak in **beatbox**.
+- **Each alien supplies one type of beat.** Together, the enemies on the field make one beatbox track.
+- **A harder fight gets a harder beat.** Late-game tracks are more complex.
+- The references, Darude's "Sandstorm" and the beatboxer Dharni, are for *feel only*. Every track is original; neither is copied or sampled.
+- **Fights have no background music.** The aliens' beatbox is the score.
+- *Interpretation:* bounty-hunter fights need their own answer, since human enemies do not beatbox. Proposed: ordinary battle music for those fights, which also makes them sound different.
+
+### 5.3 Conflicts with existing documents
+
+These get resolved in the narrative bible and the GDDs.
+
+| # | Conflict | Where | Proposed resolution |
+|---|---|---|---|
+| C-1 | "Resistance" is banned from player-facing text. But the player's own cell organises a resistance, and the squad fights "human resistance bounty hunters". | Overworld GDD, guardrail 3 word list (`resistance`, `maquis`, `underground`, `collaborator`) | The user's answer wins: allow "resistance". Keep "maquis" and "collaborator" banned, since they point at WWII, which N-8 still bars. |
+| C-2 | The boss is named the Minister of Forms. | `game-concept.md` MVP item 5; Overworld GDD | Rename it to the Supervisor (N-5 C). |
+| C-3 | The MVP has "one reputation choice that wins or loses one recruit", and reputation is "not battle rules". | `game-concept.md` MVP item 6, Core Mechanic 5 | Replace it with the per-fight spare-or-finish choice and the two meters (§5.1). Reputation still never changes battle rules, so that part holds. **Scope grows:** two meters, a post-battle prompt, price and recruit hooks, late-game retaliation, and a bounty-hunter enemy group. The MVP can ship the prompt and the meters first. |
+| C-4 | No street civilian may say "go back" or "your planet". | Overworld GDD guardrail 6, OQ-21 | Still holds: only the squad's battle cry says it (N-3). This closes OQ-21. |
+| C-5 | Pillar 2, Nobody Is Right, against a premise in which the aliens are mostly right. | `game-concept.md` Pillars | Still holds. The aliens are right about the danger but condescending, slow and smug about the fix, so both sides get mocked. |
+| C-6 | Battle audio assumes a music track. | Audio direction, not yet designed | Use layered beatbox stems, one per enemy (§5.2). This needs an audio design doc before any fight sound work starts. |
+
+## 6. Next
+
+1. `narrative-director` writes `design/narrative/narrative-bible.md` from §4 and §5.
+2. The doc fixes in C-1 to C-3 go through `/propagate-design-change`.
+3. The spare-or-finish choice and the beatbox score each get a design doc: the Dialogue, Banter & Quests GDD, and an audio GDD.
