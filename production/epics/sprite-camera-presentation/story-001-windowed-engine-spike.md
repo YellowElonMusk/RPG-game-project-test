@@ -6,7 +6,7 @@
 > **Type**: Visual/Feel
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -87,7 +87,7 @@
 **Required evidence**:
 - Visual/Feel: a retained screenshot in `production/qa/evidence/sprite-camera-spike/` + sign-off in `production/qa/evidence/sprite-camera-spike-evidence.md`
 
-**Status**: [ ] Not yet created
+**Status**: [~] Partial: 13 windowed screenshots retained in `production/qa/evidence/story-001-windowed-engine-spike/` (spike 2026-10-29); lead sign-off and the Steam Deck run are owed
 
 ---
 
@@ -95,3 +95,22 @@
 
 - Depends on: None
 - Unlocks: `production/epics/sprite-camera-presentation/story-002-capture-tool.md`, and every story 003–026 that depends on shader or stage rendering behaviour
+
+---
+
+## Completion Notes
+
+*Spike 2026-10-29: Windows 11, RTX 4080 SUPER, Vulkan 1.4.357, Godot 4.7.2, windowed at 1280×720 (16:10 at 1280×800). Code in `prototypes/sprite_camera_spike/`; run with `-s res://prototypes/sprite_camera_spike/spike_main.gd`. Evidence in `production/qa/evidence/story-001-windowed-engine-spike/`. Results are written back into ADR-0005 (items 12–16, §6, §11), each marked "(spike 2026-10-29)".*
+
+| Criterion | Result | Evidence / observation |
+|---|---|---|
+| Diorama, placeholder sprite, battle and overworld cameras, sky card, profiles | **PARTIAL** | `battle.png`, `boss_takeover.png`, `camp.png`, `overworld_pitched_wall.png`. The sprites are nearest-filtered, alpha-cut and lit. The boss and camp profiles visibly retint the actors. Gaps: the wall hides the sky card except for 2–3 px strips at the frame edges. The sprite is a plain upright `AnimatedSprite3D` card, not §2's clip-space quad, so it goes edge-on under the pitched camera and scales with depth. Only `boss_bureaucratia` was shot; `boss_megacorp` was not. |
+| (12) ambient disabled + key-only | **PASS** | `ambient_key_only_lit.png` / `ambient_key_only_dark.png`: with KeyLight hidden the actors render pure black and the set stays lit. Side finding: actors cast SetLight shadows (visible on the floor), so §2's `cast_shadow = OFF` is needed. |
+| (13) manual frame stepping | **PASS** | `frame_step_0.png` / `frame_step_1.png`: the yellow frame-1 block appears only on the stepped sprite. |
+| (14) shader flip mirroring | **PASS** | `flip_normal.png` / `flip_mirrored.png`: the red marker moves from the right side to the left. |
+| (15) glow input before tonemapping | **FAIL** (recorded) | Run log: no `EffectCallbackType` after `POST_TRANSPARENT` (4), and no glow texture found via `has_texture()`. Only the pre-glow color is readable. |
+| (16) pipeline counters | **PARTIAL / OWED** | Run log: energy, color and glow-intensity changes added 0 compiles. `glow_enabled` and `shadow_enabled` toggles also added 0, on a warm cache (deleting the cache was not permitted). The empty-cache run and the rest of the list are owed. |
+| `frustum_offset` sign at 16:9 / 16:10 | **PASS** | +0.1·h_near moved the image down by 72 px (720p) and 80 px (800p), exactly 0.1·H. `battle_16x10.png`. |
+| Knobs set | **PASS (spike values)** | battle_fov 32°, near 0.3, h_cam 1.0, horizon_frac 0.42, slot depths 4/6/8.5, humanoid_height_px 120 (target only: the plain card does not enforce T). Not final balance. |
+| Steam Deck native Linux export | **OWED** | No Steam Deck on this PC. |
+| Retained screenshots + lead sign-off | **PARTIAL / OWED** | Screenshots retained (`near_far_rows.png` included); lead sign-off owed. |
