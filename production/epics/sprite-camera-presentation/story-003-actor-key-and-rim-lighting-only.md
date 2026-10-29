@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -81,7 +81,7 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/lighting_profile_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] `tests/unit/presentation/lighting_profile_test.gd` — 2/2 passing; full suite 637/637 green
 
 ---
 
@@ -89,3 +89,16 @@
 
 - Depends on: `production/epics/sprite-camera-presentation/story-001-windowed-engine-spike.md`
 - Unlocks: `production/epics/sprite-camera-presentation/story-019-squad-rim-and-outline-stay-constant.md`, `production/epics/sprite-camera-presentation/story-020-one-blob-shadow-per-actor-set-light-only-caster.md`
+
+---
+
+## Completion Notes
+
+- `src/presentation/lighting_profile.gd`: `LightingProfile extends Resource`, data only, matching ADR-0005 §5's abridged Key Interfaces block field-for-field (lights, sky card, tone/glow, DOF, §14 travel light, shadow, blend). No validation methods here — that's `PresentationValidators`' job (§9, Story 061).
+- `src/presentation/diorama_stage.gd`: `DioramaStage extends Node3D`, trimmed to this AC's scope (key/set/fill light rig + profile pipeline only — camera, sky card, `active_diorama_stage` group membership, `set_ambient_paused`/`set_punch_offset_px` are later stories', per the build brief). `_ready()` pins `key_light` to `light_cull_mask = LAYER_ACTORS` with shadows off, `set_light`/`fill_light` to `LAYER_SET` (`set_light` the only shadow caster), and the environment's `ambient_light_energy` to 0 — all structural, never from profile data. `bind_profiles()`/`request_profile()`/`apply_profile()` match the ADR signatures; `apply_profile()` sets final light/rim values immediately (`TODO(sprite-camera-presentation)`: the tween/clock blend over `blend_time` is Story 009/026's scope).
+- `data/presentation/profiles/{title,overworld,battle,boss_bureaucratia,boss_megacorp,camp,victory,defeat}.tres`: the 8 MVP presets (ADR-0005 §5). `boss_bureaucratia` and `boss_megacorp` copy `battle`'s `key_color`/`key_energy`/`key_rotation_deg`/`rim_color`/`rim_strength` exactly (actors never take the faction flood tint) and tint only `set_color`/`fill_color`/the sky fields per faction. Every preset's `rim_strength` is above 0 and `glow_bloom` is 0. Actual color/energy/DOF/tone values are placeholder MVP art direction, not yet lit by `godot-shader-specialist` or reviewed by a creative-director — expect retuning.
+- `tests/unit/presentation/lighting_profile_test.gd`: discovers presets via `DirAccess.get_files_at()` (no hardcoded ID list), builds a `DioramaStage` with real `DirectionalLight3D`/`WorldEnvironment` children and calls `stage._ready()` directly (no live `SceneTree` needed for this AC). One test applies every preset and checks cull masks, shadow casters, ambient and `rim_strength > 0`; a second checks every `boss_<faction>` preset's key/rim colors against `battle`'s.
+- Deviations: (1) the actor shader (`render_mode ambient_light_disabled`) and `CharacterSprite.cast_shadow = OFF` are not touched here — `character_sprite.gd` isn't in this story's Files list, no `sprite_actor.gdshader` exists yet in production, and shader authorship is `godot-shader-specialist`'s domain; AC-1's "actor material takes no ambient light" is covered here via the stage's `ambient_light_energy = 0.0` invariant instead, which is the data-driven half of that guarantee. (2) `apply_profile()` applies instantly rather than blending — in scope for Story 009/026, flagged with a `TODO`.
+- Verified: targeted test 2/2 passing with 0 orphans; full suite 637/637 green after `--import` (`$TEMP/scp003_full.log`).
+
+**Test Evidence Status**: `tests/unit/presentation/lighting_profile_test.gd` — 2/2 passing. Full suite: 637/637 green (`$TEMP/scp003_full.log`).

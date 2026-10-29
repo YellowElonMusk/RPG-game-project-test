@@ -1,0 +1,41 @@
+[gd_resource type="Resource" script_class="LightingProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/presentation/lighting_profile.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+key_color = Color(1, 0.85, 0.65, 1)
+key_energy = 0.85
+key_rotation_deg = Vector3(-35, 40, 0)
+set_color = Color(0.7, 0.5, 0.35, 1)
+set_energy = 0.9
+fill_color = Color(0.35, 0.3, 0.35, 1)
+fill_energy = 0.3
+rim_color = Color(1, 0.75, 0.5, 1)
+rim_strength = 0.55
+sky_top = Color(0.05, 0.05, 0.12, 1)
+sky_bottom = Color(0.15, 0.1, 0.12, 1)
+sky_horizon = Color(0.4, 0.22, 0.15, 1)
+sky_horizon_width = 0.07
+sky_horizon_intensity = 0.7
+sky_energy = 0.6
+exposure = 1.0
+agx_white = 6.0
+agx_contrast = 1.0
+glow_intensity = 0.35
+glow_threshold = 1.0
+glow_bloom = 0.0
+dof_far_enabled = true
+dof_far_distance = 12.0
+dof_amount = 0.12
+dof_near_enabled = false
+dof_near_distance = 0.0
+dof_near_transition = 0.0
+dof_far_transition = 2.0
+travel_light_enabled = false
+travel_light_color = Color(1, 1, 1, 1)
+travel_light_energy = 0.0
+travel_light_range = 0.0
+travel_light_shadow = false
+shadow_color = Color(0, 0, 0, 0.5)
+blend_time = 0.6
