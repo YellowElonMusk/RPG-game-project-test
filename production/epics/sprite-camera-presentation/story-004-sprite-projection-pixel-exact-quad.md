@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -84,7 +84,7 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/sprite_projection_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing — `tests/unit/presentation/sprite_projection_test.gd`, 18 cases, part of the 614/614 full-suite green run (2026-10-29)
 
 ---
 
@@ -92,3 +92,16 @@
 
 - Depends on: `production/epics/sprite-camera-presentation/story-001-windowed-engine-spike.md`
 - Unlocks: `production/epics/sprite-camera-presentation/story-005-no-mirror-animations-use-authored-art.md`, `production/epics/sprite-camera-presentation/story-006-battle-camera-lens-shift-only.md`, `production/epics/sprite-camera-presentation/story-022-battle-framing-keeps-every-slot-in-view.md`
+
+---
+
+## Completion Notes
+
+*Implemented 2026-10-29.*
+
+- `src/presentation/sprite_projection.gd`: static `texel_scale`, `screen_rect`, `card_normal`, `card_depth`, plus a nested `CameraState` value class (`from_frustum`, `from_perspective`, `from_camera3d` factories) exactly matching the Key Interfaces block. `screen_rect` implements the GDD `texel_scale` formula verbatim, including round-half-away-from-zero (written out explicitly, not via the engine's `round()`) and the odd-width `x_left` rule.
+- **Engine trap found and fixed**: `Projection` has no `.xform()` method on 4.7.2 (parser error: "Function 'xform()' not found in base Projection") — the engine-reference docs are silent on this class. Replaced both call sites with `projection * Vector4(x, y, z, 1.0)` (confirmed working via a probe script) followed by a manual `/w` perspective divide. Worth adding to `deprecated-apis.md` or a Projection note for the next agent who reaches for `.xform()`.
+- `src/presentation/presentation_config.gd`: a minimal stub (`texel_base_lines`, `humanoid_height_px`) per the task's allowance — ADR-0005 §5's full `PresentationConfig` (profile table, sprite-set table, every Tuning Knob, load validation) is explicitly a later story's scope.
+- `src/presentation/character_sprite.gd`: `setup()`, `show_frame()`, `step_ambient()`, `reset_to_idle()` per Key Interfaces; calls `SpriteProjection` each update and writes `sprite_rect`/`viewport_size`/`foot_anchor`/`card_normal`/`flip_h` via `set_shader_parameter()` on its own `ShaderMaterial` instance. `no_mirror` animation substitution is left to Story 005 (out of scope here); authoring `sprite_actor.gdshader` itself is `godot-shader-specialist`'s domain and not created by this story — `_update_shader_uniforms()` no-ops safely without one.
+- `tests/unit/presentation/sprite_projection_test.gd`: 18 cases — `texel_scale` at all five GDD reference heights (parametrized) plus the floor and minimum-1 edge cases; `screen_rect` dimension formula, the round-half-away-from-zero bottom-centre anchor (via an odd viewport forcing an exact .5 pixel), and the GDD's own 33-texel/1080p worked example; `card_normal` level/pitch-invariant/yaw-following; one `card_depth` on-axis sanity check (full AC-68 coverage deferred, out of this story's scope).
+- Full suite: 614/614 green (596 baseline + 18 new), `--headless --import` clean.
