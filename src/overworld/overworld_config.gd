@@ -11,6 +11,16 @@ extends Resource
 ## safe range 3.0-4.0; default 3.5).
 @export var walk_speed: float = 3.5
 
+## Collision radius of the leader (and, later, of symbols), in metres (GDD
+## Tuning Knobs; safe range 0.25-0.40; default 0.3; invariants I3, I7, I8, I9).
+@export var body_radius: float = 0.3
+
+## The largest corner overlap `GroundMover.step()`'s corner assist (ADR-0012
+## §2.3) nudges the leader past instead of stopping it dead, in metres (GDD
+## Tuning Knobs; safe range 0-0.4; default 0.25; invariant I9). 0 disables
+## corner assist.
+@export var corner_assist_m: float = 0.25
+
 
 ## Invariants I1-I18 (GDD Formulas, "Load-time invariants"). Returns one
 ## message per failed invariant, naming its ID -- empty when every checked

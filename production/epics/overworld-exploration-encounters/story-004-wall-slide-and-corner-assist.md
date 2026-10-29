@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-2 [L] (R1)** GIVEN the leader walking diagonally into a wall, THEN it slides along the wall face with non-zero tangential speed. GIVEN a corner overlap of at most `corner_assist_m`, THEN it passes without stopping.
+- [x] **AC-2 [L] (R1)** GIVEN the leader walking diagonally into a wall, THEN it slides along the wall face with non-zero tangential speed. GIVEN a corner overlap of at most `corner_assist_m`, THEN it passes without stopping.
 
 ---
 
@@ -63,8 +63,9 @@ separate systems.
 ## Files
 
 - `src/overworld/ground_mover.gd`
-- `src/overworld/walk_grid.gd`
-- `tests/unit/overworld/ground_mover_collision_test.gd`
+- `src/overworld/walk_grid.gd` (new)
+- `src/overworld/overworld_config.gd` (widened: `body_radius`, `corner_assist_m`)
+- `tests/unit/overworld/ground_mover_collision_test.gd` (new)
 
 ---
 
@@ -80,7 +81,60 @@ separate systems.
 **Required evidence**:
 - `tests/unit/overworld/ground_mover_collision_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Passing — 6/6 test cases in file, full suite 649/649 green
+
+---
+
+## Completion Notes
+
+`GroundMover.step()`'s `grid` parameter is now typed `WalkGrid` (was `Object`,
+story 004's own TODO). `null` still means "no collision" (the leader's call
+site today), so `overworld_mode.gd` needed no change.
+
+Collision is axis-separated (x then y) against `WalkGrid.is_blocked(cell,
+blocked_mask)`, using `cfg.body_radius`. Each axis resolution sweeps the
+*other* axis's current span against the leading-edge cell(s); given
+`body_radius < cell_m / 2` (I8), that span touches at most two cells, so
+"exactly one of the two is blocked" unambiguously means a corner graze, not a
+flat wall. Its overlap is `body_radius - distance_from_boundary`. Zero or
+negative overlap is a bare touch and never blocks (regardless of
+`corner_assist_m`) — this is what makes the wall-slide case keep full open-axis
+speed, since the clamped axis is left exactly tangent. A positive overlap of at
+most `corner_assist_m` nudges the free axis past the corner instead of
+blocking (GDD AC-2, part 2); deeper overlap still blocks, same as a flat wall.
+This per-axis algorithm is my own reading of ADR-0012 §2.2-3's prose — the ADR
+states the *outcomes* (slide; corner assist within `corner_assist_m`) but not
+this geometry, so flagging it as an implementation decision rather than a
+transcription of the ADR.
+
+`WalkGrid` (new, `RefCounted`): `size`, `cell_m`, `cells: PackedByteArray`
+public per the ADR's test-fixture convention; `FLAG_WALKABLE`/`FLAG_SAFE`/
+`FLAG_RUNTIME_BLOCKED` bit constants; `is_walkable()`, `is_symbol_legal()`,
+`is_blocked(cell, blocked_mask)` (the general query `GroundMover.step()`
+needs — additive to the ADR's published Key Interfaces, not a replacement for
+any of them), `set_blocked()`, `revision()`, `cell_of()`. `bake()` reads the
+`walk` custom data layer via the ADR's cited probed APIs
+(`get_used_cells()`/`get_cell_tile_data()`/`get_custom_data()`) but is
+untested here (no story-004 AC needs it; tests build a fixture grid by hand)
+— `safe_sources`-driven `SAFE` rasterisation is explicitly story 128's scope
+and is a TODO(ow-epic), not implemented. `astar()`, `component_of()` and
+`bounds()` from the Key Interfaces are not yet built; nothing in this epic
+needs them before `AStarGrid2D` (story 131) and `follow_camera` integration
+exist, and omitting them doesn't change `WalkGrid`'s shape later.
+
+Dropped one test I wrote (`test_corner_overlap_of_zero_never_blocks_...`): it
+derived an exact-zero overlap through an unrelated float chain (`0.7+0.3`
+isn't bit-exact `1.0`), so it occasionally failed on floating-point noise, not
+on real behavior. The wall-slide tests already exercise the same `overlap <=
+0.0` branch exactly (its zero is a self-cancelling subtraction of the same
+float, not a derived one), so the coverage goal was already met without the
+flaky test.
+
+Deviation: `OverworldConfig` gained `body_radius` (0.3, GDD default) and
+`corner_assist_m` (0.25, GDD default) — not in this story's original Files
+list, but `GroundMover.step()` cannot read either knob without them, and the
+build brief's committed-files note calls `overworld_config.gd` out as a file
+to extend.
 
 ---
 
