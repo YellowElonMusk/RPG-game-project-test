@@ -1,12 +1,12 @@
 # Story 008: A running transition rejects any other transition or overlay request
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -107,3 +107,13 @@
 **Deviations**: None from the Implementation Notes or QA Test Cases. The precedence fix touched three methods beyond what a first read of the ADR skeleton suggested was needed, because `close_overlay()` had no busy check at all and the other two conflated busy with a different rejection code — both are corrections to match the ADR's already-stated rule, not new design.
 
 **Items owed**: None for this story. Stories 009 (same-frame ordering) and 011 (`request_quit()` during a transition) remain out of scope here, as noted above.
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing
+**Deviations**: None from the Implementation Notes or QA Test Cases. The fix touched three methods beyond the story's first-read expectation (`close_overlay()` had no busy check at all; `request_in_mode_fade()`/`report_battle_outcome()` conflated busy with a different rejection code) — these correct the already-stated busy-first rule, not new design.
+**Test Evidence**: `tests/unit/game_state/game_state_busy_rejection_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

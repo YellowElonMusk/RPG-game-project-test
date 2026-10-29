@@ -1,12 +1,12 @@
 # Story 035: GameRoot becomes the main scene, with Content Error, TransitionConfig data, and the demo running under Game State
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready (waiting on dependencies: input-system 001, 003, 025 and content-migration 013 must be Done first; not ADR-blocked, every governing ADR is Accepted)
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Integration
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -176,3 +176,14 @@
 - Depends on (input-system): `production/epics/input-system/story-001-default-bindings-press-release.md` (`InputResolver`), `production/epics/input-system/story-003-bindings-validation.md` (`make_fallback_bindings()`), `production/epics/input-system/story-025-focus-lost-and-gained.md` (the `InputSystem` shell node and its `setup(resolver)` seam; HIGH engine risk)
 - Depends on (content-migration): `production/epics/content-migration/story-013-author-faction-records.md` (faction records, so `ChapterMode` descriptors pass validation)
 - Unlocks: `production/epics/game-state-scene-flow/story-036-victory-dialogue-after-transition.md`, `story-037-transition-budget-hardware-bench.md`, `story-038-screenshots-title-prompts-error.md`, `story-039-screenshots-menus.md`, `story-041-remove-interim-enemy-validation-flag.md`; `production/epics/content-catalog/story-025-error-screen-on-launch.md` (with 004, 005), `production/epics/content-catalog/story-026-failed-catalog-blocks-boot.md` (with 004)
+
+---
+
+## Completion Notes (story-done, 2026-10-29)
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing (the full Migration Step 2 criterion, checks 1-6)
+**Deviations**: See the "Main-session addendum" above for the six integration bugs found and fixed before this story could close (faction_id mismatch, autoload-under-`-s` compile failure, harness hang, boot-test fixture issues, the missing `last_battle_result` wiring, the demo stuck on Title). All other deviations (the test-seam getters, the harness as a new file, `--debug-retreat-descriptor` not yet wired into `ChapterMode`, the dropped `--faction=` demo flag) are advisory, listed in the addendum above. Landed in one squashed commit with stories 033 and 034 (`76233f3`), per ADR-0002 Migration Step 2.
+**Test Evidence**: `tests/integration/game_state/game_state_game_root_boot_test.gd` (4/4), `tests/unit/game_state/game_root_data_root_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29). Run-and-observe: `production/qa/evidence/story-035-game-root-main-scene/01-title.png`, `02-battle-fight1.png` (both opened and reviewed; see the addendum's Run result line).
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)
+**Known gap, not a defect of this story**: `BattleHud` is display-only; no command UI yet calls `BattleCore.submit_action()`, so the game boots and plays the chapter loop under scripted/debug control but has no player-facing battle command menu.

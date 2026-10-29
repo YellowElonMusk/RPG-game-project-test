@@ -1,12 +1,12 @@
 # Story 018: The Defeat Prompt offers Retreat only when retreat_allowed, with no stale flag after Retry
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -127,3 +127,13 @@ rules remain story 020/021's concern, as scoped.
 
 - Depends on: `production/epics/game-state-scene-flow/story-017-defeat-prompt-and-retry-snapshot.md`
 - Unlocks: `production/epics/game-state-scene-flow/story-002-transition-table-rows-succeed.md`, `production/epics/game-state-scene-flow/story-020-register-camp-and-retreat-to-it.md`, `production/epics/game-state-scene-flow/story-021-retreat-region-default-and-no-camp.md`, `production/epics/game-state-scene-flow/story-030-defeat-prompt-focus-and-cancel.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing
+**Deviations**: None. `choose_retreat()`'s reject-when-not-offered guard and `report_battle_outcome()`'s DEFEAT case now route through the same `_offers_retreat()` helper, so the offer and the rejection can never disagree — a correction within this story's own scope, not a deviation from it.
+**Test Evidence**: `tests/unit/game_state/game_state_retreat_offer_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

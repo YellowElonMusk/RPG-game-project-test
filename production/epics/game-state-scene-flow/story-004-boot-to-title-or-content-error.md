@@ -1,12 +1,12 @@
 # Story 004: Boot goes to Title on a Ready catalog and to Content Error on a Failed one
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -113,3 +113,13 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-001-overworld-to-battle-signal-order.md`, `production/epics/content-catalog/story-002-load-one-of-each-type.md` (the `ContentCatalogService.State` values the stub mirrors)
 - Unlocks: `production/epics/game-state-scene-flow/story-005-content-error-rejects-all-but-quit.md`, `production/epics/game-state-scene-flow/story-035-game-root-main-scene.md`, `production/epics/content-catalog/story-026-failed-catalog-blocks-boot.md` (together with 035)
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing (AC-1)
+**Deviations**: None. `_tick_boot()` already implemented the routing (built as part of the transitions table work); this story added the pinning tests.
+**Test Evidence**: `tests/unit/game_state/game_state_boot_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

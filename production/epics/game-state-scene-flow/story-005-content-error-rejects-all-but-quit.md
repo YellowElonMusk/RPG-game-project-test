@@ -1,12 +1,12 @@
 # Story 005: Content Error rejects every request except Quit and ignores focus loss
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -123,3 +123,13 @@
 **Deviations**: None from the QA Test Cases. No new cases invented.
 
 **Items owed**: None for this story. Stories 024, 035 and content-catalog/025 remain unlocked as noted above.
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing (AC-2 terminal-state rejection)
+**Deviations**: None from the QA Test Cases. Four entry points (`close_overlay()`, `report_results_done()`, `choose_retry()`, `choose_retreat()`) were missing the `CONTENT_ERROR` → `REJECTED_TERMINAL` guard other entry points already had — fixed as part of this story's own scope, not a deviation from it.
+**Test Evidence**: `tests/unit/game_state/game_state_content_error_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

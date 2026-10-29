@@ -1,12 +1,12 @@
 # Story 014: Overworld → Battle → Overworld restores every field of the Overworld snapshot (Victory and Fled)
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -142,3 +142,13 @@ ADR-0002 amendment recording this `mode_entered`-listener pattern once story 015
 
 **Items owed**: story 012 (rollback case) and story 021 (free-on-Retreat) still need their test
 cases added to `game_state_overworld_freeze_test.gd` per this story's own Implementation Notes.
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing
+**Deviations**: Advisory, since resolved — ADR-0002 does not specify who calls `GameMode.on_thawed()`, and the committed `game_state_machine.gd` passed `null` payload on the Battle→Overworld return. This was worked around with a `mode_entered` listener and a `payload_commit` getter inside `ModeHostSceneLoader`; story 035 later wired `GameStateMachine.last_battle_result` as that getter's real source, so the mechanism now has a documented owner. Flagged for an ADR-0002 annotation.
+**Test Evidence**: `tests/unit/game_state/game_state_overworld_freeze_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

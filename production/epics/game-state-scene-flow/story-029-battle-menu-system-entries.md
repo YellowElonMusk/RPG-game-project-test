@@ -1,12 +1,12 @@
 # Story 029: In Battle the Menu offers only settings and quit
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -123,3 +123,13 @@ Battle system menu screenshot, as scoped.
 
 - Depends on: `production/epics/game-state-scene-flow/story-022-overlay-stack-input-and-order.md`, `production/epics/game-state-scene-flow/story-024-menu-input-gating.md`
 - Unlocks: `production/epics/game-state-scene-flow/story-030-defeat-prompt-focus-and-cancel.md`, `production/epics/game-state-scene-flow/story-039-screenshots-menus.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing
+**Deviations**: None. No `scope` enum was added alongside `entries` — the AC only pins the entry list. Story 039 still owes the visible Menu UI that reads this payload (out of scope here).
+**Test Evidence**: `tests/unit/game_state/game_state_battle_menu_scope_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

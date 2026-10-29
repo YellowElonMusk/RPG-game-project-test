@@ -1,12 +1,12 @@
 # Story 025: Focus loss emits `released` before `focus_lost`, pad input is ignored while unfocused, and a key still held after `focus_gained` needs a fresh press
 
 > **Epic**: Input System
-> **Status**: Deferred (2026-10-24): controller polish, not needed for a playable build; build before release
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -174,3 +174,13 @@ DEFERRED: real NOTIFICATION_APPLICATION_FOCUS_OUT/IN delivery on 4.7.2 (alt-tab 
 - **Tests**: 16 new cases; full suite 407/407, exit 0.
 - **Not yet done**: the manual check that real `NOTIFICATION_APPLICATION_FOCUS_OUT/IN` events arrive on a 4.7.2 build (alt-tab with a pad held) is still owed, with its log in `production/qa/evidence/`. If they don't arrive, the `DisplayServer.window_is_focused()` poll fallback becomes a follow-up.
 - **Wiring owed to game-state-scene-flow 035**: `GameRoot` must construct this node under `Services` and call `setup(resolver)`.
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing (AC-17)
+**Deviations**: Advisory — this story's header still reads "Deferred (2026-10-24): controller polish, not needed for a playable build"; it was built this session because `game-state-scene-flow` story 035 needed `InputSystem`/focus handling to boot. The manual hardware check (real `NOTIFICATION_APPLICATION_FOCUS_OUT/IN` delivery, alt-tab with a pad held) is still owed — the story's own Test Evidence section marks it deferred and explicitly not part of the done gate.
+**Test Evidence**: `tests/unit/input/input_focus_test.gd`, `tests/integration/input/input_system_shell_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

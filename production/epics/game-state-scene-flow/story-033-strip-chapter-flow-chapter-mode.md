@@ -1,12 +1,12 @@
 # Story 033: Strip ChapterFlow to encounter sequencing and host it in ChapterMode
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready (lands in one commit with 034 and 035, when 035 closes)
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -124,3 +124,13 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-013-invalid-descriptor-stays-in-overworld.md`, `production/epics/game-state-scene-flow/story-014-overworld-snapshot-exact-restore.md`, `production/epics/game-state-scene-flow/story-032-chapter-flow-characterization.md`
 - Unlocks: `production/epics/game-state-scene-flow/story-034-battle-mode-wraps-battle-core.md`, `production/epics/game-state-scene-flow/story-035-game-root-main-scene.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing (Step 2.3, the ChapterFlow/ChapterMode half)
+**Deviations**: `src/chapters/chapter_flow_demo.gd`/`.tscn` were deleted here (not in the story's Files list) because they referenced the removed `fight_started`/`fight_lost`/`current_battle` API and would not parse against the stripped `ChapterFlow`; story 035 rewrote them (confirmed landed in the same commit). `tests/unit/chapters/chapter_flow_retry_test.gd` was removed, not rewritten, since the retry mechanics it pinned no longer exist in `ChapterFlow`; story 034 recreated the retry characterization under `tests/unit/battle/` (confirmed). Landed in one squashed commit with stories 034 and 035 (`76233f3`), per this story's own Implementation Notes ("lands in one commit when 035 closes").
+**Test Evidence**: `tests/unit/chapters/chapter_flow_descriptor_test.gd`, `chapter_mode_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

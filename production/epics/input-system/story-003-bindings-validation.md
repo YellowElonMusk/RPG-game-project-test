@@ -1,12 +1,12 @@
 # Story 003: Bindings validation errors on a missing keyboard or gamepad binding and a double-bound key; the valid default set reports zero
 
 > **Epic**: Input System
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -174,3 +174,13 @@ Edge cases: none (the full boot path is game-state-scene-flow's)
 - **Record shape**: validates `Array[Dictionary]` `{action, device, input}` entries (see story 001's notes). `field` values follow the pinned convention (`bindings.<action>.key|pad`, `bindings.<device>:<input>`, `bindings[<index>]`).
 - **Engine finding**: a `const` initialized with `PackedStringArray([...])` is a parser error on 4.7.2 ("isn't a constant expression"). It is now a typed `Array[String]` literal. Under `-d`, a parser error drops gdUnit4 into the interactive debugger and the headless run hangs. Run CI with a timeout and `< /dev/null`.
 - **Fallback bindings**: `confirm`, `cancel` and `move_*` on keyboard and d-pad only. They deliberately fail the coverage rule, because they are for the Content Error screen only (ADR-0003 §7).
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing (AC-2)
+**Deviations**: None from the QA Test Cases.
+**Test Evidence**: `tests/unit/input/input_bindings_validator_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

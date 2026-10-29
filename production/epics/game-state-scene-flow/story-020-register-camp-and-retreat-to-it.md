@@ -1,12 +1,12 @@
 # Story 020: A camp registered by walking past becomes the last camp registered; outside writes are rejected
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M (grew from S: the registered-camp Retreat path moved here from story 021)
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -125,3 +125,13 @@
 - `register_camp`'s rejection log codes (`&"empty_camp_id"`, `&"register_camp_wrong_mode"`) were kept from the pre-existing implementation rather than invented fresh; only `&"last_camp_write_rejected"` was specified by the story and is new.
 
 **Owed**: none against this story's QA Test Cases. Story 002 still owns wiring `CampEntryPayload` into the Overworld -> Camp SWAP-time write path (out of scope here, per Out of Scope).
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing
+**Deviations**: Advisory, since resolved — this story's own notes said story 002 still owned wiring `CampEntryPayload` into the Overworld→Camp SWAP-time write path; story 002 (closed in this same run) confirmed that write now happens in `_end_swap_phase_success()`.
+**Test Evidence**: `tests/unit/game_state/game_state_register_camp_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

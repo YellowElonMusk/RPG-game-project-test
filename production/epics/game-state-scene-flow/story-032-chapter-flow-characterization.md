@@ -1,12 +1,12 @@
 # Story 032: Pin today's ChapterFlow behaviour in characterization tests
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -130,3 +130,13 @@ No `src/` changes — `chapter_flow.gd` was read-only, per scope.
 **Deviations**: none from the QA Test Cases. `make_squad()` uses a 2-member fixture squad (arbitrary stat block, not pinned) rather than reusing `tests/unit/battle`'s 4-member fixture, since only carryover/retry *behavior* is pinned here.
 
 **Items owed**: none for this story. Story 033 may change only `chapter_flow_probe.gd`; Story 034 inherits the retry test's intent per its own Battle-mode snapshot.
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing (characterization, no regressions)
+**Deviations**: None from the QA Test Cases. `make_squad()` uses a 2-member fixture squad (arbitrary stat block, not pinned) rather than reusing `tests/unit/battle`'s 4-member fixture, since only carryover/retry behaviour is pinned here, not balance.
+**Test Evidence**: `tests/unit/chapters/chapter_flow_sequencing_test.gd`, `chapter_flow_carryover_test.gd`, `chapter_flow_retry_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29). Note: `chapter_flow_retry_test.gd` was subsequently removed by story 033 (the mechanics it pinned no longer exist in the stripped `ChapterFlow`) and recreated under `tests/unit/battle/` by story 034.
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

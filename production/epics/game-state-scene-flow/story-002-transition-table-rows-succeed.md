@@ -1,12 +1,12 @@
 # Story 002: Every row of the Modes transitions table succeeds from its source mode
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -124,3 +124,13 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-015-victory-waits-for-results.md`, `production/epics/game-state-scene-flow/story-016-fled-rejected-when-not-allowed.md`, `production/epics/game-state-scene-flow/story-017-defeat-prompt-and-retry-snapshot.md`, `production/epics/game-state-scene-flow/story-018-retreat-offer-no-stale-flag.md`, `production/epics/game-state-scene-flow/story-020-register-camp-and-retreat-to-it.md`, `production/epics/game-state-scene-flow/story-025-menu-stops-time-quit-to-title.md` (Quit-to-Title rows; added at write time because the Menu → Title cases need it)
 - Unlocks: `production/epics/game-state-scene-flow/story-003-invalid-pairs-rejected.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing (AC anchored to the GDD Modes transitions table)
+**Deviations**: None from the story or QA Test Cases. Three real gaps the anchoring test found were fixed, not deviations from this story's own scope: Battle→Camp now uses `fade` (was `battle_wipe_reverse`); an Overworld→Overworld map-change row was added (previously entirely absent); `CampEntryPayload`'s camp id is now written to `last_camp_id` in `_end_swap_phase_success()`.
+**Test Evidence**: `tests/unit/game_state/game_state_transition_table_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

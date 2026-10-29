@@ -1,12 +1,12 @@
 # Story 013: An invalid Encounter descriptor keeps the game in the Overworld and logs an error
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -113,3 +113,13 @@
 **Deviations**: none from the Implementation Notes. One correction made during implementation: the first draft asserted `loader.begin_swap_count == 0` literally, but `GameStateFixtures.make_machine_in_overworld()` already drives two real swaps (Boot->Title, Title->Overworld) before the test body runs, so `begin_swap_count` is 2 going in. Fixed to capture a `begin_swap_before` baseline and assert no further calls, matching the pattern already used in `game_state_retry_snapshot_test.gd` and `game_state_transition_table_test.gd`.
 
 **Items owed**: none. Story 034 (boss-count check) and story 041 (removing the interim flag) remain explicitly out of scope per this story's own Out of Scope section.
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing (AC-14)
+**Deviations**: None from the Implementation Notes. One test-assertion correction during implementation: the first draft asserted `loader.begin_swap_count == 0` literally, but the shared fixture already drives two real swaps before the test body runs — fixed to capture a baseline and assert no further calls.
+**Test Evidence**: `tests/unit/game_state/game_state_descriptor_validation_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

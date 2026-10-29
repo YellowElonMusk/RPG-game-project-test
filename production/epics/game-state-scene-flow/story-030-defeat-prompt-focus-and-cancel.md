@@ -1,12 +1,12 @@
 # Story 030: The Defeat Prompt opens on Retry, ignores cancel, and gets focus back after the Menu
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M (grew: it also owns the production overlay push/pop and the interim confirm helper)
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -122,3 +122,13 @@
   - `tests/unit/game_state/game_state_defeat_prompt_focus_test.gd`.
 - **Tests**: four functions (`test_prompt_opens_with_retry_focused`, `test_cancel_changes_nothing`, `test_menu_over_prompt_and_focus_returns` (parametrized), `test_confirm_on_retry_calls_choose_retry` (parametrized)). Full suite 554/554, exit 0.
 - **Deviations / items owed**: none recorded. Review the interim focus helper when the UI Framework epic (ADR-0008) lands.
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing (AC-29)
+**Deviations**: None recorded. The implementing agent did not finish its own completion notes before running out of turns; the main session verified the files against the story's Files list and QA Test Cases and wrote this story's notes. Review the interim focus helper (`InterimFocusNav`) when the UI Framework epic (ADR-0008) lands.
+**Test Evidence**: `tests/unit/game_state/game_state_defeat_prompt_focus_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

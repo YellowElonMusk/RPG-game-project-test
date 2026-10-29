@@ -1,12 +1,12 @@
 # Story 034: Battle mode wraps BattleCore and BattleHud and owns the start snapshot
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready (lands in one commit with 033 and 035, when 035 closes)
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Integration
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -138,3 +138,13 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-012-failed-swap-rolls-back.md`, `production/epics/game-state-scene-flow/story-017-defeat-prompt-and-retry-snapshot.md`, `production/epics/game-state-scene-flow/story-032-chapter-flow-characterization.md`, `production/epics/game-state-scene-flow/story-033-strip-chapter-flow-chapter-mode.md`
 - Unlocks: `production/epics/game-state-scene-flow/story-035-game-root-main-scene.md`, `production/epics/game-state-scene-flow/story-036-victory-dialogue-after-transition.md`, `production/epics/game-state-scene-flow/story-041-remove-interim-enemy-validation-flag.md`, `production/epics/content-migration/story-029-battle-factory-reads-enemy-records.md` (the `BattleFactory` it changes)
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing (Step 2.3, the BattleMode half)
+**Deviations**: No `catalog`/`FactionRuleRegistry` params on `BattleFactory` (neither exists yet). Every `ADR-0006 §5` `BattleReplayController` step is an inline `TODO(battle-replay)` and skipped. `BattleBuildResult` is nested in `battle_factory.gd` rather than its own file. Check 6's grep gates were run at close time (not by the implementer): `battle_mode.gd` calls only `start_battle(false)`, never `retry_battle(`/bare `start_battle()`; `BattleCore.new` appears outside `battle_factory.gd` only in test files and the two named harnesses (`battle_debug_harness.gd`, `battle_hud_demo.gd`) — **both gates pass clean**. Cross-domain review by gameplay-programmer of `BattleCore.clear_transients()`/`BattleFactory` is still owed (lean mode skips the formal gate). Landed in one squashed commit with stories 033 and 035 (`76233f3`).
+**Test Evidence**: `tests/unit/battle/battle_mode_snapshot_test.gd`, `tests/integration/game_state/game_state_battle_mode_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped; cross-domain review owed, see Deviations)

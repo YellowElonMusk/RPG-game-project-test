@@ -1,12 +1,12 @@
 # Story 022: With Dialogue then Menu stacked, only the Menu gets input, and signals fire in stack order
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -121,3 +121,13 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-010-input-locked-during-transition.md`
 - Unlocks: `production/epics/game-state-scene-flow/story-023-dialogue-menu-precedence.md`, `production/epics/game-state-scene-flow/story-024-menu-input-gating.md`, `production/epics/game-state-scene-flow/story-025-menu-stops-time-quit-to-title.md`, `production/epics/game-state-scene-flow/story-027-dialogue-closes-before-transition.md`, `production/epics/game-state-scene-flow/story-028-in-mode-fade.md`, `production/epics/game-state-scene-flow/story-029-battle-menu-system-entries.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing (AC-19)
+**Deviations**: None. The stack behaviour (top-only input, close pops the top, signal order, `is_input_owner`) was already in place from stories 010 and 020; this story added the pinning test and corrected two doc comments that still called the behaviour owed.
+**Test Evidence**: `tests/unit/game_state/game_state_overlay_stack_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

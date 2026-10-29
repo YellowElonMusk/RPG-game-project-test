@@ -1,12 +1,12 @@
 # Story 012: A failed swap returns to the source mode with frozen state restored and input unlocked
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -114,3 +114,13 @@
 - The capture-null check is skipped when `current_mode_node()` is `null` (most pure-stub tests that don't care about this concern never set it). This is deliberate so existing signal-order/busy-rejection tests needed no change, but means the check is only exercised when a test (or production) actually supplies a node.
 - `_battle_snapshot` is now populated on a successful battle entry, which is part of story 017's stated scope ("the machine calls `capture_start_snapshot()` and stores the opaque handle"). Only the capture call and null-rollback landed here; `choose_retry()` still does not call `restore_start_snapshot()` — that wiring remains story 017's job. Flagging for technical-director/story-017 implementer awareness.
 - `payload_commit false` (ADR-0009 §6's distinct `SceneLoader.payload_commit` hook) is not implemented anywhere yet — no `SaveService` exists. Per the story's own wording ("stubbed through the loader as FAILED"), this case is tested purely as a second `loader_failed` row and introduces no new production code path.
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing
+**Deviations**: Advisory — `_battle_snapshot` storage overlaps story 017's stated scope (this story captures only; 017 added `restore_start_snapshot()`/retry wiring on top). `payload_commit false` (a second `loader_failed` source) has no real production path yet, since no SaveService exists; tested as a second `loader_failed` row per the story's own wording.
+**Test Evidence**: `tests/unit/game_state/game_state_swap_rollback_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

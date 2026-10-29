@@ -1,12 +1,12 @@
 # Story 016: Fled on a descriptor with can_flee = false is rejected and the battle continues
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -118,3 +118,13 @@
 - Deviations: none. Items owed: none within this story's scope (Story 034 —
   real Battle mode wiring — and Story 014's exact Fled restore remain
   Out of Scope here, as specified).
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing (AC-13)
+**Deviations**: None.
+**Test Evidence**: `tests/unit/game_state/game_state_fled_guard_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

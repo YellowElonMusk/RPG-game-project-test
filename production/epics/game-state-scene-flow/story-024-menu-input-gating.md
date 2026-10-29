@@ -1,12 +1,12 @@
 # Story 024: The Menu cannot be opened by input during a transition, in Boot or in Content Error
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -131,3 +131,13 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-005-content-error-rejects-all-but-quit.md`, `production/epics/game-state-scene-flow/story-010-input-locked-during-transition.md`, `production/epics/game-state-scene-flow/story-022-overlay-stack-input-and-order.md`
 - Unlocks: `production/epics/game-state-scene-flow/story-026-focus-loss-opens-menu.md`, `production/epics/game-state-scene-flow/story-029-battle-menu-system-entries.md`, `production/epics/game-state-scene-flow/story-030-defeat-prompt-focus-and-cancel.md`, `production/epics/game-state-scene-flow/story-031-title-focus-and-quit-confirm.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing
+**Deviations**: Advisory — direct `open_overlay(MENU)` from Boot/Title still succeeds unconditionally; the full "can open over" pair table belongs to deferred story 023. This story scoped itself to the menu-action interception path only, per its own Files list.
+**Test Evidence**: `tests/unit/game_state/game_state_menu_gating_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

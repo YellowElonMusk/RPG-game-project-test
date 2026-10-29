@@ -1,12 +1,12 @@
 # Story 001: Every default binding, keyboard and gamepad, emits `pressed` on press and `released` on release
 
 > **Epic**: Input System
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -180,3 +180,13 @@ Edge cases: none
 - **Record shape**: the existing `InputBindings.bindings` is `Array[Dictionary]` of `{action, device, input}`, not the `PackedStringArray` of `"action:device:input"` strings the story text assumed. The resolver compiles from the dictionaries; test parameter keys still use the `action:device:input` spelling. Owed to technical-director: ADR-0003 Key Interfaces wording.
 - **Tests**: 54 parametrized binding cases plus row-count parity (`input_default_bindings_test.gd`) and 3 synthetic-event regressions; full suite 375/375, exit 0. Remaining warning: gdUnit4 requires the parametrized argument to be named `test_parameters`, so GDScript's "unused parameter" warning on it is expected.
 - **Forbidden-API audit**: `input_resolver.gd` has no `Input.`, `InputMap`, `get_tree`, `Time.` or `Engine.` references; every Key Interfaces signal is declared.
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing (AC-1)
+**Deviations**: Advisory — `InputBindings.bindings` is `Array[Dictionary]` ({action, device, input}), not the `PackedStringArray` of `"action:device:input"` triples ADR-0003's Key Interfaces text describes. The resolver and tests were built against the real record shape; ADR-0003's wording is owed to technical-director.
+**Test Evidence**: `tests/unit/input/input_default_bindings_test.gd`, `tests/unit/input/input_synthetic_events_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

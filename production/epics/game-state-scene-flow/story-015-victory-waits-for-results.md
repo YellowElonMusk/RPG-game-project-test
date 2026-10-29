@@ -1,12 +1,12 @@
 # Story 015: After Victory, the return to the Overworld starts only after the results screen is done
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -112,3 +112,13 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-014-overworld-snapshot-exact-restore.md`
 - Unlocks: `production/epics/game-state-scene-flow/story-002-transition-table-rows-succeed.md`, `production/epics/game-state-scene-flow/story-036-victory-dialogue-after-transition.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing (AC-12)
+**Deviations**: None.
+**Test Evidence**: `tests/unit/game_state/game_state_victory_results_wait_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

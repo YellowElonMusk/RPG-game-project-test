@@ -1,12 +1,12 @@
 # Story 011: Quit during a transition calls the quit hook once, after transition_finished
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -124,3 +124,13 @@
 - Full suite: 471/471 (468 pre-existing + 3 new parameterized cases), 0
   errors/failures/orphans.
 - Nothing owed.
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing (AC-9)
+**Deviations**: None.
+**Test Evidence**: `tests/unit/game_state/game_state_quit_wait_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

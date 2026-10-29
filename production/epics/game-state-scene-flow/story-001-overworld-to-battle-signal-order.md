@@ -1,12 +1,12 @@
 # Story 001: Overworld → Battle fires exactly the four transition signals, once each, in order
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: L (it carries the shared scaffold every later story reuses)
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -133,3 +133,13 @@
 4. Renamed the `_init`/local parameter `log` to `log_sink` / `game_log` after gdUnit4 flagged it shadowing the built-in `log()` function (now warning-free).
 
 **Owed / out of scope here (unchanged from the story)**: story 002 (GDD-anchored transitions table), story 006 (`TransitionConfig.validate()`, measured `transition_time`), story 010 (input routing/lock — `bind_action_source`/`get_move_vector`/`is_input_owner` exist but are not wired to real dispatch), story 017 (flash-gate booking).
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing (AC-5)
+**Deviations**: Advisory — `flash_gate`/`catalog` constructor params are typed `Object` (no `FlashGate`/concrete catalog type existed yet at implementation time; both since landed — `catalog()` in GameRoot, `FlashGatePort` in story 017). `GameMode.new()` is a parser error on 4.7.2, contradicting ADR-0002 Engine Notes' claim that it "succeeds silently" — owed to technical-director to correct the ADR text. Retry/rollback originally went through the generic swap path rather than ADR-0002 §7's loader-free snapshot restore; this is now superseded by story 017's `restore_start_snapshot()` path.
+**Test Evidence**: `tests/unit/game_state/game_state_signal_order_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

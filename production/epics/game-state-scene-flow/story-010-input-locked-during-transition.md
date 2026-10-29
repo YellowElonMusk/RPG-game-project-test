@@ -1,12 +1,12 @@
 # Story 010: Input during out, swap and in reaches nobody; the first action after transition_finished is delivered
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -117,3 +117,13 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-001-overworld-to-battle-signal-order.md`
 - Unlocks: `production/epics/game-state-scene-flow/story-019-repeated-retry-one-restart.md`, `production/epics/game-state-scene-flow/story-022-overlay-stack-input-and-order.md`, `production/epics/game-state-scene-flow/story-024-menu-input-gating.md`, `production/epics/game-state-scene-flow/story-026-focus-loss-opens-menu.md`, `production/epics/game-state-scene-flow/story-028-in-mode-fade.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing (AC-8)
+**Deviations**: Advisory — the Files list named only `game_state_machine.gd` and the test, but routing to "the top overlay" needed `SceneLoader.current_overlay_node()` (mirroring the existing `current_mode_node()`), so `scene_loader.gd` and its doubles were extended too.
+**Test Evidence**: `tests/unit/game_state/game_state_input_lock_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

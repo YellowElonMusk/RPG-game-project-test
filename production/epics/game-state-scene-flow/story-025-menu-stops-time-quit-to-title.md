@@ -1,12 +1,12 @@
 # Story 025: The open Menu stops mode time and blocks transitions, but Quit to Title still works
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -152,3 +152,13 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-011-quit-waits-for-transition.md`, `production/epics/game-state-scene-flow/story-014-overworld-snapshot-exact-restore.md`, `production/epics/game-state-scene-flow/story-022-overlay-stack-input-and-order.md`
 - Unlocks: `production/epics/game-state-scene-flow/story-002-transition-table-rows-succeed.md`, `production/epics/game-state-scene-flow/story-035-game-root-main-scene.md`, `production/epics/game-state-scene-flow/story-039-screenshots-menus.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing
+**Deviations**: None from the story spec. This story also resolved an open ADR-0002 Engine Compatibility question: a real `AnimationPlayer` freezes and resumes under a disabled `ModeHost`, the same as `Timer`/`Tween` — recommend folding this into ADR-0002 as verified.
+**Test Evidence**: `tests/unit/game_state/game_state_menu_time_stop_test.gd`, `tests/unit/game_state/game_state_animation_player_freeze_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

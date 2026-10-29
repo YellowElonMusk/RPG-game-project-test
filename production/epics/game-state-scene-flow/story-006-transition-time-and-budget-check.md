@@ -1,12 +1,12 @@
 # Story 006: transition_time sums the three phases, and a budget below t_out + t_in logs an error
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -117,3 +117,13 @@
 - `transition_config_with`/`add_row` build rows directly on the dictionaries (ADR-0001 data-only), never via `.tres` per the story's No-`.tres`-in-unit-tests rule.
 
 **Items owed:** none. Story 007 (overrun warning) and story 035 (disk load + integration validate() call) remain out of scope as specified.
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing (AC-6)
+**Deviations**: None from the story. Engine finding: `poll_swap()` is poll-count-driven, not time-driven, so the 60Hz edge case drives only OUT/IN with 1/60s ticks and keeps SWAP on the same two 0.10s polls as the main scenario (documented in the test's comments).
+**Test Evidence**: `tests/unit/game_state/game_state_transition_time_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

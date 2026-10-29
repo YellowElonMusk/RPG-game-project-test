@@ -1,12 +1,12 @@
 # Story 017: Defeat opens the Defeat Prompt, and Retry restores the starting snapshot with zero scene loads
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -123,3 +123,13 @@
 - `_FLASH_SOURCE_BY_TYPE` also books `battle_wipe`/`battle_wipe_reverse` per the Implementation Notes, though only `retry_flash` has QA coverage here — the other two are exercised incidentally (every Overworld↔Battle entry/exit in the suite books and grants against a `null` gate) but have no dedicated capped-refusal test. Flagged for story-002 or a future flash-gate story to add explicit coverage.
 - `BattleCore.retry_battle()` edge case: not applicable yet — no production code in this epic references `BattleCore` (story 034's concern); nothing to assert against today.
 - AC-34 (capped-retry GDD anchor) is still owed by game-designer per the story's own note.
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing (AC-15)
+**Deviations**: Advisory — AC-34 (the GDD's capped-retry wording) is still owed by game-designer, per the story's own note; this story implements the flash-booking mechanism (`FlashGatePort`) that AC-34 will govern. `battle_wipe`/`battle_wipe_reverse` also book flashes but have no dedicated capped-refusal test yet — flagged for a future story.
+**Test Evidence**: `tests/unit/game_state/game_state_retry_snapshot_test.gd`, `tests/unit/game_state/game_state_flash_gate_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

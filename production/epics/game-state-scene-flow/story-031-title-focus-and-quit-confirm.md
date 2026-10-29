@@ -1,12 +1,12 @@
 # Story 031: Title opens on New Game with Continue disabled, and Quit asks for confirmation with No focused
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -116,3 +116,13 @@
   4. The test looked up `%YesButton`/`%NoButton` from the Title root, but those unique names belong to the `QuitConfirm` sub-scene. They now resolve from `quit_confirm`.
   5. Headless geometric focus search did not reach Yes from No, so `quit_confirm.tscn` now sets explicit focus neighbours.
 - **Items owed**: to story 035, the `GameRoot` `pre_setup` wiring above.
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing (AC-30)
+**Deviations**: None against this story's own scope. The implementing agent left five bugs the main session fixed before this story could close: an `InterimFocusNav.route_*(self as Control)` call that is a parser error on 4.7.2 (the script extends `GameMode`, a `Node`); `_ready()` reading a field only assigned in `setup()`; the test never calling `setup()` (mode scenes only receive it through the loader's `pre_setup` closure — the same closure story 035's `GameRoot` had to wire); `%YesButton`/`%NoButton` looked up from the wrong scene root; missing explicit focus neighbours for headless geometric focus search between Yes and No.
+**Test Evidence**: `tests/unit/game_state/game_state_title_quit_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)

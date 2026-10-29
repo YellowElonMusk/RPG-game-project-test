@@ -1,12 +1,12 @@
 # Story 009: Of two same-frame transition requests, the first is accepted and the second rejected
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-28 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-29 (Complete)
 
 ## Context
 
@@ -115,3 +115,13 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-008-busy-transition-rejects-requests.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-29
+**Criteria**: 1/1 passing (AC-7)
+**Deviations**: None. The behaviour was already correct (first request starts synchronously before returning); this story added the pinning tests.
+**Test Evidence**: `tests/unit/game_state/game_state_same_frame_requests_test.gd` — confirmed passing in the full suite (581/581, 0 failures, 2026-10-29)
+**Reviewed by**: self, no independent review (lean mode — LP-CODE-REVIEW and QL-TEST-COVERAGE skipped)
