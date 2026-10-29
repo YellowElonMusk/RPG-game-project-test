@@ -186,7 +186,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 120 | [The Paris clue is legible on the Deck and the comprehension check passes](story-120-faction-clue-narrative-signoff-and-comprehension.md) | Config/Data | Ready | ADR-0012 |
 | 121 | [Every narrative guardrail item has a passing sign-off entry](story-121-narrative-guardrail-signoff-checklist.md) | Config/Data | Ready | ADR-0012 |
 | 122 | [Confirm at a clue poster or decree gag shows its LocText verbatim](story-122-clue-and-decree-loctext-display.md) | Logic | Ready | ADR-0012 |
-| 123 | [The optional_teach bark fires on proximity, never blocks movement, and re-arms](story-123-optional-teach-bark-trigger.md) | Logic | Ready | ADR-0012 |
+| 123 | [The optional_teach bark fires on proximity, never blocks movement, and re-arms](story-123-optional-teach-bark-trigger.md) | Logic | Complete | ADR-0012 |
 | 124 | [A Clerk respawned onto a liberated street shows the deflated variant](story-124-deflated-clerk-respawn-screenshot.md) | Visual/Feel | Ready | ADR-0012 |
 | 125 | [Retained screenshots of every overworld event cue](story-125-event-feedback-screenshot-set.md) | Visual/Feel | Ready | ADR-0012 |
 | 126 | [Every overworld SFX event has its visual twin on the same frame](story-126-overworld-sfx-visual-twin-coverage.md) | Logic | Ready | ADR-0012 |

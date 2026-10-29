@@ -1,7 +1,7 @@
 # Story 123: The optional_teach bark fires on proximity, never blocks movement, and re-arms
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-51d [L] (R16)** The `optional_teach` bark fires when the leader comes within `interact_reach_m · 2` of its speaker, with no input, and never blocks movement. It does not fire again until the leader has moved beyond twice that distance, then fires again on re-entry. `confirm` at the speaker shows the same line. A bark due while the name card shows waits until the card has faded.
+- [x] **AC-51d [L] (R16)** The `optional_teach` bark fires when the leader comes within `interact_reach_m · 2` of its speaker, with no input, and never blocks movement. It does not fire again until the leader has moved beyond twice that distance, then fires again on re-entry. `confirm` at the speaker shows the same line. A bark due while the name card shows waits until the card has faded.
 
 ---
 
@@ -79,7 +79,7 @@ checks scope against it.*
 **Story Type**: Logic
 **Required evidence**: `tests/unit/overworld/optional_teach_bark_test.gd` — must exist and pass.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -87,3 +87,8 @@ checks scope against it.*
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-119-faction-clue-placement-ordering.md`, `production/epics/overworld-exploration-encounters/story-111-map-name-card-timing.md`
 - Unlocks: `production/epics/overworld-exploration-encounters/story-130-timed-text-hold-and-overlay-pause.md`
+
+## Completion Notes (2026-10-30)
+
+- `NpcSpawn.optional_teach`; the segment café regular carries it. The bark goes out on `OverworldMode.barked` and shows in the placeholder bark label (story 130 owns the real window).
+- The name card (story 111) is not built; `OverworldMode.name_card_showing` is the hook it sets, and a bark due meanwhile waits for it.

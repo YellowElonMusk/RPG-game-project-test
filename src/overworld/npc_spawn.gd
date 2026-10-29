@@ -20,6 +20,9 @@ extends Marker3D
 @export var speaker: String = ""
 ## What `confirm` shows. Plain text until LocText exists.
 @export_multiline var line: String = ""
+## Rule 16 `optional_teach`: also barks `line` on proximity, no input
+## needed (within `interact_reach_m * 2`; re-arms beyond twice that).
+@export var optional_teach: bool = false
 
 
 ## Ground position (`x`, `z`) relative to `map_root`.

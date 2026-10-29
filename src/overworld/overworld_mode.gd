@@ -112,6 +112,13 @@ var lines_said: Array[String] = []
 var probe_calls: int = 0
 ## Codex rumours added by clue gags (story 016).
 var rumours_added: int = 0
+## Set while the map name card is on screen (story 111 owns the card); a
+## teaching bark due meanwhile waits until it is cleared (story 123).
+var name_card_showing: bool = false
+## optional_teach NpcSpawn -> true while armed (story 123).
+var _teach_armed: Dictionary = {}
+## optional_teach NpcSpawns whose bark is due but waiting on the name card.
+var _teach_pending: Dictionary = {}
 ## The follow camera's settings, for the first-sight check (rule 13a); the
 ## view assigns its own on start.
 var presentation: PresentationConfig = PresentationConfig.new()
@@ -364,6 +371,7 @@ func step_frame(ow_dt: float, input_vec: Vector2) -> void:
 		return
 	_check_camp_registration()
 	_check_barks_and_sight()
+	_check_teach_barks()
 	if _budget == null:
 		_budget = QueryBudget.new(config.repath_per_frame_max)
 	_budget.begin_frame()
@@ -1136,3 +1144,28 @@ func target_position(target: Object) -> Vector2:
 	if target is Node3D and _map != null:
 		return OverworldMap.ground_position_of(target as Node3D, _map)
 	return _leader_pos
+
+
+## Story 123 (GDD rule 16 "Clerks are optional"): each frame in Exploring,
+## an `optional_teach` speaker barks its line when the leader comes within
+## `interact_reach_m * 2` of it, with no input and without stopping the
+## leader. It re-arms only once the leader is beyond twice that distance. A
+## bark due while the name card shows waits until the card is gone.
+func _check_teach_barks() -> void:
+	if _map == null:
+		return
+	var near: float = config.interact_reach_m * 2.0
+	for npc: NpcSpawn in _map.npc_spawns():
+		if not npc.optional_teach:
+			continue
+		var at: Vector2 = npc.ground_position(_map)
+		var d: float = _leader_pos.distance_to(at)
+		var armed: bool = _teach_armed.get(npc, true)
+		if armed and d <= near:
+			_teach_armed[npc] = false
+			_teach_pending[npc] = true
+		elif not armed and d > near * 2.0:
+			_teach_armed[npc] = true
+		if _teach_pending.has(npc) and not name_card_showing:
+			_teach_pending.erase(npc)
+			barked.emit(npc.line, at)
