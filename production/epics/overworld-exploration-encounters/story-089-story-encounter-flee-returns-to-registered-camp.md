@@ -1,7 +1,7 @@
 # Story 089: Defeat → Retreat against the boss goes to the pre-dungeon camp once it is passed, or the Town café before
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Integration
 > **Estimate**: M
@@ -30,7 +30,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-33b [I] (R13, R13a)** After passing the pre-dungeon CampSpot's safe zone without resting, then Defeat → Retreat, the party is at the pre-dungeon camp, and the boss is unresolved. With no camp registered yet, Retreat goes to the Town café.
+- [x] **AC-33b [I] (R13, R13a)** After passing the pre-dungeon CampSpot's safe zone without resting, then Defeat → Retreat, the party is at the pre-dungeon camp, and the boss is unresolved. With no camp registered yet, Retreat goes to the Town café.
 
 ---
 
@@ -71,7 +71,7 @@
 **Required evidence**:
 - `tests/integration/overworld/boss_retreat_camp_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -79,3 +79,10 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-088-boss-contact-descriptor-flags.md`, `production/epics/game-state-scene-flow/story-020-register-camp-and-retreat-to-it.md`, `production/epics/game-state-scene-flow/story-021-retreat-region-default-and-no-camp.md`
 - Unlocks: `production/epics/overworld-exploration-encounters/story-090-boss-stays-resolved-through-retreat-and-continue.md`
+
+## Completion Notes (2026-10-29)
+
+- Retreat used to enter a Camp mode with no scene. Story 089 adds an **interim** Camp mode (`src/game_state/modes/interim_camp_mode.gd`, registered for `Mode.CAMP`): a rest card whose `confirm` returns to the camp map at its CampSpot return EntryPoint. Camp & Party Management (not designed) replaces it.
+- **Deviation:** camp returns come from `CampDirectory`, read from the map scenes at boot, instead of `world_state.camp_returns` (ADR-0012 §4): every return is fixed map data.
+- `OverworldConfig.camp_mode_enabled` is now on, so the camp prompt Yes enters the Camp mode too.
+- Evidence: `production/qa/evidence/story-089-camp-retreat/`.

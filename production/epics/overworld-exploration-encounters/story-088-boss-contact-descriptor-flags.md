@@ -1,7 +1,7 @@
 # Story 088: Contact with the boss never finds it moved, and its descriptor forbids Flee but allows Retreat
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Integration
 > **Estimate**: S
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-33a [I] (R13)** GIVEN contact with the boss, THEN the boss had not moved before contact, and the descriptor has `can_flee = false` and `retreat_allowed = true`.
+- [x] **AC-33a [I] (R13)** GIVEN contact with the boss, THEN the boss had not moved before contact, and the descriptor has `can_flee = false` and `retreat_allowed = true`.
 
 ---
 
@@ -73,7 +73,7 @@
 **Required evidence**:
 - `tests/integration/overworld/boss_contact_descriptor_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 

@@ -58,6 +58,7 @@ func test_yes_requests_the_camp_mode_with_the_camp_id() -> void:
 func test_yes_without_a_camp_mode_registers_the_camp_and_stays() -> void:
 	var machine: GameStateMachine = GameStateFixtures.make_machine_in_overworld()["machine"]
 	var mode: OverworldMode = _at_cafe(machine)
+	mode.config.camp_mode_enabled = false
 	mode.handle_action(InputActions.CONFIRM, true)
 	mode.handle_action(InputActions.CONFIRM, true)
 	assert_str(machine.last_camp_id).is_equal(_CAFE)

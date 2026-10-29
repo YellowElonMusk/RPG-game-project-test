@@ -166,7 +166,7 @@ func validate() -> PackedStringArray:
 ## `story_sight_m`, 12 m, range 8-16; level review).
 @export var story_sight_m: float = 12.0
 ## Whether the camp prompt's Yes requests the Camp mode (GDD States,
-## CampPrompt). Off until the Camp mode exists (Camp & Party Management is
-## not designed): Yes then registers the camp and closes the prompt, so the
-## game never enters a mode with no scene.
-@export var camp_mode_enabled: bool = false
+## CampPrompt). On since story 089 added the interim Camp mode; off, Yes
+## only registers the camp and closes the prompt (for a build with no Camp
+## mode scene).
+@export var camp_mode_enabled: bool = true

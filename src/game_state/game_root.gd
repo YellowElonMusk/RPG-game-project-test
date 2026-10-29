@@ -57,6 +57,8 @@ var world_state: WorldState:
 		return _world_state
 
 var _world_state: WorldState = null
+## Every camp's return (story 089), read from the map scenes at boot.
+var _camp_directory: CampDirectory = null
 var _squad: Array[Combatant] = []
 var _machine: GameStateMachine = null
 var _loader: ModeHostSceneLoader = null
@@ -108,6 +110,8 @@ func _ready() -> void:
 	var pre_setup := func(mode: GameMode, payload: RefCounted) -> void:
 		if mode is OverworldMode:
 			_inject_overworld(mode as OverworldMode, payload)
+		elif mode is InterimCampMode:
+			(mode as InterimCampMode).camp_directory = _camp_directory
 		mode.setup(machine_box[0], payload)
 	# The loader's result getter: the thawed Overworld's on_thawed() needs the
 	# battle result, and the return swap carries no payload (story 014).
@@ -167,6 +171,7 @@ func _validate_maps() -> void:
 		return
 	for err: String in MapValidator.validate_catalog(catalog(), OverworldConfig.new()):
 		push_error("MapValidator: " + err)
+	_camp_directory = CampDirectory.from_catalog(catalog(), OverworldConfig.new())
 
 
 func _process(delta: float) -> void:
