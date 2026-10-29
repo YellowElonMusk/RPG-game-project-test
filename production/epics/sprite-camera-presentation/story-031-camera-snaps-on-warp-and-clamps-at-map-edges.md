@@ -82,5 +82,5 @@
 
 ## Dependencies
 
-- Depends on: `story-001-*` (the spike probes the perspective follow-camera path at 16:10 and 4:3); the Overworld (ADR-0012, no epic yet — owns what the camera follows and the map bounds data)
+- Depends on: `story-001-windowed-engine-spike.md` (the spike probes the perspective follow-camera path at 16:10 and 4:3); the Overworld (ADR-0012, no epic yet — owns what the camera follows and the map bounds data)
 - Unlocks: `story-044-dialogue-holds-the-follow-camera.md`

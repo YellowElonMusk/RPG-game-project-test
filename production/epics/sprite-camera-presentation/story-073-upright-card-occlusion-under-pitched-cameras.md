@@ -85,5 +85,5 @@ The `[L]` half tests `SpriteProjection`'s pure card-depth function directly: for
 
 ## Dependencies
 
-- Depends on: `production/epics/sprite-camera-presentation/story-001-*.md` (the spike verifies pixel-exact card depth under the pitched Overworld camera); `production/epics/sprite-camera-presentation/story-002-*.md` (the capture tool, for the `[C]` half)
+- Depends on: `production/epics/sprite-camera-presentation/story-001-windowed-engine-spike.md` (the spike verifies pixel-exact card depth under the pitched Overworld camera); `production/epics/sprite-camera-presentation/story-002-capture-tool.md` (the capture tool, for the `[C]` half)
 - Unlocks: None

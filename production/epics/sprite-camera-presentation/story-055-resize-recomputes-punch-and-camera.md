@@ -85,5 +85,5 @@ Both halves of this AC reuse existing pure functions driven by an injected viewp
 
 ## Dependencies
 
-- Depends on: `production/epics/sprite-camera-presentation/story-001-*.md` (the spike probes the perspective follow-camera path at 16:10 and 4:3)
+- Depends on: `production/epics/sprite-camera-presentation/story-001-windowed-engine-spike.md` (the spike probes the perspective follow-camera path at 16:10 and 4:3)
 - Unlocks: None

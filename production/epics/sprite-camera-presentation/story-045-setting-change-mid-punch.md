@@ -82,5 +82,5 @@
 
 ## Dependencies
 
-- Depends on: the settings service (ADR-0009, `src/save/settings_service.gd`, not yet built); `story-001-*` (settles the punch's pixel-to-`frustum_offset` mapping)
+- Depends on: the settings service (ADR-0009, `src/save/settings_service.gd`, not yet built); `story-001-windowed-engine-spike.md` (settles the punch's pixel-to-`frustum_offset` mapping)
 - Unlocks: None

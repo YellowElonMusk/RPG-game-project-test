@@ -85,5 +85,5 @@
 
 ## Dependencies
 
-- Depends on: `BattleReplayController` (ADR-0006, no epic yet); `story-001-*` (the spike settles the boss profile fields and `blend_defeat`); boss stages (content, not yet authored)
+- Depends on: `BattleReplayController` (ADR-0006, no epic yet); `story-001-windowed-engine-spike.md` (the spike settles the boss profile fields and `blend_defeat`); boss stages (content, not yet authored)
 - Unlocks: None

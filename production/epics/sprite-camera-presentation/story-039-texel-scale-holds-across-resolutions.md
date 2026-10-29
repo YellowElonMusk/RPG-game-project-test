@@ -41,7 +41,7 @@
 *Derived from ADR-0005 Decision §2 (`SpriteProjection`, the clip-space quad) and §13 (the capture tool's unlit-albedo mode):*
 
 - `T` must be recomputed on every `size_changed`, reading `get_viewport().size.y` — **full window pixels**, never `get_visible_rect()`'s logical units (ADR-0008's UI refit changes the window's logical/physical relationship, and this rule exists precisely so the texel grid tracks the real framebuffer, not the UI's 640×360 base).
-- The unlit-albedo capture mode (built by `story-002-*`) strips lighting so each texel's color is exactly the source art's palette color, letting this story's test assert "each block is one color" with simple equality rather than a tolerance — the separate "lit spread" clause (ΔE ≤ 3) is checked only in the normal lit mode, as a distinct pass.
+- The unlit-albedo capture mode (built by `story-002-capture-tool.md`) strips lighting so each texel's color is exactly the source art's palette color, letting this story's test assert "each block is one color" with simple equality rather than a tolerance — the separate "lit spread" clause (ΔE ≤ 3) is checked only in the normal lit mode, as a distinct pass.
 - "Near and far rows' blocks are the same size" is the direct, automated proof that on-screen size is independent of world distance (ADR-0005's core guarantee, §2 "Size comes from `T`, not the world") — a regression here (e.g. a stray `pixels_per_unit` or scale applied anywhere) would show up as unequal block sizes between a near-row and far-row sprite at the same resolution.
 - Coverage at 21:9 and 4:3 exercises the `KEEP_HEIGHT`-always rule (ADR-0005 §6): the frame widens or narrows, but the texel grid and actor silhouettes must stay fully inside it at every tested aspect, not just 16:9.
 - If Step 1 records that the clip-space quad regressed on the Steam Deck and the §2 fallback (per-frame `pixel_size` billboard) shipped instead, this story's captures are taken against whichever path is actually in `src/presentation/`, and the evidence notes which one.
@@ -54,7 +54,7 @@
 
 - `story-050-camera-holds-every-slot-in-view-at-every-aspect.md`: the battle camera's own aspect-handling formula (this story consumes it, it does not re-derive it).
 - `story-036-capture-one-screen-per-lighting-state.md`: read-order and glow checks (unrelated to texel geometry).
-- Building the capture tool's unlit-albedo mode itself (`story-002-*`, writer A).
+- Building the capture tool's unlit-albedo mode itself (`story-002-capture-tool.md`, writer A).
 
 ---
 
@@ -86,5 +86,5 @@
 
 ## Dependencies
 
-- Depends on: `story-001-*` (the spike settles whether the clip-space quad or the fallback billboard ships); `story-002-*` (the capture tool's ID pass and unlit-albedo mode)
+- Depends on: `story-001-windowed-engine-spike.md` (the spike settles whether the clip-space quad or the fallback billboard ships); `story-002-capture-tool.md` (the capture tool's ID pass and unlit-albedo mode)
 - Unlocks: None

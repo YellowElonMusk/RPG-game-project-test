@@ -40,7 +40,7 @@
 
 *Derived from ADR-0005 Decision §13 (the capture tool) and §2 (the sprite shader's lighting):*
 
-- This story runs `tools/capture/presentation_capture.gd` (`story-002-*`) once per named lighting state, at the resolutions AC-32 specifies, producing one capture file per (state, resolution) pair.
+- This story runs `tools/capture/presentation_capture.gd` (`story-002-capture-tool.md`) once per named lighting state, at the resolutions AC-32 specifies, producing one capture file per (state, resolution) pair.
 - `read_order` is measured from the ID pass with emissive and below-the-feet-ring pixels excluded from the comparison — the capture tool's ID pass (per-class override materials, same frame) is what makes this measurable at all; an invalid capture (missing a required pass, wrong viewport settings) is a **tool error**, which this story's test harness must distinguish from a genuine pass/fail.
 - "No glow on actors" depends on the glow-input hook reading the engine's glow buffer before tonemapping (Verification Required item 15) — if Step 1 records that item as failing, this clause's automated check stays **Pending** in this story's evidence, and the glow threshold is instead tuned by eye with a conservative margin (ADR-0005 Risks) until the hook exists.
 - Glow bloom at 0 in every preset is a `LightingProfile` load-rule (§5, §9) already enforced at boot — this story's capture-based check is a second, independent confirmation on the shipped presets, not the only place that rule is tested.
@@ -54,7 +54,7 @@
 
 - `story-038-boss-takeover-faction-parity.md`: the boss-takeover-specific sky, star and flood checks (this story only needs one valid capture per boss takeover, not its full parity analysis).
 - `story-039-texel-scale-holds-across-resolutions.md`: the texel-grid and whole-pixel-block checks at multiple resolutions.
-- Building the capture tool itself (`story-002-*`, writer A).
+- Building the capture tool itself (`story-002-capture-tool.md`, writer A).
 
 ---
 
@@ -85,5 +85,5 @@
 
 ## Dependencies
 
-- Depends on: `story-002-*` (the capture tool); `story-001-*` (the spike settles the lighting presets this story captures); every MVP lighting profile authored (`title`, `overworld`, `battle`, `boss_bureaucratia`, `boss_megacorp`, `camp`, `victory`, `defeat`)
+- Depends on: `story-002-capture-tool.md` (the capture tool); `story-001-windowed-engine-spike.md` (the spike settles the lighting presets this story captures); every MVP lighting profile authored (`title`, `overworld`, `battle`, `boss_bureaucratia`, `boss_megacorp`, `camp`, `victory`, `defeat`)
 - Unlocks: None

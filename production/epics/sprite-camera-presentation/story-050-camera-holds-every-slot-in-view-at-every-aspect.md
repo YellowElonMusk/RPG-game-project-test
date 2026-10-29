@@ -82,5 +82,5 @@
 
 ## Dependencies
 
-- Depends on: `story-001-*` (settles `battle_fov`, `near`, and re-measures the lens shift against `battle_framing`'s `y_h` at 16:9 and 16:10); `story-046-no-two-actor-slots-share-a-depth.md` (slot depths this story's containment check also needs)
+- Depends on: `story-001-windowed-engine-spike.md` (settles `battle_fov`, `near`, and re-measures the lens shift against `battle_framing`'s `y_h` at 16:9 and 16:10); `story-046-no-two-actor-slots-share-a-depth.md` (slot depths this story's containment check also needs)
 - Unlocks: None

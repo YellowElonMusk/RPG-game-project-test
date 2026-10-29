@@ -51,7 +51,7 @@ This story runs the capture tool's UI-alone pass (§13) against the composited f
 *Handled by neighbouring stories — do not implement here:*
 
 - `story-072-squad-never-tinted-by-the-boss-flood.md`: the same faction-colour rule, applied to actors instead of the UI
-- `story-002-*.md` (writer A): builds the capture tool's UI-alone pass this story depends on
+- `story-002-capture-tool.md` (writer A): builds the capture tool's UI-alone pass this story depends on
 
 ---
 
@@ -81,5 +81,5 @@ This story runs the capture tool's UI-alone pass (§13) against the composited f
 
 ## Dependencies
 
-- Depends on: `production/epics/sprite-camera-presentation/story-002-*.md` (the capture tool; this is a [C] story)
+- Depends on: `production/epics/sprite-camera-presentation/story-002-capture-tool.md` (the capture tool; this is a [C] story)
 - Unlocks: None

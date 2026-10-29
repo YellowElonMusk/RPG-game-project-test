@@ -84,5 +84,5 @@
 
 ## Dependencies
 
-- Depends on: `story-001-*` (the spike settles `B_native`, `B_sky_native` and the profile values this formula blends toward); the settings service (ADR-0009, `src/save/settings_service.gd`, not yet built — this story's production code only needs `PresentationSettings`' shape, not a working service)
+- Depends on: `story-001-windowed-engine-spike.md` (the spike settles `B_native`, `B_sky_native` and the profile values this formula blends toward); the settings service (ADR-0009, `src/save/settings_service.gd`, not yet built — this story's production code only needs `PresentationSettings`' shape, not a working service)
 - Unlocks: None

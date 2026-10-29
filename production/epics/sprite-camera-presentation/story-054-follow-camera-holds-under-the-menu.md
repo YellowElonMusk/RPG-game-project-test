@@ -81,5 +81,5 @@ The follow camera (§6) advances only from calls driven by mode time, exactly li
 
 ## Dependencies
 
-- Depends on: `production/epics/sprite-camera-presentation/story-001-*.md` (the follow camera's perspective-path formula, including `F_v_eff`, is probed in the spike)
+- Depends on: `production/epics/sprite-camera-presentation/story-001-windowed-engine-spike.md` (the follow camera's perspective-path formula, including `F_v_eff`, is probed in the spike)
 - Unlocks: None

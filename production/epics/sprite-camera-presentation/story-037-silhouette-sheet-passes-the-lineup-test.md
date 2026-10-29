@@ -43,7 +43,7 @@
 - The sheet is generated at two sizes: battle height (the shipped on-screen `T`-scaled size) and a fixed 32 px reference — both rendered black-fill (silhouette only, no interior detail), which is what the 2-of-3 lineup test judges: a character must be identifiable by outline alone from at least 2 of 3 reference angles/poses.
 - Squad members are captured in `back` facing for both `idle` and `victory` (the facing the player sees for most of a battle, since the squad stands with its back to camera); enemies are captured in `front` facing (facing the squad). This matches the two-facings-with-mirroring rule: the sheet does not need the mirrored variant, only the authored facing actually used in that role.
 - A `no_mirror` animation (if any squad member or enemy has one) uses its authored `<animation_id>_<facing>_mirrored` variant where the opposite facing would otherwise be needed — this sheet generation must not silently fall back to the shader flip for a `no_mirror` animation.
-- This is a `[VF]`-only AC (not `[C]`) — it is generated and judged by the art director directly from the shipped `SpriteFrames` resources, not through the capture tool's automated measurement pipeline, so it carries no dependency on `story-002-*`.
+- This is a `[VF]`-only AC (not `[C]`) — it is generated and judged by the art director directly from the shipped `SpriteFrames` resources, not through the capture tool's automated measurement pipeline, so it carries no dependency on `story-002-capture-tool.md`.
 - The sheet itself (one image per character, or one sheet covering the whole roster) is the retained evidence; the art director's lineup-test verdict per character is the sign-off this story's evidence file records.
 
 ---
@@ -84,5 +84,5 @@
 
 ## Dependencies
 
-- Depends on: `story-001-*` (settles which mirroring path ships, shader flip or the fallback billboard); every squad member and enemy sprite set authored with `back`/`front` facings
+- Depends on: `story-001-windowed-engine-spike.md` (settles which mirroring path ships, shader flip or the fallback billboard); every squad member and enemy sprite set authored with `back`/`front` facings
 - Unlocks: None

@@ -84,5 +84,5 @@
 
 ## Dependencies
 
-- Depends on: `BattleReplayController` (ADR-0006, no epic yet); `story-001-*` (settles `blend_boss`, `boss_hold`, `boss_retry_hold`); boss stages (content, not yet authored)
+- Depends on: `BattleReplayController` (ADR-0006, no epic yet); `story-001-windowed-engine-spike.md` (settles `blend_boss`, `boss_hold`, `boss_retry_hold`); boss stages (content, not yet authored)
 - Unlocks: None

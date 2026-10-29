@@ -51,7 +51,7 @@ This is a capture-measured negative check on top of AC-32's existing emissive ca
 
 *Handled by neighbouring stories — do not implement here:*
 
-- `story-002-*.md` (writer A): builds the capture tool and its ID pass this story depends on
+- `story-002-capture-tool.md` (writer A): builds the capture tool and its ID pass this story depends on
 - The light rig and card-depth mechanism themselves (ADR-0005 §2–§3) — built by the earlier `src/presentation/` stories, not this one
 
 ---
@@ -82,5 +82,5 @@ This is a capture-measured negative check on top of AC-32's existing emissive ca
 
 ## Dependencies
 
-- Depends on: `production/epics/sprite-camera-presentation/story-002-*.md` (the capture tool; this is a [C] story)
+- Depends on: `production/epics/sprite-camera-presentation/story-002-capture-tool.md` (the capture tool; this is a [C] story)
 - Unlocks: None

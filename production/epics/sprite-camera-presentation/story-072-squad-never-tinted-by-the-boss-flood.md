@@ -81,5 +81,5 @@ The capture tool's ID pass isolates each squad member's actor pixels on a `boss_
 
 ## Dependencies
 
-- Depends on: `production/epics/sprite-camera-presentation/story-002-*.md` (the capture tool; this is a [C] story); the boss stages (no epic yet, needed for both factions' takeover captures)
+- Depends on: `production/epics/sprite-camera-presentation/story-002-capture-tool.md` (the capture tool; this is a [C] story); the boss stages (no epic yet, needed for both factions' takeover captures)
 - Unlocks: None

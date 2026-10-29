@@ -85,5 +85,5 @@
 
 ## Dependencies
 
-- Depends on: `story-046-no-two-actor-slots-share-a-depth.md`; `story-002-*` (the capture tool, for the `[VF]` capture); every shipped battle stage's set geometry authored
+- Depends on: `story-046-no-two-actor-slots-share-a-depth.md`; `story-002-capture-tool.md` (the capture tool, for the `[VF]` capture); every shipped battle stage's set geometry authored
 - Unlocks: None

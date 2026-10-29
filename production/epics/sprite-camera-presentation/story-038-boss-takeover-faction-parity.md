@@ -19,7 +19,7 @@
 **ADR Version**: 2026-10-22
 
 **Engine**: Godot 4.7.2 | **Risk**: HIGH
-**Engine Notes**: Depends on the capture tool's ID pass (sky tagging), the set-light shadow mask (Verification item — "the hardest set contrast" clause is itself marked Pending in the GDD pending the shadow mask), and the glow-input hook (cross-check against AC-32). Several of this AC's `[C]` clauses are explicitly `(Pending: capture tool)` until `story-002-*` is Done.
+**Engine Notes**: Depends on the capture tool's ID pass (sky tagging), the set-light shadow mask (Verification item — "the hardest set contrast" clause is itself marked Pending in the GDD pending the shadow mask), and the glow-input hook (cross-check against AC-32). Several of this AC's `[C]` clauses are explicitly `(Pending: capture tool)` until `story-002-capture-tool.md` is Done.
 
 **Control Manifest Rules (this layer)**:
 - Required: "`SetLight`: a `DirectionalLight3D`, culled to `SET`, the **only** shadow caster in the scene" (Stages and lighting, ADR-0005 §3–§5) — relevant to the "hardest set contrast" clause's shadow-mask measurement.
@@ -87,5 +87,5 @@
 
 ## Dependencies
 
-- Depends on: `story-002-*` (the capture tool); `story-001-*` (settles the swatch values, Open Question 7, Step 1); every `boss_<faction>` profile authored (MVP: `boss_bureaucratia`, `boss_megacorp`); boss stages (content, not yet authored)
+- Depends on: `story-002-capture-tool.md` (the capture tool); `story-001-windowed-engine-spike.md` (settles the swatch values, Open Question 7, Step 1); every `boss_<faction>` profile authored (MVP: `boss_bureaucratia`, `boss_megacorp`); boss stages (content, not yet authored)
 - Unlocks: None

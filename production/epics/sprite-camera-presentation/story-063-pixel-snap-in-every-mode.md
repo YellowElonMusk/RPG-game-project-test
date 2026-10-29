@@ -81,5 +81,5 @@ This drives `SpriteProjection.screen_rect()` with a foot anchor advancing by 0.3
 
 ## Dependencies
 
-- Depends on: `production/epics/sprite-camera-presentation/story-001-*.md` (the spike verifies the clip-space quad is pixel-exact under both the level and pitched cameras)
+- Depends on: `production/epics/sprite-camera-presentation/story-001-windowed-engine-spike.md` (the spike verifies the clip-space quad is pixel-exact under both the level and pitched cameras)
 - Unlocks: None

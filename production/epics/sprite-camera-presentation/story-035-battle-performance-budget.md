@@ -85,5 +85,5 @@
 
 ## Dependencies
 
-- Depends on: `story-001-*` (settles `battle_fov`, slot depths and `humanoid_height_px`, including the Steam Deck native-export run); boss stages (content, not yet authored); the full battle stage (presentation director, diorama stage, character sprites) existing end to end
+- Depends on: `story-001-windowed-engine-spike.md` (settles `battle_fov`, slot depths and `humanoid_height_px`, including the Steam Deck native-export run); boss stages (content, not yet authored); the full battle stage (presentation director, diorama stage, character sprites) existing end to end
 - Unlocks: None

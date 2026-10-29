@@ -83,5 +83,5 @@
 
 ## Dependencies
 
-- Depends on: boss stages (content, not yet authored — this story needs at least one authored boss stage per MVP faction to run against); `story-001-*` (settles `battle_fov` and the frustum the shape must land inside)
+- Depends on: boss stages (content, not yet authored — this story needs at least one authored boss stage per MVP faction to run against); `story-001-windowed-engine-spike.md` (settles `battle_fov` and the frustum the shape must land inside)
 - Unlocks: None

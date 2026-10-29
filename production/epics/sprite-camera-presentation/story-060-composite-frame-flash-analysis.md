@@ -83,5 +83,5 @@ This builds the flash analyser tool itself (P-13), a sibling to the capture tool
 
 ## Dependencies
 
-- Depends on: `production/epics/sprite-camera-presentation/story-002-*.md` (the capture tool); `production/epics/sprite-camera-presentation/story-059-flash-coverage-declared-for-every-source.md` (the source declarations this analyser measures against); the settings service (ADR-0009, not built, for Reduce Flashing)
+- Depends on: `production/epics/sprite-camera-presentation/story-002-capture-tool.md` (the capture tool); `production/epics/sprite-camera-presentation/story-059-flash-coverage-declared-for-every-source.md` (the source declarations this analyser measures against); the settings service (ADR-0009, not built, for Reduce Flashing)
 - Unlocks: None

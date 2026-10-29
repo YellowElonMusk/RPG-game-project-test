@@ -11,7 +11,7 @@ Engine: Godot 4.7.2
 | [Input System](input-system/EPIC.md) | Foundation | Input System | input-system.md | 26 stories | Ready |
 | [Game State & Scene Flow](game-state-scene-flow/EPIC.md) | Foundation | Game State & Scene Flow | game-state-scene-flow.md | 41 stories | Ready |
 | [Sprite & Camera Presentation](sprite-camera-presentation/EPIC.md) | Core | Sprite & Camera Presentation | sprite-camera-presentation.md | 74 stories | Ready |
-| [Overworld Exploration & Encounters](overworld-exploration-encounters/EPIC.md) | Feature | Overworld Exploration & Encounters | overworld-exploration-encounters.md | Not yet created | Ready |
+| [Overworld Exploration & Encounters](overworld-exploration-encounters/EPIC.md) | Feature | Overworld Exploration & Encounters | overworld-exploration-encounters.md | 135 stories | Ready |
 
 **Foundation build order** (producer PR-EPIC, 2026-10-23): test setup (story 1 of
 Content Catalog) → Content Catalog, with Content Migration Step 0 alongside → Input

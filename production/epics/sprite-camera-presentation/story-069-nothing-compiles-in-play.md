@@ -86,5 +86,5 @@ This builds the P-15 benchmark harness: a windowed release export, an empty-cach
 
 ## Dependencies
 
-- Depends on: `production/epics/sprite-camera-presentation/story-001-*.md` (the spike confirms the compiling-parameter list and cache file locations); `production/epics/sprite-camera-presentation/story-051-rendering-constraints.md` (the project settings this measurement assumes)
+- Depends on: `production/epics/sprite-camera-presentation/story-001-windowed-engine-spike.md` (the spike confirms the compiling-parameter list and cache file locations); `production/epics/sprite-camera-presentation/story-051-rendering-constraints.md` (the project settings this measurement assumes)
 - Unlocks: None

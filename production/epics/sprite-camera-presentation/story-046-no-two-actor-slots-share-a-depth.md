@@ -82,5 +82,5 @@
 
 ## Dependencies
 
-- Depends on: `story-001-*` (settles slot depths and `battle_framing`'s measurement); every shipped battle formation authored
+- Depends on: `story-001-windowed-engine-spike.md` (settles slot depths and `battle_framing`'s measurement); every shipped battle formation authored
 - Unlocks: None

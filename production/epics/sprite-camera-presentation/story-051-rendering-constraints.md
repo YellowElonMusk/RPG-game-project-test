@@ -66,7 +66,7 @@ This story has two independent halves: a project-settings check (§10) and a sta
 *Handled by neighbouring stories — do not implement here:*
 
 - `story-069-nothing-compiles-in-play.md`: measures that nothing recompiles a pipeline once these settings are in place — a separate, runtime assertion
-- `story-002-*.md` (writer A): the capture tool these same settings are checked against for [C] stories
+- `story-002-capture-tool.md` (writer A): the capture tool these same settings are checked against for [C] stories
 
 ---
 
@@ -97,5 +97,5 @@ This story has two independent halves: a project-settings check (§10) and a sta
 
 ## Dependencies
 
-- Depends on: `production/epics/sprite-camera-presentation/story-001-*.md` (the windowed spike confirms the backend resolves to Vulkan and records the fallback settings' actual defaults on 4.7.2)
+- Depends on: `production/epics/sprite-camera-presentation/story-001-windowed-engine-spike.md` (the windowed spike confirms the backend resolves to Vulkan and records the fallback settings' actual defaults on 4.7.2)
 - Unlocks: `production/epics/sprite-camera-presentation/story-069-nothing-compiles-in-play.md` (needs these settings pinned correctly before it can measure the compile contract)
