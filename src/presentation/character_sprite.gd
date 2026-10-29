@@ -46,12 +46,21 @@ func setup(frames: SpriteFrames, config: PresentationConfig) -> void:
 ## Sets a beat-driven frame (ADR-0006 clocks): `animation` only when it
 ## changes, THEN `frame` via `set_frame_and_progress`, AND the frame
 ## texture uniform, all in this one call (ADR-0005 §1 call order).
-func show_frame(animation_id: StringName, facing: StringName, mirrored: bool, frame: int) -> void:
-	var resolved: StringName = StringName("%s_%s" % [animation_id, facing])
+## `no_mirror` is the animation's own flag (ADR-0005 §1, Story 005 AC-3):
+## WHEN both `mirrored` and `no_mirror` are true, the authored
+## `<animation_id>_<facing>_mirrored` clip is used in place of the shader
+## flip, and the shader's `flip_h` uniform stays false. An unflagged
+## animation always mirrors by the shader flip when `mirrored` is true,
+## even within a set that has other `no_mirror` animations.
+func show_frame(animation_id: StringName, facing: StringName, mirrored: bool,
+		no_mirror: bool, frame: int) -> void:
+	var uses_authored_mirror: bool = mirrored and no_mirror
+	var suffix: String = "_mirrored" if uses_authored_mirror else ""
+	var resolved: StringName = StringName("%s_%s%s" % [animation_id, facing, suffix])
 	if animation != resolved:
 		animation = resolved
 	set_frame_and_progress(frame, 0.0)
-	_mirrored = mirrored
+	_mirrored = mirrored and not no_mirror
 	_update_shader_uniforms()
 
 
@@ -78,10 +87,16 @@ func _update_shader_uniforms() -> void:
 			push_warning("CharacterSprite: card_camera not set, skipping projection uniforms")
 			_warned_no_camera = true
 		return
+	# `setup()` and `show_frame()` may run before this node is in the tree
+	# (mode scenes are set up before add_child), so no viewport exists yet.
+	# The next update after entering the tree writes the uniforms.
+	if not is_inside_tree():
+		return
 	var viewport_size: Vector2i = get_viewport().size
 	var cam_state: SpriteProjection.CameraState = SpriteProjection.CameraState.from_camera3d(
 			card_camera, viewport_size)
-	var frame_size: Vector2i = _current_frame_size()
+	var frame_tex: Texture2D = _current_frame_texture()
+	var frame_size: Vector2i = frame_tex.get_size() if frame_tex != null else Vector2i.ZERO
 	var rect: Rect2i = SpriteProjection.screen_rect(
 			global_position, cam_state, frame_size, viewport_size, _config.texel_base_lines)
 	var normal: Vector3 = SpriteProjection.card_normal(cam_state)
@@ -90,13 +105,15 @@ func _update_shader_uniforms() -> void:
 	_material.set_shader_parameter(&"foot_anchor", global_position)
 	_material.set_shader_parameter(&"card_normal", normal)
 	_material.set_shader_parameter(&"flip_h", _mirrored)
+	if frame_tex != null:
+		_material.set_shader_parameter(&"frame_tex", frame_tex)
 
 
-## The current animation frame's texel size, read from its `Texture2D`.
-func _current_frame_size() -> Vector2i:
+## The current animation frame's `Texture2D`, or `null` before `setup()`
+## or once `sprite_frames`/`animation` disagree (defensive). The shader's
+## `frame_tex` uniform (ADR-0005 §2) and this node's culling bounds both
+## read frame size from this, so it is fetched once per update.
+func _current_frame_texture() -> Texture2D:
 	if sprite_frames == null or animation == &"" or not sprite_frames.has_animation(animation):
-		return Vector2i.ZERO
-	var tex: Texture2D = sprite_frames.get_frame_texture(animation, frame)
-	if tex == null:
-		return Vector2i.ZERO
-	return tex.get_size()
+		return null
+	return sprite_frames.get_frame_texture(animation, frame)

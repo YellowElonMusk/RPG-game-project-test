@@ -23,3 +23,18 @@ joypads/ignore_joypad_on_unfocused_application=true
 [rendering]
 
 renderer/rendering_method="forward_plus"
+
+[shader_globals]
+
+mode_time={
+"type": "float",
+"value": 0.0
+}
+actor_rim_color={
+"type": "color",
+"value": Color(1, 0.94, 0.85, 1)
+}
+actor_rim_strength={
+"type": "float",
+"value": 0.5
+}

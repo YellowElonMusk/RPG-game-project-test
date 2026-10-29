@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -73,7 +73,63 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/character_sprite_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing — `tests/unit/presentation/character_sprite_test.gd`
+
+---
+
+## Completion Notes
+
+- `show_frame()` gained a `no_mirror: bool` parameter (ADR-0005 §1): when
+  `mirrored and no_mirror`, it plays `<animation_id>_<facing>_mirrored`
+  and keeps the shader's `flip_h` uniform false; otherwise it plays
+  `<animation_id>_<facing>` and flips when `mirrored`. An unflagged
+  animation in the same set still flips, per AC-3.
+- Also wired `frame_tex`: `_update_shader_uniforms()` now fetches the
+  current frame's `Texture2D` once (`_current_frame_texture()`, replacing
+  `_current_frame_size()`) and sets it as the shader's `frame_tex`
+  uniform every call, per ADR-0005 §1 ("it sets the frame texture uniform
+  in the same call"). This was a gap in the Story 004 code, not previously
+  wired; it is necessary glue for the shader this story also builds, and
+  `character_sprite.gd` was already this story's only in-scope file.
+- **`src/presentation/shaders/sprite_actor.gdshader` was built under this
+  story** (ADR-0005 §2), because no other story owns that file: the
+  pixel-exact upright-card vertex quad (ray-cast through
+  `INV_PROJECTION_MATRIX`, plane-intersected, re-projected), `FRAGCOORD`-based
+  fragment UV (pitched-camera-safe), hard alpha cutout, key-light-only
+  lighting (`ambient_light_disabled`), the one-texel rim ring excluding
+  Outline Ink, and shader-flip mirroring.
+- The vertex shader's pixel→NDC conversion follows ADR-0005 §2's probed
+  note that this shader stage's NDC is y-down (no flip relative to window
+  pixels).
+- **Visual check: correction by the main session (2026-10-29).** The
+  implementer's capture was a solid grey frame with no sprite, and the
+  notes above wrongly said it showed the card. The main session found two
+  causes and fixed them:
+  1. **Missing shader globals.** The shader reads `actor_rim_color` and
+     `actor_rim_strength`, which ADR-0005 places in `project.godot`'s
+     `shader_globals`, but the project declared none. Godot warned
+     "Material will not display correctly". `[shader_globals]` now declares
+     `mode_time`, `actor_rim_color` and `actor_rim_strength`, with
+     placeholder values; `PresentationDirector` writes the real ones later.
+  2. **Crash before the tree.** `CharacterSprite._update_shader_uniforms()`
+     called `get_viewport()` before the node was in the tree, which crashed.
+     Mode scenes are set up before `add_child`, so it now returns early
+     until it is inside the tree.
+
+  The capture `01-sprite-under-pitched-camera.png` was retaken by the main
+  session: a placeholder 32×48 sprite in a lit scene under a camera
+  pitched -35°. It shows an upright, screen-facing, crisp card with its
+  transparent margins cut away. In the spike's plain-card capture the same
+  setup went edge-on.
+
+  Not yet shown: the rim ring, an actual mirrored frame on screen, and the
+  scene under a real `DioramaStage` light rig (the scratch scene used one
+  directional light).
+- Deviation to flag: the rim test is the in-shader per-pixel neighbor
+  sampling ADR-0005 §2 describes as Step 1's placeholder ("may replace
+  the in-shader test with a mask baked at import" if it costs too much) —
+  left as a `TODO(godot-shader-specialist)` in the shader rather than
+  implemented now, since baking is a separate, later decision.
 
 ---
 
