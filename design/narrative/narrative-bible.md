@@ -124,7 +124,7 @@ Asking after every fight would be tiresome, so the choice comes **only after a b
 - **Finish him off** → **human street cred**;
 - **Let him go** → **alien points**.
 
-*Interpretation* — **Provisional**: "finish" is shown cartoon-style (he poofs, flattens, or gets filed away), never as harm with victims (guardrail 2). Wording must avoid deportation/removal vocabulary (guardrail 6). See §9 X-3.
+**Established** (user, 2026-10-29): a finished alien boss **explodes into a pile of purple goo**. That is the whole visual: no victims, no gore beyond goo (guardrail 2). The wording still avoids deportation and removal words (guardrail 6). **Human bosses never get the prompt**: a beaten bounty-hunter boss just loses, with no spare-or-finish choice.
 
 ### 6.3 What reputation changes
 - **How NPCs see you**: shop prices and how likely someone is to join you.
@@ -143,6 +143,7 @@ Exact curves belong to the game-designer (Faction Reputation & Endings GDD).
 - Not every enemy is an alien. **Human resistance bounty hunters** sometimes come after the squad, believing it is a treasonous rat.
 - *Interpretation* — **Provisional**: their frequency rises with alien points.
 - So the world has **two resistances**: the cell's (secret, alien-run) and the humans' (public, hunting the squad). Players should be able to tell them apart by name; see §9 X-4.
+- **The human resistance lives underground** — **Established** (user, 2026-10-29): survivors shelter in abandoned metro stations and tunnels, and come up only to loot and sabotage (reference for feel: Arc Raiders). *Provisional:* in Paris this is the disused Métro. These are the humans' shelters, not the squad's camp, so the overworld rule that the camp is a neutral café, never a secret base, still holds.
 
 ### 6.6 The true ending needs the alien side
 Only by siding with the aliens can the squad later convince them that humanity deserves another chance and should not be wiped out (ties to M-1).
@@ -172,7 +173,7 @@ Only by siding with the aliens can the squad later convince them that humanity d
 - **Real-world brands, politicians and celebrities: no**, unless the use is certain to be legally and publicly safe. Parody uses invented names.
 
 ### 8.2 Off-limits topics — **Established**
-Jews; WWII; religion in general; LGBTQ topics. Nothing else is off limits by N-8 (but see 8.3).
+Nazi-related material; Jews and Jewish topics; religion in general; LGBTQ topics. **WWII in general is not banned** (user, 2026-10-29): only its Nazi and Jewish sides are. Nothing else is off limits by N-8 (but see 8.3).
 
 ### 8.3 The updated guardrail set (overworld guardrails reconciled with N-8 and C-1)
 
@@ -183,16 +184,16 @@ Jews; WWII; religion in general; LGBTQ topics. Nothing else is off limits by N-8
 | G-3 | Parisians neither helpless nor saintly; jokes from behaviour, not nationality (guardrail 3) | Unchanged | Established |
 | G-4 | No set you only walk past (guardrail 4) | Unchanged | Established |
 | G-5 | Readable without UI text (guardrail 5) | Unchanged | Established |
-| G-6a | No WWII-occupation template: no 1944 liberation tableau, no secret meeting room, no banners on facades, no occupation-era notice layouts, no uniforms/insignia/salutes of real forces | Unchanged; now also required by N-8 (WWII) | Established |
+| G-6a | No Nazi material: no Nazi uniforms, insignia, salutes, symbols or lookalikes, and no Holocaust or Jewish-persecution imagery or allegory (no camps, roundups, yellow stars or marked people). Other WWII-era settings and words are allowed | **Narrowed** (user, 2026-10-29: "WW2 things we don't want is nazi related and jews related") | Established |
 | G-6b | No "papers, please"; forms and permits are processed, never people; identity documents never forged, checked or confiscated | Unchanged | Established |
 | G-6c | No migrant/border template: no visa, residency, deportation, border or asylum vocabulary, either direction | Kept (user, 2026-10-29). N-8 does not lift it, and the title makes it the highest risk | Established |
 | G-6d | Enthusiastic adopters, never shamed or punished; no one marked by anything worn | Unchanged | Established |
 | G-6e | No food or ration queues | Unchanged | Established |
 | G-6f | **"resistance" is now allowed** in player-facing text | **Changed** (C-1) | Established |
-| G-6g | **"maquis" and "collaborator" stay banned** (WWII) | Unchanged | Established |
-| G-6h | "underground" (as a movement) stays banned; C-1 did not lift it and it reads as WWII | *Interpretation* | Provisional |
+| G-6g | "maquis" and "collaborator" are allowed: they are neither Nazi- nor Jewish-related. Still, a "collaborator" is never shamed or punished (G-6d) | **Changed** (user, 2026-10-29) | Provisional |
+| G-6h | **"underground" is allowed** in both senses: the movement, and the literal abandoned-metro shelters (§6.5) | **Changed** (user, 2026-10-29) | Established |
 | G-6i | No civilian says "go back", "your planet", or anything about where aliens came from; only the squad's battle cry (§5) | Unchanged; OQ-21 closed | Established |
-| G-7 | Off-limits topics: Jews, WWII, religion, LGBTQ | New (N-8) | Established |
+| G-7 | Off-limits topics: Nazi-related material, Jews, religion, LGBTQ | New (N-8, narrowed 2026-10-29) | Established |
 | G-8 | No real brands, politicians or celebrities unless certainly safe | New (N-8) | Established |
 | G-9 | Profanity only through substitution words | New (N-8) | Established |
 | G-10 | Macho/sexist humour must land on the speaker | New (user, 2026-10-29) | Established |
@@ -215,7 +216,7 @@ The composite test (overworld guardrail 6) and the rule 18 sign-off still apply 
 |---|---|---|---|
 | X-1 | Older docs describe Bureaucratia as "enemies ignore damage until *Approved*"; the built rule is the **Permit Ban** (no specials until round 3). The Paris clue poster ("UNAPPROVED INJURIES WILL NOT BE PROCESSED", the stamped-Clerk mime) teaches the old rule, so it would fail the rule 18 (e) comprehension check. | `game-concept.md` Unique Hook, MVP item 3; overworld rules 13a ("Approved rule"), 16 (clue wording) | Rewrite the hook and the clue to teach the Permit Ban. Needs user ruling + game-designer. |
 | X-2 | N-7 says reputation "only" affects prices and recruits, but the same answer adds retaliation, peacekeepers, bounty hunters and the ending gate. The overworld GDD also lets reputation raise stages. | `narrative-requests.md` §5.1; overworld Interactions table (Faction Reputation row) | Read "only" as "never battle rules" (§6.3). User to confirm. |
-| X-3 | "Finish them off" against guardrail 2 (no violence) and guardrail 6 (no removal vocabulary). Also: is there a spare/finish prompt after a **bounty-hunter** (human) fight? | §6.2; guardrails 2, 6 | **Partly resolved (user, 2026-10-29):** the prompt comes after bosses only, so ordinary bounty-hunter fights have none. Still open: the cartoon look of "finish", and whether a human boss gets the prompt. |
+| X-3 | "Finish them off" against guardrail 2 (no violence) and guardrail 6 (no removal vocabulary). Also: is there a spare/finish prompt after a **bounty-hunter** (human) fight? | §6.2; guardrails 2, 6 | **Resolved (user, 2026-10-29):** the prompt comes after bosses only. A finished alien boss explodes into purple goo. Human bosses get no prompt. |
 | X-4 | Two different "resistances" (the cell's, the bounty hunters') can confuse players. | §2, §6.5 | Give the human hunters a distinct invented group name. Writer to propose. |
 | X-5 | **"Michelin" is a real brand** (tyres, guide); N-8 bars real brands unless certainly safe. | `char_michelin_chef.tres` `display_name`; concept; asset list | **Resolved (user, 2026-10-29):** rename to **Five-Star Chef**. The user does not consider "Michelin" a problem, but prefers the brand-free name. The `display_name` and the docs need the rename; the file id can stay. |
 | X-6 | Pillar 2 design test: "if a choice has an obviously good side, rewrite it." Locking the true ending behind the alien side gives completionists an obvious side. | Concept Pillar 2; §6.6 | **Resolved (user, 2026-10-29):** the human ending is not a bad ending. The resistance is driven into hiding but keeps thriving, and the fight stays alive (§6.6). |
@@ -238,7 +239,7 @@ The composite test (overworld guardrail 6) and the rule 18 sign-off still apply 
 6. **Unique Hook / MVP item 3**: "*Approved* / forms" → the Permit Ban. (X-1, pending ruling)
 
 ### `design/gdd/overworld-exploration-encounters.md`
-1. **Guardrail 6, word-list bullet** (line ~105): allow "resistance"; keep "maquis", "underground" and "collaborator" banned. (C-1)
+1. **Guardrail 6, word-list bullet** (line ~105): allow "resistance", "underground", "maquis" and "collaborator". The WWII bullet narrows to Nazi and Jewish material only (G-6a). (C-1)
 2. **Guardrail 6, "go back" bullet** (line ~107) and **OQ-21** (line ~1389): mark resolved, pointing to this bible §5. (C-4)
 3. **Rule 13** (line ~305): "The Minister of Forms" → "The Supervisor". (C-2)
 4. **Rule 18 flag registry**, `paris_liberated` row (line ~395): "Minister of Forms defeated" → "Supervisor defeated". (C-2)
