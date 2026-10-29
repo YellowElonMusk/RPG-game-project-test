@@ -45,10 +45,10 @@ transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
 [node name="KeyLight" type="DirectionalLight3D" parent="DioramaStage/KeyRig"]
 
 [node name="SetLight" type="DirectionalLight3D" parent="DioramaStage"]
-transform = Transform3D(1, 0, 0, 0, 0.5, 0.866025, 0, -0.866025, 0.5, 0, 0, 0)
+transform = Transform3D(0.76604444, 0.41317594, -0.4924039, 0, 0.76604444, 0.64278764, 0.64278764, -0.4924039, 0.58682406, 0, 0, 0)
 
 [node name="FillLight" type="DirectionalLight3D" parent="DioramaStage"]
-transform = Transform3D(1, 0, 0, 0, -0.5, 0.866025, 0, -0.866025, -0.5, 0, 0, 0)
+transform = Transform3D(0.64278764, -0.4393851, 0.62750685, 0, 0.819152, 0.5735765, -0.76604444, -0.3686879, 0.52654076, 0, 0, 0)
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="DioramaStage"]
 environment = SubResource("Env_1")
