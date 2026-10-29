@@ -68,6 +68,13 @@ var _pending_encounter_id: String = ""
 var _pending_thaw_overworld: GameMode = null
 var _pending_thaw_result: int = -1
 
+## `OVERWORLD -> OVERWORLD` map change (ADR-0012 §2): the old instance,
+## detached but alive until the new one succeeds, and whether the new one
+## failed, so `rollback_swap()` can re-add it.
+var _replaced_overworld: GameMode = null
+var _map_swap_failed: bool = false
+var _swap_status: SwapStatus = SwapStatus.DONE
+
 
 func _init(mode_host: Node, config: TransitionConfig, log_sink: GameStateLog,
 		pre_setup: Callable = Callable(), payload_commit: Callable = Callable(),
@@ -92,21 +99,38 @@ func set_machine(machine: GameStateMachine) -> void:
 ## Synchronous per ADR-0002 §3: every case below finishes before this
 ## returns, so `poll_swap()` always reports `DONE` on its first call.
 func begin_swap(from: int, to: int, payload: RefCounted) -> void:
+	_swap_status = SwapStatus.DONE
 	if from == GameStateMachine.Mode.OVERWORLD and to == GameStateMachine.Mode.BATTLE:
 		_freeze_overworld_and_enter_battle(payload)
 	elif from == GameStateMachine.Mode.BATTLE and to == GameStateMachine.Mode.OVERWORLD:
 		_thaw_overworld()
+	elif from == GameStateMachine.Mode.OVERWORLD and to == GameStateMachine.Mode.OVERWORLD:
+		_swap_overworld_map(payload)
 	else:
 		_generic_swap(to, payload)
 
 
+## `DONE`, or `FAILED` after a map change whose new Overworld could not
+## build its map (the machine then calls `rollback_swap()`).
 func poll_swap() -> SwapStatus:
-	return SwapStatus.DONE
+	return _swap_status
 
 
 ## Re-attaches a frozen Overworld, if any, and frees a half-built node from
-## the failed swap (AC-10). Story 012 owns this case's test coverage.
+## the failed swap (AC-10). Story 012 owns this case's test coverage. A
+## failed map change re-adds the old Overworld instead (ADR-0012 §2).
 func rollback_swap() -> void:
+	if _map_swap_failed:
+		_map_swap_failed = false
+		if is_instance_valid(_current_mode_node_ref) and _current_mode_node_ref != _replaced_overworld:
+			if _current_mode_node_ref.get_parent() == _mode_host:
+				_mode_host.remove_child(_current_mode_node_ref)
+			_current_mode_node_ref.queue_free()
+		if _replaced_overworld != null:
+			_mode_host.add_child(_replaced_overworld)
+		_current_mode_node_ref = _replaced_overworld
+		_replaced_overworld = null
+		return
 	if _frozen_overworld == null:
 		return
 	if is_instance_valid(_current_mode_node_ref) and _current_mode_node_ref != _frozen_overworld:
@@ -234,6 +258,29 @@ func _thaw_overworld() -> void:
 	_current_mode_node_ref = overworld
 	_pending_thaw_overworld = overworld
 	_pending_thaw_result = _payload_commit.call() as int if _payload_commit.is_valid() else -1
+
+
+## `OVERWORLD -> OVERWORLD` (ADR-0012 §2, annotation on ADR-0002): detach
+## the old instance, add the new one with its `MapEntryPayload`, and free
+## the old one only when the new one built its map. Otherwise the swap
+## reports `FAILED` and `rollback_swap()` re-adds the old one, so `ModeHost`
+## never holds two live modes and a missing map scene leaves the party
+## where it was.
+func _swap_overworld_map(payload: RefCounted) -> void:
+	var old: GameMode = _current_mode_node_ref if is_instance_valid(_current_mode_node_ref) else null
+	if old != null:
+		_mode_host.remove_child(old)
+	var node: GameMode = _instantiate_mode(GameStateMachine.Mode.OVERWORLD, payload)
+	if node != null:
+		_mode_host.add_child(node)
+	_current_mode_node_ref = node
+	if node == null or node.swap_failed():
+		_replaced_overworld = old
+		_map_swap_failed = true
+		_swap_status = SwapStatus.FAILED
+		return
+	if old != null:
+		old.queue_free()
 
 
 func _generic_swap(to: int, payload: RefCounted) -> void:

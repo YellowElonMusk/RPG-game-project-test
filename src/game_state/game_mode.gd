@@ -14,6 +14,14 @@ func setup(_machine: GameStateMachine, _payload: RefCounted) -> void:
 @abstract func handle_action(action: StringName, pressed: bool) -> bool
 
 
+## Asked by `SceneLoader` right after this mode's node is added during SWAP.
+## `true` means it could not build itself (an Overworld whose map scene is
+## missing), and the loader rolls the swap back (ADR-0012 §2,
+## `OVERWORLD -> OVERWORLD`). The base never fails.
+func swap_failed() -> bool:
+	return false
+
+
 ## Overworld only. Runs before `SceneLoader` detaches this mode's node.
 func on_freezing() -> void:
 	pass

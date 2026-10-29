@@ -135,6 +135,10 @@ var _follower_positions: Array[Vector2] = []
 ## teleport, redirect and thaw (story 007).
 var _follower_trail: FollowerTrail = FollowerTrail.new()
 
+## Set by `load_map()` during a transition: the `WorldState` entry and the
+## symbol placement wait for `mode_entered(OVERWORLD)` (`_commit_map_entry()`).
+var _entry_commit_pending: bool = false
+
 
 func _init() -> void:
 	# Pinned ordering (ADR-0012 §2): GameRoot -20, OverworldMode -10,
@@ -155,6 +159,7 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 		machine.transition_started.connect(_on_transition_started)
 		machine.overlay_opened.connect(_on_overlay_opened)
 		machine.overlay_closed.connect(_on_overlay_closed)
+		machine.mode_entered.connect(_on_mode_entered)
 
 
 ## Story 138: a `MapEntryPayload` loads its map by the scene-path
@@ -202,9 +207,38 @@ func load_map(map: OverworldMap, entry_marker_id: StringName = &"") -> void:
 	for exit: MapExit in map.map_exits():
 		add_map_exit(exit.marker_id, exit.trigger_rect,
 				MapEntryPayload.new(exit.target_map_id, exit.target_entry_id))
-	if world_state != null and world_state.map_id != map.map_id:
-		world_state.on_map_entered(map.map_id, WorldState.EntryKind.MAP_ENTRY)
-	_place_symbols(map)
+	# ADR-0012 §2 (architecture review G2): during a transition nothing is
+	# written to `WorldState` until `mode_entered(OVERWORLD)`, after the swap
+	# has succeeded, so a rolled-back map change leaves it on the old map.
+	# Symbols wait too: which are resolved depends on that commit.
+	if _machine != null and _machine.phase != GameStateMachine.Phase.IDLE:
+		_entry_commit_pending = true
+	else:
+		_commit_map_entry()
+
+
+## Records the map entry in `WorldState` (respawning per policy) and places
+## this map's symbols: on `mode_entered(OVERWORLD)` during a transition, at
+## once when `load_map()` runs outside one (tests, the demo scene).
+func _commit_map_entry() -> void:
+	_entry_commit_pending = false
+	if world_state != null and world_state.map_id != _map.map_id:
+		world_state.on_map_entered(_map.map_id, WorldState.EntryKind.MAP_ENTRY)
+	_place_symbols(_map)
+
+
+## Commits a pending map entry once the swap has succeeded. A node no longer
+## in the tree is a map change's replaced or rolled-back instance, still
+## connected until it is freed at the end of the frame; it never commits.
+func _on_mode_entered(to: GameStateMachine.Mode) -> void:
+	if to == GameStateMachine.Mode.OVERWORLD and _entry_commit_pending and is_inside_tree():
+		_commit_map_entry()
+
+
+## `true` when this Overworld has no map: its scene was missing, so a map
+## change into it must roll back (`ModeHostSceneLoader`, ADR-0012 §2).
+func swap_failed() -> bool:
+	return _map == null
 
 
 ## Story 137: one `SymbolBrain` per valid `EncounterSymbol` marker, in

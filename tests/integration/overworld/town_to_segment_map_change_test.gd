@@ -106,6 +106,48 @@ func test_victory_then_walk_to_town_and_back_respawns_per_policy() -> void:
 			.is_equal(_CLERKS.size() if respawns else _CLERKS.size() - 1)
 
 
+## ADR-0012 §2: a map change whose target map scene is missing rolls back.
+## The old Overworld instance comes back unchanged, it is the only mode under
+## ModeHost, and `WorldState` still describes the old map.
+func test_map_change_to_missing_map_rolls_back_to_the_old_instance() -> void:
+	var root: GameRoot = _boot()
+	var town: OverworldMode = _new_game(root)
+	var leader: Vector2 = town.get_leader_position()
+	var host: Node = town.get_parent()
+	assert_int(root.machine.request_transition(GameStateMachine.Mode.OVERWORLD,
+			MapEntryPayload.new("map_fixture_missing", &"nowhere"))) \
+			.is_equal(GameStateMachine.RequestResult.OK)
+	_run_to_idle(root.machine)
+	assert_bool(is_same(root.current_mode_node(), town)).is_true()
+	assert_bool(town.is_inside_tree()).is_true()
+	assert_int(root.machine.current_mode).is_equal(GameStateMachine.Mode.OVERWORLD)
+	assert_str(root.world_state.map_id).is_equal(_TOWN_ID)
+	assert_vector(town.get_leader_position()).is_equal(leader)
+	assert_int(town.get_state()).is_equal(OverworldMode.State.EXPLORING)
+	var modes: int = 0
+	for child: Node in host.get_children():
+		if child is GameMode and not child.is_queued_for_deletion():
+			modes += 1
+	assert_int(modes).is_equal(1)
+
+
+## ADR-0012 §2 (architecture review G2): the new map's `WorldState` entry is
+## committed on `mode_entered(OVERWORLD)`, after the swap succeeded, never
+## while the new instance builds itself during SWAP.
+func test_world_state_commits_the_new_map_only_after_the_swap() -> void:
+	var root: GameRoot = _boot()
+	var town: OverworldMode = _new_game(root)
+	var seen: Array[String] = []
+	# Connected before the new instance exists, so it runs before the new
+	# instance's own `mode_entered` handler commits.
+	root.machine.mode_entered.connect(func(_to: GameStateMachine.Mode) -> void:
+		seen.append(root.world_state.map_id))
+	var seg: OverworldMode = _walk_through_exit(root, town, Vector2.RIGHT)
+	assert_array(seen).is_equal([_TOWN_ID])
+	assert_str(root.world_state.map_id).is_equal(_SEG_ID)
+	assert_int(seg.get_encounter_sources().size()).is_equal(_CLERKS.size())
+
+
 func _assert_party_at_entry(ow: OverworldMode, entry: EntryPoint) -> void:
 	var pos: Vector2 = entry.ground_position(ow.get_map())
 	assert_vector(ow.get_leader_position()).is_equal_approx(pos, Vector2.ONE * 0.001)
