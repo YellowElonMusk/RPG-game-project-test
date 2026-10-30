@@ -133,7 +133,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 067 | [Retained liberated-Paris screenshots — golden hour, no faction dressing, no celebration](story-067-liberated-paris-screenshots-golden-hour.md) | Visual/Feel | Ready | ADR-0012 |
 | 068 | [The walk home runs after the boss Victory, through the liberated streets, to the café](story-068-walk-home-after-boss-victory.md) | Integration | Complete | ADR-0012 |
 | 069 | [Liberated profile/kit fields resolve, and liberation blocks the dungeon route](story-069-liberated-fields-and-dungeon-route-block.md) | Logic | Complete | ADR-0012 |
-| 070 | [A checkpoint opens on a met requirement and stays open across save and load](story-070-checkpoint-opens-on-met-requirement.md) | Logic | Ready | ADR-0012 |
+| 070 | [A checkpoint opens on a met requirement and stays open across save and load](story-070-checkpoint-opens-on-met-requirement.md) | Logic | Complete | ADR-0012 |
 | 071 | [Redirect and queue failures lock input, snap the party to the return marker and start grace](story-071-checkpoint-redirect-and-queue-failure.md) | Logic | Complete | ADR-0012 |
 | 072 | [An encounter-outcome checkpoint starts its linked fight, and Victory opens it](story-072-checkpoint-encounter-outcome.md) | Logic | Complete | ADR-0012 |
 | 073 | [Every checkpoint has exactly one resolving requirement, reachable fight-free on the critical path](story-073-checkpoint-requirement-and-critical-path-reachability.md) | Logic | Ready | ADR-0012 |
@@ -142,9 +142,9 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 076 | [Retained walk-in screenshot — the Permit Counter is on screen from the pre-dungeon camp](story-076-permit-counter-telegraph-screenshot.md) | Visual/Feel | Complete | ADR-0012 |
 | 077 | [No spawn point or patrol segment crowds a safe zone or a return marker](story-077-patrol-and-spawn-safe-zone-clearance.md) | Logic | Complete | ADR-0012 |
 | 078 | [Every encounter, symbol, flag, payoff, remark, decree-gag and item reference resolves](story-078-overworld-reference-integrity-check.md) | Logic | Ready | ADR-0012 |
-| 079 | [Shipped scenes contain no physics nodes and no live collision on GridMap or TileMapLayer](story-079-no-physics-nodes-in-shipped-maps.md) | Logic | Ready | ADR-0012 |
+| 079 | [Shipped scenes contain no physics nodes and no live collision on GridMap or TileMapLayer](story-079-no-physics-nodes-in-shipped-maps.md) | Logic | Complete | ADR-0012 |
 | 080 | [Every EntryPoint sits clear of every MapExit rectangle, facing into the map](story-080-entry-point-exit-clearance.md) | Logic | Complete | ADR-0012 |
-| 081 | [A MapExit re-fires only after the leader leaves and re-enters its rectangle](story-081-map-exit-reentry-requires-leaving-the-rectangle.md) | Logic | Ready | ADR-0012 |
+| 081 | [A MapExit re-fires only after the leader leaves and re-enters its rectangle](story-081-map-exit-reentry-requires-leaving-the-rectangle.md) | Logic | Complete | ADR-0012 |
 | 082 | [Every symbol's patrol sweep and resume point are symbol-legal at every reachable stage](story-082-patrol-legality-at-every-reachable-stage.md) | Logic | Complete | ADR-0012 |
 | 083 | [The ordered search finds a bypass lane round every patrol band on every critical-path leg](story-083-bypass-lane-ordered-search.md) | Logic | Complete | ADR-0012 |
 | 084 | [No walk-grid route reaches the dungeon's boss-chamber exit without crossing the story encounter](story-084-story-encounter-not-routable-around.md) | Logic | Complete | ADR-0012 |

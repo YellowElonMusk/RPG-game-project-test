@@ -185,6 +185,8 @@ func _map(node_name: String, map_id: String, rows: Array[String], tile_set: Tile
 	map.floor_color = floor_color
 	var layer := TileMapLayer.new()
 	layer.name = "WalkLayer"
+	# Story 079: TileMapLayer collision defaults on; shipped maps have none.
+	layer.collision_enabled = false
 	layer.visible = false
 	layer.tile_set = tile_set
 	for y in rows.size():

@@ -1,7 +1,7 @@
 # Story 070: A checkpoint opens on a met requirement and stays open across save and load
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-28a [L] (R10)** GIVEN a met requirement, THEN `confirm` opens the checkpoint, its cells are freed, and it stays open across save and load. GIVEN the requirement already met on load, THEN it stays closed until `confirm`.
+- [x] **AC-28a [L] (R10)** GIVEN a met requirement, THEN `confirm` opens the checkpoint, its cells are freed, and it stays open across save and load. GIVEN the requirement already met on load, THEN it stays closed until `confirm`.
 
 ---
 
@@ -60,7 +60,7 @@
 - `src/overworld/overworld_mode.gd` (checkpoint `confirm` handling)
 - `src/overworld/world_state.gd` (`mark_opened`)
 - `src/overworld/walk_grid.gd` (`set_blocked` on open)
-- `tests/unit/overworld/checkpoint_open_on_met_requirement_test.gd`
+- `tests/unit/overworld/checkpoint_met_requirement_test.gd`
 
 ---
 
@@ -74,9 +74,9 @@
 
 **Story Type**: Logic
 **Required evidence**:
-- `tests/unit/overworld/checkpoint_open_on_met_requirement_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
+- `tests/unit/overworld/checkpoint_met_requirement_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -84,3 +84,8 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-011-probe-nearest-target-tie-order.md` (`probe()`/interaction, AC-7a)
 - Unlocks: `production/epics/overworld-exploration-encounters/story-071-checkpoint-redirect-and-queue-failure.md`, `story-072-checkpoint-encounter-outcome.md`
+
+## Completion Notes (2026-10-30)
+
+- The behaviour already existed (stories 072 and 093); this story adds its own evidence test.
+- Mutations checked: auto-opening a checkpoint whose requirement is met on load, and not saving opened checkpoints, each fail a test here.

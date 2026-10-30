@@ -1,7 +1,7 @@
 # Story 079: Shipped scenes contain no physics nodes and no live collision on GridMap or TileMapLayer
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-30e [D] (ADR-0012)** The scene contains no node of these classes: `CollisionObject3D` or `CollisionObject2D` (bodies and areas), `SoftBody3D`, `RayCast3D`, `ShapeCast3D`, `RayCast2D`, `ShapeCast2D`, `SpringArm3D`, any `Joint3D`/`Joint2D`, `PhysicalBoneSimulator3D`. Shipped maps contain no `CSGShape3D` at all (CSG is baked to `MeshInstance3D` in the editor, or with `bake_static_mesh()` one frame after tree entry). Every `GridMap` has `collision_layer` = `collision_mask` = 0, and `mesh_library.get_item_shapes(id)` is empty for every used item (`GridMap.collision_layer` defaults to 1 on 4.7.2, so the authoring default must be changed). Every `TileMapLayer` has `collision_enabled` off (it defaults to on, so this authoring default must also be changed).
+- [x] **AC-30e [D] (ADR-0012)** The scene contains no node of these classes: `CollisionObject3D` or `CollisionObject2D` (bodies and areas), `SoftBody3D`, `RayCast3D`, `ShapeCast3D`, `RayCast2D`, `ShapeCast2D`, `SpringArm3D`, any `Joint3D`/`Joint2D`, `PhysicalBoneSimulator3D`. Shipped maps contain no `CSGShape3D` at all (CSG is baked to `MeshInstance3D` in the editor, or with `bake_static_mesh()` one frame after tree entry). Every `GridMap` has `collision_layer` = `collision_mask` = 0, and `mesh_library.get_item_shapes(id)` is empty for every used item (`GridMap.collision_layer` defaults to 1 on 4.7.2, so the authoring default must be changed). Every `TileMapLayer` has `collision_enabled` off (it defaults to on, so this authoring default must also be changed).
 
 ---
 
@@ -59,7 +59,7 @@
 
 - `tools/ci/validate_maps.gd`
 - `scenes/maps/**/*.tscn` (checked, not authored here)
-- `tests/unit/overworld/data/no_physics_nodes_test.gd`
+- `tests/unit/overworld/no_physics_nodes_test.gd`
 
 ---
 
@@ -73,9 +73,9 @@
 
 **Story Type**: Logic (Data validation)
 **Required evidence**:
-- `tests/unit/overworld/data/no_physics_nodes_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
+- `tests/unit/overworld/no_physics_nodes_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -83,3 +83,9 @@
 
 - Depends on: None
 - Unlocks: `production/epics/overworld-exploration-encounters/story-080-entry-point-exit-clearance.md`
+
+## Completion Notes (2026-10-30)
+
+- `MapValidator.check_no_physics()` runs from `validate_maps` for every map. It reports banned node classes (and subclasses, via `is_class`), any GridMap collision layer or mask, any GridMap item shapes, and any TileMapLayer with `collision_enabled` on.
+- It caught all four shipped WalkLayers with collision on (the 4.7.2 default). They are now off in the scenes and in `build_paris_dungeon_maps.gd`.
+- Mutation checked: dropping `Joint3D` from the ban list fails a test here.

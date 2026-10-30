@@ -1,7 +1,7 @@
 # Story 081: A MapExit re-fires only after the leader leaves and re-enters its rectangle
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-30g [L] (R11, map exits)** GIVEN a leader placed inside a MapExit rectangle by a load, THEN no exit fires until the leader has left the rectangle and entered it again. GIVEN a `move` held for `ceil(2/dt)` frames across a map change, THEN the leader does not cross back.
+- [x] **AC-30g [L] (R11, map exits)** GIVEN a leader placed inside a MapExit rectangle by a load, THEN no exit fires until the leader has left the rectangle and entered it again. GIVEN a `move` held for `ceil(2/dt)` frames across a map change, THEN the leader does not cross back.
 
 ---
 
@@ -74,7 +74,7 @@
 **Required evidence**:
 - `tests/unit/overworld/map_exit_reentry_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -82,3 +82,9 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-080-entry-point-exit-clearance.md`
 - Unlocks: `production/epics/overworld-exploration-encounters/story-082-patrol-legality-at-every-reachable-stage.md` (rule 12 patrol-legality and bypass checks)
+
+## Completion Notes (2026-10-30)
+
+- The exits were already edge-triggered (`_check_exits` fires only from outside to inside); this story adds the evidence test.
+- A real GameRoot drives a move held for `ceil(2/dt)` frames through the Town → segment change; no exit fires on the far side.
+- Mutation checked: a level-triggered exit fails a test here.

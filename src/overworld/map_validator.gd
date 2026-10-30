@@ -111,6 +111,44 @@ static func validate_maps(maps: Dictionary, cfg: OverworldConfig,
 					grid.cell_of(pos + entry.facing.normalized() * grid.cell_m)):
 				errors.append("%s: EntryPoint '%s' does not face into the map"
 						% [map_id, entry.marker_id])
+		errors.append_array(check_no_physics(map_id, map))
+	return errors
+
+
+## Physics node classes a shipped map may not contain (ADR-0012: no
+## physics engine; story 079). `CSGShape3D` is banned outright (bake it to
+## a `MeshInstance3D`).
+const BANNED_PHYSICS_CLASSES: Array[String] = [
+	"CollisionObject3D", "CollisionObject2D", "SoftBody3D", "RayCast3D", "ShapeCast3D",
+	"RayCast2D", "ShapeCast2D", "SpringArm3D", "Joint3D", "Joint2D",
+	"PhysicalBoneSimulator3D", "CSGShape3D",
+]
+
+
+## Story 079 (AC-30e): no node of a `BANNED_PHYSICS_CLASSES` class (or a
+## subclass) under `map`; every `GridMap` has collision layer and mask 0
+## and no item shapes; every `TileMapLayer` has `collision_enabled` off.
+static func check_no_physics(map_id: String, map: Node) -> PackedStringArray:
+	var errors := PackedStringArray()
+	var nodes: Array[Node] = [map]
+	nodes.append_array(map.find_children("*", "", true, false))
+	for node: Node in nodes:
+		for cls: String in BANNED_PHYSICS_CLASSES:
+			if node.is_class(cls):
+				errors.append("%s: node %s is a %s (no physics nodes in shipped maps)"
+						% [map_id, map.get_path_to(node), cls])
+				break
+		if node is GridMap:
+			var gm: GridMap = node
+			if gm.collision_layer != 0 or gm.collision_mask != 0:
+				errors.append("%s: GridMap %s has collision_layer/mask set" % [map_id, map.get_path_to(node)])
+			if gm.mesh_library != null:
+				for item: int in gm.mesh_library.get_item_list():
+					if not gm.mesh_library.get_item_shapes(item).is_empty():
+						errors.append("%s: GridMap %s item %d has collision shapes"
+								% [map_id, map.get_path_to(node), item])
+		if node is TileMapLayer and (node as TileMapLayer).collision_enabled:
+			errors.append("%s: TileMapLayer %s has collision_enabled on" % [map_id, map.get_path_to(node)])
 	return errors
 
 
