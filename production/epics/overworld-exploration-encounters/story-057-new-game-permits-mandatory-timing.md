@@ -1,7 +1,7 @@
 # Story 057: New Game sets permits_mandatory before the first input, and the segment always loads at stage 2
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Integration
 > **Estimate**: M
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-23d [I] (R8, R18 registry)** On a New Game, `permits_mandatory` is set before the first input is accepted; the overworld segment's first load is at stage 2, with its decree gag at both EntryPoints, whatever route the player takes through Town. Beating any symbol, entering any map or registering any camp sets no stage-raising flag (flag spy).
+- [x] **AC-23d [I] (R8, R18 registry)** On a New Game, `permits_mandatory` is set before the first input is accepted; the overworld segment's first load is at stage 2, with its decree gag at both EntryPoints, whatever route the player takes through Town. Beating any symbol, entering any map or registering any camp sets no stage-raising flag (flag spy).
 
 ---
 
@@ -76,7 +76,7 @@
 **Required evidence**:
 - `tests/integration/overworld/new_game_permits_mandatory_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -84,3 +84,7 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-053-occupation-stage-formula.md` (`occupation_stage`), `story-055-paris-map-stage-and-decree-registry-rules.md`, `story-056-decree-gag-stage-eligibility.md`, `production/epics/game-state-scene-flow/` (done; New Game input lock)
 - Unlocks: `production/epics/overworld-exploration-encounters/story-058-marker-activation-slots-by-stage-and-cap.md`
+
+## Completion Notes (2026-10-30)
+
+- **Deviation:** the segment decree gag at both EntryPoints waits for decree gags (story 056). The flag, its timing and the stage-2 first load are done; the opening step flags come from `data/chapters/chapter_paris_steps.tres`.

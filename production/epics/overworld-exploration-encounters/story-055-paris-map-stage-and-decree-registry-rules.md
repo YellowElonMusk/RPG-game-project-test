@@ -1,7 +1,7 @@
 # Story 055: Paris map records set correct base stages and decree-gag registry rules
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: In Progress (2026-10-30): base stages and the segment stage table done; occupation-stage records (density, caps) and decree-gag registry rules not built
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: L

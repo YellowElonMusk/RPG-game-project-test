@@ -281,6 +281,7 @@ func _commit_map_entry() -> void:
 	_entry_commit_pending = false
 	if world_state != null and world_state.map_id != _map.map_id:
 		world_state.on_map_entered(_map.map_id, WorldState.EntryKind.MAP_ENTRY)
+	_compute_stage()
 	_place_symbols(_map)
 
 
@@ -1428,3 +1429,30 @@ func _release_after_payoff_card() -> void:
 	if _after_payoff_card.is_empty():
 		return
 	say(_after_payoff_card.pop_front())
+
+
+# -- Occupation stage (stories 053, 054) -------------------------------------
+
+## The current map's occupation stage (1 Contested .. 3 Saturated), 0 when
+## its record has none to compute. Computed on map load only (rule 8: a flag
+## set mid-visit waits for the next load) and never below the stored stage.
+var current_stage: int = 0
+## Warnings from stage computation (a raising flag removed), for tests.
+var stage_warnings: Array[String] = []
+
+
+func _compute_stage() -> void:
+	current_stage = 0
+	if encounter_catalog == null or _map == null:
+		return
+	var rec: MapData = encounter_catalog.call(&"get_record", &"map", _map.map_id) as MapData
+	if rec == null:
+		return
+	var stored: int = world_state.stage_stored(_map.map_id) if world_state != null else 0
+	var result: Array = OccupationStage.compute(rec, _has_flag, stored)
+	current_stage = result[0]
+	if not String(result[1]).is_empty():
+		stage_warnings.append(result[1])
+		push_warning(result[1])
+	if world_state != null:
+		world_state.store_stage(_map.map_id, current_stage)

@@ -1,7 +1,7 @@
 # Story 053: The occupation stage formula is monotonic and matches the flag-to-stage table
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -30,7 +30,7 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-22 [L] (`occupation_stage`)** Parametrized over `base_stage`, stage tables and flag sets (the empty set included): the stage equals the formula. A fixture removing a raising flag keeps the stage and logs a warning. Over any sequence of loads, the stage never decreases.
+- [x] **AC-22 [L] (`occupation_stage`)** Parametrized over `base_stage`, stage tables and flag sets (the empty set included): the stage equals the formula. A fixture removing a raising flag keeps the stage and logs a warning. Over any sequence of loads, the stage never decreases.
 
 ---
 
@@ -74,7 +74,7 @@
 **Required evidence**:
 - `tests/unit/overworld/occupation_stage_formula_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 

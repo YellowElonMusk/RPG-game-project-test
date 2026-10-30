@@ -55,6 +55,7 @@ func stage(data: Dictionary, reader: SaveReader) -> SaveStage:
 		"resolved": {},
 		"opened": {},
 		"flags": [],
+		"stage_stored": {},
 	}
 	var resolved: Dictionary = reader.get_dict("resolved")
 	for m: Variant in resolved:
@@ -80,6 +81,13 @@ func stage(data: Dictionary, reader: SaveReader) -> SaveStage:
 	for f: Variant in reader.get_array("flags"):
 		if f is String:
 			(staged["flags"] as Array).append(f)
+	var stored: Dictionary = reader.get_dict("stage_stored")
+	for m: Variant in stored:
+		var s: Variant = stored[m]
+		if (s is float or s is int) and int(s) >= 1 and int(s) <= 3:
+			staged["stage_stored"][String(m)] = int(s)
+		else:
+			reader.dropped.append("stage_stored.%s: not a stage 1-3" % m)
 	return SaveStage.success(staged)
 
 

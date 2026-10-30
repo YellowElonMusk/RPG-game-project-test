@@ -42,6 +42,9 @@ var _resolved: Dictionary = {}
 var _opened: Dictionary = {}
 # Story flags set so far (GDD rule 14), flag -> true.
 var _flags: Dictionary = {}
+# map_id -> the occupation stage last computed on load (rule 8: never
+# decreases; story 053).
+var _stage_stored: Dictionary = {}
 
 
 ## `true` when `symbol_id` on `p_map_id` is resolved (its symbol is absent).
@@ -114,6 +117,7 @@ func reset_to_new_game() -> void:
 	_resolved = {}
 	_opened = {}
 	_flags = {}
+	_stage_stored = {}
 
 
 ## JSON-safe snapshot for the `overworld` save section (ADR-0009 §3):
@@ -142,6 +146,7 @@ func to_dict() -> Dictionary:
 		"resolved": resolved,
 		"opened": opened,
 		"flags": flags,
+		"stage_stored": _stage_stored.duplicate(),
 	}
 
 
@@ -165,3 +170,16 @@ func from_dict(data: Dictionary) -> void:
 			(_opened[m] as Dictionary)[StringName(id)] = true
 	for f: String in data.get("flags", []):
 		_flags[f] = true
+	var stored: Dictionary = data.get("stage_stored", {})
+	for m: String in stored:
+		_stage_stored[m] = int(stored[m])
+
+
+## The stage `p_map_id` last loaded at (0 when never loaded).
+func stage_stored(p_map_id: String) -> int:
+	return int(_stage_stored.get(p_map_id, 0))
+
+
+## Records the stage a map loaded at (written only on map load).
+func store_stage(p_map_id: String, stage: int) -> void:
+	_stage_stored[p_map_id] = stage

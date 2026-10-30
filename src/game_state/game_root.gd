@@ -184,6 +184,7 @@ func _inject_overworld(overworld: OverworldMode, payload: RefCounted = null) -> 
 	if payload == null:
 		_world_state.reset_to_new_game()
 		_squad = ChapterFlow.build_squad(catalog())
+		_apply_opening_step(overworld.config)
 	elif _squad.is_empty():
 		_squad = ChapterFlow.build_squad(catalog())
 	var squad: Array[Combatant] = _squad
@@ -306,3 +307,17 @@ func _camp_return(camp_id: String) -> MapEntryPayload:
 ## The Save/Load service (ADR-0009), for tests and the Menu.
 func save_service() -> SaveService:
 	return _save_service
+
+
+## Story 057 (GDD rule 8): a New Game applies the chapter's opening step
+## flags (Paris: `permits_mandatory`) to the fresh WorldState before the
+## Overworld loads its first map or accepts any input.
+func _apply_opening_step(cfg: OverworldConfig) -> void:
+	if not ResourceLoader.exists(cfg.chapter_steps_path):
+		push_error("GameRoot: no chapter steps at %s" % cfg.chapter_steps_path)
+		return
+	var steps: ChapterSteps = ResourceLoader.load(cfg.chapter_steps_path) as ChapterSteps
+	if steps == null or steps.steps.is_empty():
+		return
+	for flag: String in steps.steps[0].flags_on_enter:
+		_world_state.set_flag(flag)

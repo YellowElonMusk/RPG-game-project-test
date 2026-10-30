@@ -1,7 +1,7 @@
 # Story 054: A flag set mid-visit leaves the stage and active markers unchanged until the next load
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -30,7 +30,7 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-23 [L] (R8)** GIVEN a flag set mid-visit, THEN the stage and the active markers are unchanged until that map's next load.
+- [x] **AC-23 [L] (R8)** GIVEN a flag set mid-visit, THEN the stage and the active markers are unchanged until that map's next load.
 
 ---
 
@@ -72,7 +72,7 @@
 **Required evidence**:
 - `tests/unit/overworld/stage_change_waits_for_load_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -80,3 +80,7 @@
 
 - Depends on: `story-053-occupation-stage-formula.md`
 - Unlocks: None
+
+## Completion Notes (2026-10-30)
+
+- Stage-gated markers (`min_stage`) arrive with story 058; today the stage itself is what waits for the next load.

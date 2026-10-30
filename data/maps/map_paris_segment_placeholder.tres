@@ -22,4 +22,5 @@ display_name = "Paris - Rue de Rivoli"
 faction_id = "faction_bureaucratia"
 base_stage = 1
 critical_path = Array[ExtResource("2_leg")]([SubResource("leg_1"), SubResource("leg_2")])
+stage_table = { "permits_mandatory": 2 }
 new_game_entry = false
