@@ -92,3 +92,4 @@
   - Town: the café owner sweeping torn posters ("Who is liberating my broom?").
   - Segment: a street sweeper.
   - Both lines need rule-18 / AC-51 narrative sign-off.
+- AC-51 narrative sign-off done 2026-10-30: both lines pass and both `ribs_squad` tags are honest (`production/qa/evidence/signoff-overworld.md`).

@@ -95,7 +95,7 @@
 - `_end_chapter()` emits `chapter_end_requested` and counts `chapter_end_calls`. What ending a chapter does is not designed, so GameRoot does not listen yet (TODO dialogue-quests).
 - The dungeon exit tape is story 069's `MapExit.closed_when_flag`.
 - Owed:
-  - The post-battle line needs rule-18 narrative sign-off (AC-51).
+  - The post-battle line needs rule-18 narrative sign-off (AC-51). Done 2026-10-30: revised to fit 120 characters (`production/qa/evidence/signoff-overworld.md`).
   - The prompt's `accessibility_name` waits on the accessibility layer. The view shows the "End the chapter here?" text.
 - `boss_stays_resolved_through_retreat_and_continue_test.gd` now closes the post-battle Dialogue. `content_data_loc_fields_test.gd` no longer lists EncounterData as text-free.
 - Mutations checked: no walk home queued, no step advance, Yes focused by default, `chapter_step` not saved, and no tape each fail a test here.

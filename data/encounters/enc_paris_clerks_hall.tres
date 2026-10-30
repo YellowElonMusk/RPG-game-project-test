@@ -14,6 +14,6 @@ retreat_allowed = false
 respawn = true
 victory_payoff = {
 "facet": "clerks_wait",
-"text": "Rumour: while they wait for their permit, Clerks just shove. Plain attacks, nothing special.",
+"text": "Rumour: until the permit comes, Clerks hide behind their desks. Look weak, though, and they all go for you.",
 "type": "clue"
 }

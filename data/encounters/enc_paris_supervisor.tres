@@ -12,4 +12,4 @@ is_boss = true
 can_flee = false
 retreat_allowed = true
 respawn = false
-post_battle_line = "The Supervisor signs his own resignation in triplicate and stamps it APPROVED. Nobody cheers. Somebody asks if the counter is still open. Walk home."
+post_battle_line = "The Supervisor stamps his own resignation APPROVED, in triplicate. Nobody cheers. Somebody asks if the counter is open."

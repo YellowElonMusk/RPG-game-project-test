@@ -105,5 +105,6 @@ table, not a runtime behaviour test.
   - Rolled-poster tells for both clue Clerks.
 - No `item` payoffs ship. The rule is checked against fixtures.
 - **Owed narrative sign-off (AC-51):** three gate lines, two pocket gag lines, the rolled-poster text and the new clue stub. The recruit remarks are IDs only, until Squad Roster exists.
+- AC-51 narrative sign-off done 2026-10-30 (`production/qa/evidence/signoff-overworld.md`): gate, stamp-cupboard and poster lines pass; the archive gag ("Forty kilos") and the `clerks_wait` clue were revised. Art-director co-sign and clue playtest (e) still owed.
 - Story 087 recaptured afterwards: 46 approaches, 0 failures.
 - Tests updated: the battle content-warning fixture lists the new records, story 092's test gives its East Clerk a clue copy, and the dungeon's W is now 666.

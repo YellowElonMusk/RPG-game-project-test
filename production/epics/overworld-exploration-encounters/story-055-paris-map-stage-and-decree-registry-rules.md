@@ -106,3 +106,4 @@ Also compute the overworld segment's reachable-stage set from the ChapterFlow st
 - The dungeon Permit Boom's requirement flag was renamed from the unregistered `permit_to_approach_the_counter` to the registry's `counter_cleared`. A Victory over a checkpoint's linked encounter now sets that checkpoint's requirement flag (asserted in `checkpoint_encounter_outcome_test.gd`).
 - "No earlier route" uses the MapExit graph from the New Game map, which over-approximates any walk-grid route. It only matters for a flag set after the opening step; Paris has none.
 - Owed: the three stage subtitles are player-facing text and need rule-18 narrative sign-off (AC-51).
+- AC-51 narrative sign-off done 2026-10-30: all three subtitles pass (`production/qa/evidence/signoff-overworld.md`).

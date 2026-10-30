@@ -44,7 +44,7 @@ func _initialize() -> void:
 	gag.name = "GagArchiveCourtyard"
 	gag.marker_id = &"gag_archive_courtyard"
 	gag.response = GagInteractable.Response.CHANGE
-	gag.text = "You tip over a filing cabinet. Forty years of permits to apply for permits slide out."
+	gag.text = "You tip over a filing cabinet. Forty kilos of permits to apply for permits slide out."
 	gag.recruit_remark = "remark_paris_archive_courtyard"
 	_place(map, gag, Vector2(21.5, 13.5))
 	var tell := GagInteractable.new()
