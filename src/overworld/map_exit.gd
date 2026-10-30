@@ -28,3 +28,12 @@ extends Marker3D
 @export var target_entry_id: StringName = &""
 ## Trigger rectangle in ground metres, map-root relative.
 @export var trigger_rect: Rect2 = Rect2()
+## Story 068 (rule 13, walk home): while this story flag is set the exit is
+## closed: its `closed_rect` cells are taped off ("FERMÉ POUR
+## RESTRUCTURATION", no crowd) and it never fires. Empty = always open.
+@export var closed_when_flag: String = ""
+## The ground cells (metres) the tape blocks while closed.
+@export var closed_rect: Rect2 = Rect2()
+
+## The tape's sign text (rule 13).
+const TAPE_TEXT: String = "FERMÉ POUR RESTRUCTURATION"

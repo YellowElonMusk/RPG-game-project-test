@@ -23,6 +23,10 @@ extends Marker3D
 ## Rule 16 `optional_teach`: also barks `line` on proximity, no input
 ## needed (within `interact_reach_m * 2`; re-arms beyond twice that).
 @export var optional_teach: bool = false
+## Story 066 (rule 13): set only on liberated-set content, shown only once
+## the region is liberated: `mairie_queue`, `grumbler` or `had_a_point` (the
+## "Bureaucratia had a point" item). Empty for ordinary content.
+@export var liberated_role: String = ""
 
 
 ## Ground position (`x`, `z`) relative to `map_root`.

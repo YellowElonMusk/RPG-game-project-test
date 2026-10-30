@@ -12,6 +12,9 @@ clutter_caps = Dictionary[String, int]({
 "queue": 1
 })
 civilian_density = 0.6
+lighting_profile_id = "overworld"
+set_kit_id = "kit_paris_occupied"
+ambience_bed_id = "amb_paris_stage1"
 name_card_subtitle = "Paperwork pending"
 liberation_grumble_min = 0.2
 decree_gag_by_flag = Dictionary[String, String]({})

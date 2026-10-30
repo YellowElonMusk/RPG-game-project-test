@@ -23,6 +23,9 @@
 class_name MapValidator
 extends RefCounted
 
+## Where lighting profiles resolve (ADR-0005 §5; `PresentationDirector`).
+const LIGHTING_PROFILE_DIR: String = "res://data/presentation/profiles"
+
 
 ## Validates every `map` record in `catalog` against its scene in
 ## `cfg.map_scene_dir`. Instantiated scenes are freed before returning.
@@ -57,6 +60,7 @@ static func validate_catalog(catalog: ContentCatalogService, cfg: OverworldConfi
 		errors.append("chapter steps: no ChapterSteps at %s" % cfg.chapter_steps_path)
 	else:
 		errors.append_array(validate_steps(steps, records))
+		errors.append_array(validate_last_act(steps, records, maps, cfg))
 	for rec: Resource in catalog.all_records(&"map"):
 		var rec_map: OverworldMap = maps.get(String(rec.get("id"))) as OverworldMap
 		if rec_map != null and rec is MapData:
@@ -176,3 +180,62 @@ static func validate_steps(steps: ChapterSteps, records: Dictionary) -> PackedSt
 			errors.append("%s: step '%s' names leg '%s', which %s does not have"
 					% [steps.chapter_id, step.id, step.leg_id, step.map_id])
 	return errors
+
+
+## Story 069 (AC-27e, rule 17): every map a last-act step (from
+## `steps.last_act_from` on) names has a `liberated_profile_id` and a
+## `liberated_kit_id` that each resolve. With its `region_liberation_flag`
+## set, its flag-closed exits taped, no EntryPoint on it can walk to an exit
+## that leads off the last act's maps (the dungeon and boss chamber are
+## closed behind the squad, rule 13). `maps` is map_id -> OverworldMap.
+static func validate_last_act(steps: ChapterSteps, records: Dictionary, maps: Dictionary,
+		cfg: OverworldConfig) -> PackedStringArray:
+	var errors := PackedStringArray()
+	if steps.last_act_from.is_empty():
+		return errors
+	var act: Dictionary = {}
+	var started: bool = false
+	for step: ChapterStep in steps.steps:
+		started = started or (step != null and step.id == steps.last_act_from)
+		if started and step != null:
+			act[step.map_id] = true
+	if not started:
+		errors.append("%s: last_act_from names unknown step '%s'" % [steps.chapter_id, steps.last_act_from])
+		return errors
+	for map_id: String in act:
+		var rec: MapData = records.get(map_id) as MapData
+		if rec == null:
+			continue
+		if rec.liberated_profile_id.is_empty() or not ResourceLoader.exists(
+				"%s/%s.tres" % [LIGHTING_PROFILE_DIR, rec.liberated_profile_id]):
+			errors.append("%s: liberated_profile_id '%s' does not resolve" % [map_id, rec.liberated_profile_id])
+		if SetKit.resolve(rec.liberated_kit_id) == null:
+			errors.append("%s: liberated_kit_id '%s' does not resolve" % [map_id, rec.liberated_kit_id])
+		var map: OverworldMap = maps.get(map_id) as OverworldMap
+		if map == null:
+			continue
+		var grid: WalkGrid = map.bake_walk_grid(cfg)
+		for exit: MapExit in map.map_exits():
+			if exit.closed_when_flag == rec.region_liberation_flag and not exit.closed_when_flag.is_empty():
+				grid.set_blocked(_cells_in(exit.closed_rect, grid), true)
+		var starts: Array[Vector2i] = []
+		for entry: EntryPoint in map.entry_points():
+			starts.append(grid.cell_of(entry.ground_position(map)))
+		var reach: Dictionary = MapStructureValidator.walk_distances(grid, starts)
+		for exit: MapExit in map.map_exits():
+			if act.has(exit.target_map_id):
+				continue
+			for c: Vector2i in _cells_in(exit.trigger_rect, grid):
+				if reach.has(c):
+					errors.append("%s: liberated, exit %s to %s is still reachable"
+							% [map_id, exit.marker_id, exit.target_map_id])
+					break
+	return errors
+
+
+static func _cells_in(r: Rect2, grid: WalkGrid) -> Array[Vector2i]:
+	var out: Array[Vector2i] = []
+	for y in range(floori(r.position.y / grid.cell_m), ceili(r.end.y / grid.cell_m)):
+		for x in range(floori(r.position.x / grid.cell_m), ceili(r.end.x / grid.cell_m)):
+			out.append(Vector2i(x, y))
+	return out

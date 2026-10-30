@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="SetKit" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/presentation/set_kit.gd" id="1_kit"]
+
+[resource]
+script = ExtResource("1_kit")
+id = "kit_paris_liberated"
+removes_faction_dressing = true

@@ -63,6 +63,10 @@ func is_decree() -> bool:
 ## lowest stage at which it is a candidate (1-3).
 @export var clutter_kind: String = ""
 @export var min_stage: int = 1
+## Story 066 (rule 13): set only on liberated-set content, shown only once
+## the region is liberated: `mairie_queue`, `grumbler` or `had_a_point` (the
+## "Bureaucratia had a point" item). Empty for ordinary content.
+@export var liberated_role: String = ""
 
 ## Rule 9 local liberation: the `symbol_id` whose first Victory liberates
 ## this clutter marker (a poster comes down, a queue breaks up), and/or a

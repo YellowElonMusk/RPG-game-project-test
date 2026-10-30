@@ -4,6 +4,8 @@
 [ext_resource type="Script" path="res://src/overworld/map_exit.gd" id="2_85nqr"]
 [ext_resource type="Script" path="res://src/overworld/entry_point.gd" id="3_0kf0q"]
 [ext_resource type="Script" path="res://src/overworld/camp_spot.gd" id="5_campc"]
+[ext_resource type="Script" path="res://src/overworld/npc_spawn.gd" id="6_npc"]
+[ext_resource type="Script" path="res://src/overworld/markers/interactable_gag.gd" id="7_gag"]
 
 [sub_resource type="Image" id="Image_smdwn"]
 data = {
@@ -60,3 +62,34 @@ marker_id = &"camp_cafe"
 camp_id = "camp_paris_cafe"
 return_entry_id = &"from_segment"
 is_region_default = true
+
+[node name="NpcMairieQueueA" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 0, 10.5)
+script = ExtResource("6_npc")
+marker_id = &"npc_mairie_queue_a"
+speaker = "Woman in the queue"
+line = "We're not queueing for anything now. It's just nice to know where you stand."
+liberated_role = "mairie_queue"
+
+[node name="NpcMairieQueueB" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0, 10.5)
+script = ExtResource("6_npc")
+marker_id = &"npc_mairie_queue_b"
+speaker = "Man in the queue"
+line = "I've been third in line since Tuesday. I'm not giving that up for some liberation."
+liberated_role = "mairie_queue"
+
+[node name="NpcGrumbler" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.5, 0, 9.5)
+script = ExtResource("6_npc")
+marker_id = &"npc_grumbler"
+speaker = "Retired notary"
+line = "Nobody stamps anything any more. How is anyone supposed to know they exist?"
+liberated_role = "grumbler"
+
+[node name="GagTicketMachine" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 0, 10.5)
+script = ExtResource("7_gag")
+marker_id = &"gag_ticket_machine"
+text = "The queue-number machine still works. Someone keeps taking number 47. It is oddly calming."
+liberated_role = "had_a_point"

@@ -262,6 +262,12 @@ func load_map(map: OverworldMap, entry_marker_id: StringName = &"") -> void:
 			_leader_facing = entry.facing.normalized()
 	_reform_followers()
 	for exit: MapExit in map.map_exits():
+		# Story 068: a flag-closed exit is taped off and never fires.
+		if not exit.closed_when_flag.is_empty() and _has_flag(exit.closed_when_flag):
+			if exit.closed_rect.size != Vector2.ZERO:
+				_grid.set_blocked(_rect_cells(exit.closed_rect), true)
+			map.set_exit_taped(exit.marker_id, true)
+			continue
 		add_map_exit(exit.marker_id, exit.trigger_rect,
 				MapEntryPayload.new(exit.target_map_id, exit.target_entry_id))
 	# ADR-0012 §2 (architecture review G2): during a transition nothing is
@@ -282,6 +288,7 @@ func _commit_map_entry() -> void:
 	if world_state != null and world_state.map_id != _map.map_id:
 		world_state.on_map_entered(_map.map_id, WorldState.EntryKind.MAP_ENTRY)
 	_compute_stage()
+	_resolve_presentation()
 	_activate_markers()
 	_setup_clutter(_map)
 	_refresh_gags()
@@ -934,7 +941,8 @@ func probe() -> Object:
 	var candidates: Array = []  # [target, ground position], in tie order
 	if _map != null:
 		for npc: NpcSpawn in _map.npc_spawns():
-			candidates.append([npc, npc.ground_position(_map)])
+			if is_npc_active(npc):
+				candidates.append([npc, npc.ground_position(_map)])
 		for camp: CampSpot in _map.camp_spots():
 			candidates.append([camp, camp.ground_position(_map)])
 	var guarded: Dictionary = {}
@@ -1199,7 +1207,7 @@ func _check_teach_barks() -> void:
 		return
 	var near: float = config.interact_reach_m * 2.0
 	for npc: NpcSpawn in _map.npc_spawns():
-		if not npc.optional_teach:
+		if not npc.optional_teach or not is_npc_active(npc):
 			continue
 		var at: Vector2 = npc.ground_position(_map)
 		var d: float = _leader_pos.distance_to(at)
@@ -1483,6 +1491,70 @@ func _compute_stage() -> void:
 		world_state.store_stage(_map.map_id, current_stage)
 
 
+# -- Presentation override (story 066) ----------------------------------------
+
+## The map's resolved presentation for this visit (rule 17), set on the
+## map-entry commit, before the reveal. The stage itself is never changed.
+var presentation_profile_id: StringName = &""
+var set_kit_id: String = ""
+var civilian_density: float = 0.0
+var ambience_bed_id: String = ""
+
+
+## Rule 17: from the current stage's `occupation_stage` record, or, once the
+## region is liberated, the map's `liberated_profile_id` / `liberated_kit_id`
+## with stage 1's civilian density and ambience bed. A stage record with no
+## lighting profile, or a map with none, falls back to `overworld`. The kit
+## is applied to the map here; the profile is handed to its `DioramaStage`
+## when it has one (ADR-0005 §4 applies it before the reveal).
+func _resolve_presentation() -> void:
+	presentation_profile_id = &"overworld"
+	set_kit_id = ""
+	civilian_density = 0.0
+	ambience_bed_id = ""
+	if _map == null:
+		return
+	var map_rec: MapData = null
+	if encounter_catalog != null:
+		map_rec = encounter_catalog.call(&"get_record", &"map", _map.map_id) as MapData
+	if map_rec != null:
+		var liberated: bool = is_region_liberated()
+		var o: OccupationStageData = _ostage(map_rec.faction_id, 1 if liberated else current_stage)
+		if o != null:
+			civilian_density = o.civilian_density
+			ambience_bed_id = o.ambience_bed_id
+		if liberated:
+			if not map_rec.liberated_profile_id.is_empty():
+				presentation_profile_id = StringName(map_rec.liberated_profile_id)
+			set_kit_id = map_rec.liberated_kit_id
+		elif o != null and current_stage > 0:
+			if not o.lighting_profile_id.is_empty():
+				presentation_profile_id = StringName(o.lighting_profile_id)
+			set_kit_id = o.set_kit_id
+	_map.apply_set_kit(SetKit.resolve(set_kit_id))
+	for stage: Node in _map.find_children("*", "DioramaStage", true, false):
+		(stage as DioramaStage).profile_id = presentation_profile_id
+	for npc: NpcSpawn in _map.npc_spawns():
+		_map.set_npc_shown(npc.marker_id, is_npc_active(npc))
+
+
+## `true` while `npc` is present: ordinary NPCs always, liberated-set ones
+## (story 066) only once the region is liberated.
+func is_npc_active(npc: NpcSpawn) -> bool:
+	return npc.liberated_role.is_empty() or is_region_liberated()
+
+
+## The `occupation_stage` record for `faction_id` x `stage`, or null.
+func _ostage(faction_id: String, stage: int) -> OccupationStageData:
+	if encounter_catalog == null or not encounter_catalog.has_method(&"all_records") or stage <= 0:
+		return null
+	for r: Resource in encounter_catalog.call(&"all_records", &"occupation_stage"):
+		var o: OccupationStageData = r as OccupationStageData
+		if o != null and o.faction_id == faction_id and o.stage == stage:
+			return o
+	return null
+
+
 # -- Marker activation (story 058) --------------------------------------------
 
 ## Capped clutter markers holding a slot this visit (`marker_id -> true`).
@@ -1516,16 +1588,11 @@ func _activate_markers() -> void:
 ## The current map's faction x stage clutter caps, `{}` when no
 ## `occupation_stage` record matches.
 func _stage_caps() -> Dictionary:
-	if encounter_catalog == null or not encounter_catalog.has_method(&"all_records"):
+	if encounter_catalog == null:
 		return {}
 	var map_rec: MapData = encounter_catalog.call(&"get_record", &"map", _map.map_id) as MapData
-	if map_rec == null:
-		return {}
-	for r: Resource in encounter_catalog.call(&"all_records", &"occupation_stage"):
-		var o: OccupationStageData = r as OccupationStageData
-		if o != null and o.faction_id == map_rec.faction_id and o.stage == current_stage:
-			return o.clutter_caps
-	return {}
+	var o: OccupationStageData = _ostage(map_rec.faction_id, current_stage) if map_rec != null else null
+	return o.clutter_caps if o != null else {}
 
 
 # -- Decree gags (story 056) --------------------------------------------------
@@ -1534,6 +1601,9 @@ func _stage_caps() -> Dictionary:
 ## liberation, stories 059-060); a decree at and above its stage, or once
 ## its symbol has been seen; never once the map's region is liberated.
 func is_gag_active(gag: GagInteractable) -> bool:
+	# Story 066: liberated-set content shows only once the region is.
+	if not gag.liberated_role.is_empty():
+		return is_region_liberated()
 	var clears: bool = gag.is_liberatable() or gag.is_decree() or not gag.clutter_kind.is_empty()
 	if clears and _gag_liberated(gag) and not is_removing(gag):
 		return false

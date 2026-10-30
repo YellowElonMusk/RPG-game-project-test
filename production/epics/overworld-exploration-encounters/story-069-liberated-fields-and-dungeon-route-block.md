@@ -1,7 +1,7 @@
 # Story 069: Liberated profile/kit fields resolve, and liberation blocks the dungeon route
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-27e [D] (R17)** The overworld segment and the Town have both `liberated_profile_id` and `liberated_kit_id`, and each resolves. With `paris_liberated` set and the step in the last act (A or B), no walk-grid route from the segment reaches the dungeon or the boss chamber.
+- [x] **AC-27e [D] (R17)** The overworld segment and the Town have both `liberated_profile_id` and `liberated_kit_id`, and each resolves. With `paris_liberated` set and the step in the last act (A or B), no walk-grid route from the segment reaches the dungeon or the boss chamber.
 
 ---
 
@@ -58,7 +58,7 @@
 
 - `tools/ci/validate_maps.gd`
 - `data/maps/map_overworld_segment.tres`, `data/maps/map_town.tres`
-- `tests/unit/overworld/data/liberated_fields_and_dungeon_route_block_test.gd`
+- `tests/unit/overworld/last_act_liberated_fields_test.gd`
 
 ---
 
@@ -72,9 +72,9 @@
 
 **Story Type**: Logic (Data validation)
 **Required evidence**:
-- `tests/unit/overworld/data/liberated_fields_and_dungeon_route_block_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
+- `tests/unit/overworld/last_act_liberated_fields_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -82,3 +82,12 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-066-region-liberation-presentation-override-on-load.md`, `story-068-walk-home-after-boss-victory.md`
 - Unlocks: `production/epics/overworld-exploration-encounters/story-070-checkpoint-opens-on-met-requirement.md`
+
+## Completion Notes (2026-10-30)
+
+- `MapValidator.validate_last_act()` runs in `validate_maps` (CI). Test: `tests/unit/overworld/last_act_liberated_fields_test.gd`.
+- The last act is data: `ChapterSteps.last_act_from` (`step_walk_home_a`). Its maps are the segment and Town.
+- Each last-act map must have a liberated profile (resolving under `data/presentation/profiles/`) and a kit (resolving through `SetKit.resolve`).
+- With the region flag set and flag-closed exits taped, a walk-grid flood from every EntryPoint must reach no exit to a map outside the last act.
+- The tape is `MapExit.closed_when_flag` / `closed_rect`. The segment's dungeon exit is taped over its trigger cells while `paris_liberated` is set. `OverworldMode` blocks the cells, shows the tape box and does not register the exit (story 068 uses this).
+- Mutations checked: an empty or unresolved field, and removing the tape, each fail a test here.

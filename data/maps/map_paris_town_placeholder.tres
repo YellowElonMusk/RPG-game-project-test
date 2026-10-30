@@ -23,4 +23,6 @@ faction_id = "faction_bureaucratia"
 base_stage = 1
 critical_path = Array[ExtResource("2_leg")]([SubResource("leg_1"), SubResource("leg_2")])
 region_liberation_flag = "paris_liberated"
+liberated_profile_id = "overworld_liberated"
+liberated_kit_id = "kit_paris_liberated"
 new_game_entry = true

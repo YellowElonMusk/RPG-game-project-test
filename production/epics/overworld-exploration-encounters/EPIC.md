@@ -129,10 +129,10 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 063 | [Every map's liberation reaction set includes a ribs_squad entry](story-063-liberation-reaction-ribs-squad-tag.md) | Logic | Ready | ADR-0012 |
 | 064 | [Clutter markers with a symbol_id are visible from the patrol they liberate](story-064-clutter-marker-visibility-and-symbol-activity.md) | Logic | Ready | ADR-0012 |
 | 065 | [Stage-visual captures meet saturation, luminance and contrast targets](story-065-stage-visual-capture-saturation-and-contrast.md) | Visual/Feel | Ready | ADR-0012 |
-| 066 | [Region-liberation presentation override applies on load, before reveal](story-066-region-liberation-presentation-override-on-load.md) | Logic | Ready | ADR-0012 |
+| 066 | [Region-liberation presentation override applies on load, before reveal](story-066-region-liberation-presentation-override-on-load.md) | Logic | Complete | ADR-0012 |
 | 067 | [Retained liberated-Paris screenshots — golden hour, no faction dressing, no celebration](story-067-liberated-paris-screenshots-golden-hour.md) | Visual/Feel | Ready | ADR-0012 |
 | 068 | [The walk home runs after the boss Victory, through the liberated streets, to the café](story-068-walk-home-after-boss-victory.md) | Integration | Ready | ADR-0012 |
-| 069 | [Liberated profile/kit fields resolve, and liberation blocks the dungeon route](story-069-liberated-fields-and-dungeon-route-block.md) | Logic | Ready | ADR-0012 |
+| 069 | [Liberated profile/kit fields resolve, and liberation blocks the dungeon route](story-069-liberated-fields-and-dungeon-route-block.md) | Logic | Complete | ADR-0012 |
 | 070 | [A checkpoint opens on a met requirement and stays open across save and load](story-070-checkpoint-opens-on-met-requirement.md) | Logic | Ready | ADR-0012 |
 | 071 | [Redirect and queue failures lock input, snap the party to the return marker and start grace](story-071-checkpoint-redirect-and-queue-failure.md) | Logic | Complete | ADR-0012 |
 | 072 | [An encounter-outcome checkpoint starts its linked fight, and Victory opens it](story-072-checkpoint-encounter-outcome.md) | Logic | Complete | ADR-0012 |

@@ -14,6 +14,10 @@
 class_name OverworldMap
 extends Node3D
 
+## Story 066: the group of faction set-dressing nodes a liberated set kit
+## removes (rule 17).
+const FACTION_DRESSING_GROUP: StringName = &"faction_dressing"
+
 ## The walk layer: a `TileSet` with a `walk: bool` custom data layer. Hidden
 ## at load (it is a 2D node; drawing it would overlay the 3D diorama).
 ## Persistent map id (`WorldState.map_id`; story 137). Matches the map's
@@ -275,6 +279,15 @@ func build_set(grid: WalkGrid) -> void:
 		bar.position = Vector3(bc.x, wall_height_m * 0.3, bc.y)
 		set_root.add_child(bar)
 
+	# Story 068: closable exits get a hidden tape barrier.
+	for exit: MapExit in map_exits():
+		if exit.closed_rect.size == Vector2.ZERO:
+			continue
+		var r: Rect2 = exit.closed_rect
+		_marker_box(set_root, "Tape_%s" % exit.marker_id, r.get_center(),
+				Vector3(r.size.x, 0.9, maxf(r.size.y * 0.2, 0.1)), checkpoint_color)
+		(set_root.get_node("Tape_%s" % exit.marker_id) as Node3D).visible = false
+
 	for npc: NpcSpawn in npc_spawns():
 		_marker_box(set_root, "Npc_%s" % npc.marker_id, npc.ground_position(self),
 				Vector3(0.4, 1.4, 0.4), npc_color)
@@ -301,6 +314,22 @@ func set_gag_shown(marker_id: StringName, shown: bool) -> void:
 	if box != null:
 		box.visible = shown
 
+## Shows or hides NPC `marker_id`'s placeholder box.
+func set_npc_shown(marker_id: StringName, shown: bool) -> void:
+	var box: Node3D = get_node_or_null("PlaceholderSet/Npc_%s" % marker_id) as Node3D
+	if box != null:
+		box.visible = shown
+
+
+## Story 066 (rule 17): applies a set kit. The liberated kit removes every
+## faction set-dressing addition (nodes in `FACTION_DRESSING_GROUP`).
+func apply_set_kit(kit: SetKit) -> void:
+	var strip: bool = kit != null and kit.removes_faction_dressing
+	for node: Node in find_children("*", "Node3D", true, false):
+		if node.is_in_group(FACTION_DRESSING_GROUP):
+			(node as Node3D).visible = not strip
+
+
 ## Shows or hides checkpoint `marker_id`'s placeholder barrier.
 func set_checkpoint_shown(marker_id: StringName, shown: bool) -> void:
 	var bar: Node3D = get_node_or_null("PlaceholderSet/Checkpoint_%s" % marker_id) as Node3D
@@ -313,3 +342,10 @@ func _flat_material(color: Color) -> StandardMaterial3D:
 	mat.albedo_color = color
 	mat.roughness = 1.0
 	return mat
+
+
+## Story 068: shows or hides exit `marker_id`'s tape barrier.
+func set_exit_taped(marker_id: StringName, taped: bool) -> void:
+	var tape: Node3D = get_node_or_null("PlaceholderSet/Tape_%s" % marker_id) as Node3D
+	if tape != null:
+		tape.visible = taped
