@@ -91,3 +91,4 @@
 - The first capture run showed the dungeon first-room Clerk cut off by the camera clamp at the east wall (framing, AC-39, not an occluder); it moved from x 21.5 to 20.5. The report now flags any mask touching the frame edge.
 - 2026-10-30: recaptured at the new 12.0 m camera height (story 099, OQ-1): 24 approaches, all 100% visible, none clipped. I opened a sample myself (segment east s0, dungeon first room s4, hall s7): the Clerk is unoccluded in each, and the first-room one sits near the right edge but inside the frame.
 - **Open:** art-director sign-off on the captures, to be added to `signoff-overworld.md`.
+- 2026-10-30 (level-design pass, stories 086/119/103): recaptured after the segment's west Clerk moved and the dungeon gained four Clerks. 46 approaches, 0 failures. The new dungeon north-west Clerk is near the frame's top edge on its 270° approach; please look at that capture when signing off.

@@ -23,15 +23,18 @@ func test_shipped_dungeon_meets_the_pressure_floor() -> void:
 func test_a_clerk_off_the_short_route_fails_the_floor() -> void:
 	var maps: Dictionary = _maps()
 	var dungeon: OverworldMap = maps["map_paris_dungeon_placeholder"]
-	# Both Clerks now watch nothing the short route crosses.
+	# Every patrolling Clerk now watches nothing the short route crosses: the
+	# hall ones pace the far west lane, the first-room one a far corner.
 	for sym: EncounterSymbol in dungeon.symbol_markers():
-		if sym.symbol_id == "sym_dungeon_clerks_hall":
-			sym.patrol_path = PackedVector2Array([Vector2(2.5, 5.5), Vector2(2.5, 8.5)])
-		elif sym.symbol_id == "sym_dungeon_clerks_first_room":
+		if sym.is_static:
+			continue
+		if sym.symbol_id == "sym_dungeon_clerks_first_room":
 			sym.patrol_path = PackedVector2Array([Vector2(21.5, 30.5), Vector2(21.5, 32.5)])
+		else:
+			sym.patrol_path = PackedVector2Array([Vector2(2.5, 5.5), Vector2(2.5, 8.5)])
 	var errors: PackedStringArray = BypassSearch.check_pressure(_record("dungeon"), dungeon, OverworldConfig.new())
 	_free(maps)
-	assert_str(", ".join(errors)).contains("dungeon_to_boss").contains("fewer than 1 of 2 patrol bands")
+	assert_str(", ".join(errors)).contains("dungeon_to_boss").contains("fewer than 3 of 6 patrol bands")
 
 
 func test_a_stricter_ratio_fails_the_ratio() -> void:

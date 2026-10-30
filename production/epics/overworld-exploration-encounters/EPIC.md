@@ -166,7 +166,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 100 | [Swept contact fires at every approach angle and lateral offset, and never lets a frame skip through a wall](story-100-swept-contact-at-every-approach-angle.md) | Logic | Complete | ADR-0012 |
 | 101 | [A chase started at minimum contact distance gives up within one frame of `t_escape`](story-101-symbol-speeds-escape-timing.md) | Logic | Complete | ADR-0012 |
 | 102 | [`path_dist` stays a true upper bound on the leader's path distance through a U-shaped corridor](story-102-path-dist-upper-bound-through-a-u-corridor.md) | Logic | Complete | ADR-0012 |
-| 103 | [Every map's active symbol count lies within its density band at every reachable stage](story-103-symbol-density-band-per-map.md) | Logic | Blocked | ADR-0012 |
+| 103 | [Every map's active symbol count lies within its density band at every reachable stage](story-103-symbol-density-band-per-map.md) | Logic | Complete | ADR-0012 |
 | 104 | [The chapter's planned walk share stays under `walk_share_max`](story-104-chapter-walk-budget-share.md) | Logic | Complete | ADR-0012 |
 | 105 | [No overworld flow requires a hold or a timed press](story-105-no-held-or-timed-overworld-input.md) | Logic | Complete | ADR-0012 |
 | 106 | [Every accessibility cue clears 3:1 contrast against a 4px dilation of its own mask](story-106-event-cue-contrast-against-its-ring.md) | Visual/Feel | Ready | ADR-0012 |

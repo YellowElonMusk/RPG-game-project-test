@@ -146,6 +146,22 @@ func _build_dungeon(tile_set: TileSet) -> OverworldMap:
 			PackedVector2Array([Vector2(20.5, 23.5), Vector2(20.5, 26.5)]))
 	_patrol(map, "SymbolClerksHall", "enc_paris_clerks_west", "sym_dungeon_clerks_hall",
 			PackedVector2Array([Vector2(18.5, 11.5), Vector2(20.5, 11.5)]))
+	# Story 103 (GDD `symbol_density`, dungeon band 80/120 cells per symbol):
+	# W 670 needs 6-8 patrols. Four more, found by search against every
+	# validator (bypass lane via the west gap, pressure floor, safe zones) and
+	# then by story 087's walk-ins: the camera looks north, so a 2.5 m wall
+	# hides ~4.3 m of floor north of it; patrols keep out of those shadows,
+	# and a Clerk walked up on from the north sits at the frame's near
+	# edge, so the south-half ones stand under the long hall wall, where no
+	# approach comes from the north.
+	_patrol(map, "SymbolClerksHallSouthFarWest", "enc_paris_clerks_east", "sym_dungeon_clerks_hall_south_far_west",
+			PackedVector2Array([Vector2(7.5, 16.5), Vector2(9.5, 16.5)]))
+	_patrol(map, "SymbolClerksHallSouthWest", "enc_paris_clerks_west", "sym_dungeon_clerks_hall_south_west",
+			PackedVector2Array([Vector2(11.5, 17.5), Vector2(11.5, 19.5)]))
+	_patrol(map, "SymbolClerksHallNorthWest", "enc_paris_clerks_east", "sym_dungeon_clerks_hall_north_west",
+			PackedVector2Array([Vector2(5.5, 1.5), Vector2(7.5, 1.5)]))
+	_patrol(map, "SymbolClerksHallNorth", "enc_paris_clerks_west", "sym_dungeon_clerks_hall_north",
+			PackedVector2Array([Vector2(13.5, 8.5), Vector2(15.5, 8.5)]))
 	return map
 
 

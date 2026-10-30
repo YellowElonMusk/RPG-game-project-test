@@ -71,6 +71,10 @@ static func validate_catalog(catalog: ContentCatalogService, cfg: OverworldConfi
 	if steps != null:
 		errors.append_array(WalkBudget.compute(steps, records, maps, cfg)["errors"])
 	errors.append_array(check_first_encounter(steps, records, maps, cfg))
+	var density: Array = check_density(maps, records, cfg)
+	errors.append_array(density[0])
+	for line: String in density[1]:
+		print("symbol_density: ", line)
 	for rec: Resource in catalog.all_records(&"map"):
 		var rec_map: OverworldMap = maps.get(String(rec.get("id"))) as OverworldMap
 		if rec_map != null and rec is MapData:
@@ -597,3 +601,69 @@ static func check_first_encounter(steps: ChapterSteps, records: Dictionary, maps
 			errors.append("%s: first patrol's section bypass ratio %.2f > first_bypass_ratio_max %.2f"
 					% [tag, m["section_ratio"], cfg.first_bypass_ratio_max])
 	return errors
+
+
+## Story 103 (AC-41, GDD Formulas `symbol_density`): on a map with a
+## `density_type`, the patrolling (non-boss, non-story) symbols `N_sym` lie in
+## `[N_min, N_max]`, `N_min = max(1, round_half_up(W / D_max))`, `N_max =
+## round_half_up(W / D_min)`, `W` the baked walkable cells (SAFE included).
+## Symbols carry no stage gate, so the count is the same at every reachable
+## stage. Returns `[errors, report]`; coverage is reported, never gated.
+static func check_density(maps: Dictionary, records: Dictionary, cfg: OverworldConfig) -> Array:
+	var errors := PackedStringArray()
+	var report := PackedStringArray()
+	for map_id: String in maps:
+		var rec: MapData = records.get(map_id) as MapData
+		if rec == null or rec.density_type.is_empty():
+			continue
+		var map: OverworldMap = maps[map_id]
+		var grid: WalkGrid = map.bake_walk_grid(cfg)
+		var w: int = 0
+		for y: int in grid.size.y:
+			for x: int in grid.size.x:
+				if grid.is_walkable(Vector2i(x, y)):
+					w += 1
+		var band: Vector2i = density_band(rec.density_type, w, cfg)
+		if band == Vector2i(-1, -1):
+			errors.append("%s: unknown density_type '%s'" % [map_id, rec.density_type])
+			continue
+		var n: int = 0
+		var r_c: float = cfg.symbol_chase_m + cfg.body_radius
+		var covered: float = 0.0
+		for sym: EncounterSymbol in map.symbol_markers():
+			if sym.is_static:
+				continue
+			n += 1
+			covered += PI * r_c * r_c + 2.0 * r_c * _patrol_length(sym)
+		if n < band.x or n > band.y:
+			errors.append("%s: %d patrolling symbol(s), outside the %s band [%d, %d] for W %d"
+					% [map_id, n, rec.density_type, band.x, band.y, w])
+		report.append("%s: W %d, N_sym %d in [%d, %d], coverage %.0f%%"
+				% [map_id, w, n, band.x, band.y, 100.0 * covered / (float(w) * grid.cell_m * grid.cell_m)])
+	return [errors, report]
+
+
+## `[N_min, N_max]` for `type` at `w` walkable cells; (-1, -1) for an
+## unknown type.
+static func density_band(type: String, w: int, cfg: OverworldConfig) -> Vector2i:
+	var d_min: int
+	var d_max: int
+	match type:
+		"overworld":
+			d_min = cfg.d_min_overworld
+			d_max = cfg.d_max_overworld
+		"dungeon":
+			d_min = cfg.d_min_dungeon
+			d_max = cfg.d_max_dungeon
+		_:
+			return Vector2i(-1, -1)
+	return Vector2i(maxi(1, floori(float(w) / d_max + 0.5)), floori(float(w) / d_min + 0.5))
+
+
+static func _patrol_length(sym: EncounterSymbol) -> float:
+	var length: float = 0.0
+	for i: int in range(1, sym.patrol_path.size()):
+		length += sym.patrol_path[i - 1].distance_to(sym.patrol_path[i])
+	if sym.path_mode == SymbolBrain.PathMode.LOOP and sym.patrol_path.size() > 2:
+		length += sym.patrol_path[-1].distance_to(sym.patrol_path[0])
+	return length

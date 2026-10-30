@@ -1,7 +1,7 @@
 # Story 103: Every map's active symbol count lies within its density band at every reachable stage
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Blocked (2026-10-30): dungeon under its density band, needs a level-design pass
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-41 [D] (`symbol_density`)** At every reachable stage, each map's `N_sym` lies within `[N_min, N_max]`, with `N_min` at least 1 on every map other than Town and the boss chamber. Town has 0, and the boss chamber holds the boss only. Coverage is reported, not gated.
+- [x] **AC-41 [D] (`symbol_density`)** At every reachable stage, each map's `N_sym` lies within `[N_min, N_max]`, with `N_min` at least 1 on every map other than Town and the boss chamber. Town has 0, and the boss chamber holds the boss only. Coverage is reported, not gated.
 
 ---
 
@@ -56,7 +56,7 @@
 ## Files
 
 - `tools/ci/validate_maps.gd`
-- `tests/unit/overworld/data/symbol_density_test.gd`
+- `tests/unit/overworld/symbol_density_test.gd`
 
 ---
 
@@ -70,9 +70,9 @@
 
 **Story Type**: Logic (Config/Data validation)
 **Required evidence**:
-- `tests/unit/overworld/data/symbol_density_test.gd` — must exist and pass. Gate level: BLOCKING.
+- `tests/unit/overworld/symbol_density_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -87,3 +87,19 @@
 - Segment: W 291, 2 symbols in [1, 2], passes.
 - **Dungeon: W 670 needs 6–8 patrolling symbols; it has 2 (the first-room and hall Clerks; the Counter is the story encounter and is not counted).**
 - Fixing it is a level-design pass on `tools/maps/build_paris_dungeon_maps.gd`: four to six more Clerks, re-proved against the bypass/pressure validators (stories 083/085), recaptured for story 087's walk-ins, with the tests that count dungeon symbols updated. The alternative is a design call that the dungeon band (80/120 cells per symbol) is too dense for this layout. The code was reverted, not committed, so CI stays green; reapply it with the content.
+
+## Completion Notes (2026-10-30): the dungeon level-design pass
+
+- `MapValidator.check_density()` runs in `validate_maps` and prints each banded map's coverage, which is reported, not gated. `MapData.density_type` is new: "overworld" on the segment, "dungeon" on the dungeon. Town and the boss chamber have no band.
+- The dungeon now holds 6 patrolling Clerks, up from 2 (W 670, band [6, 8]). The segment holds 2 (W 291, band [1, 2]).
+- **Placement:** four new Clerks in `build_paris_dungeon_maps.gd`:
+  - hall south-west (11.5, 17.5)–(11.5, 19.5)
+  - hall south far-west (7.5, 16.5)–(9.5, 16.5)
+  - hall north (13.5, 8.5)–(15.5, 8.5)
+  - hall north-west (5.5, 1.5)–(7.5, 1.5)
+- **How they were found:**
+  - A search kept only placements that leave the validators clean: bypass lane via the west gap, a pressure floor of now 3 of 6 bands, and safe zones.
+  - Story 087's walk-ins then rejected two earlier picks. One sat in the 4.3 m wall shadow the north-facing camera can't see behind. One sat south of the east gap, where a leader walking south through the gap has it at the frame's near edge, out of shot.
+  - South-half Clerks therefore stand under the long hall wall, which no approach crosses from the north.
+- Story 087 recaptured: 46 approaches, 0 failures. I opened the new Clerks' captures myself. The north-west Clerk sits close to the frame's top edge on its 270° approach: visible, but flag it for art review.
+- `dungeon_pressure_floor_test.gd` was updated for six Clerks ("fewer than 3 of 6").

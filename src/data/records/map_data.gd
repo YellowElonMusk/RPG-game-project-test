@@ -38,13 +38,17 @@ extends Resource
 @export var zone_rate: float = 0.0
 ## True on the one map a new game starts in.
 @export var new_game_entry: bool = false
+## The symbol-density band the map is checked against (GDD Formulas
+## `symbol_density`; story 103): "overworld" or "dungeon". Empty = no band
+## (Town holds 0 symbols, the boss chamber the boss only: story 075).
+@export var density_type: String = ""
 
 ## Player-visible text exports (TR-content-012, ADR-0013 §4).
 const LOC_FIELDS: Array[StringName] = [&"display_name"]
 ## IDs, asset IDs and flag names (ADR-0013 §4).
 const NON_LOC_FIELDS: Array[StringName] = [
 	&"id", &"aliases", &"faction_id", &"critical_path", &"region_liberation_flag",
-	&"liberated_profile_id", &"liberated_kit_id", &"encounter_zone_ids",
+	&"liberated_profile_id", &"liberated_kit_id", &"encounter_zone_ids", &"density_type",
 ]
 ## Required fields (story 015, QL-STORY-READY GAPS fix 2026-10-24): empty or
 ## whitespace-only text is an error. Widen only after a GDD edit marks more.
