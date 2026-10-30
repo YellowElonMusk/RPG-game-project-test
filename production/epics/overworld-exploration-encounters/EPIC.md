@@ -73,7 +73,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 007 | [Followers snap into formation on map entry, teleport, redirect and battle thaw](story-007-followers-snap-on-entry-teleport-redirect-thaw.md) | Logic | Complete | ADR-0012 |
 | 008 | [A solo party still records a trail, and a mid-visit recruit joins at the first slot](story-008-solo-party-trail-and-mid-visit-recruit.md) | Logic | Ready | ADR-0012 |
 | 009 | [A follower's facing flips only after moving into the new direction, and copies the leader when idle](story-009-follower-facing-flip-hysteresis.md) | Logic | Ready | ADR-0012 |
-| 010 | [Followers are never saved, and reload rebuilds them from roster order](story-010-followers-not-saved-rebuilt-from-roster.md) | Logic | Ready | ADR-0012 |
+| 010 | [Followers are never saved, and reload rebuilds them from roster order](story-010-followers-not-saved-rebuilt-from-roster.md) | Logic | Complete | ADR-0012 |
 | 011 | [probe() finds the nearest eligible target with a fixed tie order](story-011-probe-nearest-target-tie-order.md) | Logic | Complete | ADR-0012 |
 | 012 | [With nothing in reach, confirm does nothing and makes no sound](story-012-confirm-does-nothing-with-no-target.md) | Logic | Complete | ADR-0012 |
 | 013 | [No probe or interaction starts during a transition or while any overlay is open](story-013-probe-blocked-during-transition-or-overlay.md) | Logic | Complete | ADR-0012 |
@@ -156,10 +156,10 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 090 | [A later Retreat, a Save and a reload never un-resolve the boss](story-090-boss-stays-resolved-through-retreat-and-continue.md) | Integration | Complete | ADR-0012 |
 | 091 | [The Permit Counter notices nothing, barks once, and only `confirm` starts its fight](story-091-permit-counter-static-behavior.md) | Logic | Complete | ADR-0012 |
 | 092 | [Liberation flags, on-screen removal, Dialogue and the stage effect apply in a fixed order](story-092-story-flag-order-after-battle.md) | Integration | Ready | ADR-0012 |
-| 093 | [World state mirrors the leader every frame and never auto-saves](story-093-world-state-writes-only-position-and-events.md) | Logic | Ready | ADR-0012 |
+| 093 | [World state mirrors the leader every frame and never auto-saves](story-093-world-state-writes-only-position-and-events.md) | Logic | Complete | ADR-0012 |
 | 094 | [A reload moves the leader off a position a new blocker has covered](story-094-load-relocates-off-a-blocked-saved-position.md) | Logic | Ready | ADR-0012 |
-| 095 | [Save and load round-trip the camp, interactables, payoffs, liberation and story-flag state](story-095-save-round-trips-camp-interactables-and-flags.md) | Logic | Ready | ADR-0012 |
-| 096 | [A Continue made mid-chase starts every symbol in Patrol at its origin](story-096-continue-resets-symbols-to-patrol-origin.md) | Integration | Ready | ADR-0012 |
+| 095 | [Save and load round-trip the camp, interactables, payoffs, liberation and story-flag state](story-095-save-round-trips-camp-interactables-and-flags.md) | Logic | Complete | ADR-0012 |
+| 096 | [A Continue made mid-chase starts every symbol in Patrol at its origin](story-096-continue-resets-symbols-to-patrol-origin.md) | Integration | Complete | ADR-0012 |
 | 097 | [Every row of the Overworld state table enters and exits correctly](story-097-state-table-transitions.md) | Logic | Ready | ADR-0012 |
 | 098 | [`OverworldConfig.validate()` rejects exactly the knob combination that breaks its invariant](story-098-config-invariants-i1-i18.md) | Logic | Ready | ADR-0012 |
 | 099 | [`chase_visibility` (I14) passes the shipped camera at 4:3, 16:9 and 21:9, including the tilt-shift blur bounds](story-099-chase-visibility-validates-at-every-aspect.md) | Logic | Ready | ADR-0012 |

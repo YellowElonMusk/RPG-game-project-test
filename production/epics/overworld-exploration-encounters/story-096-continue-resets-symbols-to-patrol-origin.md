@@ -1,7 +1,7 @@
 # Story 096: A Continue made mid-chase starts every symbol in Patrol at its origin
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Integration
 > **Estimate**: M
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-36 [I] (Edge Cases)** GIVEN a save made mid-chase with a resolved `on_map_reenter` Clerk, WHEN Continue runs, THEN every symbol is in Patrol at its origin, the resolved Clerk stays absent, and grace starts on the reveal.
+- [x] **AC-36 [I] (Edge Cases)** GIVEN a save made mid-chase with a resolved `on_map_reenter` Clerk, WHEN Continue runs, THEN every symbol is in Patrol at its origin, the resolved Clerk stays absent, and grace starts on the reveal.
 
 ---
 
@@ -73,7 +73,7 @@
 **Required evidence**:
 - `tests/integration/overworld/continue_resets_symbols_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 

@@ -1,7 +1,7 @@
 # Story 093: World state mirrors the leader every frame and never auto-saves
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -30,7 +30,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-35 [L] (R15)** After any frame step, world state's map, position and facing equal the leader's. Other world-state fields change only on their events (a frame-step spy sees no write to them), and no world-state change signal is emitted on a frame with no event. The Overworld never calls the save writer (spy). (Save safety during transitions and overlays is Game State's to test: `game-state-scene-flow.md`.)
+- [x] **AC-35 [L] (R15)** After any frame step, world state's map, position and facing equal the leader's. Other world-state fields change only on their events (a frame-step spy sees no write to them), and no world-state change signal is emitted on a frame with no event. The Overworld never calls the save writer (spy). (Save safety during transitions and overlays is Game State's to test: `game-state-scene-flow.md`.)
 
 ---
 
@@ -73,7 +73,7 @@
 **Required evidence**:
 - `tests/unit/overworld/world_state_frame_writes_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 

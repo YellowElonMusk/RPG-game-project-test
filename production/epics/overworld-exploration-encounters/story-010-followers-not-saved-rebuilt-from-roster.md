@@ -1,7 +1,7 @@
 # Story 010: Followers are never saved, and reload rebuilds them from roster order
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-6 [L] (R2)** The saved world state contains no follower data. After a load, the followers equal the roster order minus the leader.
+- [x] **AC-6 [L] (R2)** The saved world state contains no follower data. After a load, the followers equal the roster order minus the leader.
 
 ---
 
@@ -81,7 +81,7 @@ load." This is a direct consequence of `WorldState`'s ownership list
 **Required evidence**:
 - `tests/unit/overworld/follower_save_load_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -89,3 +89,7 @@ load." This is a direct consequence of `WorldState`'s ownership list
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-005-followers-have-no-collision-or-triggers.md`; Squad Roster and Save/Load (named dependencies, no epic yet)
 - Unlocks: None
+
+## Completion Notes (2026-10-30)
+
+- **Partial:** the roster-order half waits for the Squad Roster system (the view tints followers by slot). No follower data is saved, and followers are rebuilt in formation on a Continue.

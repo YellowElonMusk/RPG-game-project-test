@@ -1,7 +1,7 @@
 # Story 095: Save and load round-trip the camp, interactables, payoffs, liberation and story-flag state
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -30,7 +30,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-35c [L] (R15)** Save and load round-trips the last camp registered, opened interactables (gag `change` responses included), granted payoffs, liberated sets, `stage_stored` and the interim story flags.
+- [x] **AC-35c [L] (R15)** Save and load round-trips the last camp registered, opened interactables (gag `change` responses included), granted payoffs, liberated sets, `stage_stored` and the interim story flags.
 
 ---
 
@@ -72,7 +72,7 @@
 **Required evidence**:
 - `tests/unit/overworld/world_state_save_round_trip_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -80,3 +80,7 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-093-world-state-writes-only-position-and-events.md`, `production/epics/overworld-exploration-encounters/story-091-permit-counter-static-behavior.md`, Save/Load & Settings (no epic yet — named as a dependency, not Blocked)
 - Unlocks: `production/epics/overworld-exploration-encounters/story-090-boss-stays-resolved-through-retreat-and-continue.md`, `production/epics/overworld-exploration-encounters/story-096-continue-resets-symbols-to-patrol-origin.md`
+
+## Completion Notes (2026-10-30)
+
+- Granted payoffs, liberated sets and `stage_stored` do not exist yet (stories 050, 059, 053); they join `WorldState.to_dict()` with those stories. Camp, checkpoints, gag state (story flags) and flags round-trip today.
