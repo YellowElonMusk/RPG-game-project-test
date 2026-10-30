@@ -1,0 +1,262 @@
+{
+  "passes": {
+    "final": {
+      "file": "final.png"
+    },
+    "glow_input": {
+      "item": 15,
+      "reason": "item (15): no CompositorEffect callback after POST_TRANSPARENT, so the glow input before tonemapping is not readable (spike 2026-10-29 FAIL)",
+      "status": "Pending"
+    },
+    "id": {
+      "classes": {
+        "SKY": {
+          "bbox": [
+            0,
+            0,
+            1280,
+            321
+          ],
+          "pixels": 322953,
+          "share": 0.350426432291667
+        },
+        "actor": {
+          "bbox": [
+            498,
+            180,
+            101,
+            259
+          ],
+          "pixels": 24777,
+          "share": 0.026884765625
+        },
+        "beacon": {
+          "bbox": [
+            881,
+            192,
+            153,
+            224
+          ],
+          "pixels": 30223,
+          "share": 0.0327940538194444
+        },
+        "camp_sign": {
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pixels": 0,
+          "share": 0.0
+        },
+        "chase_tag": {
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pixels": 0,
+          "share": 0.0
+        },
+        "checkpoint_closed": {
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pixels": 0,
+          "share": 0.0
+        },
+        "checkpoint_open": {
+          "bbox": [
+            253,
+            233,
+            138,
+            168
+          ],
+          "pixels": 20576,
+          "share": 0.0223263888888889
+        },
+        "interact_prompt": {
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pixels": 0,
+          "share": 0.0
+        },
+        "none": {
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pixels": 0,
+          "share": 0.0
+        },
+        "notice_slip": {
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pixels": 0,
+          "share": 0.0
+        },
+        "safe_paving": {
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pixels": 0,
+          "share": 0.0
+        },
+        "set": {
+          "bbox": [
+            0,
+            272,
+            1280,
+            448
+          ],
+          "pixels": 509699,
+          "share": 0.553058810763889
+        },
+        "stun_pose": {
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pixels": 0,
+          "share": 0.0
+        },
+        "symbol": {
+          "bbox": [
+            702,
+            162,
+            75,
+            191
+          ],
+          "pixels": 13372,
+          "share": 0.0145095486111111
+        },
+        "unclassified": {
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pixels": 0,
+          "share": 0.0
+        }
+      },
+      "file": "id.png",
+      "palette": {
+        "SKY": "#008000",
+        "actor": "#000080",
+        "beacon": "#800080",
+        "camp_sign": "#8000ff",
+        "chase_tag": "#0080ff",
+        "checkpoint_closed": "#00ffff",
+        "checkpoint_open": "#00ff80",
+        "interact_prompt": "#808000",
+        "notice_slip": "#008080",
+        "safe_paving": "#800000",
+        "set": "#0000ff",
+        "stun_pose": "#00ff00",
+        "symbol": "#808080"
+      }
+    },
+    "shadow_mask": {
+      "file": "shadow_mask.png",
+      "light": "/root/@Node@8/CaptureViewport/CaptureFixture/SetLight",
+      "pixels": 4855,
+      "shadow_enabled_in_scene": true,
+      "share": 0.00526801215277778
+    },
+    "ui": {
+      "bbox": [
+        40,
+        600,
+        420,
+        80
+      ],
+      "file": "ui.png",
+      "pixels": 33600,
+      "share": 0.0364583333333333
+    },
+    "unlit_albedo": {
+      "file": "unlit_albedo.png"
+    }
+  },
+  "size": [
+    1280,
+    720
+  ],
+  "tool": "tools/capture/presentation_capture.gd",
+  "viewport_settings": {
+    "mesh_lod_threshold": {
+      "setting": "rendering/mesh_lod/lod_change/threshold_pixels",
+      "value": 1.0
+    },
+    "msaa_3d": {
+      "setting": "rendering/anti_aliasing/quality/msaa_3d",
+      "value": 0
+    },
+    "positional_shadow_atlas_16_bits": {
+      "setting": "rendering/lights_and_shadows/positional_shadow/atlas_16_bits",
+      "value": true
+    },
+    "positional_shadow_atlas_quad_0": {
+      "setting": "rendering/lights_and_shadows/positional_shadow/atlas_quadrant_0_subdiv",
+      "value": 2
+    },
+    "positional_shadow_atlas_quad_1": {
+      "setting": "rendering/lights_and_shadows/positional_shadow/atlas_quadrant_1_subdiv",
+      "value": 2
+    },
+    "positional_shadow_atlas_quad_2": {
+      "setting": "rendering/lights_and_shadows/positional_shadow/atlas_quadrant_2_subdiv",
+      "value": 3
+    },
+    "positional_shadow_atlas_quad_3": {
+      "setting": "rendering/lights_and_shadows/positional_shadow/atlas_quadrant_3_subdiv",
+      "value": 4
+    },
+    "positional_shadow_atlas_size": {
+      "setting": "rendering/lights_and_shadows/positional_shadow/atlas_size",
+      "value": 4096
+    },
+    "scaling_3d_mode": {
+      "setting": "rendering/scaling_3d/mode",
+      "value": 0
+    },
+    "scaling_3d_scale": {
+      "setting": "rendering/scaling_3d/scale",
+      "value": 1.0
+    },
+    "screen_space_aa": {
+      "setting": "rendering/anti_aliasing/quality/screen_space_aa",
+      "value": 0
+    },
+    "use_debanding": {
+      "setting": "rendering/anti_aliasing/quality/use_debanding",
+      "value": false
+    },
+    "use_taa": {
+      "setting": "rendering/anti_aliasing/quality/use_taa",
+      "value": false
+    }
+  }
+}

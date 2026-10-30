@@ -1,12 +1,12 @@
 # Story 002: The capture tool renders the deterministic passes the [C] acceptance criteria measure
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: In Progress (implemented 2026-10-30, awaiting /story-done)
 > **Layer**: Core
 > **Type**: Integration
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,13 +32,13 @@
 
 *From ADR-0005 §13 (Migration Step 1c) and the test plan's P-09 specification, scoped to this story:*
 
-- [ ] The tool opens an offscreen `SubViewport` and sets its MSAA, screen-space AA and positional shadow atlas size explicitly from the project settings, and records what it set
-- [ ] It renders an **ID pass** on the same frame, through per-class override materials (actors, set elements, the sky card, and the §14 capture-ID tags: `SKY`, `notice_slip`, `chase_tag`, `stun_pose`, `checkpoint_open`, `checkpoint_closed`, `safe_paving`, `beacon`, `camp_sign`, `interact_prompt`, `symbol`)
-- [ ] It renders the **set-light shadow mask**
-- [ ] It renders in **unlit-albedo mode**
-- [ ] It renders the **UI layer alone**
-- [ ] It implements the **glow-input hook** (reading the glow input before tonemapping, the compositor hook), or records a "Pending" result naming item (15) if it fails
-- [ ] It writes a measurements file that downstream [C] stories read for pass/fail
+- [x] The tool opens an offscreen `SubViewport` and sets its MSAA, screen-space AA and positional shadow atlas size explicitly from the project settings, and records what it set
+- [x] It renders an **ID pass** on the same frame, through per-class override materials (actors, set elements, the sky card, and the §14 capture-ID tags: `SKY`, `notice_slip`, `chase_tag`, `stun_pose`, `checkpoint_open`, `checkpoint_closed`, `safe_paving`, `beacon`, `camp_sign`, `interact_prompt`, `symbol`)
+- [x] It renders the **set-light shadow mask**
+- [x] It renders in **unlit-albedo mode**
+- [x] It renders the **UI layer alone**
+- [x] It implements the **glow-input hook** (reading the glow input before tonemapping, the compositor hook), or records a "Pending" result naming item (15) if it fails
+- [x] It writes a measurements file that downstream [C] stories read for pass/fail
 
 ---
 
@@ -66,6 +66,7 @@
 
 - `tools/capture/presentation_capture.gd`
 - `tests/integration/presentation/capture_tool_test.gd`
+- `tools/capture/capture_main.gd` (added: the windowed `-s` entry point; the library is a `Node` class so the test can instantiate it)
 
 ---
 
@@ -81,7 +82,7 @@
 **Required evidence**:
 - Integration: `tests/integration/presentation/capture_tool_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing: `tests/integration/presentation/capture_tool_test.gd` 10/10; full suite 1555/1555 (2026-10-30). Windowed run evidence: `production/qa/evidence/story-002-capture-tool/`.
 
 ---
 
@@ -89,3 +90,16 @@
 
 - Depends on: `production/epics/sprite-camera-presentation/story-001-windowed-engine-spike.md`
 - Unlocks: every `[C]`-tagged story in this epic (this batch: story 010, story 025)
+
+---
+
+## Completion Notes
+
+*Implemented 2026-10-30. `PresentationCapture` (`tools/capture/presentation_capture.gd`) is a `Node` library; `tools/capture/capture_main.gd` is the windowed runner (`godot --path . -s res://tools/capture/capture_main.gd [-- --scene=res://x.tscn --out=res://dir/]`). Without `--scene` it captures a built-in fixture diorama.*
+
+- **Viewport settings:** every row of `VIEWPORT_SETTINGS` (MSAA 3D, screen-space AA, TAA, debanding, positional shadow atlas size/16-bit/quadrants, 3D scaling, mesh LOD) is assigned from the project settings and recorded in `measurements.json` → `viewport_settings`.
+- **ID pass:** flat unlit per-class `ShaderMaterial` overrides (sprites keep their frame's alpha cut-out), a neutral camera `Environment` (linear tonemap, no glow), UI culled. Classes: `actor`, `set` and the §14 tags read from node metadata `capture_id` (`sky` normalises to `SKY`). Channel levels 0/128/255 make the read-back robust to ±24 rounding.
+- **Shadow mask:** set-light shadow on vs off diff. **Unlit albedo:** `DEBUG_DRAW_UNSHADED`. **UI alone:** `disable_3d` + transparent background.
+- **Glow input:** `probe_glow_hook()` finds no `CompositorEffect` callback after `POST_TRANSPARENT` on 4.7.2, so it records **Pending, item (15)**, consistent with story 001's FAIL.
+- All passes run on one frozen frame (scene processing disabled during the capture).
+- **Deviations / known limits:** the ID override replaces the actor shader, so an actor in the ID pass is drawn as a plain card, without §2's clip-space projection. The sky tag is read from metadata, but no shipped sky card carries `capture_id` yet (the sky card belongs to a later story). The extra runner file is listed under Files.
