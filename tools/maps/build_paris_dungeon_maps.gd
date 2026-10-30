@@ -111,7 +111,7 @@ func _build_dungeon(tile_set: TileSet) -> OverworldMap:
 	var boom := CheckpointMarker.new()
 	boom.name = "PermitBoom"
 	boom.marker_id = &"cp_permit_boom"
-	boom.requirement_flag = "permit_to_approach_the_counter"
+	boom.requirement_flag = "counter_cleared"
 	boom.obtained_at = "enc_paris_permit_counter"
 	boom.failure_outcome = CheckpointMarker.FailureOutcome.ENCOUNTER
 	boom.linked_encounter_id = "enc_paris_permit_counter"

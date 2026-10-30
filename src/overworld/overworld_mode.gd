@@ -670,6 +670,11 @@ func on_thawed(encounter_id: String, result: GameStateMachine.BattleResult) -> v
 				_resolve_victory(source)
 			# Rule 10 `encounter` outcome and rule 13a: winning opens the checkpoint.
 			if source.checkpoint_id != &"":
+				# Rule 18 registry: the Victory also sets the checkpoint's
+				# requirement flag (`counter_cleared`, the Permit Counter).
+				var cp: CheckpointMarker = _checkpoints.get(source.checkpoint_id) as CheckpointMarker
+				if cp != null and not cp.requirement_flag.is_empty():
+					_set_flag(cp.requirement_flag)
 				open_checkpoint(source.checkpoint_id)
 		GameStateMachine.BattleResult.FLED:
 			source.brain.on_fled(_leader_pos, _leader_facing, _grid, config)

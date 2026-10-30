@@ -19,7 +19,8 @@ extends Resource
 @export var display_name: String = ""
 ## Faction record ID of the occupier. Optional.
 @export var faction_id: String = ""
-## Occupation stage when no `stage_table` flag is set (1–3).
+## Occupation stage when no `stage_table` flag is set (1–3); 0 means the map
+## has no stage (boss chamber, camp interiors: story 055).
 @export var base_stage: int = 1
 ## Story flag name → occupation stage (1–3).
 @export var stage_table: Dictionary[String, int] = {}

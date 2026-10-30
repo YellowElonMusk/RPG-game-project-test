@@ -37,6 +37,8 @@ func test_victory_opens_the_checkpoint_for_good() -> void:
 	mode.on_thawed(_ENC, GameStateMachine.BattleResult.VICTORY)
 	assert_bool(mode.is_checkpoint_open(_CP)).is_true()
 	assert_bool(mode.world_state.is_checkpoint_open("", _CP)).is_true()
+	# Story 055 registry: the Victory sets the requirement flag (`counter_cleared`).
+	assert_bool(mode.world_state.has_flag(_FLAG)).is_true()
 	for cell: Vector2i in [Vector2i(5, 4), Vector2i(6, 4)]:
 		assert_bool(mode.get_walk_grid().is_walkable(cell)).is_true()
 	# An open checkpoint drops out of probe() and confirm starts nothing.

@@ -18,6 +18,10 @@ const NAMES: Array[String] = ["", "Contested", "Occupied", "Saturated"]
 ## The stage of `rec` given `has_flag(flag) -> bool` and the map's stored
 ## stage (0 when none). Returns [stage, warning] (warning "" when none).
 static func compute(rec: MapData, has_flag: Callable, stored: int) -> Array:
+	# Story 055: a map with no `base_stage` (0, e.g. the boss chamber or a
+	# camp interior) and no table reports no stage.
+	if rec.base_stage <= 0 and rec.stage_table.is_empty():
+		return [0, ""]
 	var raised: int = rec.base_stage
 	for flag: String in rec.stage_table:
 		if has_flag.call(flag):

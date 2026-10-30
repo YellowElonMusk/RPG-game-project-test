@@ -14,7 +14,10 @@ func test_stage_equals_the_formula(base: int, table: Dictionary, flags: Array, e
 			[1, {"a": 2, "b": 3}, ["a", "b"], 3],
 			[2, {"a": 1}, ["a"], 2],
 			[1, {"a": 5}, ["a"], 3],
-			[0, {}, [], 1],
+			# No base stage and no table: no stage (story 055).
+			[0, {}, [], 0],
+			# A table on a stageless map still clamps up from 1.
+			[0, {"a": 2}, [], 1],
 		]) -> void:
 	var rec := _record(base, table)
 	var result: Array = OccupationStage.compute(rec, func(f: String) -> bool: return f in flags, 0)

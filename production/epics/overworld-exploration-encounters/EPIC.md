@@ -118,7 +118,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 052 | [An off-screen Victory plays the off-screen sting and the payoff card together](story-052-offscreen-liberation-payoff-card.md) | Logic | Ready | ADR-0012 |
 | 053 | [The occupation stage formula is monotonic and matches the flag-to-stage table](story-053-occupation-stage-formula.md) | Logic | Complete | ADR-0012 |
 | 054 | [A flag set mid-visit leaves the stage and active markers unchanged until the next load](story-054-stage-change-waits-for-next-load.md) | Logic | Complete | ADR-0012 |
-| 055 | [Paris map records set correct base stages and decree-gag registry rules](story-055-paris-map-stage-and-decree-registry-rules.md) | Logic | In Progress | ADR-0012 |
+| 055 | [Paris map records set correct base stages and decree-gag registry rules](story-055-paris-map-stage-and-decree-registry-rules.md) | Logic | Complete | ADR-0012 |
 | 056 | [Decree gags stay eligible and exempt from stage caps](story-056-decree-gag-stage-eligibility.md) | Logic | Complete | ADR-0012 |
 | 057 | [New Game sets permits_mandatory before the first input, and the segment always loads at stage 2](story-057-new-game-permits-mandatory-timing.md) | Integration | Complete | ADR-0012 |
 | 058 | [Active markers follow the marker_activation formula's slots](story-058-marker-activation-slots-by-stage-and-cap.md) | Logic | Complete | ADR-0012 |

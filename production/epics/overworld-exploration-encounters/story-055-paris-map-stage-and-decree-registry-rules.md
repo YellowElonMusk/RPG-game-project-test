@@ -1,7 +1,7 @@
 # Story 055: Paris map records set correct base stages and decree-gag registry rules
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: In Progress (2026-10-30): base stages and the segment stage table done; occupation-stage records (density, caps) and decree-gag registry rules not built
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: L
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-23b [D] (R8, R18)** Paris `map_` records have `base_stage` Town 1, overworld segment 1 and dungeon 3. Civilian density is non-increasing across stages 1–3, and caps are non-decreasing (I13). Maps with no `base_stage` report no stage. For every stage-raising flag in the registry:
+- [x] **AC-23b [D] (R8, R18)** Paris `map_` records have `base_stage` Town 1, overworld segment 1 and dungeon 3. Civilian density is non-increasing across stages 1–3, and caps are non-decreasing (I13). Maps with no `base_stage` report no stage. For every stage-raising flag in the registry:
   - its trigger is a ChapterFlow step change, and **never** a player Victory, a map entry or another squad action;
   - it is set on a step **before** every step in which any map it raises can be loaded, and a walk-grid search from the chapter's start over every map reachable before that step finds no route into a raised map (for `permits_mandatory`, set on the opening step, the check is trivially met);
   - it names a decree gag at **every** EntryPoint of each raised map that any MapExit targets, each resolving to a `decree_gag` marker.
@@ -87,7 +87,7 @@ Also compute the overworld segment's reachable-stage set from the ChapterFlow st
 **Required evidence**:
 - `tests/unit/overworld/data/paris_map_stage_and_registry_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -95,3 +95,14 @@ Also compute the overworld segment's reachable-stage set from the ChapterFlow st
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-053-occupation-stage-formula.md` (the `occupation_stage` formula), `production/epics/overworld-exploration-encounters/story-054-stage-change-waits-for-next-load.md` (stage applies only on load)
 - Unlocks: `production/epics/overworld-exploration-encounters/story-056-decree-gag-stage-eligibility.md`, `story-057-new-game-permits-mandatory-timing.md`
+
+## Completion Notes (2026-10-30)
+
+- `tests/unit/overworld/paris_stage_registry_rules_test.gd` checks each AC-23b part with its own named failure message: base stage, no base stage, density, I13, trigger, schedule, no earlier route, decree, and registry. A data mutation for each (density up, a cap down, a decree renamed, the flag moved to step 2, a flag unregistered) fails its test.
+- New data:
+  - `data/occupation_stages/ostage_bureaucratia_stage{1,2,3}.tres`: poster caps 2/4/6, queue caps 1/2/3, density 0.6/0.4/0.2. Stage 2 names `decree_permits` for `permits_mandatory`.
+  - `data/chapters/chapter_paris_flags.tres`: a `StoryFlagRegistry` holding the GDD rule-18 table.
+- The boss chamber's `base_stage` is now 0 ("no stage"), and `OccupationStage.compute` returns 0 for a map with no base stage and no table. The 053 formula case that expected 1 there was updated.
+- The dungeon Permit Boom's requirement flag was renamed from the unregistered `permit_to_approach_the_counter` to the registry's `counter_cleared`. A Victory over a checkpoint's linked encounter now sets that checkpoint's requirement flag (asserted in `checkpoint_encounter_outcome_test.gd`).
+- "No earlier route" uses the MapExit graph from the New Game map, which over-approximates any walk-grid route. It only matters for a flag set after the opening step; Paris has none.
+- Owed: the three stage subtitles are player-facing text and need rule-18 narrative sign-off (AC-51).
