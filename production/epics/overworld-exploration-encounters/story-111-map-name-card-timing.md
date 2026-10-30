@@ -1,7 +1,7 @@
 # Story 111: The map name card shows only on a map load's reveal
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-45b [L] (UI)** The map name card appears on a map load's reveal and never after a thaw or a redirect. It is fully shown at `text_hold(text) − dt` after the reveal and fading at `text_hold(text) + dt`. A story Dialogue due on the same load opens after it fades. Its text never contains a stage word.
+- [x] **AC-45b [L] (UI)** The map name card appears on a map load's reveal and never after a thaw or a redirect. It is fully shown at `text_hold(text) − dt` after the reveal and fading at `text_hold(text) + dt`. A story Dialogue due on the same load opens after it fades. Its text never contains a stage word.
 
 ---
 
@@ -83,7 +83,7 @@ checks scope against it.*
 **Story Type**: Logic
 **Required evidence**: `tests/unit/overworld/name_card_timing_test.gd` — must exist and pass.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing; evidence `production/qa/evidence/story-111-name-card/`
 
 ---
 

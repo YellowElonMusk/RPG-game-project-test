@@ -67,6 +67,7 @@ var interact_target: Object = null
 @export var prompt_height_m: float = 1.6
 var _bark_label: Label = null
 var _bark_left: float = 0.0
+var _name_card_label: Label = null
 
 
 func _init() -> void:
@@ -233,24 +234,18 @@ func _on_party_placed(at: Vector2) -> void:
 		_camera.snap_to(at)
 
 
-## Placeholder bark window (rule 13a "Take a number."): the line above the
-## speaker for `bark_hold_s`. The real window and `text_hold()` are story
-## 130's.
-func _on_barked(text: String, _at: Vector2) -> void:
-	if _bark_label == null:
-		return
-	_bark_label.text = text
-	_bark_label.visible = true
-	_bark_left = bark_hold_s
+## Bark window (rule 13a "Take a number.", rule 16): the mode owns its hold
+## (`text_hold`, story 130); this only draws it (`_update_interact_prompt`).
+func _on_barked(_text: String, _at: Vector2) -> void:
+	pass
 
 
 ## Placeholder interact prompt (GDD rule 3, UI Requirements): the kind of
 ## what `confirm` would act on, drawn while something is in reach. Story
 ## 015 replaces it with the icon prompt over the target.
 func _update_interact_prompt(delta: float) -> void:
-	if _bark_label != null and _bark_left > 0.0:
-		_bark_left = maxf(0.0, _bark_left - delta)
-		_bark_label.visible = _bark_left > 0.0
+	_draw_timed(_bark_label, mode.bark_text, mode.bark_phase)
+	_draw_timed(_name_card_label, mode.name_card_text, mode.name_card_phase)
 	if _interact_label == null:
 		return
 	# Story 015: one `probe()` per frame, only while Exploring (rule 3
@@ -281,6 +276,20 @@ func _build_hud_labels(layer: CanvasLayer) -> void:
 	_bark_label.add_theme_font_size_override(&"font_size", 26)
 	_bark_label.visible = false
 	layer.add_child(_bark_label)
+	_name_card_label = Label.new()
+	_name_card_label.name = "NameCard"
+	_name_card_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_name_card_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_name_card_label.position = Vector2(-240.0, 96.0)
+	_name_card_label.size = Vector2(480.0, 48.0)
+	_name_card_label.add_theme_font_size_override(&"font_size", 28)
+	_name_card_label.visible = false
+	layer.add_child(_name_card_label)
+	for label: Label in [_bark_label, _name_card_label]:
+		var panel := StyleBoxFlat.new()
+		panel.bg_color = Color(0.1, 0.09, 0.08, 0.92)
+		panel.set_content_margin_all(10.0)
+		label.add_theme_stylebox_override(&"normal", panel)
 
 
 ## The interact prompt and bark labels (tests).
@@ -290,3 +299,18 @@ func get_interact_label() -> Label:
 
 func get_bark_label() -> Label:
 	return _bark_label
+
+
+## Draws one timed text element from the mode's state: hidden, shown, or
+## fading (half alpha). Opaque panel (P14 legibility).
+func _draw_timed(label: Label, text: String, phase: int) -> void:
+	if label == null:
+		return
+	label.visible = phase != OverworldMode.CardPhase.HIDDEN
+	label.text = text
+	label.modulate.a = 0.5 if phase == OverworldMode.CardPhase.FADING else 1.0
+
+
+## The name card label (tests, captures).
+func get_name_card_label() -> Label:
+	return _name_card_label

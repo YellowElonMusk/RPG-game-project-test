@@ -30,6 +30,8 @@ static func make_mode(extras: Array = [], machine: GameStateMachine = null) -> O
 		catalog.add(&"encounter", RecordCatalogDouble.make_encounter(id))
 	mode.encounter_catalog = catalog
 	mode.load_map(map)
+	# The load's name card (story 111) would hold barks back; let it clear.
+	mode.tick_timed_text(60.0)
 	return mode
 
 

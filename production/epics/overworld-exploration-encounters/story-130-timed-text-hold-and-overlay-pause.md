@@ -1,7 +1,7 @@
 # Story 130: The name card, payoff card and bark window each hold for text_hold(text), pausing under overlays
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: In Progress (2026-10-30): name card and bark window holds done; the payoff card waits for story 050
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S

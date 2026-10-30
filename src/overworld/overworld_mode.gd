@@ -250,6 +250,7 @@ func load_map(map: OverworldMap, entry_marker_id: StringName = &"") -> void:
 	for gag: GagInteractable in map.gags():
 		if _has_flag(_gag_flag("changed", gag)):
 			map.set_gag_shown(gag.marker_id, false)
+	_queue_name_card()
 	_leader_pos = map.spawn_position(_grid)
 	var entry: EntryPoint = map.find_entry_point(entry_marker_id) \
 			if entry_marker_id != &"" else null
@@ -353,6 +354,7 @@ func _process(delta: float) -> void:
 		return
 	var ow_dt: float = minf(delta, _DT_MAX_FALLBACK)
 	step_frame(ow_dt, _machine.get_move_vector(self))
+	tick_timed_text(delta)
 
 
 ## One Exploring frame in ADR-0012 §5's fixed order: move the leader (corner
@@ -717,6 +719,10 @@ func _on_transition_finished(to: GameStateMachine.Mode) -> void:
 	grace_starts += 1
 	for source: EncounterSource in _sources:
 		source.brain.on_grace_started()
+	# Story 111: a map load's reveal shows its name card (never a thaw or a
+	# redirect: those load no map).
+	if _name_card_due:
+		_show_name_card()
 	# Rule 13a: after Fled from the story encounter, its line opens as an
 	# automatic Dialogue on the reveal, guarded against a held confirm.
 	if not _line_on_reveal.is_empty():
@@ -1098,7 +1104,7 @@ func _check_barks_and_sight() -> void:
 		if not source.bark_line.is_empty() and offset.length() <= reach \
 				and not _has_flag("barked:" + source.symbol_id):
 			_set_flag("barked:" + source.symbol_id)
-			barked.emit(source.bark_line, source.brain.position)
+			_bark(source.bark_line, source.brain.position)
 		if not _has_flag("seen:" + source.symbol_id) and offset.length() \
 				<= ChaseVisibility.edge_reach(offset, presentation, config.walk_speed):
 			_set_flag("seen:" + source.symbol_id)
@@ -1177,7 +1183,7 @@ func _check_teach_barks() -> void:
 			_teach_armed[npc] = true
 		if _teach_pending.has(npc) and not name_card_showing:
 			_teach_pending.erase(npc)
-			barked.emit(npc.line, at)
+			_bark(npc.line, at)
 
 
 ## Title's Continue (ADR-0009 §6, ADR-0012 §4): the committed `WorldState`
@@ -1208,3 +1214,117 @@ func _mirror_world_state() -> void:
 	if world_state != null and _map != null:
 		world_state.party_pos = _leader_pos
 		world_state.party_facing = _leader_facing
+
+
+# -- Timed text: the map name card (story 111, GDD UI Requirements) --------
+
+## Stage words the name card must never show (GDD: "It never shows the
+## stage word").
+const STAGE_WORDS: Array[String] = ["Contested", "Occupied", "Saturated"]
+
+## Phases of a timed text element.
+enum CardPhase { HIDDEN, SHOWN, FADING }
+
+## The card's text while it is up, "" otherwise.
+var name_card_text: String = ""
+var name_card_phase: CardPhase = CardPhase.HIDDEN
+var _name_card_elapsed: float = 0.0
+var _name_card_due: bool = false
+var _after_name_card: Array[String] = []
+
+
+## Called by `load_map()`: the card shows on this load's reveal (or at once
+## when the load runs outside a transition: tests, the demo scene). A thaw
+## or a redirect never loads a map, so it never shows one.
+func _queue_name_card() -> void:
+	if _machine != null and _machine.phase != GameStateMachine.Phase.IDLE:
+		_name_card_due = true
+	else:
+		_show_name_card()
+
+
+func _show_name_card() -> void:
+	_name_card_due = false
+	name_card_text = map_display_name()
+	name_card_phase = CardPhase.SHOWN
+	_name_card_elapsed = 0.0
+	name_card_showing = true
+
+
+## The current map's player-facing name from its `map_` record, never a
+## stage word; the map ID when no record is reachable.
+func map_display_name() -> String:
+	var name: String = _map_id()
+	if encounter_catalog != null and _map != null:
+		var rec: Resource = encounter_catalog.call(&"get_record", &"map", _map.map_id)
+		if rec != null and not String(rec.get("display_name")).is_empty():
+			name = String(rec.get("display_name"))
+	for word: String in STAGE_WORDS:
+		name = name.replace(word, "").strip_edges()
+	return name
+
+
+## Advances every timed text by `dt`, paused while any overlay is open (GDD
+## "Timed text"). Called once a frame by `_process()`; tests call it.
+func tick_timed_text(dt: float) -> void:
+	if _overlays_open > 0:
+		return
+	if name_card_phase != CardPhase.HIDDEN:
+		_name_card_elapsed += dt
+		var hold: float = config.text_hold(name_card_text)
+		if _name_card_elapsed > hold + config.text_fade_s:
+			name_card_phase = CardPhase.HIDDEN
+			name_card_text = ""
+			name_card_showing = false
+			_release_after_name_card()
+		elif _name_card_elapsed > hold:
+			name_card_phase = CardPhase.FADING
+	_tick_bark(dt)
+
+
+## A story Dialogue due on a map load opens after the name card has faded
+## (GDD UI Requirements); at once when no card is up.
+func say_after_name_card(text: String) -> void:
+	if name_card_showing or _name_card_due:
+		_after_name_card.append(text)
+	else:
+		say(text)
+
+
+func _release_after_name_card() -> void:
+	if _after_name_card.is_empty():
+		return
+	var text: String = _after_name_card.pop_front()
+	say(text)
+
+
+# -- Timed text: the bark window (story 130) --------------------------------
+
+## The bark on screen, "" when none.
+var bark_text: String = ""
+var bark_phase: CardPhase = CardPhase.HIDDEN
+var _bark_elapsed: float = 0.0
+
+
+func _start_bark(text: String) -> void:
+	bark_text = text
+	bark_phase = CardPhase.SHOWN
+	_bark_elapsed = 0.0
+
+
+func _tick_bark(dt: float) -> void:
+	if bark_phase == CardPhase.HIDDEN:
+		return
+	_bark_elapsed += dt
+	var hold: float = config.text_hold(bark_text)
+	if _bark_elapsed > hold + config.text_fade_s:
+		bark_phase = CardPhase.HIDDEN
+		bark_text = ""
+	elif _bark_elapsed > hold:
+		bark_phase = CardPhase.FADING
+
+
+## Shows a bark in the bark window (held for `text_hold`) and announces it.
+func _bark(text: String, at: Vector2) -> void:
+	_start_bark(text)
+	barked.emit(text, at)

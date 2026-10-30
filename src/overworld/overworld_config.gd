@@ -188,3 +188,18 @@ func see_m() -> float:
 ## The chapter step list `validate_maps` checks (ADR-0012 §8, interim data;
 ## story 074).
 @export var chapter_steps_path: String = "res://data/chapters/chapter_paris_steps.tres"
+## Timed text (GDD UI Requirements "Timed text"): every name card, payoff
+## card and bark holds `text_hold(text) = max(name_card_s, text_hold_base_s
+## + words * text_hold_per_word_s)`. Tuning Knobs: 2.0 s (1.5-3.0), 1.0 s
+## (0.8-1.5), 0.3 s (0.25-0.4).
+@export var name_card_s: float = 2.0
+@export var text_hold_base_s: float = 1.0
+@export var text_hold_per_word_s: float = 0.3
+## The fade after a hold, in seconds (presentation; not a GDD knob).
+@export var text_fade_s: float = 0.4
+
+
+## `text_hold(text)` (GDD "Timed text"): the 9-word teaching bark holds 3.7 s.
+func text_hold(text: String) -> float:
+	var words: int = text.split(" ", false).size()
+	return maxf(name_card_s, text_hold_base_s + float(words) * text_hold_per_word_s)

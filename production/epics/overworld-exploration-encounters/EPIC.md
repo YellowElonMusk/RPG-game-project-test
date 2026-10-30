@@ -174,7 +174,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 108 | [Retained screenshots cover the interact prompt, name card, payoff card, bark window, camp prompts and the next-destination arrow](story-108-ui-screenshots-prompts-cards-and-prompts.md) | UI | Ready | ADR-0012 |
 | 109 | [Each junction node shows the next beacon in the leg's chain](story-109-beacon-chain-walkin-capture.md) | Visual/Feel | Ready | ADR-0012 |
 | 110 | [Every leg's junction nodes cover its real branch points](story-110-beacon-junction-coverage-validation.md) | Logic | Ready | ADR-0012 |
-| 111 | [The map name card shows only on a map load's reveal](story-111-map-name-card-timing.md) | Logic | Ready | ADR-0012 |
+| 111 | [The map name card shows only on a map load's reveal](story-111-map-name-card-timing.md) | Logic | Complete | ADR-0012 |
 | 112 | [Only the current leg's beacon chain is lit, and the objective line matches the step](story-112-leg-beacon-chain-and-objective-line.md) | Logic | Ready | ADR-0012 |
 | 113 | [The camp prompt's cancel does nothing, and Yes has default focus](story-113-camp-prompt-cancel-and-focus.md) | Logic | Complete | ADR-0012 |
 | 114 | [Symbol stepping and queries hold their frame budget on the min-spec PC and Steam Deck](story-114-overworld-performance-benchmark.md) | Integration | Ready | ADR-0012 |
@@ -193,7 +193,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 127 | [Exterior stage sky luminance stays at or above L* 60](story-127-exterior-stage-sky-luminance.md) | Visual/Feel | Ready | ADR-0012 |
 | 128 | [SAFE cell tagging is precise at the 0.01 m boundary](story-128-safe-cell-bake-boundary-precision.md) | Logic | Complete | ADR-0012 |
 | 129 | [Symbols, followers and civilians never block or push each other; a touched symbol resumes from its contact point](story-129-symbol-follower-civilian-non-collision.md) | Logic | Ready | ADR-0012 |
-| 130 | [The name card, payoff card and bark window each hold for text_hold(text), pausing under overlays](story-130-timed-text-hold-and-overlay-pause.md) | Logic | Ready | ADR-0012 |
+| 130 | [The name card, payoff card and bark window each hold for text_hold(text), pausing under overlays](story-130-timed-text-hold-and-overlay-pause.md) | Logic | In Progress | ADR-0012 |
 | 131 | [AStarGrid2D setup stays frozen after bake, and sprite frames never drift from ow_dt](story-131-astargrid-pathing-setup-invariants.md) | Logic | Ready | ADR-0012 |
 | 132 | [A narrow aspect logs one warning; a freed blocker invalidates stale paths](story-132-aspect-warning-and-freed-blocker-edge-cases.md) | Logic | Ready | ADR-0012 |
 | 133 | [Build the perf_overworld fixture, debug flags and the step_symbols() performance monitor](story-133-overworld-performance-fixture-tooling.md) | Integration | Ready | ADR-0012 |
