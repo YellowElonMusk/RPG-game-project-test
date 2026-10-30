@@ -48,6 +48,10 @@ func _initialize() -> void:
 	var errors: PackedStringArray = MapValidator.validate_catalog(catalog, cfg)
 	# Story 098: the config invariants I1-I13, I15-I18 (I13 over the stage records).
 	errors.append_array(cfg.validate(OverworldConfig.DT_MAX_DEFAULT, catalog.all_records(&"occupation_stage")))
+	# Story 099: I14, the shipped camera and both overworld lighting profiles.
+	for profile_id: String in ["overworld", "overworld_liberated"]:
+		var profile: LightingProfile = load("%s/%s.tres" % [MapValidator.LIGHTING_PROFILE_DIR, profile_id]) as LightingProfile
+		errors.append_array(ChaseVisibility.validate(cfg, PresentationConfig.new(), profile))
 	for err: String in errors:
 		printerr("validate_maps: ", err)
 	print("validate_maps: %d map(s), %d error(s)" % [catalog.all_records(&"map").size(), errors.size()])

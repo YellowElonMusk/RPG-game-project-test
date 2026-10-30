@@ -18,8 +18,11 @@ extends Resource
 ## §6; story 023). `FollowCamera.from_config()` reads these -- never
 ## literals (Control Manifest, this layer).
 @export_group("Follow Camera")
-## Camera height above the ground plane, in meters (`h`).
-@export var follow_camera_height: float = 10.0
+## Camera height above the ground plane, in meters (`h`). 12.0 m, the
+## Overworld GDD's OQ-1 proposal: the lowest round height that clears
+## `chase_visibility` (I14) at every dz and tau in their safe ranges (story
+## 099; 10.0 m fails at every aspect).
+@export var follow_camera_height: float = 12.0
 ## Fixed pitch below the horizon, in degrees (`pitch`).
 @export var follow_camera_pitch_degrees: float = 30.0
 ## Vertical field of view at 16:9, in degrees, before `F_v_eff` widening (`F_v`).
@@ -36,3 +39,7 @@ extends Resource
 ## How far below the horizon the footprint's far edge must stay at 4:3, in
 ## degrees (`horizon_margin`; Tuning Knobs: 3-10, default 5).
 @export_range(3.0, 10.0, 0.5) var follow_camera_horizon_margin_degrees: float = 5.0
+## The tallest overworld actor's card height, in metres (`H_max`; I14's near
+## blur bound subtracts `H_max * sin(pitch)`). Placeholder until the sprite
+## sets are authored.
+@export var overworld_card_height_max_m: float = 2.0

@@ -1,7 +1,7 @@
 # Story 099: `chase_visibility` (I14) passes the shipped camera at 4:3, 16:9 and 21:9, including the tilt-shift blur bounds
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: L
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-39 [L] (`chase_visibility`, I14)** With presentation's example camera (pitch 30°, F_v 20°), h 10 m fails and names the binding aspect and edge. h 11.5 m passes at 4:3, 16:9 and 21:9 at the default dz and tau. Blur fixtures: `dof_far_begin` below `d_cam(+s_blur)` fails; `dof_near_end` above `d_cam(−s_blur) − H_max·sin(pitch)` fails; a fixture that passes when measured from the focus but fails with the leader at the dead-zone edge (`s_blur` vs `see_m`) fails. The shipped config passes at all three aspects.
+- [x] **AC-39 [L] (`chase_visibility`, I14)** With presentation's example camera (pitch 30°, F_v 20°), h 10 m fails and names the binding aspect and edge. h 11.5 m passes at 4:3, 16:9 and 21:9 at the default dz and tau. Blur fixtures: `dof_far_begin` below `d_cam(+s_blur)` fails; `dof_near_end` above `d_cam(−s_blur) − H_max·sin(pitch)` fails; a fixture that passes when measured from the focus but fails with the leader at the dead-zone edge (`s_blur` vs `see_m`) fails. The shipped config passes at all three aspects.
 
 ---
 
@@ -59,7 +59,7 @@
 ## Files
 
 - `src/overworld/overworld_config.gd`
-- `tests/unit/overworld/chase_visibility_test.gd`
+- `tests/unit/overworld/chase_visibility_validation_test.gd`
 
 ---
 
@@ -73,9 +73,9 @@
 
 **Story Type**: Logic
 **Required evidence**:
-- `tests/unit/overworld/chase_visibility_test.gd` — must exist and pass. Gate level: BLOCKING.
+- `tests/unit/overworld/chase_visibility_validation_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -83,3 +83,17 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-098-config-invariants-i1-i18.md`, `production/epics/sprite-camera-presentation/story-023-follow-camera-matches-the-formula.md`
 - Unlocks: `production/epics/overworld-exploration-encounters/story-087-patrol-visibility-before-the-notice-radius.md`
+
+## Completion Notes (2026-10-30)
+
+- `ChaseVisibility.validate(cfg, presentation, profile)` is I14. At each aspect it reports the binding edge (`R_vis = min R_e`). When the profile blurs, it checks:
+  - `dof_near_end <= d_cam(-s_blur) - H_max*sin(pitch)`
+  - `dof_far_begin >= d_cam(+s_blur)`
+  - with `s_blur = see_m + dz_y + walk_speed*tau`, measured from the leader, and `d_cam(s) = h/sin(pitch) + s*cos(pitch)`.
+- `edge_reach_at` now shares `_edges()`. The GDD numbers reproduce exactly: 4.26/4.27/4.27 at 10 m, 4.99/5.00/5.00 at 11.5 m, 4.68 at the ceilings, and `s_blur` 5.84.
+- **Decision (OQ-1, taken autonomously per the standing rule):** the shipped follow camera height goes from 10.0 to 12.0 m, the GDD's proposal. 10.0 m failed I14 at every aspect. 12.0 m passes at any dz/tau in range.
+  - New `PresentationConfig.overworld_card_height_max_m` (`H_max`), a 2.0 m placeholder.
+  - The shipped overworld profiles (far blur at 30 m, no near blur) pass: `d_cam(+s_blur)` is about 29.3 m at 4:3. That margin is thin; flagged for Presentation.
+- `validate_maps` (CI) runs I14 on the shipped camera with both overworld profiles. Boot-time validation waits on GameRoot building configs from data.
+- The camera change makes story 087's walk-in captures (taken at 10 m) stale; they were recaptured at 12 m.
+- Mutations checked: blur measured from the focus, `H_max` dropped, and the dead zone not projected on the side normal each fail a test here.

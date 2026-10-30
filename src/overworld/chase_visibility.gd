@@ -40,6 +40,82 @@ static func edge_reach_at(dir: Vector2, presentation: PresentationConfig, walk_s
 	if dir.is_zero_approx():
 		return INF
 	var d: Vector2 = dir.normalized()
+	var reach: float = INF
+	for edge: Array in _edges(presentation, walk_speed, aspect):
+		var n: Vector2 = edge[0]
+		var r_e: float = edge[2]
+		var along: float = n.dot(d)
+		if along > 1e-9:
+			reach = minf(reach, r_e / along)
+	return reach
+
+
+## The aspect names used in I14 errors, matching `ASPECTS`.
+const ASPECT_NAMES: Array[String] = ["4:3", "16:9", "21:9"]
+## Edge names in `_edges()` order.
+const EDGE_NAMES: Array[String] = ["near", "far", "side", "side"]
+
+
+## I14 (GDD Formulas `chase_visibility`; story 099): at every supported
+## aspect `R_vis = min_e R_e >= see_m`, and when `profile` blurs, the
+## tilt-shift keeps every point within `see_m` of the leader sharp:
+## `dof_near_end <= d_cam(-s_blur) - H_max * sin(pitch)` and
+## `dof_far_begin >= d_cam(+s_blur)`, with `s_blur = see_m + dz_y +
+## walk_speed * tau` (measured from the leader at the dead-zone edge, not
+## from the focus). Returns one error per failure, naming the aspect and
+## the edge or blur bound; empty when valid.
+static func validate(cfg: OverworldConfig, presentation: PresentationConfig,
+		profile: LightingProfile = null) -> PackedStringArray:
+	var out := PackedStringArray()
+	var see: float = cfg.see_m()
+	var pitch: float = deg_to_rad(presentation.follow_camera_pitch_degrees)
+	for i: int in ASPECTS.size():
+		var edges: Array = _edges(presentation, cfg.walk_speed, ASPECTS[i])
+		var worst: int = 0
+		for e: int in edges.size():
+			if float(edges[e][2]) < float(edges[worst][2]):
+				worst = e
+		var r_vis: float = edges[worst][2]
+		if r_vis < see:
+			out.append("I14: at %s the %s edge R_e %.2f < see_m %.2f"
+					% [ASPECT_NAMES[i], EDGE_NAMES[worst], r_vis, see])
+		if profile == null:
+			continue
+		var s_blur: float = blur_reach(cfg, presentation, ASPECTS[i])
+		if profile.dof_near_enabled:
+			var limit: float = d_cam(-s_blur, presentation) \
+					- presentation.overworld_card_height_max_m * sin(pitch)
+			if profile.dof_near_distance > limit:
+				out.append("I14: at %s dof_near_end %.2f > d_cam(-s_blur) - H_max*sin(pitch) %.2f"
+						% [ASPECT_NAMES[i], profile.dof_near_distance, limit])
+		if profile.dof_far_enabled:
+			var far: float = d_cam(s_blur, presentation)
+			if profile.dof_far_distance < far:
+				out.append("I14: at %s dof_far_begin %.2f < d_cam(+s_blur) %.2f"
+						% [ASPECT_NAMES[i], profile.dof_far_distance, far])
+	return out
+
+
+## `s_blur = see_m + dz_y + walk_speed * tau` at `aspect`: the farthest
+## offset from the focus at which a symbol within `see_m` of the leader can
+## be, the leader sitting at the dead-zone edge plus the follow lag.
+static func blur_reach(cfg: OverworldConfig, presentation: PresentationConfig, aspect: float) -> float:
+	var fp: FollowCamera.Footprint = FollowCamera.compute_footprint(presentation.follow_camera_height,
+			presentation.follow_camera_pitch_degrees, presentation.follow_camera_fov_degrees, aspect)
+	return cfg.see_m() + presentation.follow_camera_dead_zone_fraction * fp.a_near \
+			+ cfg.walk_speed * presentation.follow_camera_tau
+
+
+## `d_cam(s)`: the view-space depth of the ground point `s` metres from the
+## focus along the view's ground axis (+ away from the camera):
+## `h / sin(pitch) + s * cos(pitch)`.
+static func d_cam(s: float, presentation: PresentationConfig) -> float:
+	var pitch: float = deg_to_rad(presentation.follow_camera_pitch_degrees)
+	return presentation.follow_camera_height / sin(pitch) + s * cos(pitch)
+
+
+## [outward normal, dist_e, R_e] for near, far and both sides at `aspect`.
+static func _edges(presentation: PresentationConfig, walk_speed: float, aspect: float) -> Array:
 	var h: float = presentation.follow_camera_height
 	var pitch: float = deg_to_rad(presentation.follow_camera_pitch_degrees)
 	var fp: FollowCamera.Footprint = FollowCamera.compute_footprint(h,
@@ -54,18 +130,9 @@ static func edge_reach_at(dir: Vector2, presentation: PresentationConfig, walk_s
 	var side_len: float = Vector2(fp.w_far - w_near, span).length()
 	var d_side: float = (w_near * span + fp.a_near * (fp.w_far - w_near)) / side_len
 	var n_side := Vector2(span / side_len, (fp.w_far - w_near) / side_len)
-	# (outward normal, distance from the focus to the edge line)
-	var edges: Array = [
-		[Vector2(0, 1), fp.a_near],
-		[Vector2(0, -1), fp.a_far],
-		[n_side, d_side],
-		[Vector2(-n_side.x, n_side.y), d_side],
-	]
-	var reach: float = INF
-	for edge: Array in edges:
+	var out: Array = []
+	for edge: Array in [[Vector2(0, 1), fp.a_near], [Vector2(0, -1), fp.a_far],
+			[n_side, d_side], [Vector2(-n_side.x, n_side.y), d_side]]:
 		var n: Vector2 = edge[0]
-		var r_e: float = float(edge[1]) - (absf(n.x) * dz_x + absf(n.y) * dz_y) - lag
-		var along: float = n.dot(d)
-		if along > 1e-9:
-			reach = minf(reach, r_e / along)
-	return reach
+		out.append([n, edge[1], float(edge[1]) - (absf(n.x) * dz_x + absf(n.y) * dz_y) - lag])
+	return out
