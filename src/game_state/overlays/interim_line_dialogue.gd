@@ -19,6 +19,10 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 		line = DialogueLinePayload.new()
 	text = line.text if line.speaker.is_empty() else "%s: %s" % [line.speaker, line.text]
 	_guard_left = line.input_guard_s
+	# ADR-0013 §1: a code-set control is translated exactly once. The line
+	# arrives already localized (story 122), so the Label must not look it
+	# up again; set before the first text assignment.
+	(%Line as Label).auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	(%Line as Label).text = text
 
 

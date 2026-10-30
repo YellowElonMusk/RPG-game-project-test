@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: — (not yet implemented)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-51c [L] (R16)** On `confirm` at a clue poster or a decree gag, the Dialogue overlay shows the record's `LocText` string verbatim, through the localization path (ADR-0013), at the current text size.
+- [x] **AC-51c [L] (R16)** On `confirm` at a clue poster or a decree gag, the Dialogue overlay shows the record's `LocText` string verbatim, through the localization path (ADR-0013), at the current text size.
 
 ---
 
@@ -62,7 +62,8 @@
 planned ones; `/dev-story` replaces the list with the files it changed; `/story-done`
 checks scope against it.*
 
-- `src/overworld/overworld_mode.gd` (Dialogue overlay invocation with the record's `LocText`)
+- `src/overworld/overworld_mode.gd` (`gag_text()`: gag text through `TranslationServer.translate` with msgctxt `<marker_id>.<field>`; `confirm_gag` uses it for every response and decrees)
+- `src/game_state/overlays/interim_line_dialogue.gd` (line Label set to `AUTO_TRANSLATE_MODE_DISABLED`, ADR-0013 §1)
 - `tests/unit/overworld/gag_loctext_display_test.gd`
 
 ---
@@ -78,7 +79,7 @@ checks scope against it.*
 **Story Type**: Logic
 **Required evidence**: `tests/unit/overworld/gag_loctext_display_test.gd` — must exist and pass.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing — `gag_loctext_display_test.gd` 5/5 (2026-10-30)
 
 ---
 
@@ -86,3 +87,15 @@ checks scope against it.*
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-118-gag-response-behavior.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30
+**Criteria**: 1/1 passing (AC-51c, automated)
+**Deviations**:
+- `LocText` (ADR-0013 `src/loc/`) does not exist yet, and gags are scene nodes, not records. `OverworldMode.gag_text()` does the same lookup `LocText.of()` will (`TranslationServer.translate(source, "<marker_id>.<field>")`, English fallback); `TODO(localization)` to switch once `src/loc/` lands.
+- Out-of-list file: `interim_line_dialogue.gd` now disables auto-translate on its code-set Label (ADR-0013 §1, Verification item 9), otherwise a translated line is looked up a second time and is no longer verbatim.
+- No text-size setting exists yet; the test applies the GDD's named scales 1.0 and 1.5 to the overlay's own font size and asserts the full string, no trimming, no clipping, wrap on.
+**Test Evidence**: Logic — `tests/unit/overworld/gag_loctext_display_test.gd` (clue + decree verbatim at both scales, both through a test `fr` translation, wrong context ignored).

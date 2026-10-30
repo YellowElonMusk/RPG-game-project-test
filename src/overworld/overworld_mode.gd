@@ -1081,13 +1081,13 @@ func confirm() -> void:
 ## rumour only the first time.
 func confirm_gag(gag: GagInteractable) -> void:
 	if gag.is_decree():
-		say(gag.text)  # a decree repeats its text, always (rule 3)
+		say(gag_text(gag, &"text"))  # a decree repeats its text, always (rule 3)
 		return
 	var used: bool = _has_flag(_gag_flag("used", gag))
 	_set_flag(_gag_flag("used", gag))
 	match gag.response:
 		GagInteractable.Response.LINE:
-			say(gag.alt_text if used and not gag.alt_text.is_empty() else gag.text)
+			say(gag_text(gag, &"alt_text") if used and not gag.alt_text.is_empty() else gag_text(gag, &"text"))
 		GagInteractable.Response.CHANGE:
 			if _has_flag(_gag_flag("changed", gag)):
 				return
@@ -1097,12 +1097,27 @@ func confirm_gag(gag: GagInteractable) -> void:
 			# Story 118 (rule 16): a change plays without an overlay; its text
 			# shows in the non-blocking bark window, never a Dialogue.
 			if not gag.text.is_empty():
-				_start_bark(gag.text)
+				_start_bark(gag_text(gag, &"text"))
 		GagInteractable.Response.CLUE:
 			if not gag.rumour_id.is_empty() and not _has_flag("rumour:" + gag.rumour_id):
 				_set_flag("rumour:" + gag.rumour_id)
 				rumours_added += 1
-			say(gag.text)
+			say(gag_text(gag, &"text"))
+
+
+## The display string of `gag`'s text field `field` (`text` or `alt_text`)
+## through the localization path (GDD rule 16, AC-51c; ADR-0013 §3): the
+## translation for msgctxt `<marker_id>.<field>` in the current locale, or
+## the authored English verbatim when there is none. Never paraphrased or
+## truncated; the Dialogue overlay shows it as is.
+## TODO(localization): call `LocText.of()` once ADR-0013's `src/loc/` lands
+## (gags are scene nodes, not records, so it needs a node-aware overload).
+func gag_text(gag: GagInteractable, field: StringName) -> String:
+	var source: String = str(gag.get(field))
+	if source.is_empty():
+		return source
+	return String(TranslationServer.translate(StringName(source),
+			StringName("%s.%s" % [gag.marker_id, field])))
 
 
 ## `true` once rumour `rumour_id` is in the Codex (GDD rule 7a clue).
