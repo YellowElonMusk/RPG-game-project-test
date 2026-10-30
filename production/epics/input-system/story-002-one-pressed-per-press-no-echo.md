@@ -1,12 +1,12 @@
 # Story 002: One `pressed` per physical press, `held` every tick, and no second `pressed` from OS key-repeat echoes
 
 > **Epic**: Input System
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -33,7 +33,7 @@
 
 *From GDD `design/gdd/input-system.md`, scoped to this story:*
 
-- [ ] **AC-2** Holding `fast_forward` emits exactly one `pressed`, `held` on every tick while held, and exactly one `released` on release. A one-tick tap emits exactly one `pressed` and one `released`. A keyboard key held through the operating system's key-repeat, with synthetic echo events injected, emits no second `pressed`, for `fast_forward` and `confirm` alike.
+- [x] **AC-2** Holding `fast_forward` emits exactly one `pressed`, `held` on every tick while held, and exactly one `released` on release. A one-tick tap emits exactly one `pressed` and one `released`. A keyboard key held through the operating system's key-repeat, with synthetic echo events injected, emits no second `pressed`, for `fast_forward` and `confirm` alike.
 
 ---
 
@@ -109,7 +109,7 @@ Edge cases:
 **Required evidence**:
 - Logic: `tests/unit/input/input_press_semantics_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30)
 
 ---
 
@@ -117,3 +117,13 @@ Edge cases:
 
 - Depends on: `production/epics/input-system/story-001-default-bindings-press-release.md`
 - Unlocks: `production/epics/input-system/story-025-focus-lost-and-gained.md`
+
+---
+
+## Completion Notes
+
+*2026-10-30, implementation (autonomous run, tag sin).*
+
+- **Files**: `src/input/input_resolver.gd` (`tick()` emits `action_held` once per held action; repeated press of a held source is a no-op); `tests/unit/input/input_press_semantics_test.gd`
+- **Tests**: 18 cases (Shift, Enter, Space, Z; pad duplicate press; idle tick). Input dir 145/145; full suite 1266/1266, exit 0.
+- **Deviations**: None.

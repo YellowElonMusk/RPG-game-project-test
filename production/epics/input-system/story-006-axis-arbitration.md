@@ -1,12 +1,12 @@
 # Story 006: Opposite directions cancel on an axis, the larger stick or d-pad magnitude wins, and the d-pad wins a tie
 
 > **Epic**: Input System
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/input-system.md`, scoped to this story:*
 
-- [ ] **AC-6** Opposite directions held together give 0 on that axis. Stick and d-pad on the same axis: the larger magnitude wins. At equal magnitude, the d-pad wins.
+- [x] **AC-6** Opposite directions held together give 0 on that axis. Stick and d-pad on the same axis: the larger magnitude wins. At equal magnitude, the d-pad wins.
 
 ---
 
@@ -110,7 +110,7 @@ Edge cases:
 **Required evidence**:
 - Logic: `tests/unit/input/input_axis_arbitration_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30)
 
 ---
 
@@ -120,3 +120,13 @@ Edge cases:
   - `production/epics/input-system/story-004-digital-move-magnitude.md`
   - `production/epics/input-system/story-005-radial-deadzone.md`
 - Unlocks: `production/epics/input-system/story-018-menu-repeat-timing.md`
+
+---
+
+## Completion Notes
+
+*2026-10-30, implementation (autonomous run, tag sin).*
+
+- **Files**: `src/input/input_resolver.gd` (per-axis arbitration in `get_move_vector()`; `_analog_vector()` takes the larger stick across pads); `tests/unit/input/input_axis_arbitration_test.gd`
+- **Tests**: 16 cases (8 x DEFAULT/NON_DEFAULT). Input dir 145/145; full suite 1266/1266, exit 0.
+- **Deviations**: Implements the recommended reading (digital cancellation counts as magnitude 0, so a deflected stick wins); game-designer still to confirm.

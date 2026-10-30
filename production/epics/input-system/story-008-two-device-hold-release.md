@@ -1,12 +1,12 @@
 # Story 008: An action held on two devices is released only once, at the second device's release
 
 > **Epic**: Input System
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/input-system.md`, scoped to this story:*
 
-- [ ] **AC-19** The same action held on two devices: releasing one emits nothing; releasing the second emits exactly one `released`.
+- [x] **AC-19** The same action held on two devices: releasing one emits nothing; releasing the second emits exactly one `released`.
 
 ---
 
@@ -92,7 +92,7 @@ Edge cases:
 **Required evidence**:
 - Logic: `tests/unit/input/input_concurrency_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30)
 
 ---
 
@@ -102,3 +102,13 @@ Edge cases:
 - Unlocks:
   - `production/epics/input-system/story-016-keyboard-and-pad-same-frame.md`
   - `production/epics/input-system/story-022-active-pad-lost.md`
+
+---
+
+## Completion Notes
+
+*2026-10-30, implementation (autonomous run, tag sin).*
+
+- **Files**: `src/input/input_resolver.gd` (`_apply_discrete_edge()`: every new source press emits `pressed`, `released` only when the set empties, stray releases ignored); `tests/unit/input/input_concurrency_test.gd`
+- **Tests**: 4 cases (keyboard+pad, two pads, Enter+Space, stray release). Input dir 145/145; full suite 1266/1266, exit 0.
+- **Deviations**: Behaviour change: a second source pressing an already-held action now emits `pressed` (it was silent before), per the AC-19/AC-27 ruling.

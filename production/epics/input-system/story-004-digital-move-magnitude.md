@@ -1,12 +1,12 @@
 # Story 004: A single key or d-pad direction gives magnitude 1, and a diagonal key pair gives length 1
 
 > **Epic**: Input System
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/input-system.md`, scoped to this story:*
 
-- [ ] **AC-4** A single key or d-pad direction yields magnitude 1. Two diagonal keys (W+D) yield length 1 within tolerance.
+- [x] **AC-4** A single key or d-pad direction yields magnitude 1. Two diagonal keys (W+D) yield length 1 within tolerance.
 
 ---
 
@@ -97,7 +97,7 @@ Edge cases:
 **Required evidence**:
 - Logic: `tests/unit/input/input_move_vector_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30)
 
 ---
 
@@ -108,3 +108,13 @@ Edge cases:
   - `production/epics/input-system/story-005-radial-deadzone.md`
   - `production/epics/input-system/story-006-axis-arbitration.md`
   - `production/epics/input-system/story-018-menu-repeat-timing.md`
+
+---
+
+## Completion Notes
+
+*2026-10-30, implementation (autonomous run, tag sin).*
+
+- **Files**: `src/input/input_resolver.gd` (digital terms magnitude 1 per axis; normalized last, only when length > 1); `tests/unit/input/input_move_vector_test.gd`
+- **Tests**: 10 cases (8 directions x arrows/WASD/d-pad, mixed diagonal, two same-direction sources). Input dir 145/145; full suite 1266/1266, exit 0.
+- **Deviations**: None.

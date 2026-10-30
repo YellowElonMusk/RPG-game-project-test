@@ -1,12 +1,12 @@
 # Story 007: `confirm` and `cancel` pressed in the same frame are both emitted, in input order
 
 > **Epic**: Input System
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/input-system.md`, scoped to this story:*
 
-- [ ] **AC-18** `confirm` and `cancel` pressed in the same frame: both emitted, in input order.
+- [x] **AC-18** `confirm` and `cancel` pressed in the same frame: both emitted, in input order.
 
 ---
 
@@ -90,7 +90,7 @@ Edge cases:
 **Required evidence**:
 - Logic: `tests/unit/input/input_concurrency_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30)
 
 ---
 
@@ -98,3 +98,13 @@ Edge cases:
 
 - Depends on: `production/epics/input-system/story-001-default-bindings-press-release.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+*2026-10-30, implementation (autonomous run, tag sin).*
+
+- **Files**: `tests/unit/input/input_concurrency_test.gd` (no resolver change; emission was already synchronous in `feed_event()`)
+- **Tests**: 3 cases (both orders, emission before `tick()`). Input dir 145/145; full suite 1266/1266, exit 0.
+- **Deviations**: None.

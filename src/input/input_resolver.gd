@@ -14,9 +14,12 @@
 ## release of a `move_*` triple is never emitted as `action_pressed` /
 ## `action_released` -- it only updates `get_move_vector()` (ADR-0003 §8).
 ##
-## This story (001) implements edge detection for the default bindings only.
-## `action_held` emission, bindings validation, deadzone rescale, per-axis
-## arbitration, active-device tracking and overrides are later stories'
+## Story 001 implements edge detection for the default bindings. Story 002
+## adds `action_held` on every `tick()`; stories 004-006 add the digital
+## diagonal normalization, the radial deadzone rescale and per-axis
+## arbitration; story 008 pins per-source press semantics (every new source
+## emits `pressed`, only the last release emits `released`). Active-device
+## tracking and overrides are later stories'
 ## concern; every signal they need is declared here now so later stories add
 ## behaviour, not surface. Story 025 adds the focus gate (every held action
 ## released before `focus_lost()`, pad input dropped while unfocused, a
@@ -66,6 +69,10 @@ const PAD_AXIS_TOKENS: Dictionary = {
 	"right_y": JOY_AXIS_RIGHT_Y,
 }
 
+# Float32 round-trip guard for stick_output()'s deadzone edge: engine
+# precision glue, not tuning (axis_value is a 32-bit float, ~1e-8 error).
+const _STICK_PRECISION_EPS: float = 1e-6
+
 # ActionSource contract (ADR-0002) -- names unchanged.
 signal action_pressed(action: StringName)
 signal action_released(action: StringName)
@@ -105,10 +112,14 @@ var _pad_axis_actions: Dictionary = {}
 # rely on it (ADR-0003 Implementation Notes).
 var _discrete_held: Dictionary = {}
 
-# Per-move-action source magnitudes, action name -> Dictionary of
-# source key -> float level in [0, 1]. get_move_vector() combines these;
-# deadzone rescale and per-axis arbitration are later stories' concern.
+# Per-move-action DIGITAL sources (keys, pad buttons), action name ->
+# Dictionary acting as a Set of source keys. Analog sticks live in _axis_raw.
 var _move_sources: Dictionary = {}
+
+# Latest raw stick value per pad per axis ("device:axis" -> float), kept so
+# get_move_vector() can apply the radial deadzone on the whole stick vector
+# (story 005) and a later story can clear one pad's entries on disconnect.
+var _axis_raw: Dictionary = {}
 
 # Per-physical-axis re-centre latch ("device:axis" -> true), set on focus
 # loss for every axis then contributing to _move_sources (story 025,
@@ -141,12 +152,16 @@ func feed_event(event: InputEvent) -> void:
 			_feed_pad_axis(event as InputEventJoypadMotion)
 
 
-## Advances the resolver's own clock by `delta` seconds. This story's `tick()`
-## is a no-op placeholder: menu-repeat steps and `action_held` emission are
-## story 002's and 018's concern; the method exists now because
-## `ActionSource`-style drivers call it every frame.
+## Advances the resolver's own clock by `delta` seconds. Emits
+## `action_held(action)` exactly once per discrete action currently held, by
+## however many sources (story 002/008, ADR-0003 §8). `held` never comes from
+## device events, so a tap pressed and released between two ticks emits no
+## `held`. Menu-repeat steps are story 018's concern.
 func tick(_delta: float) -> void:
-	pass
+	for action: StringName in _discrete_held.keys():
+		var holders: Dictionary = _discrete_held[action]
+		if not holders.is_empty():
+			action_held.emit(action)
 
 
 ## Sets whether the game window has focus (ADR-0003 §8/§9; AC-17). Losing
@@ -177,20 +192,46 @@ func on_joy_connection(_device: int, connected: bool, _joy_name: String) -> void
 
 
 ## The deadzone-rescaled, per-axis-arbitrated, diagonal-normalized move
-## vector (ADR-0003 §8). This story combines sources with a simple maximum
-## per axis, which already satisfies story 001's AC (a single active source
-## per test case); deadzone rescale and arbitration ties are stories 004-006.
+## vector (ADR-0003 §8; GDD rule 6, Formulas, Edge Cases). Per axis, the
+## digital term is +1 for any positive key/button held plus -1 for any
+## negative one (so opposites cancel to 0); the analog term is the pad stick,
+## after `stick_output()`, with the larger absolute value. The term with the
+## larger absolute value wins the axis; on a tie the digital term wins
+## (story 006). A digital 0 from cancellation counts as magnitude 0, so a
+## deflected stick wins that axis (QL-STORY-READY 2026-10-23 reading). The
+## result is normalized last, only when its length exceeds 1 (story 004).
 ## Sign convention (pinned, ADR-0003 §8, Godot's y-down): `move_right` ->
 ## (+1, 0), `move_left` -> (-1, 0), `move_up` -> (0, -1), `move_down` -> (0, 1).
 ## Returns `Vector2.ZERO` while the window is unfocused (ADR-0003 §9).
 func get_move_vector() -> Vector2:
 	if not _window_focused:
 		return Vector2.ZERO
-	var up: float = _move_level(InputActions.MOVE_UP)
-	var down: float = _move_level(InputActions.MOVE_DOWN)
-	var left: float = _move_level(InputActions.MOVE_LEFT)
-	var right: float = _move_level(InputActions.MOVE_RIGHT)
-	return Vector2(right - left, down - up)
+	var digital := Vector2(
+			_digital_level(InputActions.MOVE_RIGHT) - _digital_level(InputActions.MOVE_LEFT),
+			_digital_level(InputActions.MOVE_DOWN) - _digital_level(InputActions.MOVE_UP))
+	var analog: Vector2 = _analog_vector()
+	var result := Vector2(
+			analog.x if absf(analog.x) > absf(digital.x) else digital.x,
+			analog.y if absf(analog.y) > absf(digital.y) else digital.y)
+	if result.length() > 1.0:
+		result = result.normalized()
+	return result
+
+
+## The radial deadzone rescale (GDD Formulas, `stick_output`; ADR-0003 §4):
+## 0 when `|raw| < deadzone`, else `raw / |raw| * min(1, (|raw| - deadzone) /
+## (1 - deadzone))`. Applied to the vector's magnitude, never per axis, so a
+## diagonal keeps its direction; `|raw| == deadzone` gives 0 from both
+## branches and `|raw| > 1` is clamped to length 1. `|raw|` within
+## `_STICK_PRECISION_EPS` of the deadzone counts as on the edge, because
+## `InputEventJoypadMotion.axis_value` is stored as a 32-bit float (0.2
+## reads back as 0.2000000030), so a stick reported exactly at the deadzone
+## must still give 0.
+static func stick_output(raw: Vector2, deadzone: float) -> Vector2:
+	var magnitude: float = raw.length()
+	if magnitude <= deadzone + _STICK_PRECISION_EPS or magnitude == 0.0:
+		return Vector2.ZERO
+	return raw / magnitude * minf(1.0, (magnitude - deadzone) / (1.0 - deadzone))
 
 
 ## The code-constant fallback bindings for Content Error only (ADR-0003 §7):
@@ -289,78 +330,110 @@ func _feed_pad_button(event: InputEventJoypadButton) -> void:
 	_apply_edge(action, "pad:%d:%d" % [event.device, event.button_index], event.pressed)
 
 
-# Matches a gamepad axis event by JoyAxis. One physical axis feeds both of
-# its bound directions at once: the positive part of the raw value feeds the
-# "+"-bound action, the negative part (as a magnitude) feeds the "-"-bound
-# action, so centering the stick (raw 0.0) clears both.
+# Matches a gamepad axis event by JoyAxis and stores its latest raw value
+# per pad per axis (story 005). The direction mapping and the radial
+# deadzone are applied in get_move_vector(), on the whole stick vector.
 func _feed_pad_axis(event: InputEventJoypadMotion) -> void:
 	var axis_key: String = "%d:%d" % [event.device, event.axis]
 	if _axis_recentre_latch.get(axis_key, false):
 		if absf(event.axis_value) <= _config.deadzone:
 			_axis_recentre_latch.erase(axis_key)
 		return
-	var by_sign: Dictionary = _pad_axis_actions.get(event.axis, null)
-	if by_sign == null:
+	if not _pad_axis_actions.has(event.axis):
 		return
-	var positive_action: StringName = by_sign.get(1, &"")
-	var negative_action: StringName = by_sign.get(-1, &"")
-	var positive_level: float = max(event.axis_value, 0.0)
-	var negative_level: float = max(-event.axis_value, 0.0)
-	if positive_action != &"":
-		_apply_move_level(positive_action, "pad_axis:%d:%d:+" % [event.device, event.axis], positive_level)
-	if negative_action != &"":
-		_apply_move_level(negative_action, "pad_axis:%d:%d:-" % [event.device, event.axis], negative_level)
+	if event.axis_value == 0.0:
+		_axis_raw.erase(axis_key)
+	else:
+		_axis_raw[axis_key] = event.axis_value
 
 
 # Routes one source's press/release to the discrete held-set logic, or to
 # the move-vector source logic, depending on the action's kind.
 func _apply_edge(action: StringName, source_key: String, pressed: bool) -> void:
 	if InputActions.MOVE.has(action):
-		_apply_move_level(action, source_key, 1.0 if pressed else 0.0)
+		_apply_move_digital(action, source_key, pressed)
 	else:
 		_apply_discrete_edge(action, source_key, pressed)
 
 
-# Updates one discrete action's held set and fires action_pressed on the
-# set's 0 -> 1 edge, action_released on its 1 -> 0 edge (GDD rule 2 / Edge
-# Cases: held until every device releases; released fires once, at the final
-# release).
+# Updates one discrete action's held set (story 002/008 edge rules, AC-19/
+# AC-27 ruling 2026-10-23): action_pressed fires for every press of a source
+# not already in the set, so a second device pressing a held action does
+# emit it; a repeat press of a source already in the set (a repeat not
+# flagged echo, a duplicate pad report) is a no-op; action_released fires
+# only when the set becomes empty, at the final release. A release of a
+# source not in the set is ignored.
 func _apply_discrete_edge(action: StringName, source_key: String, pressed: bool) -> void:
 	var holders: Dictionary = _discrete_held.get(action, {})
-	var was_held: bool = not holders.is_empty()
 	if pressed:
+		if holders.has(source_key):
+			return
 		holders[source_key] = true
-	else:
-		holders.erase(source_key)
-	_discrete_held[action] = holders
-	var is_held: bool = not holders.is_empty()
-	if is_held and not was_held:
+		_discrete_held[action] = holders
 		action_pressed.emit(action)
-	elif was_held and not is_held:
-		action_released.emit(action)
+	else:
+		if not holders.has(source_key):
+			return
+		holders.erase(source_key)
+		_discrete_held[action] = holders
+		if holders.is_empty():
+			action_released.emit(action)
 
 
-# Sets or clears one source's contribution to a move_* action's level. A
-# level of 0 removes the source entirely, so an action with no remaining
-# source reports level 0 from _move_level() without an empty-dictionary check
-# at every call site.
-func _apply_move_level(action: StringName, source_key: String, level: float) -> void:
+# Adds or removes one digital source (key, pad button) of a move_* action.
+func _apply_move_digital(action: StringName, source_key: String, pressed: bool) -> void:
 	var sources: Dictionary = _move_sources.get(action, {})
-	if level > 0.0:
-		sources[source_key] = level
+	if pressed:
+		sources[source_key] = true
 	else:
 		sources.erase(source_key)
 	_move_sources[action] = sources
 
 
-# The current combined level, in [0, 1], of one move_* action across every
-# source holding it.
-func _move_level(action: StringName) -> float:
+# 1.0 if any digital source holds this move_* action, else 0.0 (digital
+# sources are magnitude 1 per axis, story 004).
+func _digital_level(action: StringName) -> float:
 	var sources: Dictionary = _move_sources.get(action, {})
-	var level: float = 0.0
-	for source_key: String in sources:
-		level = max(level, sources[source_key] as float)
-	return level
+	return 0.0 if sources.is_empty() else 1.0
+
+
+# The analog move term: each pad's raw stick vector (every bound pad_axis,
+# mapped through its move_* direction) rescaled by stick_output(); per axis,
+# the pad with the larger absolute rescaled value wins (story 006).
+func _analog_vector() -> Vector2:
+	var raw_by_device: Dictionary = {}
+	for axis_key: String in _axis_raw:
+		var parts: PackedStringArray = axis_key.split(":")
+		var device: int = int(parts[0])
+		var by_sign: Dictionary = _pad_axis_actions.get(int(parts[1]), {})
+		var value: float = _axis_raw[axis_key]
+		var sign: int = 1 if value > 0.0 else -1
+		var action: StringName = by_sign.get(sign, &"")
+		var raw: Vector2 = raw_by_device.get(device, Vector2.ZERO)
+		raw += _move_direction(action) * absf(value)
+		raw_by_device[device] = raw
+	var best := Vector2.ZERO
+	for device: int in raw_by_device:
+		var out: Vector2 = stick_output(raw_by_device[device], _config.deadzone)
+		if absf(out.x) > absf(best.x):
+			best.x = out.x
+		if absf(out.y) > absf(best.y):
+			best.y = out.y
+	return best
+
+
+# The unit vector of one move_* action (pinned y-down sign convention), or
+# ZERO for any other action.
+static func _move_direction(action: StringName) -> Vector2:
+	if action == InputActions.MOVE_UP:
+		return Vector2.UP
+	if action == InputActions.MOVE_DOWN:
+		return Vector2.DOWN
+	if action == InputActions.MOVE_LEFT:
+		return Vector2.LEFT
+	if action == InputActions.MOVE_RIGHT:
+		return Vector2.RIGHT
+	return Vector2.ZERO
 
 
 # Releases every currently-held discrete action, emitting `action_released`
@@ -374,17 +447,11 @@ func _release_all_held_actions() -> void:
 			action_released.emit(action)
 
 
-# Latches every gamepad axis currently contributing to a move_* action
-# (story 025): its stored source is cleared immediately, as if centered, and
+# Latches every gamepad axis currently reporting a non-zero raw value
+# (story 025): its stored value is cleared immediately, as if centered, and
 # the latch set here makes _feed_pad_axis() ignore that physical axis until a
 # later event reports it inside the deadzone.
 func _latch_active_axes() -> void:
-	for action: StringName in _move_sources.keys():
-		var sources: Dictionary = _move_sources[action]
-		for source_key: String in sources.keys():
-			if source_key.begins_with("pad_axis:"):
-				var parts: PackedStringArray = source_key.split(":")
-				if parts.size() >= 3:
-					_axis_recentre_latch["%s:%s" % [parts[1], parts[2]]] = true
-				sources.erase(source_key)
-		_move_sources[action] = sources
+	for axis_key: String in _axis_raw.keys():
+		_axis_recentre_latch[axis_key] = true
+	_axis_raw.clear()

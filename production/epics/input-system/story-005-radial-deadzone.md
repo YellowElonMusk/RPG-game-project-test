@@ -1,12 +1,12 @@
 # Story 005: The radial deadzone rescale matches the `stick_output` formula, including the edge, the clamp and the diagonal cases
 
 > **Epic**: Input System
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/input-system.md`, scoped to this story:*
 
-- [ ] **AC-5** Deadzone cases, expected values from the formula: raw at exactly `deadzone` gives 0; raw at `deadzone + ε` gives magnitude at most ε / (1 − deadzone); a diagonal raw input keeps its direction; raw (0.60, 0) gives the formula value; raw magnitude above 1 is clamped to 1. The deadzone applies to the vector's magnitude, not per axis.
+- [x] **AC-5** Deadzone cases, expected values from the formula: raw at exactly `deadzone` gives 0; raw at `deadzone + ε` gives magnitude at most ε / (1 − deadzone); a diagonal raw input keeps its direction; raw (0.60, 0) gives the formula value; raw magnitude above 1 is clamped to 1. The deadzone applies to the vector's magnitude, not per axis.
 
 ---
 
@@ -96,7 +96,7 @@ Edge cases:
 **Required evidence**:
 - Logic: `tests/unit/input/input_deadzone_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30)
 
 ---
 
@@ -108,3 +108,13 @@ Edge cases:
   - `production/epics/input-system/story-012-active-device-changed.md`
   - `production/epics/input-system/story-020-menu-stick-threshold.md`
   - `production/epics/input-system/story-025-focus-lost-and-gained.md`
+
+---
+
+## Completion Notes
+
+*2026-10-30, implementation (autonomous run, tag sin).*
+
+- **Files**: `src/input/input_resolver.gd` (static `stick_output(raw, deadzone)`; raw stick stored per pad per axis in `_axis_raw`; story 025 re-centre latch moved onto it); `tests/unit/input/input_deadzone_test.gd`
+- **Tests**: 14 cases (7 x DEFAULT/NON_DEFAULT). Input dir 145/145; full suite 1266/1266, exit 0.
+- **Deviations**: Engine finding: `InputEventJoypadMotion.axis_value` is a 32-bit float (0.2 reads back as 0.2000000030), so `stick_output()` treats |raw| within 1e-6 of the deadzone as on the edge (`_STICK_PRECISION_EPS`, a precision guard, not tuning).
