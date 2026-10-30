@@ -1,7 +1,7 @@
 # Story 094: A reload moves the leader off a position a new blocker has covered
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -30,7 +30,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-35b [L] (R15, Edge Cases)** GIVEN a save whose position now lies in a cell blocked by a newly active blocker, THEN on load the leader is at the nearest walkable cell. If none is within 5 m, the leader is at the first EntryPoint.
+- [x] **AC-35b [L] (R15, Edge Cases)** GIVEN a save whose position now lies in a cell blocked by a newly active blocker, THEN on load the leader is at the nearest walkable cell. If none is within 5 m, the leader is at the first EntryPoint.
 
 ---
 
@@ -57,7 +57,7 @@
 ## Files
 
 - `src/overworld/world_state.gd`
-- `tests/unit/overworld/world_state_load_relocation_test.gd`
+- `tests/unit/overworld/continue_relocates_off_blockers_test.gd`
 
 ---
 
@@ -71,9 +71,9 @@
 
 **Story Type**: Logic
 **Required evidence**:
-- `tests/unit/overworld/world_state_load_relocation_test.gd` — must exist and pass. Gate level: BLOCKING.
+- `tests/unit/overworld/continue_relocates_off_blockers_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -81,3 +81,10 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-093-world-state-writes-only-position-and-events.md`
 - Unlocks: None further in this epic
+
+## Completion Notes (2026-10-30)
+
+- `OverworldMode._relocate_off_blockers()` runs on a Continue that lands on the saved position, not on a camp's return EntryPoint.
+- Blockers (closed checkpoints, standing clutter, tape) are in place by the map-entry commit, so the check runs there during a transition, or at once outside one.
+- A blocked saved cell moves the leader to the nearest walkable cell centre within 5 m, or else to the map's first EntryPoint. The followers re-form there.
+- Mutation checked: disabling the relocation fails a test here.

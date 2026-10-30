@@ -157,7 +157,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 091 | [The Permit Counter notices nothing, barks once, and only `confirm` starts its fight](story-091-permit-counter-static-behavior.md) | Logic | Complete | ADR-0012 |
 | 092 | [Liberation flags, on-screen removal, Dialogue and the stage effect apply in a fixed order](story-092-story-flag-order-after-battle.md) | Integration | Ready | ADR-0012 |
 | 093 | [World state mirrors the leader every frame and never auto-saves](story-093-world-state-writes-only-position-and-events.md) | Logic | Complete | ADR-0012 |
-| 094 | [A reload moves the leader off a position a new blocker has covered](story-094-load-relocates-off-a-blocked-saved-position.md) | Logic | Ready | ADR-0012 |
+| 094 | [A reload moves the leader off a position a new blocker has covered](story-094-load-relocates-off-a-blocked-saved-position.md) | Logic | Complete | ADR-0012 |
 | 095 | [Save and load round-trip the camp, interactables, payoffs, liberation and story-flag state](story-095-save-round-trips-camp-interactables-and-flags.md) | Logic | Complete | ADR-0012 |
 | 096 | [A Continue made mid-chase starts every symbol in Patrol at its origin](story-096-continue-resets-symbols-to-patrol-origin.md) | Integration | Complete | ADR-0012 |
 | 097 | [Every row of the Overworld state table enters and exits correctly](story-097-state-table-transitions.md) | Logic | Complete | ADR-0012 |

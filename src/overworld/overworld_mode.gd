@@ -297,6 +297,7 @@ func _commit_map_entry() -> void:
 	_resolve_presentation()
 	_activate_markers()
 	_setup_clutter(_map)
+	_relocate_off_blockers()
 	_refresh_gags()
 	_place_symbols(_map)
 
@@ -1293,8 +1294,48 @@ func _continue_from_save() -> void:
 		_leader_pos = pos
 		if not facing.is_zero_approx():
 			_leader_facing = facing.normalized()
+		# Story 094: blockers land on the map-entry commit, so the saved
+		# position is checked against them there (now, outside a transition).
+		_continue_check_due = true
+		if not _entry_commit_pending:
+			_relocate_off_blockers()
 		_reform_followers()
 	world_state.continue_entry = ""
+
+
+## Story 094 (GDD rule 15, Edge Cases): a Continue whose saved position now
+## lies in a blocked cell (a blocker that became active since the save)
+## moves the leader to the nearest walkable cell within 5 m, else to the
+## map's first EntryPoint.
+const _RELOCATE_MAX_M: float = 5.0
+var _continue_check_due: bool = false
+
+
+func _relocate_off_blockers() -> void:
+	if not _continue_check_due or _grid == null or _map == null:
+		return
+	_continue_check_due = false
+	if _grid.is_walkable(_grid.cell_of(_leader_pos)):
+		return
+	var best: Vector2 = Vector2.INF
+	var best_d: float = INF
+	var span: int = ceili(_RELOCATE_MAX_M / _grid.cell_m)
+	var at: Vector2i = _grid.cell_of(_leader_pos)
+	for dy: int in range(-span, span + 1):
+		for dx: int in range(-span, span + 1):
+			var c := Vector2i(at.x + dx, at.y + dy)
+			if not _grid.is_walkable(c):
+				continue
+			var p: Vector2 = _grid.cell_center(c)
+			var d: float = p.distance_to(_leader_pos)
+			if d <= _RELOCATE_MAX_M and d < best_d:
+				best_d = d
+				best = p
+	if best_d < INF:
+		_leader_pos = best
+	elif not _map.entry_points().is_empty():
+		_leader_pos = _map.entry_points()[0].ground_position(_map)
+	_reform_followers()
 
 
 ## ADR-0012 §4: `WorldState` holds the party's position and facing, written
