@@ -1,7 +1,7 @@
 # Story 103: Every map's active symbol count lies within its density band at every reachable stage
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Blocked (2026-10-30): dungeon under its density band, needs a level-design pass
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -80,3 +80,10 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-082-patrol-legality-at-every-reachable-stage.md`
 - Unlocks: None further in this epic
+
+## Blocked Notes (2026-10-30)
+
+- Built the check (a `MapData.density_type` of "overworld" or "dungeon", W counted from the baked grid, `N_min = max(1, round(W/D_max))`, `N_max = round(W/D_min)`, coverage reported) and ran it on the shipped maps.
+- Segment: W 291, 2 symbols in [1, 2], passes.
+- **Dungeon: W 670 needs 6–8 patrolling symbols; it has 2 (the first-room and hall Clerks; the Counter is the story encounter and is not counted).**
+- Fixing it is a level-design pass on `tools/maps/build_paris_dungeon_maps.gd`: four to six more Clerks, re-proved against the bypass/pressure validators (stories 083/085), recaptured for story 087's walk-ins, with the tests that count dungeon symbols updated. The alternative is a design call that the dungeon band (80/120 cells per symbol) is too dense for this layout. The code was reverted, not committed, so CI stays green; reapply it with the content.
