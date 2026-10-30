@@ -6,7 +6,7 @@
 > **Type**: Integration
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: — (not yet implemented)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story (tooling story per the story map; delivers the GDD's AC-46 Tooling-owed item, test plan OW-T01):*
 
-- [ ] Delivers: the `perf_overworld` fixture map; debug flags `no_contact`, `no_giveup`, `notice_cache_off`; the leader-oscillation test hook; a per-frame `step_symbols()` timer and `Performance` custom monitor; a CSV logger. Unblocks AC-46 (story 114).
+- [x] Delivers: the `perf_overworld` fixture map; debug flags `no_contact`, `no_giveup`, `notice_cache_off`; the leader-oscillation test hook; a per-frame `step_symbols()` timer and `Performance` custom monitor; a CSV logger. Unblocks AC-46 (story 114).
 
 ---
 
@@ -63,11 +63,15 @@
 planned ones; `/dev-story` replaces the list with the files it changed; `/story-done`
 checks scope against it.*
 
-- `data/maps/map_perf_overworld.tres` (fixture map record)
+- `tools/perf/map_perf_overworld.tres` (fixture map record: stage 3, `density_type` dungeon) -- moved from `data/maps/`, see Completion Notes
+- `tools/perf/perf_overworld_spec.gd`, `tools/perf/perf_overworld_chase.tres`, `tools/perf/perf_overworld_fenced.tres` (fixture parameters, O-08 Case A / Case B)
+- `tools/perf/perf_overworld_fixture.gd` (grid, N_max symbols, debug-flag setter, leader-oscillation hook)
+- `tools/perf/overworld_perf_probe.gd` (per-frame timer sink, `Performance` custom monitor `overworld/overworld_ms`, CSV logger)
 - `src/overworld/overworld_config.gd` (debug flags `no_contact`, `no_giveup`, `notice_cache_off`)
-- `src/overworld/overworld_mode.gd` (`step_symbols()` timer, leader-oscillation hook, CSV logger)
+- `src/overworld/overworld_mode.gd` (`step_timer` Callable around the symbol-step loop; `no_contact` early-out in `_check_contact`)
+- `src/overworld/symbol_brain.gd` (`no_giveup` and `notice_cache_off` reads -- not in the planned list)
 - `tests/integration/overworld/perf_overworld_fixture_test.gd`
-- `production/qa/evidence/perf/` (CSV output location)
+- `production/qa/evidence/perf/.gitkeep` (CSV output location)
 
 ---
 
@@ -82,7 +86,7 @@ checks scope against it.*
 **Story Type**: Integration
 **Required evidence**: `tests/integration/overworld/perf_overworld_fixture_test.gd` OR a playtest/tooling validation doc confirming the fixture, flags and monitor work as specified — must exist and pass.
 
-**Status**: [ ] Not yet created
+**Status**: [x] `tests/integration/overworld/perf_overworld_fixture_test.gd` -- 11/11 PASSED (2026-10-30, single-file run; full suite run by main session)
 
 ---
 
@@ -90,3 +94,16 @@ checks scope against it.*
 
 - Depends on: `story-017-zone-rate-zero-on-every-mvp-map.md` (AC-8, `WalkGrid`/`OverworldConfig` foundation), `story-030-cross-component-query-budget.md` (AC-9h, query budget the monitor measures)
 - Unlocks: `production/epics/overworld-exploration-encounters/story-114-overworld-performance-benchmark.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30
+**Criteria**: 1/1 tooling deliverables built and tested; the device measurement itself is story 114 (BLOCKED there: needs GTX 1080 / Steam Deck hardware, a release export preset and the shipped dungeon record for N_max).
+**Deviations**:
+- Fixture record lives at `tools/perf/map_perf_overworld.tres`, not `data/maps/`: `ContentCatalog` scans `res://data`, and every catalog map must have a scene and pass `MapValidator` (structure, legs, density). A perf-only record there would break validation. N defaults to `N_max` of the fixture grid under `density_type` (`MapValidator.density_band`); `PerfOverworldSpec.symbol_count` overrides it with the shipped dungeon's stage-3 N_max once that exists.
+- `src/overworld/symbol_brain.gd` touched (2 one-line conditions) -- the give-up test and notice cache live there, so `no_giveup` / `notice_cache_off` cannot be honoured elsewhere.
+- Timer is an injected `OverworldMode.step_timer: Callable` (no `src/` -> `tools/` dependency); it brackets the symbol-step loop (steps, notice queries, repaths) with `Time.get_ticks_usec()`.
+- Followers, civilians and tilt-shift are spec fields for the scene-side run only; the headless fixture builds the grid + symbols, which is everything `overworld_ms` measures.
+**Test Evidence**: Integration -- `tests/integration/overworld/perf_overworld_fixture_test.gd`, 11 tests.

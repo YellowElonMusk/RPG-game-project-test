@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PerfOverworldSpec" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://tools/perf/perf_overworld_spec.gd" id="1_s"]
+[ext_resource type="Resource" path="res://tools/perf/map_perf_overworld.tres" id="2_m"]
+
+[resource]
+script = ExtResource("1_s")
+map_record = ExtResource("2_m")
+perf_case = 1

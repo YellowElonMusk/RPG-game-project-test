@@ -341,3 +341,12 @@ func text_hold(text: String) -> float:
 ## symbol's enemy `sprite_set_id` when it respawns onto a liberated street.
 ## An asset-naming convention, not a GDD tuning knob.
 @export var deflated_sprite_suffix: String = "_deflated"
+## Story 133 (test plan O-08, OW-T01): performance-fixture debug flags, off
+## in every shipped config. `no_contact` skips the swept contact test so a
+## Chasing symbol never starts a battle; `no_giveup` skips the give-up test
+## so Chasing never reverts to Returning (Case A stays valid for the whole
+## measured window); `notice_cache_off` makes every notice test re-run its
+## bounded search instead of reading the per-symbol cache (Case B).
+@export var no_contact: bool = false
+@export var no_giveup: bool = false
+@export var notice_cache_off: bool = false

@@ -575,8 +575,8 @@ func _notice_test(leader: Vector2, grid: WalkGrid, cfg: OverworldConfig, budget:
 	# (symbol centre to its cell centre, target cell centre to the leader)
 	# are recomputed from the exact centres on every use.
 	notice_searches_run += 1
-	if not (_cache_valid and _cache_from == own_cell and _cache_to == leader_cell
-			and _cache_rev == grid.revision()):
+	if cfg.notice_cache_off or not (_cache_valid and _cache_from == own_cell
+			and _cache_to == leader_cell and _cache_rev == grid.revision()):
 		if budget != null and not budget.request(get_instance_id()):
 			return false  # Deferred: "not noticed this frame" (GDD rule 5).
 		queries_granted += 1
@@ -692,7 +692,7 @@ func _step_chasing(dt: float, leader: Vector2, grid: WalkGrid, cfg: OverworldCon
 		_giveup_elapsed = -1.0
 		return
 	_giveup_elapsed = 0.0 if _giveup_elapsed < 0.0 else _giveup_elapsed + dt
-	if _giveup_elapsed >= cfg.giveup_s:
+	if _giveup_elapsed >= cfg.giveup_s and not cfg.no_giveup:
 		_enter_returning()
 
 

@@ -200,6 +200,11 @@ var _entry_commit_pending: bool = false
 ## Set by `setup()` for Title's Continue (a `LoadedSave` payload): `_ready()`
 ## loads `world_state.map_id` at the saved position (ADR-0009 §6).
 var _continuing: bool = false
+## Story 133 (TR-overworld-005): when valid, called once per Exploring frame
+## with the microseconds (`Time.get_ticks_usec()`) the symbol step -- every
+## symbol's step, notice queries and repaths -- took. Set by the perf
+## tooling (`OverworldPerfProbe.attach()`); unset in play.
+var step_timer: Callable = Callable()
 
 
 func _init() -> void:
@@ -419,6 +424,7 @@ func step_frame(ow_dt: float, input_vec: Vector2) -> void:
 	if _budget == null:
 		_budget = QueryBudget.new(config.repath_per_frame_max)
 	_budget.begin_frame()
+	var step_t0: int = Time.get_ticks_usec() if step_timer.is_valid() else 0
 	var symbol_from: Array[Vector2] = []
 	for source: EncounterSource in _sources:
 		symbol_from.append(source.brain.position)
@@ -426,6 +432,8 @@ func step_frame(ow_dt: float, input_vec: Vector2) -> void:
 			var was: SymbolBrain.SubState = source.brain.sub_state
 			source.brain.step(ow_dt, _leader_pos, _grid, grace_active, config, _budget)
 			_cue_brain_change(source, was)
+	if step_timer.is_valid():
+		step_timer.call(Time.get_ticks_usec() - step_t0)
 	_check_contact(leader_from, symbol_from)
 	_mirror_world_state()
 
@@ -666,6 +674,8 @@ func _request_map_change(target: MapEntryPayload) -> void:
 ## to the earlier marker; one `start_encounter` per frame. A contact-pending
 ## symbol whose overlap ended is released.
 func _check_contact(leader_from: Vector2, symbol_from: Array[Vector2]) -> void:
+	if config.no_contact:
+		return  # Story 133 perf fixture: contact disabled.
 	var leader_delta: Vector2 = _leader_pos - leader_from
 	var leader_safe: bool = _grid != null and _grid.is_safe(_grid.cell_of(_leader_pos))
 	var reach: float = 2.0 * config.body_radius
