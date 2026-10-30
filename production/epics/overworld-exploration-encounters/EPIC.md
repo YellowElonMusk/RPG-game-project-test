@@ -182,7 +182,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 116 | [Measure the share of chapter time spent walking against the budget](story-116-paris-walk-share-playtest.md) | Integration | Ready | ADR-0012 |
 | 117 | [Every active clutter marker either responds or blocks a route](story-117-clutter-marker-gag-or-blocker-validation.md) | Logic | Ready | ADR-0012 |
 | 118 | [Each gag response type behaves as specified](story-118-gag-response-behavior.md) | Logic | Complete | ADR-0012 |
-| 119 | [Each faction's first-encounter clue sits on the critical path before the first patrol](story-119-faction-clue-placement-ordering.md) | Logic | Ready | ADR-0012 |
+| 119 | [Each faction's first-encounter clue sits on the critical path before the first patrol](story-119-faction-clue-placement-ordering.md) | Logic | Blocked | ADR-0012 |
 | 120 | [The Paris clue is legible on the Deck and the comprehension check passes](story-120-faction-clue-narrative-signoff-and-comprehension.md) | Config/Data | Ready | ADR-0012 |
 | 121 | [Every narrative guardrail item has a passing sign-off entry](story-121-narrative-guardrail-signoff-checklist.md) | Config/Data | Ready | ADR-0012 |
 | 122 | [Confirm at a clue poster or decree gag shows its LocText verbatim](story-122-clue-and-decree-loctext-display.md) | Logic | Ready | ADR-0012 |

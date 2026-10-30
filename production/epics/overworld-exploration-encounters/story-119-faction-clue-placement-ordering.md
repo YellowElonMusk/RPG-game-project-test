@@ -1,7 +1,7 @@
 # Story 119: Each faction's first-encounter clue sits on the critical path before the first patrol
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Blocked (2026-10-30): the segment's first patrol and clue placement fail the rule; needs a level-design pass
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -87,3 +87,13 @@ checks scope against it.*
 
 - Depends on: `story-074-map-exit-and-critical-path-reference-integrity.md` (AC-30a, critical-path leg validation), `story-082-patrol-legality-at-every-reachable-stage.md` (AC-30h, patrol legality)
 - Unlocks: `production/epics/overworld-exploration-encounters/story-120-faction-clue-narrative-signoff-and-comprehension.md`, `production/epics/overworld-exploration-encounters/story-123-optional-teach-bark-trigger.md`
+
+## Blocked Notes (2026-10-30)
+
+Measured on the shipped segment (the Paris first-encounter map) along `L_crit` from `from_town` to `exit_to_dungeon` (L_crit 19.9 m, 64 path cells):
+
+- First point within any notice radius: **3.4 m** (the west Clerk, patrol (9.5, 5.5)–(14.5, 5.5)). That is inside the entry's 4.5 m safe zone edge.
+- First patrol along the path: **6.2 m**; the rule needs ≥ `safe_radius_m + symbol_chase_m + first_patrol_clearance_m` = 10.5 m.
+- The `faction_clue` poster (8.5, 12.5) is **not within `interact_reach_m` of any critical-path cell**.
+
+Fixing it is a segment level-design pass: move the west Clerk past 10.5 m along the path, and put the clue poster and the `optional_teach` NPC on the path before the first notice point. Do it together with story 086 (first-patrol bypass ratio and the teaching speaker) and story 103 (dungeon density). Then re-prove the bypass and pressure validators, recapture story 087's walk-ins, and update the tests that pin segment coordinates. The validator itself (arc lengths over the `L_crit` cell set, where distance-from-start plus distance-to-end equals `L_crit`) is straightforward and should land with the content.
