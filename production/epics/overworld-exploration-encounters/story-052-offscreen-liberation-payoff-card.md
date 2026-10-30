@@ -1,12 +1,12 @@
 # Story 052: An off-screen Victory plays the off-screen sting and the payoff card together
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -30,7 +30,7 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-21d [L] (R9, R7a)** GIVEN a Victory whose linked marker is outside the footprint, THEN on `transition_finished` the audio spy records the off-screen sting **and** the payoff card shows a "Street cleared" line on the same frame.
+- [x] **AC-21d [L] (R9, R7a)** GIVEN a Victory whose linked marker is outside the footprint, THEN on `transition_finished` the audio spy records the off-screen sting **and** the payoff card shows a "Street cleared" line on the same frame.
 
 ---
 
@@ -54,9 +54,7 @@
 
 ## Files
 
-- `src/overworld/overworld_mode.gd`
-- `src/overworld/world_state.gd`
-- `tests/unit/overworld/overworld_mode_offscreen_liberation_test.gd`
+- `tests/unit/overworld/overworld_mode_offscreen_liberation_test.gd` (new; the only file changed)
 
 ---
 
@@ -72,7 +70,7 @@
 **Required evidence**:
 - `tests/unit/overworld/overworld_mode_offscreen_liberation_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (5/5, 2026-10-30)
 
 ---
 
@@ -80,3 +78,12 @@
 
 - Depends on: `story-043-victory-respawn-policy.md`, `story-050-first-victory-grants-payoff.md`
 - Unlocks: `story-057-new-game-permits-mandatory-timing.md` (AC-23d, the liberation registry integration)
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30
+**Criteria**: 1/1 passing (AC-21d)
+**Deviations**: None in behaviour. The behaviour already held from stories 050/060/126: `_liberate_for` (called from `on_thawed`) liberates and removes an off-screen marker at once, queues its "Street cleared" card line and its sting, and `_show_payoff_card` emits `LIBERATION_OFF_SCREEN` right after raising the card on `transition_finished`. No source changes; this story adds the proving tests. Planned `src/overworld/overworld_mode.gd` and `world_state.gd` were not touched.
+**Test Evidence**: `tests/unit/overworld/overworld_mode_offscreen_liberation_test.gd` (5 tests): off-screen liberation in `on_thawed` (liberated set, cells freed, board hidden); sting recorded with the card already SHOWN with the line (same frame); unlabelled marker still gets a line (never silent); on-screen contrast with default and 2.5x `liberation_duration_s` (shown until reveal, `LIBERATION` cue not the sting, gone within the duration). The fixture uses its own street label because the placeholder segment's own clutter already says "Rue des Tampons".

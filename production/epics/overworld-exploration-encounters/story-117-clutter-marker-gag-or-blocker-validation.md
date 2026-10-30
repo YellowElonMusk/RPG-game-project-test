@@ -1,12 +1,12 @@
 # Story 117: Every active clutter marker either responds or blocks a route
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: — (not yet implemented)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-49 [D] (R16)** For every shipped map at every reachable stage, every active clutter marker is either a `gag` interactable with a response or a route-blocker on the walk grid.
+- [x] **AC-49 [D] (R16)** For every shipped map at every reachable stage, every active clutter marker is either a `gag` interactable with a response or a route-blocker on the walk grid.
 
 ---
 
@@ -61,7 +61,9 @@
 planned ones; `/dev-story` replaces the list with the files it changed; `/story-done`
 checks scope against it.*
 
-- `tools/ci/validate_maps.gd` (clutter marker response-or-blocker check)
+- `src/overworld/clutter_response_check.gd` (new: the AC-49 check)
+- `src/overworld/map_validator.gd` (`validate_catalog()` runs it)
+- `tools/ci/validate_maps.gd` (doc comment only)
 - `tests/unit/overworld/data/clutter_marker_validation_test.gd`
 
 ---
@@ -77,7 +79,7 @@ checks scope against it.*
 **Story Type**: Logic
 **Required evidence**: `tests/unit/overworld/data/clutter_marker_validation_test.gd` — must exist and pass.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (9/9, 2026-10-30); `validate_maps.gd` on shipped data: 0 errors
 
 ---
 
@@ -85,3 +87,14 @@ checks scope against it.*
 
 - Depends on: `story-058-marker-activation-slots-by-stage-and-cap.md` (AC-24, `marker_activation` formula)
 - Unlocks: `production/epics/overworld-exploration-encounters/story-118-gag-response-behavior.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30
+**Criteria**: 1/1 passing (AC-49)
+**Deviations**:
+- The check lives in a new pure static class `ClutterResponseCheck` called from `MapValidator.validate_catalog()` (the pattern of `BeaconJunctions` / `PayoffRules`), not inline in `tools/ci/validate_maps.gd`, which only gained a doc line.
+- Interpretations (no GDD text pins them): a clutter marker is a `GagInteractable` with a `clutter_kind` or a liberation link, excluding decree gags and liberated-set content; `CheckpointMarker`s are out of scope (they have their own interaction). "Has a response" = non-empty `text`, plus a `rumour_id` for `clue`. "Blocker" = a `blocked_rect` covering at least one baked-walkable cell. A Victory's liberation is not assumed (worst case); a set `liberation_flag` or region liberation deactivates.
+**Test Evidence**: `tests/unit/overworld/data/clutter_marker_validation_test.gd` (9 tests): shipped maps clean with the O-04 NOT ASSESSED guard; stages derived from the step list; empty step list assesses nothing; a silent marker named with map/marker/stage; blocker passes; off-grid rect blocks nothing; per-response content; cap and region liberation deactivate.

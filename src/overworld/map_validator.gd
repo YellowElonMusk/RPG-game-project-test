@@ -74,6 +74,9 @@ static func validate_catalog(catalog: ContentCatalogService, cfg: OverworldConfi
 	if steps != null:
 		# Story 110, AC-45f (rule 19): junction coverage and leg-end beacons.
 		errors.append_array(BeaconJunctions.check(steps, records, maps, cfg)["errors"])
+		# Story 117, AC-49 (rule 16): every active clutter marker responds or blocks.
+		errors.append_array(ClutterResponseCheck.check(steps, records, maps,
+				catalog.all_records(&"occupation_stage"), cfg)["errors"])
 	errors.append_array(PayoffRules.check(maps, records, catalog, cfg, PresentationConfig.new()))
 	var density: Array = check_density(maps, records, cfg)
 	errors.append_array(density[0])
