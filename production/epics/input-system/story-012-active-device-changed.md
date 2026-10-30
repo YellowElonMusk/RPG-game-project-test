@@ -1,12 +1,12 @@
 # Story 012: A key-then-pad press, a stick past the deadzone, a mouse click and `pointer_switch_px` of mouse movement each emit exactly one `active_device_changed` of the right kind
 
 > **Epic**: Input System
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/input-system.md`, scoped to this story:*
 
-- [ ] **AC-10** Separate tests, each emitting exactly one `active_device_changed` with the expected kind: key press, then pad button (gamepad); stick past the deadzone (gamepad); mouse click (keyboard_mouse); cumulative mouse movement reaching `pointer_switch_px` (keyboard_mouse).
+- [x] **AC-10** Separate tests, each emitting exactly one `active_device_changed` with the expected kind: key press, then pad button (gamepad); stick past the deadzone (gamepad); mouse click (keyboard_mouse); cumulative mouse movement reaching `pointer_switch_px` (keyboard_mouse).
 
 ---
 
@@ -96,7 +96,7 @@ Edge cases:
 **Required evidence**:
 - Logic: `tests/unit/input/input_active_device_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30)
 
 ---
 
@@ -111,3 +111,11 @@ Edge cases:
   - `production/epics/input-system/story-016-keyboard-and-pad-same-frame.md`
   - `production/epics/input-system/story-017-pointer-distance-reset.md`
   - `production/epics/input-system/story-022-active-pad-lost.md`
+
+## Completion Notes
+
+*2026-10-30, implementation (autonomous run, tag sin2).*
+
+- **Files**: `src/input/input_resolver.gd` (`_note_meaningful()` emits `active_device_changed(kind, pad_style)` once per change, at the causing event and before its action signals; meaningful inputs: key press, any mouse button press, cumulative motion >= `pointer_switch_px`, pad button press, stick (whole-stick `stick_output()` non-zero) or trigger past the deadzone; `active_pad` getter records the first pad.); `tests/unit/input/input_active_device_test.gd`; `tests/unit/input/input_test_support.gd` (Recorder filters)
+- **Tests**: 7 cases, most x DEFAULT/NON_DEFAULT. Input dir 193/193 (single-dir run; full suite run by main session).
+- **Deviations**: `pad_style` is `&"generic"` until story 014. Existing exact-sequence tests now filter `active_device_changed` via the new `Recorder.discrete_since()`.

@@ -1,12 +1,12 @@
 # Story 017: The pointer distance restarts from zero after a switch to gamepad, so switching back needs a full `pointer_switch_px`
 
 > **Epic**: Input System
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/input-system.md`, scoped to this story:*
 
-- [ ] **AC-28** Cumulative pointer movement below `pointer_switch_px`, then a pad press (active device → gamepad), then further mouse movement: the distance counts from zero after the switch, so the switch back to keyboard_mouse needs a full `pointer_switch_px` of new movement.
+- [x] **AC-28** Cumulative pointer movement below `pointer_switch_px`, then a pad press (active device → gamepad), then further mouse movement: the distance counts from zero after the switch, so the switch back to keyboard_mouse needs a full `pointer_switch_px` of new movement.
 
 ---
 
@@ -88,7 +88,7 @@ Edge cases:
 **Required evidence**:
 - Logic: `tests/unit/input/input_active_device_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30)
 
 ---
 
@@ -96,3 +96,11 @@ Edge cases:
 
 - Depends on: `production/epics/input-system/story-012-active-device-changed.md`
 - Unlocks: None
+
+## Completion Notes
+
+*2026-10-30, implementation (autonomous run, tag sin2).*
+
+- **Files**: `src/input/input_resolver.gd` (`_pointer_distance` resets on every non-mouse meaningful input and on every active-device change; separate from any UI counter.); `tests/unit/input/input_active_device_test.gd`; `tests/unit/input/input_test_support.gd` (Recorder filters)
+- **Tests**: 1 case x DEFAULT/NON_DEFAULT (px-1, pad press, px-1 silent, +1 switches). Input dir 193/193 (single-dir run; full suite run by main session).
+- **Deviations**: None.

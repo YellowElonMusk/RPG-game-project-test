@@ -1,12 +1,12 @@
 # Story 009: With no consumer attached, left click, right click and the wheel emit raw `pointer_confirm`, `pointer_cancel` and opposite-sign wheel steps
 
 > **Epic**: Input System
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/input-system.md`, scoped to this story:*
 
-- [ ] **AC-20** With no consumer attached, a left click emits `pointer_confirm` with its position, a right click emits `pointer_cancel`, and wheel up and wheel down emit steps of opposite sign.
+- [x] **AC-20** With no consumer attached, a left click emits `pointer_confirm` with its position, a right click emits `pointer_cancel`, and wheel up and wheel down emit steps of opposite sign.
 
 ---
 
@@ -113,7 +113,7 @@ Edge cases:
 **Required evidence**:
 - Logic: `tests/unit/input/input_pointer_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30)
 
 ---
 
@@ -121,3 +121,11 @@ Edge cases:
 
 - Depends on: `production/epics/input-system/story-001-default-bindings-press-release.md`
 - Unlocks: `production/epics/input-system/story-010-no-pointer-move.md`
+
+## Completion Notes
+
+*2026-10-30, implementation (autonomous run, tag sin2).*
+
+- **Files**: `src/input/input_resolver.gd` (`_feed_mouse_button()`: left/right press emit `pointer_confirm`/`pointer_cancel` with `event.position`, wheel up/down press emit `wheel_step(+1/-1)`; releases, middle, X1/X2, wheel left/right silent; `pointer_position` getter updated by motion and buttons.); `tests/unit/input/input_pointer_test.gd`; `tests/unit/input/input_test_support.gd` (Recorder filters)
+- **Tests**: 7 cases (left, right, wheel pair, wheel factor ignored, other buttons silent, click never emits confirm, position from motion). Input dir 193/193 (single-dir run; full suite run by main session).
+- **Deviations**: None.

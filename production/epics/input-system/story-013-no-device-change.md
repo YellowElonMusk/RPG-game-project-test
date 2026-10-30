@@ -1,12 +1,12 @@
 # Story 013: No `active_device_changed` fires for stick drift inside the deadzone, mouse movement under `pointer_switch_px`, or a second input of the active kind
 
 > **Epic**: Input System
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/input-system.md`, scoped to this story:*
 
-- [ ] **AC-11** No `active_device_changed` fires for: stick movement inside the deadzone; cumulative mouse movement below `pointer_switch_px`; a second input from the already-active kind.
+- [x] **AC-11** No `active_device_changed` fires for: stick movement inside the deadzone; cumulative mouse movement below `pointer_switch_px`; a second input from the already-active kind.
 
 ---
 
@@ -102,7 +102,7 @@ Edge cases: none
 **Required evidence**:
 - Logic: `tests/unit/input/input_active_device_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30)
 
 ---
 
@@ -110,3 +110,11 @@ Edge cases: none
 
 - Depends on: `production/epics/input-system/story-012-active-device-changed.md`
 - Unlocks: `production/epics/input-system/story-015-first-pad-sets-style.md`
+
+## Completion Notes
+
+*2026-10-30, implementation (autonomous run, tag sin2).*
+
+- **Files**: `src/input/input_resolver.gd` (Covered by story 012 logic (axis drift uses the whole-stick rescale; pointer counter accumulates).); `tests/unit/input/input_active_device_test.gd`; `tests/unit/input/input_test_support.gd` (Recorder filters)
+- **Tests**: 3 cases (stick + diagonal drift, motion px-1 from gamepad, second input of each kind), DEFAULT/NON_DEFAULT where config applies. Input dir 193/193 (single-dir run; full suite run by main session).
+- **Deviations**: None.

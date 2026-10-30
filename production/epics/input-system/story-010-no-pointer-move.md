@@ -1,12 +1,12 @@
 # Story 010: No pointer event ever produces a `move` action
 
 > **Epic**: Input System
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/input-system.md`, scoped to this story:*
 
-- [ ] **AC-21** No pointer event ever produces a `move` action (no click-to-move).
+- [x] **AC-21** No pointer event ever produces a `move` action (no click-to-move).
 
 ---
 
@@ -88,7 +88,7 @@ Edge cases:
 **Required evidence**:
 - Logic: `tests/unit/input/input_pointer_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30)
 
 ---
 
@@ -98,3 +98,11 @@ Edge cases:
   - `production/epics/input-system/story-009-raw-pointer-events.md`
   - `production/epics/input-system/story-018-menu-repeat-timing.md` (the QA edge case compares the `nav_right` count with story 018's schedule)
 - Unlocks: None
+
+## Completion Notes
+
+*2026-10-30, implementation (autonomous run, tag sin2).*
+
+- **Files**: `src/input/input_resolver.gd` (No new code needed: mouse events never reach the binding table or the menu-direction derivation, so AC-21 already held; tests added to prove it.); `tests/unit/input/input_pointer_test.gd`; `tests/unit/input/input_test_support.gd` (Recorder filters)
+- **Tests**: 2 parametrized cases x DEFAULT/NON_DEFAULT: every mouse event kind leaves the vector at ZERO and emits no action; with move_right held the vector stays (1, 0) and the nav_right count equals the story-018 step count. Input dir 193/193 (single-dir run; full suite run by main session).
+- **Deviations**: The nav_right count relies on the menu-repeat stream added for story 020 (story 018 itself is not closed).

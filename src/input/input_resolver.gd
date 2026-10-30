@@ -28,6 +28,18 @@
 ## full disconnect semantics (the active pad, release-before-`device_lost()`)
 ## remain later stories' concern.
 ##
+## Stories 009-010 add the raw pointer signals (`pointer_confirm`,
+## `pointer_cancel`, `wheel_step`, `pointer_position`) from fixed code
+## outside the binding table; a pointer never drives `move` or `nav_*`.
+## Stories 011-013 and 017 add active-device tracking (`active_device`,
+## `active_device_changed`, the device-switch pointer counter, the first
+## active pad); story 016 pins that the later of two same-frame events sets
+## the kind. Story 020 adds the menu-direction derivation (the stick counts
+## past `menu_stick_threshold`, after the rescale) and the `nav_*` step
+## stream: step 0 on the press inside `feed_event()`, later steps in `tick()`
+## per the GDD `step_time` formula, single stream where the newest direction
+## is the held one (story 018/019 readings).
+##
 ## Usage example:
 ## [codeblock]
 ## var resolver := InputResolver.new(bindings, InputConfig.new())
@@ -72,6 +84,15 @@ const PAD_AXIS_TOKENS: Dictionary = {
 # Float32 round-trip guard for stick_output()'s deadzone edge: engine
 # precision glue, not tuning (axis_value is a 32-bit float, ~1e-8 error).
 const _STICK_PRECISION_EPS: float = 1e-6
+
+# Menu-repeat due-time comparison tolerance, in seconds (story 018, pinned:
+# fire step k when `elapsed + 1e-9 >= step_time(k)`). Precision glue, not
+# tuning.
+const _NAV_TIME_EPS: float = 1e-9
+
+# The pad style broadcast until a pad's joy name is matched (GDD Edge Cases:
+# an unrecognized pad is `generic`). Story 014 sets real styles.
+const _DEFAULT_PAD_STYLE: StringName = &"generic"
 
 # ActionSource contract (ADR-0002) -- names unchanged.
 signal action_pressed(action: StringName)
@@ -128,6 +149,55 @@ var _axis_raw: Dictionary = {}
 # _config.deadzone, after which it counts again.
 var _axis_recentre_latch: Dictionary = {}
 
+# Every gamepad axis's latest raw value, bound or not ("device:axis" ->
+# float), so a trigger or unbound stick past the deadzone still counts as
+# meaningful input for the active device (GDD rule 4; story 012).
+var _device_axis_raw: Dictionary = {}
+
+# The active device kind (GDD States and Transitions: starts keyboard_mouse).
+var _active_device: DeviceKind = DeviceKind.KEYBOARD_MOUSE
+# The style broadcast with active_device_changed (story 014 sets it).
+var _pad_style: StringName = _DEFAULT_PAD_STYLE
+# Device ID of the first pad to send meaningful input, or -1 (story 012;
+# used by stories 015 and 022).
+var _active_pad: int = -1
+# The device-switch pointer counter: summed |relative| of mouse motion since
+# the last non-mouse meaningful input or active-device change (story 017).
+# Not the UI's hover-focus counter (ADR-0008 §6), which shares no state.
+var _pointer_distance: float = 0.0
+# Latest pointer position from any mouse motion or button event (story 009).
+var _pointer_position: Vector2 = Vector2.ZERO
+
+# Menu-repeat stream (story 020, with story 018/019 readings): the current
+# held menu direction (ZERO = none), seconds since its press, and the index
+# of the next due step. `_nav_active` is the set of menu directions active
+# after the previous update, so a direction counts as pressed only when it
+# newly appears.
+var _nav_dir: Vector2i = Vector2i.ZERO
+var _nav_elapsed: float = 0.0
+var _nav_next_k: int = 0
+var _nav_active: Array[Vector2i] = []
+
+
+## The active device kind (GDD rule 4, ADR-0003 §8). Starts `KEYBOARD_MOUSE`.
+var active_device: DeviceKind:
+	get:
+		return _active_device
+
+
+## Device ID of the first pad that sent meaningful input, or -1 if none has
+## (story 012; stories 015 and 022 consume it).
+var active_pad: int:
+	get:
+		return _active_pad
+
+
+## The latest pointer position, from every `InputEventMouseMotion` and
+## `InputEventMouseButton` (story 009, ADR-0008 §6 polls it).
+var pointer_position: Vector2:
+	get:
+		return _pointer_position
+
 
 func _init(bindings: InputBindings, config: InputConfig) -> void:
 	_config = config
@@ -136,32 +206,65 @@ func _init(bindings: InputBindings, config: InputConfig) -> void:
 
 ## Feeds one engine `InputEvent` into the resolver. Only `InputEventKey`,
 ## `InputEventJoypadButton` and `InputEventJoypadMotion` are matched against
-## the binding table; every other event type (including `InputEventAction`,
-## per ADR-0003 §5) is ignored with no error. Key echo events are ignored
-## (story 025/ADR-0003 §8: a still-held key needs a fresh non-echo press).
-## While the window is unfocused, every gamepad event is dropped (ADR-0003
-## §9); keyboard events are still processed normally.
+## the binding table. Mouse events drive only the raw pointer signals and the
+## active device, never `move` or `nav_*` (stories 009-010). Every other
+## event type (including `InputEventAction`, per ADR-0003 §5) is ignored with
+## no error. Key echo events are ignored (story 025/ADR-0003 §8: a
+## still-held key needs a fresh non-echo press). While the window is
+## unfocused, every gamepad event is dropped (ADR-0003 §9); keyboard events
+## are still processed normally. The device kind is classified by event type,
+## never by `event.device == 0` (story 011). An `active_device_changed`
+## caused by an event fires before that event's action signals.
 func feed_event(event: InputEvent) -> void:
 	if event is InputEventKey:
-		_feed_key(event as InputEventKey)
+		var key_event := event as InputEventKey
+		if key_event.pressed and not key_event.echo:
+			_note_meaningful(DeviceKind.KEYBOARD_MOUSE, -1, false)
+		_feed_key(key_event)
+		_update_nav()
 	elif event is InputEventJoypadButton:
 		if _window_focused:
-			_feed_pad_button(event as InputEventJoypadButton)
+			var button_event := event as InputEventJoypadButton
+			if button_event.pressed:
+				_note_meaningful(DeviceKind.GAMEPAD, button_event.device, false)
+			_feed_pad_button(button_event)
+			_update_nav()
 	elif event is InputEventJoypadMotion:
 		if _window_focused:
 			_feed_pad_axis(event as InputEventJoypadMotion)
+			_update_nav()
+	elif event is InputEventMouseButton:
+		_feed_mouse_button(event as InputEventMouseButton)
+	elif event is InputEventMouseMotion:
+		_feed_mouse_motion(event as InputEventMouseMotion)
 
 
 ## Advances the resolver's own clock by `delta` seconds. Emits
 ## `action_held(action)` exactly once per discrete action currently held, by
 ## however many sources (story 002/008, ADR-0003 §8). `held` never comes from
 ## device events, so a tap pressed and released between two ticks emits no
-## `held`. Menu-repeat steps are story 018's concern.
-func tick(_delta: float) -> void:
+## `held`. Then advances the menu-repeat stream: every `nav_*` step whose
+## `step_time(k)` is now due fires, in k order, each as its own
+## `action_pressed` (story 018 catch-up, never merged).
+func tick(delta: float) -> void:
 	for action: StringName in _discrete_held.keys():
 		var holders: Dictionary = _discrete_held[action]
 		if not holders.is_empty():
 			action_held.emit(action)
+	if _nav_dir == Vector2i.ZERO:
+		return
+	_nav_elapsed += delta
+	while _nav_elapsed + _NAV_TIME_EPS >= step_time(_nav_next_k, _config):
+		_emit_nav_step(_nav_dir)
+		_nav_next_k += 1
+
+
+## The menu-repeat due time of step `k` (GDD Formulas, `step_time`): 0 for
+## k = 0, else `repeat_delay + (k - 1) * repeat_interval`.
+static func step_time(k: int, config: InputConfig) -> float:
+	if k <= 0:
+		return 0.0
+	return config.repeat_delay + float(k - 1) * config.repeat_interval
 
 
 ## Sets whether the game window has focus (ADR-0003 §8/§9; AC-17). Losing
@@ -175,10 +278,13 @@ func set_window_focused(focused: bool) -> void:
 		return
 	_window_focused = focused
 	if focused:
+		# Still-held move keys need a fresh press before stepping again.
+		_nav_active = _menu_directions()
 		focus_gained.emit()
 	else:
 		_release_all_held_actions()
 		_latch_active_axes()
+		_update_nav()
 		focus_lost.emit()
 
 
@@ -339,6 +445,9 @@ func _feed_pad_axis(event: InputEventJoypadMotion) -> void:
 		if absf(event.axis_value) <= _config.deadzone:
 			_axis_recentre_latch.erase(axis_key)
 		return
+	_device_axis_raw[axis_key] = event.axis_value
+	if _axis_is_meaningful(event.device, event.axis):
+		_note_meaningful(DeviceKind.GAMEPAD, event.device, false)
 	if not _pad_axis_actions.has(event.axis):
 		return
 	if event.axis_value == 0.0:
@@ -455,3 +564,142 @@ func _latch_active_axes() -> void:
 	for axis_key: String in _axis_raw.keys():
 		_axis_recentre_latch[axis_key] = true
 	_axis_raw.clear()
+
+
+# Raw pointer buttons (story 009, ADR-0003 §5/§8): fixed code, never the
+# binding table. Left/right fire on the press edge only with the event
+# position; each wheel up/down press is one step (+1/-1, `factor` ignored);
+# releases, middle, X1/X2 and wheel left/right emit no pointer signal. Any
+# button press is a mouse click for the active device (GDD rule 4).
+func _feed_mouse_button(event: InputEventMouseButton) -> void:
+	_pointer_position = event.position
+	if not event.pressed:
+		return
+	_note_meaningful(DeviceKind.KEYBOARD_MOUSE, -1, true)
+	match event.button_index:
+		MOUSE_BUTTON_LEFT:
+			pointer_confirm.emit(event.position)
+		MOUSE_BUTTON_RIGHT:
+			pointer_cancel.emit(event.position)
+		MOUSE_BUTTON_WHEEL_UP:
+			wheel_step.emit(1)
+		MOUSE_BUTTON_WHEEL_DOWN:
+			wheel_step.emit(-1)
+		_:
+			pass
+
+
+# Accumulates the device-switch pointer counter (stories 012, 017); reaching
+# `pointer_switch_px` is meaningful keyboard_mouse input.
+func _feed_mouse_motion(event: InputEventMouseMotion) -> void:
+	_pointer_position = event.position
+	_pointer_distance += event.relative.length()
+	if _pointer_distance >= float(_config.pointer_switch_px):
+		_note_meaningful(DeviceKind.KEYBOARD_MOUSE, -1, true)
+
+
+# Records one meaningful input of `kind` (GDD rule 4). Non-mouse input resets
+# the pointer counter; a change of kind resets it too and emits
+# `active_device_changed` once, at this event (stories 012, 017). The first
+# pad to send meaningful input becomes the active pad.
+func _note_meaningful(kind: DeviceKind, pad_device: int, from_mouse: bool) -> void:
+	if not from_mouse:
+		_pointer_distance = 0.0
+	if kind == DeviceKind.GAMEPAD and _active_pad == -1:
+		_active_pad = pad_device
+	if kind == _active_device:
+		return
+	_active_device = kind
+	_pointer_distance = 0.0
+	active_device_changed.emit(kind, _pad_style)
+
+
+# Whether `axis` on `device` is past its deadzone (stories 012, 013): a stick
+# axis counts when its whole stick vector (x and y of the same stick) gives a
+# non-zero `stick_output()`, so diagonal drift inside the deadzone never
+# counts; a trigger counts when its value exceeds the deadzone.
+func _axis_is_meaningful(device: int, axis: int) -> bool:
+	var x_axis: int = -1
+	var y_axis: int = -1
+	if axis == JOY_AXIS_LEFT_X or axis == JOY_AXIS_LEFT_Y:
+		x_axis = JOY_AXIS_LEFT_X
+		y_axis = JOY_AXIS_LEFT_Y
+	elif axis == JOY_AXIS_RIGHT_X or axis == JOY_AXIS_RIGHT_Y:
+		x_axis = JOY_AXIS_RIGHT_X
+		y_axis = JOY_AXIS_RIGHT_Y
+	else:
+		var trigger: float = _device_axis_raw.get("%d:%d" % [device, axis], 0.0)
+		return trigger > _config.deadzone + _STICK_PRECISION_EPS
+	var raw := Vector2(
+			_device_axis_raw.get("%d:%d" % [device, x_axis], 0.0),
+			_device_axis_raw.get("%d:%d" % [device, y_axis], 0.0))
+	return stick_output(raw, _config.deadzone) != Vector2.ZERO
+
+
+# The menu directions currently held (stories 018, 020): per axis, the
+# arbitrated winner of the digital and analog terms (story 006, before the
+# diagonal normalization). A digital winner counts whenever non-zero; an
+# analog winner counts only when its rescaled component is past
+# `menu_stick_threshold` (per axis, never the vector length; GDD Tuning
+# Knobs). Empty while unfocused.
+func _menu_directions() -> Array[Vector2i]:
+	var dirs: Array[Vector2i] = []
+	if not _window_focused:
+		return dirs
+	var digital := Vector2(
+			_digital_level(InputActions.MOVE_RIGHT) - _digital_level(InputActions.MOVE_LEFT),
+			_digital_level(InputActions.MOVE_DOWN) - _digital_level(InputActions.MOVE_UP))
+	var analog: Vector2 = _analog_vector()
+	for axis: int in [0, 1]:
+		var dig: float = digital[axis]
+		var ana: float = analog[axis]
+		var value: float = dig
+		if absf(ana) > absf(dig):
+			value = ana if absf(ana) > _config.menu_stick_threshold else 0.0
+		if value != 0.0:
+			var dir := Vector2i.ZERO
+			dir[axis] = 1 if value > 0.0 else -1
+			dirs.append(dir)
+	return dirs
+
+
+# Re-derives the menu directions after an input changed them. A newly
+# appearing direction is a press: it becomes the stream's direction and
+# fires step 0 now. If the stream's direction disappears while another one
+# remains, the remaining one restarts the stream (GDD Edge Cases: "a single
+# direction remains"); with none left, repeat stops. `nav_*` never enter
+# the held set, so nothing is ever released for them.
+func _update_nav() -> void:
+	var dirs: Array[Vector2i] = _menu_directions()
+	var appeared: Array[Vector2i] = []
+	for dir: Vector2i in dirs:
+		if not _nav_active.has(dir):
+			appeared.append(dir)
+	_nav_active = dirs
+	if not appeared.is_empty():
+		_start_nav(appeared.back())
+	elif _nav_dir != Vector2i.ZERO and not dirs.has(_nav_dir):
+		if dirs.is_empty():
+			_nav_dir = Vector2i.ZERO
+		else:
+			_start_nav(dirs.back())
+
+
+# Starts the step stream on `dir`, firing step k = 0 immediately.
+func _start_nav(dir: Vector2i) -> void:
+	_nav_dir = dir
+	_nav_elapsed = 0.0
+	_nav_next_k = 1
+	_emit_nav_step(dir)
+
+
+# Emits one menu step as `action_pressed(nav_*)` (never held or released).
+func _emit_nav_step(dir: Vector2i) -> void:
+	if dir == Vector2i.UP:
+		action_pressed.emit(InputActions.NAV_UP)
+	elif dir == Vector2i.DOWN:
+		action_pressed.emit(InputActions.NAV_DOWN)
+	elif dir == Vector2i.LEFT:
+		action_pressed.emit(InputActions.NAV_LEFT)
+	elif dir == Vector2i.RIGHT:
+		action_pressed.emit(InputActions.NAV_RIGHT)

@@ -28,7 +28,7 @@ func test_same_frame_confirm_then_cancel_emitted_in_order() -> void:
 	var rec: InputTestSupport.Recorder = made[1]
 	resolver.feed_event(_ev("confirm:key:Enter", true))
 	resolver.feed_event(_ev("cancel:key:Escape", true))
-	assert_array(rec.since(0)).is_equal([
+	assert_array(rec.discrete_since(0)).is_equal([
 		[&"action_pressed", [InputActions.CONFIRM]], [&"action_pressed", [InputActions.CANCEL]]])
 
 
@@ -38,7 +38,7 @@ func test_same_frame_cancel_then_confirm_emitted_in_order() -> void:
 	var rec: InputTestSupport.Recorder = made[1]
 	resolver.feed_event(_ev("cancel:pad:east", true))
 	resolver.feed_event(_ev("confirm:pad:south", true))
-	assert_array(rec.since(0)).is_equal([
+	assert_array(rec.discrete_since(0)).is_equal([
 		[&"action_pressed", [InputActions.CANCEL]], [&"action_pressed", [InputActions.CONFIRM]]])
 
 
@@ -63,7 +63,7 @@ func _assert_two_source_hold(first: InputEvent, second: InputEvent,
 	resolver.feed_event(first)
 	resolver.feed_event(second)
 	resolver.tick(InputTestSupport.DT)
-	assert_array(rec.since(0)).is_equal([
+	assert_array(rec.discrete_since(0)).is_equal([
 		[&"action_pressed", [InputActions.CONFIRM]],
 		[&"action_pressed", [InputActions.CONFIRM]],
 		[&"action_held", [InputActions.CONFIRM]]])
@@ -105,3 +105,38 @@ func test_release_of_unheld_source_emits_nothing() -> void:
 	var mark: int = rec.mark()
 	resolver.feed_event(_ev("confirm:pad:south", false))
 	assert_array(rec.since(mark)).is_empty()
+
+
+# Story 016, AC-27: keyboard and pad pressing the same action in one frame
+# (no tick() between) emit two `pressed`, and the active device is the kind
+# of the later event. Release semantics stay AC-19's (story 008).
+func _assert_same_frame_kind(first: InputEvent, second: InputEvent,
+		first_up: InputEvent, second_up: InputEvent,
+		expected_kind: InputResolver.DeviceKind) -> void:
+	var made: Array = _make()
+	var resolver: InputResolver = made[0]
+	var rec: InputTestSupport.Recorder = made[1]
+	resolver.feed_event(first)
+	resolver.feed_event(second)
+	assert_array(rec.discrete_since(0)).is_equal([
+		[&"action_pressed", [InputActions.CONFIRM]], [&"action_pressed", [InputActions.CONFIRM]]])
+	assert_int(resolver.active_device).is_equal(expected_kind)
+	var mark: int = rec.mark()
+	resolver.feed_event(first_up)
+	assert_array(rec.discrete_since(mark)).is_empty()
+	resolver.feed_event(second_up)
+	assert_array(rec.discrete_since(mark)).is_equal([[&"action_released", [InputActions.CONFIRM]]])
+
+
+func test_key_then_pad_same_frame_two_pressed_and_gamepad_active() -> void:
+	_assert_same_frame_kind(
+			_ev("confirm:key:Enter", true), _ev("confirm:pad:south", true),
+			_ev("confirm:key:Enter", false), _ev("confirm:pad:south", false),
+			InputResolver.DeviceKind.GAMEPAD)
+
+
+func test_pad_then_key_same_frame_two_pressed_and_keyboard_active() -> void:
+	_assert_same_frame_kind(
+			_ev("confirm:pad:south", true), _ev("confirm:key:Enter", true),
+			_ev("confirm:pad:south", false), _ev("confirm:key:Enter", false),
+			InputResolver.DeviceKind.KEYBOARD_MOUSE)

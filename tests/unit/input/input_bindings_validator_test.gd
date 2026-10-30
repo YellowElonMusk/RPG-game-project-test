@@ -172,7 +172,7 @@ func test_fallback_bindings_compile_and_emit_confirm_and_cancel() -> void:
 	resolver.feed_event(InputTestSupport.key(KEY_ESCAPE, false))
 	resolver.feed_event(InputTestSupport.key(KEY_RIGHT, true))
 
-	assert_array(rec.entries).override_failure_message("%s" % [rec.entries]).is_equal([
+	assert_array(rec.discrete_since(0)).override_failure_message("%s" % [rec.entries]).is_equal([
 			[&"action_pressed", [InputActions.CONFIRM]],
 			[&"action_released", [InputActions.CONFIRM]],
 			[&"action_pressed", [InputActions.CANCEL]],
@@ -194,7 +194,7 @@ func test_fallback_bindings_compile_pad_south_and_east() -> void:
 	resolver.feed_event(InputTestSupport.pad_button(0, JOY_BUTTON_B, true))
 	resolver.feed_event(InputTestSupport.pad_button(0, JOY_BUTTON_B, false))
 
-	assert_array(rec.entries).override_failure_message("%s" % [rec.entries]).is_equal([
+	assert_array(rec.discrete_since(0)).override_failure_message("%s" % [rec.entries]).is_equal([
 			[&"action_pressed", [InputActions.CONFIRM]],
 			[&"action_released", [InputActions.CONFIRM]],
 			[&"action_pressed", [InputActions.CANCEL]],

@@ -53,7 +53,7 @@ func test_hold_key_emits_one_pressed_held_per_tick_one_released(
 	var expected: Array = [[&"action_pressed", [action]]]
 	expected.append_array(_held_entries(action, _HOLD_TICKS))
 	expected.append([&"action_released", [action]])
-	assert_array(rec.since(0)).is_equal(expected)
+	assert_array(rec.discrete_since(0)).is_equal(expected)
 
 
 ## A tap pressed and released inside one tick: one pressed, one released, zero held.
@@ -69,7 +69,7 @@ func test_one_tick_tap_emits_pressed_released_and_no_held(
 	resolver.feed_event(InputTestSupport.key(code, false))
 	resolver.tick(InputTestSupport.DT)
 
-	assert_array(rec.since(0)).is_equal([
+	assert_array(rec.discrete_since(0)).is_equal([
 		[&"action_pressed", [action]], [&"action_released", [action]]])
 
 
@@ -92,7 +92,7 @@ func test_key_repeat_echoes_emit_no_second_pressed(
 	var expected: Array = [[&"action_pressed", [action]]]
 	expected.append_array(_held_entries(action, _ECHO_COUNT))
 	expected.append([&"action_released", [action]])
-	assert_array(rec.since(0)).is_equal(expected)
+	assert_array(rec.discrete_since(0)).is_equal(expected)
 
 
 ## Second guard: a non-echo press of a key already held is a no-op.
@@ -108,7 +108,7 @@ func test_repeated_non_echo_press_of_held_key_is_noop(
 	resolver.feed_event(InputTestSupport.key(code, true))
 	resolver.feed_event(InputTestSupport.key(code, false))
 
-	assert_array(rec.since(0)).is_equal([
+	assert_array(rec.discrete_since(0)).is_equal([
 		[&"action_pressed", [action]], [&"action_released", [action]]])
 
 
@@ -124,7 +124,7 @@ func test_repeated_pad_button_press_is_noop() -> void:
 	resolver.tick(InputTestSupport.DT)
 	resolver.feed_event(InputTestSupport.pad_button(0, button, false))
 
-	assert_array(rec.since(0)).is_equal([
+	assert_array(rec.discrete_since(0)).is_equal([
 		[&"action_pressed", [InputActions.FAST_FORWARD]],
 		[&"action_held", [InputActions.FAST_FORWARD]],
 		[&"action_released", [InputActions.FAST_FORWARD]]])
@@ -138,4 +138,4 @@ func test_tick_with_nothing_held_emits_nothing() -> void:
 
 	resolver.tick(InputTestSupport.DT)
 
-	assert_array(rec.since(0)).is_empty()
+	assert_array(rec.discrete_since(0)).is_empty()

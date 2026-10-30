@@ -1,12 +1,12 @@
 # Story 020: A stick just under `menu_stick_threshold` after the deadzone rescale gives no menu step, and just over it gives one
 
 > **Epic**: Input System
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/input-system.md`, scoped to this story:*
 
-- [ ] **AC-9** A stick at `menu_stick_threshold − 1e-6` (after the deadzone rescale) along an axis produces no menu step; at `menu_stick_threshold + 1e-6` it produces one.
+- [x] **AC-9** A stick at `menu_stick_threshold − 1e-6` (after the deadzone rescale) along an axis produces no menu step; at `menu_stick_threshold + 1e-6` it produces one.
 
 ---
 
@@ -91,7 +91,7 @@ Edge cases:
 **Required evidence**:
 - Logic: `tests/unit/input/input_menu_repeat_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30)
 
 ---
 
@@ -101,3 +101,11 @@ Edge cases:
   - `production/epics/input-system/story-005-radial-deadzone.md`
   - `production/epics/input-system/story-018-menu-repeat-timing.md`
 - Unlocks: None
+
+## Completion Notes
+
+*2026-10-30, implementation (autonomous run, tag sin2).*
+
+- **Files**: `src/input/input_resolver.gd` (`_menu_directions()` (per-axis arbitrated winner; analog counts only past `menu_stick_threshold` on the rescaled component), `_update_nav()` single-stream nav steps (step 0 in `feed_event()`), `tick()` repeat via static `step_time(k, config)`.); `tests/unit/input/input_menu_repeat_test.gd`; `tests/unit/input/input_test_support.gd` (Recorder filters)
+- **Tests**: 6 cases x DEFAULT/NON_DEFAULT (threshold -1e-6 none, +1e-6 one immediate, crossing from below, left_y negative -> nav_up, drop under stops repeat, per-axis not length). Input dir 193/193 (single-dir run; full suite run by main session).
+- **Deviations**: Implements the menu-repeat engine of stories 018/019 (recommended single-stream reading) as a prerequisite; those stories still need their own ACs tested. Story-001 move test now allows nav_* (story 018: steps always emitted).

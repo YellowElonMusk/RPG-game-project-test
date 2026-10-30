@@ -55,6 +55,35 @@ class Recorder:
 	func since(mark_index: int) -> Array:
 		return entries.slice(mark_index)
 
+	## Like `since()`, minus every `active_device_changed` (stories 011-013)
+	## and every `action_pressed(nav_*)` menu step (stories 018-020), so a
+	## test about discrete-action edges asserts only those edges.
+	func discrete_since(mark_index: int) -> Array:
+		var out: Array = []
+		for entry: Array in entries.slice(mark_index):
+			if entry[0] == &"active_device_changed":
+				continue
+			if entry[0] == &"action_pressed" and InputTestSupport.NAV.has(entry[1][0]):
+				continue
+			out.append(entry)
+		return out
+
+	## The `action_pressed(nav_*)` steps recorded after `mark_index`, in order.
+	func nav_since(mark_index: int) -> Array[StringName]:
+		var out: Array[StringName] = []
+		for entry: Array in entries.slice(mark_index):
+			if entry[0] == &"action_pressed" and InputTestSupport.NAV.has(entry[1][0]):
+				out.append(entry[1][0])
+		return out
+
+	## The `active_device_changed` kinds recorded after `mark_index`, in order.
+	func device_changes_since(mark_index: int) -> Array:
+		var out: Array = []
+		for entry: Array in entries.slice(mark_index):
+			if entry[0] == &"active_device_changed":
+				out.append(entry[1][0])
+		return out
+
 	func _on_action_pressed(action: StringName) -> void:
 		entries.append([&"action_pressed", [action]])
 
@@ -90,6 +119,12 @@ class Recorder:
 
 	func _on_binding_override_discarded(reason: String) -> void:
 		entries.append([&"binding_override_discarded", [reason]])
+
+
+## The four derived menu-step actions (story 018).
+const NAV: Array[StringName] = [
+	InputActions.NAV_UP, InputActions.NAV_DOWN, InputActions.NAV_LEFT, InputActions.NAV_RIGHT,
+]
 
 
 ## A synthetic keyboard event. `physical_keycode` is always set (and

@@ -1,12 +1,12 @@
 # Story 016: The same action pressed on keyboard and pad in one frame emits two `pressed`, and the active device is the later event's kind
 
 > **Epic**: Input System
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/input-system.md`, scoped to this story:*
 
-- [ ] **AC-27** Pressing the same action on the keyboard and on a pad in one frame emits two `pressed`, and the active device is the kind of the later event.
+- [x] **AC-27** Pressing the same action on the keyboard and on a pad in one frame emits two `pressed`, and the active device is the kind of the later event.
 
 ---
 
@@ -85,7 +85,7 @@ Edge cases:
 **Required evidence**:
 - Logic: `tests/unit/input/input_concurrency_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30)
 
 ---
 
@@ -95,3 +95,11 @@ Edge cases:
   - `production/epics/input-system/story-008-two-device-hold-release.md`
   - `production/epics/input-system/story-012-active-device-changed.md`
 - Unlocks: None
+
+## Completion Notes
+
+*2026-10-30, implementation (autonomous run, tag sin2).*
+
+- **Files**: `src/input/input_resolver.gd` (No extra code: per-source pressed (story 008) plus per-event device classification (story 012) already give AC-27.); `tests/unit/input/input_concurrency_test.gd`; `tests/unit/input/input_test_support.gd` (Recorder filters)
+- **Tests**: 2 cases (Enter then south -> GAMEPAD, south then Enter -> KEYBOARD_MOUSE), each also asserting AC-19 release semantics. Input dir 193/193 (single-dir run; full suite run by main session).
+- **Deviations**: None.

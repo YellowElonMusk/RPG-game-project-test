@@ -109,7 +109,7 @@ func _assert_discrete_edge(triple_key: String, action: StringName,
 	resolver.feed_event(build_press.call())
 	resolver.feed_event(build_release.call())
 
-	assert_array(rec.entries).override_failure_message(
+	assert_array(rec.discrete_since(0)).override_failure_message(
 			"%s: %s" % [triple_key, rec.entries]).is_equal([
 			[&"action_pressed", [action]],
 			[&"action_released", [action]],
@@ -155,7 +155,9 @@ func _assert_move_binding(triple_key: String, config: InputConfig) -> void:
 			"%s after release" % triple_key).is_equal_approx(
 			Vector2.ZERO, Vector2(InputTestSupport.EPS_V, InputTestSupport.EPS_V))
 
-	for entry: Array in rec.entries:
+	# A move_* triple may emit nav_* menu steps (story 018) and an
+	# active-device change (story 012), but never a move_* edge.
+	for entry: Array in rec.discrete_since(0):
 		assert_str(String(entry[0])).override_failure_message(
 				"%s produced a discrete signal: %s" % [triple_key, entry]).is_not_equal("action_pressed")
 		assert_str(String(entry[0])).override_failure_message(

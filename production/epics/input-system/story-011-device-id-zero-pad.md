@@ -1,12 +1,12 @@
 # Story 011: A gamepad reporting device ID 0 makes the active device `gamepad`, and a key press makes it `keyboard_mouse` through the keyboard device-ID constant
 
 > **Epic**: Input System
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/input-system.md`, scoped to this story:*
 
-- [ ] **AC-13** A gamepad reporting device ID 0 makes the active device `gamepad`. A key press makes it `keyboard_mouse`, identified by the keyboard device-ID constant.
+- [x] **AC-13** A gamepad reporting device ID 0 makes the active device `gamepad`. A key press makes it `keyboard_mouse`, identified by the keyboard device-ID constant.
 
 ---
 
@@ -91,7 +91,7 @@ Edge cases:
 **Required evidence**:
 - Logic: `tests/unit/input/input_device_identity_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30)
 
 ---
 
@@ -99,3 +99,11 @@ Edge cases:
 
 - Depends on: `production/epics/input-system/story-001-default-bindings-press-release.md`
 - Unlocks: `production/epics/input-system/story-012-active-device-changed.md`
+
+## Completion Notes
+
+*2026-10-30, implementation (autonomous run, tag sin2).*
+
+- **Files**: `src/input/input_resolver.gd` (`active_device` getter (starts KEYBOARD_MOUSE); `feed_event()` classifies the kind by event type only, never `device == 0`.); `tests/unit/input/input_device_identity_test.gd`; `tests/unit/input/input_test_support.gd` (Recorder filters)
+- **Tests**: 4 cases (initial state, pad device 0 then key with DEVICE_ID_KEYBOARD, key stamped device 0, mouse click stamped device 0). Input dir 193/193 (single-dir run; full suite run by main session).
+- **Deviations**: None.
