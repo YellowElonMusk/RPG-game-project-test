@@ -1038,9 +1038,10 @@ func confirm() -> void:
 		confirm_gag(target as GagInteractable)
 
 
-## `confirm` at a gag (GDD rule 16; story 016). `LINE` repeats, its
-## `alt_text` from the second time on; `CHANGE` shows its line once and
-## drops out of `probe()` for good; `CLUE` repeats its line and adds its
+## `confirm` at a gag (GDD rule 16; stories 016, 118). `LINE` repeats, its
+## `alt_text` from the second time on; `CHANGE` plays once, its text in the
+## bark window (no overlay), saved as changed, and drops out of `probe()`
+## for good; `CLUE` repeats its line and adds its
 ## rumour only the first time.
 func confirm_gag(gag: GagInteractable) -> void:
 	if gag.is_decree():
@@ -1057,7 +1058,10 @@ func confirm_gag(gag: GagInteractable) -> void:
 			_set_flag(_gag_flag("changed", gag))
 			if _map != null:
 				_map.set_gag_shown(gag.marker_id, false)
-			say(gag.text)
+			# Story 118 (rule 16): a change plays without an overlay; its text
+			# shows in the non-blocking bark window, never a Dialogue.
+			if not gag.text.is_empty():
+				_start_bark(gag.text)
 		GagInteractable.Response.CLUE:
 			if not gag.rumour_id.is_empty() and not _has_flag("rumour:" + gag.rumour_id):
 				_set_flag("rumour:" + gag.rumour_id)

@@ -33,6 +33,10 @@ enum Response { LINE, CHANGE, CLUE }
 @export_multiline var alt_text: String = ""
 ## `CLUE` only: the Codex rumour it adds, once.
 @export var rumour_id: String = ""
+## Optional (rule 16; story 118): a squad member's remark on this gag, as a
+## recruit-remark ID. Recruit remarks are undesigned (Squad Roster), so the
+## reference is carried but not resolved yet; a gag validates either way.
+@export var recruit_remark: String = ""
 ## Rule 16 marker tag: the faction's first-encounter rule clue.
 @export var faction_clue: bool = false
 

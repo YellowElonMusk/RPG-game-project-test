@@ -1,7 +1,7 @@
 # Story 118: Each gag response type behaves as specified
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-49b [L] (R16)** Each gag response type behaves as specified. `line` opens Dialogue. `change` plays its change without an overlay and saves it as opened. `clue` opens Dialogue and adds one rumour. A `recruit_remark` reference is optional, and the record validates with or without one.
+- [x] **AC-49b [L] (R16)** Each gag response type behaves as specified. `line` opens Dialogue. `change` plays its change without an overlay and saves it as opened. `clue` opens Dialogue and adds one rumour. A `recruit_remark` reference is optional, and the record validates with or without one.
 
 ---
 
@@ -67,7 +67,7 @@ checks scope against it.*
 
 - `src/overworld/overworld_mode.gd` (gag response dispatch: `line` / `change` / `clue`)
 - `data/encounters/` and `data/maps/` (gag marker records, `recruit_remark` optional field)
-- `tests/unit/overworld/gag_response_test.gd`
+- `tests/unit/overworld/gag_response_behavior_test.gd`
 
 ---
 
@@ -80,9 +80,9 @@ checks scope against it.*
 ## Test Evidence
 
 **Story Type**: Logic
-**Required evidence**: `tests/unit/overworld/gag_response_test.gd` — must exist and pass.
+**Required evidence**: `tests/unit/overworld/gag_response_behavior_test.gd` — must exist and pass.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -90,3 +90,10 @@ checks scope against it.*
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-117-clutter-marker-gag-or-blocker-validation.md`, `story-016-interactable-eligibility-rules.md` (AC-7f, interaction eligibility), Dialogue (no epic yet, named as a dependency per the GDD)
 - Unlocks: `production/epics/overworld-exploration-encounters/story-122-clue-and-decree-loctext-display.md`
+
+## Completion Notes (2026-10-30)
+
+- **Behaviour change:** a `change` gag no longer opens a Dialogue (story 016 had shown its line once). It now plays with no overlay: its text goes to the non-blocking bark window, the gag hides, and it is saved as changed. This matches AC-49b and the States table ("stays in Exploring").
+- `probe_eligibility_test.gd` and `state_table_transitions_test.gd` were updated; story 097's flagged deviation is resolved.
+- New: an optional `GagInteractable.recruit_remark` (an ID). Recruit remarks are undesigned (Squad Roster), so the reference is carried but not resolved, and the reference pass validates a gag with or without one.
+- Mutation checked: putting the Dialogue back fails a test here.

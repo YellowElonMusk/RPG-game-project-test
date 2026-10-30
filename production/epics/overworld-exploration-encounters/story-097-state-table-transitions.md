@@ -90,6 +90,6 @@
 - `OverworldMode.table_state()` derives the GDD row from the mode's own state, the top overlay and the running transition: Exploring, Interacting, Redirecting, CampPrompt, ChapterEndPrompt (kept distinct), Frozen, MapChanging, Paused. Map change is tracked by an Overworld → Overworld `transition_started`.
 - EncounterStarting is transient inside `start_encounter()`, so the test asserts its two exits: accepted → Frozen, rejected → Exploring with contact pending.
 - The failed map load (a missing scene) is driven through a real GameRoot: the same instance comes back in Exploring.
-- Deviation, flagged: a `change` gag shows its line once (story 016) before it counts as changed. The table says it "stays in Exploring", but here it passes through Interacting until the line closes. That holds until a change has its own animation.
+- (Resolved by story 118: a `change` gag now plays without an overlay and stays in Exploring.)
 - Not asserted: Retreat/Quit discarding the instance, which is Game State's (covered by its own tests).
 - Mutations checked: Menu not Paused, map change untracked, chapter-end shown as CampPrompt, and Redirecting not reported each fail a test here.

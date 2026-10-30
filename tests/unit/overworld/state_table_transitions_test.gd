@@ -29,13 +29,11 @@ func test_gag_line_interacts_and_a_change_stays_exploring() -> void:
 	mode.confirm()
 	assert_int(mode.table_state()).is_equal(S.INTERACTING)
 	_machine(mode).close_overlay()
-	# Deviation, flagged (story 016): until a change has its own animation,
-	# "plays its change" is its line, shown once; after it the gag is
-	# changed and the mode is back in Exploring.
+	# A change plays its change and stays in Exploring: no overlay (story 118).
 	var gag: GagInteractable = ProbeFixture.gag(_AHEAD, GagInteractable.Response.CHANGE)
 	var changer: OverworldMode = _facing([gag])
 	changer.confirm()
-	_machine(changer).close_overlay()
+	assert_array(_machine(changer).overlay_stack).is_empty()
 	assert_int(changer.table_state()).is_equal(S.EXPLORING)
 	assert_object(changer.probe()).is_not_same(gag)
 

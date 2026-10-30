@@ -11,12 +11,13 @@ const _GAG_AT: Vector2 = Vector2(13.0, 14.5)  # 1 m east of ProbeFixture.OPEN_SP
 func test_changed_gag_drops_out() -> void:
 	var mode: OverworldMode = _mode(ProbeFixture.gag(_GAG_AT, GagInteractable.Response.CHANGE))
 	mode.handle_action(InputActions.CONFIRM, true)
-	assert_array(mode.lines_said).is_equal(["Fixture gag."])
-	_close_line(mode)
+	# Story 118: a change plays without an overlay, its text in the bark window.
+	assert_array(mode.lines_said).is_empty()
+	assert_str(mode.bark_text).is_equal("Fixture gag.")
 	assert_object(mode.probe()).is_null()
 	assert_str(String(mode.probe_kind())).is_empty()
 	mode.handle_action(InputActions.CONFIRM, true)
-	assert_int(mode.lines_said.size()).is_equal(1)
+	assert_array(mode.lines_said).is_empty()
 
 
 func test_used_line_gag_repeats_its_alternate() -> void:
