@@ -1,7 +1,7 @@
 # Story 060: On-screen liberation removal times to transition_finished; off-screen to on_thawed
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-26a [L] (R9, R7)** On the mode clock, an on-screen marker's removal has not started at `transition_finished − dt`, has started at `transition_finished + dt`, and is complete, with its cells freed, at `transition_finished + liberation_duration_s + dt`. An off-screen marker is removed in `on_thawed`, and its cells are freed then. A Dialogue due from the same battle opens after the on-screen removal ends.
+- [x] **AC-26a [L] (R9, R7)** On the mode clock, an on-screen marker's removal has not started at `transition_finished − dt`, has started at `transition_finished + dt`, and is complete, with its cells freed, at `transition_finished + liberation_duration_s + dt`. An off-screen marker is removed in `on_thawed`, and its cells are freed then. A Dialogue due from the same battle opens after the on-screen removal ends.
 
 ---
 
@@ -75,7 +75,7 @@
 **Required evidence**:
 - `tests/unit/overworld/liberation_removal_timing_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -83,3 +83,10 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-059-liberated-set-persists-across-respawn-and-stage.md`, `story-047-encounter-grace-starts-on-reveal.md`, `story-048-timers-freeze-under-overlays.md` (the two-step thaw)
 - Unlocks: `production/epics/overworld-exploration-encounters/story-061-liberation-screenshots-poster-queue-checkpoint.md`
+
+## Completion Notes (2026-10-30)
+
+- On screen means inside `ChaseVisibility.edge_reach` from the leader. On-screen liberations queue in `on_thawed`, start on the reveal and complete after `liberation_duration_s` (config, 1.0 s) of `tick_timed_text`, so they pause under overlays. Off-screen ones are removed in `on_thawed` and named on the payoff card ("Street cleared: <street_label>").
+- A queued Dialogue line (`_after_payoff_card`) waits for both the payoff card and pending removals.
+- The removal is instant at the end of the duration (no animation yet); the presentation is story 066.
+- Mutations checked: making every removal immediate, and not waiting the Dialogue on removals, each fail a test here.

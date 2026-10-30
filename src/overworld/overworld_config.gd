@@ -203,3 +203,6 @@ func see_m() -> float:
 func text_hold(text: String) -> float:
 	var words: int = text.split(" ", false).size()
 	return maxf(name_card_s, text_hold_base_s + float(words) * text_hold_per_word_s)
+## How long an on-screen liberated marker's removal plays, from the reveal
+## (GDD rule 9, Tuning Knobs `liberation_duration_s`, 1.0 s, range 0.6-1.5).
+@export var liberation_duration_s: float = 1.0

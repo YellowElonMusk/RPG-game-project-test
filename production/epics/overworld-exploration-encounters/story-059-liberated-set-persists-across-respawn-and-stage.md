@@ -1,7 +1,7 @@
 # Story 059: Liberated marker IDs persist across respawn, stage raise and save/load
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-25 [L] (R9, Edge Cases)** GIVEN Victory over a linked Clerk, THEN its marker IDs join the map's liberated set in `on_thawed`. When that Clerk respawns, and after a stage raise, those markers stay hidden. Beating the respawned Clerk adds nothing. The liberated set survives save and load.
+- [x] **AC-25 [L] (R9, Edge Cases)** GIVEN Victory over a linked Clerk, THEN its marker IDs join the map's liberated set in `on_thawed`. When that Clerk respawns, and after a stage raise, those markers stay hidden. Beating the respawned Clerk adds nothing. The liberated set survives save and load.
 
 ---
 
@@ -75,7 +75,7 @@
 **Required evidence**:
 - `tests/unit/overworld/liberated_set_persistence_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -83,3 +83,11 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-047-encounter-grace-starts-on-reveal.md`, `story-048-timers-freeze-under-overlays.md` (the two-step thaw, AC-20a/AC-20b), `story-058-marker-activation-slots-by-stage-and-cap.md` (`liberated(map)` feeds `visible(m)`)
 - Unlocks: `production/epics/overworld-exploration-encounters/story-060-liberation-removal-timing-on-screen-and-off-screen.md`
+
+## Completion Notes (2026-10-30)
+
+- Clutter markers are `GagInteractable`s with `liberate_symbol` (the Clerk symbol whose Victory frees them), optional `liberation_flag`, `blocked_rect` (walk cells blocked until liberated) and `street_label` (the payoff-card name).
+- `WorldState` keeps a per-map liberated set of marker IDs, saved as `liberated` (map to sorted ID list) through `OverworldSaveParticipant`.
+- Region liberation: a boss Victory sets the map record's `region_liberation_flag` (`paris_liberated` on all four Paris maps). With it set, every symbol on those maps is inactive and every clutter/decree marker is freed on load.
+- Content: `PosterPermitQueue` on the segment, freed by `enc_paris_clerks_east` (Rue des Tampons).
+- Mutations checked: ignoring the liberated set on load, and saving an empty set, each fail a test here.

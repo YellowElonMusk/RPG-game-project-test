@@ -247,6 +247,7 @@ func load_map(map: OverworldMap, entry_marker_id: StringName = &"") -> void:
 	_grid = map.bake_walk_grid(config)
 	map.build_set(_grid)
 	_setup_checkpoints(map)
+	_setup_clutter(map)
 	for gag: GagInteractable in map.gags():
 		if _has_flag(_gag_flag("changed", gag)):
 			map.set_gag_shown(gag.marker_id, false)
@@ -303,6 +304,9 @@ func swap_failed() -> bool:
 ## Story 137: one `SymbolBrain` per valid `EncounterSymbol` marker, in
 ## marker order. `add_symbol()` skips symbols `world_state` holds resolved.
 func _place_symbols(map: OverworldMap) -> void:
+	# Rule 9: in a liberated region every symbol is inactive, beaten or not.
+	if is_region_liberated():
+		return
 	var markers: Array[EncounterSymbol] = map.symbol_markers()
 	for i: int in markers.size():
 		var marker: EncounterSymbol = markers[i]
@@ -687,6 +691,8 @@ func _resolve_victory(source: EncounterSource) -> void:
 		world_state.mark_resolved(world_state.map_id, source.symbol_id, WorldState.respawn_of(rec))
 	_sources.erase(source)
 	_grant_payoff(source, rec)
+	_liberate_for(source.symbol_id)
+	_liberate_region_if_boss(rec)
 
 
 func _on_transition_started(_from: GameStateMachine.Mode, _to: GameStateMachine.Mode) -> void:
@@ -728,6 +734,8 @@ func _on_transition_finished(to: GameStateMachine.Mode) -> void:
 		_show_name_card()
 	# Story 050: a Victory's payoffs show on this reveal.
 	_show_payoff_card()
+	# Story 060: on-screen liberations play their removal from the reveal.
+	_start_removals()
 	# Rule 13a: after Fled from the story encounter, its line opens as an
 	# automatic Dialogue on the reveal, guarded against a held confirm.
 	if not _line_on_reveal.is_empty():
@@ -1294,6 +1302,7 @@ func tick_timed_text(dt: float) -> void:
 		elif _name_card_elapsed > hold:
 			name_card_phase = CardPhase.FADING
 	_tick_payoff_card(dt)
+	_tick_removals(dt)
 	_tick_bark(dt)
 
 
@@ -1435,6 +1444,9 @@ func payoff_card_hold() -> float:
 func _release_after_payoff_card() -> void:
 	if _after_payoff_card.is_empty():
 		return
+	# A Dialogue from the same battle also waits for on-screen removals.
+	if not _removals.is_empty() or not _removals_due.is_empty():
+		return
 	say(_after_payoff_card.pop_front())
 
 
@@ -1471,6 +1483,8 @@ func _compute_stage() -> void:
 ## liberation, stories 059-060); a decree at and above its stage, or once
 ## its symbol has been seen; never once the map's region is liberated.
 func is_gag_active(gag: GagInteractable) -> bool:
+	if (gag.is_liberatable() or gag.is_decree()) and _gag_liberated(gag) and not is_removing(gag):
+		return false
 	if not gag.is_decree():
 		return true
 	if is_region_liberated():
@@ -1499,3 +1513,116 @@ func _refresh_gags() -> void:
 	for gag: GagInteractable in _map.gags():
 		var changed: bool = gag.response == GagInteractable.Response.CHANGE and _has_flag(_gag_flag("changed", gag))
 		_map.set_gag_shown(gag.marker_id, is_gag_active(gag) and not changed)
+
+
+# -- Local and region liberation (stories 059, 060; GDD rule 9) -------------
+
+## On-screen removals playing after the reveal: [GagInteractable, elapsed].
+var _removals: Array = []
+## Liberations from the last Victory waiting for the reveal (on-screen).
+var _removals_due: Array[GagInteractable] = []
+
+
+## Blocks every unliberated queue's cells and hides liberated boards; called
+## on map load (region liberation is evaluated on every load, rule 9).
+func _setup_clutter(map: OverworldMap) -> void:
+	for gag: GagInteractable in map.gags():
+		var freed: bool = _gag_liberated(gag) or not is_gag_active(gag)
+		if gag.blocked_rect.size != Vector2.ZERO and _grid != null:
+			_grid.set_blocked(_rect_cells(gag.blocked_rect), not freed)
+
+
+## `true` once `gag` is liberated: its own Victory or flag, or the region.
+func _gag_liberated(gag: GagInteractable) -> bool:
+	if not gag.is_liberatable() and not gag.is_decree():
+		return false
+	if is_region_liberated():
+		return true
+	if world_state != null and world_state.is_liberated(_map_id(), gag.marker_id):
+		return true
+	return not gag.liberation_flag.is_empty() and _has_flag(gag.liberation_flag)
+
+
+## Rule 9 timing, on a Victory over `symbol_id` (from `on_thawed`): every
+## clutter marker it liberates joins the map's liberated set now. One the
+## camera does not show is removed at once (cells freed) and named on the
+## payoff card; one on screen waits for the reveal, then plays its removal
+## over `liberation_duration_s` on the mode clock. A respawned Clerk's
+## markers are already liberated, so beating it again adds nothing.
+func _liberate_for(symbol_id: String) -> void:
+	if _map == null:
+		return
+	for gag: GagInteractable in _map.gags():
+		if gag.liberate_symbol != symbol_id or _gag_liberated(gag):
+			continue
+		if world_state != null:
+			world_state.liberate(_map_id(), gag.marker_id)
+		if _on_screen(gag.ground_position(_map)):
+			_removals_due.append(gag)
+		else:
+			_finish_removal(gag)
+			_payoff_lines.append("Street cleared: %s" % (gag.street_label if not gag.street_label.is_empty() else String(gag.marker_id)))
+
+
+## Whether ground point `p` is on screen from the leader (the camera's
+## guaranteed visibility edge in its direction).
+func _on_screen(p: Vector2) -> bool:
+	var offset: Vector2 = p - _leader_pos
+	return offset.length() <= ChaseVisibility.edge_reach(offset, presentation, config.walk_speed)
+
+
+## Starts the on-screen removals at the reveal (`transition_finished`).
+func _start_removals() -> void:
+	for gag: GagInteractable in _removals_due:
+		_removals.append([gag, 0.0])
+	_removals_due.clear()
+
+
+## Advances on-screen removals; each completes after `liberation_duration_s`
+## (board hidden, cells freed). Paused under overlays with all timed text.
+func _tick_removals(dt: float) -> void:
+	for r: Array in _removals:
+		r[1] = float(r[1]) + dt
+	var still: Array = []
+	for r: Array in _removals:
+		if float(r[1]) >= config.liberation_duration_s:
+			_finish_removal(r[0])
+		else:
+			still.append(r)
+	_removals = still
+	if _removals.is_empty() and payoff_card_phase == CardPhase.HIDDEN:
+		_release_after_payoff_card()
+
+
+func _finish_removal(gag: GagInteractable) -> void:
+	if _map != null:
+		_map.set_gag_shown(gag.marker_id, false)
+	if gag.blocked_rect.size != Vector2.ZERO and _grid != null:
+		_grid.set_blocked(_rect_cells(gag.blocked_rect), false)
+
+
+## `true` while an on-screen removal is due or playing (tests).
+func is_removing(gag: GagInteractable) -> bool:
+	for r: Array in _removals:
+		if r[0] == gag:
+			return true
+	return _removals_due.has(gag)
+
+
+func _rect_cells(r: Rect2) -> Array[Vector2i]:
+	var out: Array[Vector2i] = []
+	var lo := Vector2i(floori(r.position.x / _grid.cell_m), floori(r.position.y / _grid.cell_m))
+	var hi := Vector2i(ceili(r.end.x / _grid.cell_m) - 1, ceili(r.end.y / _grid.cell_m) - 1)
+	for y in range(lo.y, hi.y + 1):
+		for x in range(lo.x, hi.x + 1):
+			out.append(Vector2i(x, y))
+	return out
+
+
+## Rule 13: a boss Victory sets the region's `region_liberation_flag`.
+func _liberate_region_if_boss(rec: EncounterData) -> void:
+	if rec == null or not rec.is_boss or encounter_catalog == null or _map == null:
+		return
+	var map_rec: MapData = encounter_catalog.call(&"get_record", &"map", _map.map_id) as MapData
+	if map_rec != null and not map_rec.region_liberation_flag.is_empty():
+		_set_flag(map_rec.region_liberation_flag)

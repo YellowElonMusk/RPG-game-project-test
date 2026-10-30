@@ -122,8 +122,8 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 056 | [Decree gags stay eligible and exempt from stage caps](story-056-decree-gag-stage-eligibility.md) | Logic | Complete | ADR-0012 |
 | 057 | [New Game sets permits_mandatory before the first input, and the segment always loads at stage 2](story-057-new-game-permits-mandatory-timing.md) | Integration | Complete | ADR-0012 |
 | 058 | [Active markers follow the marker_activation formula's slots](story-058-marker-activation-slots-by-stage-and-cap.md) | Logic | Ready | ADR-0012 |
-| 059 | [Liberated marker IDs persist across respawn, stage raise and save/load](story-059-liberated-set-persists-across-respawn-and-stage.md) | Logic | Ready | ADR-0012 |
-| 060 | [On-screen liberation removal times to transition_finished; off-screen to on_thawed](story-060-liberation-removal-timing-on-screen-and-off-screen.md) | Logic | Ready | ADR-0012 |
+| 059 | [Liberated marker IDs persist across respawn, stage raise and save/load](story-059-liberated-set-persists-across-respawn-and-stage.md) | Logic | Complete | ADR-0012 |
+| 060 | [On-screen liberation removal times to transition_finished; off-screen to on_thawed](story-060-liberation-removal-timing-on-screen-and-off-screen.md) | Logic | Complete | ADR-0012 |
 | 061 | [Retained liberation screenshots — poster, queue, checkpoint, Reduce Motion](story-061-liberation-screenshots-poster-queue-checkpoint.md) | Visual/Feel | Ready | ADR-0012 |
 | 062 | [Liberation grumble share meets its floor; respawned Clerks use the deflated look](story-062-liberation-grumble-share-and-deflated-clerk.md) | Logic | Ready | ADR-0012 |
 | 063 | [Every map's liberation reaction set includes a ribs_squad entry](story-063-liberation-reaction-ribs-squad-tag.md) | Logic | Ready | ADR-0012 |

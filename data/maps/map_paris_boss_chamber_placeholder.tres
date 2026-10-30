@@ -16,4 +16,5 @@ display_name = "Paris - The Supervisor's Office"
 faction_id = "faction_bureaucratia"
 base_stage = 3
 critical_path = Array[ExtResource("2_leg")]([SubResource("leg_1")])
+region_liberation_flag = "paris_liberated"
 new_game_entry = false

@@ -56,6 +56,7 @@ func stage(data: Dictionary, reader: SaveReader) -> SaveStage:
 		"opened": {},
 		"flags": [],
 		"stage_stored": {},
+		"liberated": {},
 	}
 	var resolved: Dictionary = reader.get_dict("resolved")
 	for m: Variant in resolved:
@@ -81,6 +82,14 @@ func stage(data: Dictionary, reader: SaveReader) -> SaveStage:
 	for f: Variant in reader.get_array("flags"):
 		if f is String:
 			(staged["flags"] as Array).append(f)
+	var lib: Dictionary = reader.get_dict("liberated")
+	for m: Variant in lib:
+		var ids: Array = []
+		if lib[m] is Array:
+			for id: Variant in lib[m]:
+				if id is String:
+					ids.append(id)
+		staged["liberated"][String(m)] = ids
 	var stored: Dictionary = reader.get_dict("stage_stored")
 	for m: Variant in stored:
 		var s: Variant = stored[m]

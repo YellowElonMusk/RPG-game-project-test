@@ -45,6 +45,8 @@ var _flags: Dictionary = {}
 # map_id -> the occupation stage last computed on load (rule 8: never
 # decreases; story 053).
 var _stage_stored: Dictionary = {}
+# map_id -> { marker_id -> true }: liberated clutter (rule 9; permanent).
+var _liberated: Dictionary = {}
 
 
 ## `true` when `symbol_id` on `p_map_id` is resolved (its symbol is absent).
@@ -118,6 +120,7 @@ func reset_to_new_game() -> void:
 	_opened = {}
 	_flags = {}
 	_stage_stored = {}
+	_liberated = {}
 
 
 ## JSON-safe snapshot for the `overworld` save section (ADR-0009 §3):
@@ -147,6 +150,7 @@ func to_dict() -> Dictionary:
 		"opened": opened,
 		"flags": flags,
 		"stage_stored": _stage_stored.duplicate(),
+		"liberated": _liberated_lists(),
 	}
 
 
@@ -170,6 +174,11 @@ func from_dict(data: Dictionary) -> void:
 			(_opened[m] as Dictionary)[StringName(id)] = true
 	for f: String in data.get("flags", []):
 		_flags[f] = true
+	var lib: Dictionary = data.get("liberated", {})
+	for m: String in lib:
+		_liberated[m] = {}
+		for id: String in lib[m]:
+			(_liberated[m] as Dictionary)[StringName(id)] = true
 	var stored: Dictionary = data.get("stage_stored", {})
 	for m: String in stored:
 		_stage_stored[m] = int(stored[m])
@@ -183,3 +192,26 @@ func stage_stored(p_map_id: String) -> int:
 ## Records the stage a map loaded at (written only on map load).
 func store_stage(p_map_id: String, stage: int) -> void:
 	_stage_stored[p_map_id] = stage
+
+
+## `true` once clutter marker `marker_id` on `p_map_id` is liberated.
+func is_liberated(p_map_id: String, marker_id: StringName) -> bool:
+	return (_liberated.get(p_map_id, {}) as Dictionary).has(marker_id)
+
+
+## Liberates clutter marker `marker_id` on `p_map_id` for good (rule 9).
+func liberate(p_map_id: String, marker_id: StringName) -> void:
+	if not _liberated.has(p_map_id):
+		_liberated[p_map_id] = {}
+	(_liberated[p_map_id] as Dictionary)[marker_id] = true
+
+
+func _liberated_lists() -> Dictionary:
+	var out: Dictionary = {}
+	for m: String in _liberated:
+		var ids: Array = []
+		for id: StringName in _liberated[m]:
+			ids.append(String(id))
+		ids.sort()
+		out[m] = ids
+	return out

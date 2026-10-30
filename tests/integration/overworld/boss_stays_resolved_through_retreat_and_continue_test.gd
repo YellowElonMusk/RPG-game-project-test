@@ -33,13 +33,18 @@ func test_boss_stays_absent_through_retreat_save_and_continue() -> void:
 	_run_to_idle(root.machine)
 	assert_bool(root.world_state.is_resolved(_CHAMBER, _BOSS)).is_true()
 
-	# A later fight that offers Retreat (the Permit Counter; the street
-	# Clerks do not): Defeat, then Retreat.
+	# Beating the boss liberated Paris: every symbol there is now inactive
+	# (rule 9), so the later Retreat-able fight is started straight from a
+	# record (the Permit Counter's), through Game State as any battle is.
+	assert_bool(root.world_state.has_flag("paris_liberated")).is_true()
 	var dungeon: OverworldMode = _go(root, "map_paris_dungeon_placeholder", &"from_segment")
-	var counter: EncounterSource = dungeon.get_encounter_sources()[0]
-	dungeon.set_leader_position(counter.brain.position + Vector2(0.0, 1.0))
-	dungeon.set_leader_facing(Vector2.UP)
-	dungeon.handle_action(InputActions.CONFIRM, true)
+	assert_int(dungeon.get_encounter_sources().size()).is_equal(0)
+	var payload := BattleEntryPayload.new()
+	payload.descriptor = OverworldMode.build_descriptor(
+			root.catalog().get_record(&"encounter", "enc_paris_permit_counter") as EncounterData)
+	var started: GameStateMachine.RequestResult = root.machine.request_transition(
+			GameStateMachine.Mode.BATTLE, payload)
+	assert_int(started).is_equal(GameStateMachine.RequestResult.OK)
 	_run_to_idle(root.machine)
 	assert_object(root.current_mode_node() as BattleMode).is_not_null()
 	assert_int(root.machine.report_battle_outcome(GameStateMachine.BattleResult.DEFEAT)) \

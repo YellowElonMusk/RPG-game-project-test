@@ -110,3 +110,11 @@ script = ExtResource("6_gag")
 marker_id = &"decree_permits_dungeon"
 text = "BY ORDER: SPECIAL MOVES REQUIRE A PERMIT. PERMITS TAKE THREE ROUNDS. IN FORCE SINCE TUESDAY."
 decree_stage = 2
+
+[node name="PosterPermitQueue" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.5, 0, 10.5)
+script = ExtResource("6_gag")
+marker_id = &"poster_permit_queue"
+text = "PERMIT QUEUE. PLEASE WAIT TO BE CALLED."
+liberate_symbol = "enc_paris_clerks_east"
+street_label = "Rue des Tampons"

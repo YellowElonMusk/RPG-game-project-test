@@ -22,4 +22,5 @@ display_name = "Paris - The Prefecture"
 faction_id = "faction_bureaucratia"
 base_stage = 3
 critical_path = Array[ExtResource("2_leg")]([SubResource("leg_1"), SubResource("leg_2")])
+region_liberation_flag = "paris_liberated"
 new_game_entry = false

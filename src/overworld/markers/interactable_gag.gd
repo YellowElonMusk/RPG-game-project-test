@@ -55,3 +55,19 @@ func ground_position(map_root: Node) -> Vector2:
 ## `true` for a decree gag (either trigger).
 func is_decree() -> bool:
 	return decree_stage > 0 or not decree_first_sight.is_empty()
+
+## Rule 9 local liberation: the `symbol_id` whose first Victory liberates
+## this clutter marker (a poster comes down, a queue breaks up), and/or a
+## story flag that does. Liberated markers drop out of `probe()` for good.
+@export var liberate_symbol: String = ""
+@export var liberation_flag: String = ""
+## Ground cells (metres) a queue blocks until it is liberated; empty for a
+## poster.
+@export var blocked_rect: Rect2 = Rect2()
+## The street name a liberation card line shows ("Street cleared: ...").
+@export var street_label: String = ""
+
+
+## `true` for a clutter marker some Victory or flag can liberate.
+func is_liberatable() -> bool:
+	return not liberate_symbol.is_empty() or not liberation_flag.is_empty()
