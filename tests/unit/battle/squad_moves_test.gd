@@ -5,6 +5,12 @@
 extends GdUnitTestSuite
 
 
+## The roster and specials factories read the shipped catalog (content-migration
+## stories 024/028), so boot it once for this suite.
+func before() -> void:
+	BattleContentSeam.ensure_catalog()
+
+
 func test_moves_for_karen_returns_attack_defend_and_speak_to_the_manager() -> void:
 	var karen: Combatant = _make_squad_member("Karen", PackedStringArray(["move_speak_to_the_manager"]))
 

@@ -22,6 +22,9 @@
 ## # BattleCore.submit_action(move, target) spends MP and resolves it;
 ## # the effect itself runs through SquadSpecials.apply_stun().
 ## [/codeblock]
+## Content-migration story 028: the five factories adapt their Move records
+## (`move_speak_to_the_manager` etc.) through `MoveAdapter`; the cost/power
+## constants below are unused until story 030 deletes them.
 class_name SquadSpecials
 extends RefCounted
 
@@ -56,39 +59,32 @@ const HEAL_ATTACK_SCALE: float = 50.0
 ## Karen's *Speak to the Manager*: stuns one enemy (it loses its next turn),
 ## no effect on a boss (Acceptance Criteria 1-2).
 static func make_speak_to_the_manager() -> Move:
-	return Move.new("Speak to the Manager", Move.Category.SPECIAL,
-			SPEAK_TO_MANAGER_MP_COST, 0, Move.TargetType.SINGLE_ENEMY,
-			Move.SpecialEffect.STUN)
+	return MoveAdapter.from_catalog(BattleCatalog.shipped(), "move_speak_to_the_manager")
 
 
 ## The Five-Star Chef's *Family Meal*: heals every living squad member at once
 ## using F4 (Acceptance Criterion 3). Targets SELF (like Defend) since it has
 ## no single external target to pick.
 static func make_family_meal() -> Move:
-	return Move.new("Family Meal", Move.Category.SPECIAL, FAMILY_MEAL_MP_COST,
-			FAMILY_MEAL_POWER, Move.TargetType.SELF, Move.SpecialEffect.HEAL_PARTY)
+	return MoveAdapter.from_catalog(BattleCatalog.shipped(), "move_family_meal")
 
 
 ## The Five-Star Chef's *Appetizer*: heals one chosen ally using F4
 ## (Acceptance Criterion 4) — Family Meal's single-target sibling.
 static func make_appetizer() -> Move:
-	return Move.new("Appetizer", Move.Category.SPECIAL, APPETIZER_MP_COST,
-			APPETIZER_POWER, Move.TargetType.SINGLE_ALLY, Move.SpecialEffect.HEAL_SINGLE)
+	return MoveAdapter.from_catalog(BattleCatalog.shipped(), "move_appetizer")
 
 
 ## Florida Man's *Viral Stunt*: makes one enemy take more damage for
 ## VIRAL_STUNT_ROUNDS rounds (Acceptance Criterion 5).
 static func make_viral_stunt() -> Move:
-	return Move.new("Viral Stunt", Move.Category.SPECIAL, VIRAL_STUNT_MP_COST,
-			0, Move.TargetType.SINGLE_ENEMY, Move.SpecialEffect.DAMAGE_DEBUFF,
-			VIRAL_STUNT_ROUNDS)
+	return MoveAdapter.from_catalog(BattleCatalog.shipped(), "move_viral_stunt")
 
 
 ## The Baguette Thrower's *Home Run*: deals damage to one enemy through the
 ## same pipeline as Attack, with its own power (Acceptance Criterion 6).
 static func make_home_run() -> Move:
-	return Move.new("Home Run", Move.Category.SPECIAL, HOME_RUN_MP_COST,
-			HOME_RUN_POWER, Move.TargetType.SINGLE_ENEMY, Move.SpecialEffect.DIRECT_DAMAGE)
+	return MoveAdapter.from_catalog(BattleCatalog.shipped(), "move_home_run")
 
 
 ## Stats & Damage GDD F4 base heal, rounded half up (F7's rounding rule

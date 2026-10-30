@@ -57,25 +57,26 @@ const HOSTILE_TAKEOVER_POWER: int = 18
 ## A regular MegaCorp enemy for this chapter's non-boss fights (Acceptance
 ## Criterion 4). It has no MP of its own.
 ## Example: [code]var drone := MegaCorpRule.make_security_drone()[/code]
+## Built from the `enemy_security_drone` record (content-migration story 024,
+## merged 025); the constants above are unused until story 030 deletes them.
 static func make_security_drone() -> Combatant:
-	return Combatant.new(SECURITY_DRONE_DISPLAY_NAME, SECURITY_DRONE_MAX_HP, 0,
-			SECURITY_DRONE_ATTACK, SECURITY_DRONE_DEFENSE, SECURITY_DRONE_SPEED, true)
+	return EnemyAdapter.from_catalog(BattleCatalog.shipped(), "enemy_security_drone")
 
 
 ## A second regular MegaCorp enemy type for this chapter's non-boss fights
 ## (Acceptance Criterion 5). It has no MP of its own.
 ## Example: [code]var manager := MegaCorpRule.make_middle_manager()[/code]
+## Built from the `enemy_middle_manager` record (content-migration story 024).
 static func make_middle_manager() -> Combatant:
-	return Combatant.new(MIDDLE_MANAGER_DISPLAY_NAME, MIDDLE_MANAGER_MAX_HP, 0,
-			MIDDLE_MANAGER_ATTACK, MIDDLE_MANAGER_DEFENSE, MIDDLE_MANAGER_SPEED, true)
+	return EnemyAdapter.from_catalog(BattleCatalog.shipped(), "enemy_middle_manager")
 
 
 ## The MegaCorp boss. He has more HP than a Security Drone or Middle Manager
 ## (Acceptance Criterion 6) and is flagged `is_boss`.
 ## Example: [code]var boss := MegaCorpRule.make_ceo()[/code]
+## Built from the `enemy_ceo` record (content-migration story 024).
 static func make_ceo() -> Combatant:
-	return Combatant.new(CEO_DISPLAY_NAME, CEO_MAX_HP, 0, CEO_ATTACK, CEO_DEFENSE,
-			CEO_SPEED, true, true)
+	return EnemyAdapter.from_catalog(BattleCatalog.shipped(), "enemy_ceo")
 
 
 ## MegaCorp's enemy turn: Security Drones run a Laser Scan on the weakest
@@ -91,14 +92,14 @@ func choose_enemy_action(enemy: Combatant, living_squad: Array[Combatant],
 		if round_number % 2 == 1:
 			var actions: Array = []
 			for member in living_squad:
-				actions.append({"move": _named_attack("Layoffs", LAYOFFS_POWER), "target": member})
+				actions.append({"move": _named_attack("move_layoffs"), "target": member})
 			return actions
-		return [{"move": _named_attack("Hostile Takeover", HOSTILE_TAKEOVER_POWER), "target": weakest}]
+		return [{"move": _named_attack("move_hostile_takeover"), "target": weakest}]
 
 	if enemy.display_name == MIDDLE_MANAGER_DISPLAY_NAME:
-		return [{"move": _named_attack("Upsell", UPSELL_POWER), "target": weakest}]
+		return [{"move": _named_attack("move_upsell"), "target": weakest}]
 
-	return [{"move": _named_attack("Laser Scan", LASER_SCAN_POWER), "target": weakest}]
+	return [{"move": _named_attack("move_laser_scan"), "target": weakest}]
 
 
 ## Every living squad member is billed BILL_MP once per round (Acceptance
@@ -121,8 +122,11 @@ func move_allowed(actor: Combatant, move: Move) -> bool:
 	return actor.mp > 0 or move.category == Move.Category.ATTACK
 
 
-func _named_attack(display_name: String, power: int) -> Move:
-	return Move.new(display_name, Move.Category.ATTACK, 0, power, Move.TargetType.SINGLE_ENEMY)
+# Builds a named attack from its Move record through MoveAdapter
+# (content-migration story 023). TODO(content-migration): story 026 reads the
+# move IDs from the rule record's params in `_configure()`.
+func _named_attack(move_id: String) -> Move:
+	return MoveAdapter.from_catalog(BattleCatalog.shipped(), move_id)
 
 
 func _weakest(combatants: Array[Combatant]) -> Combatant:

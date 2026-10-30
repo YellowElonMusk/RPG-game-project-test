@@ -1,12 +1,12 @@
 # Story 028: The five `SquadSpecials` factories build their Moves from the squad-special records through `MoveAdapter`, and the Step 0 suite passes unchanged
 
 > **Epic**: Content Migration
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *Migration criterion from ADR-0001 Migration Step 4, scoped to this story:*
 
-- [ ] GIVEN the catalog READY, WHEN `make_speak_to_the_manager()`, `make_family_meal()`, `make_appetizer()`, `make_viral_stunt()` and `make_home_run()` run, THEN each returns `MoveAdapter.from_record()` of its record, and story 009's gate passes (002, 005 and 008 green, unchanged).
+- [x] GIVEN the catalog READY, WHEN `make_speak_to_the_manager()`, `make_family_meal()`, `make_appetizer()`, `make_viral_stunt()` and `make_home_run()` run, THEN each returns `MoveAdapter.from_record()` of its record, and story 009's gate passes (002, 005 and 008 green, unchanged).
 
 ---
 
@@ -86,7 +86,7 @@
 **Required evidence**:
 - Logic: `tests/unit/battle/battle_move_adapter_test.gd` (specials cases) — must exist and pass, and story 009's gate passes. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing — `tests/unit/battle/battle_move_adapter_test.gd` (tests/unit/battle: 153/153 green, 2026-10-30)
 
 ---
 
@@ -94,3 +94,17 @@
 
 - Depends on: `production/epics/content-migration/story-009-characterization-regression-gate.md`, `story-018-author-squad-special-moves.md`, `story-023-move-record-adapter.md`
 - Unlocks: `production/epics/content-migration/story-030-delete-bureaucratia-constants.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30
+
+- The five `SquadSpecials` factories return `MoveAdapter.from_catalog(BattleCatalog.shipped(), id)`; effect helpers and `HEAL_ATTACK_SCALE` untouched; constants left for story 030.
+- Specials cases in `battle_move_adapter_test.gd` compare each factory field by field to the adapted record; Viral Stunt rounds come from `rounds` (2).
+- Step 0 suite (002, 005, 008) and story 009 gate green.
+
+**Files changed**:
+- `src/battle/squad/specials.gd`
+- `tests/unit/battle/battle_move_adapter_test.gd` (specials cases)

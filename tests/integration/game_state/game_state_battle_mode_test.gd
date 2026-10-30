@@ -7,6 +7,12 @@
 ## -- no new cases invented.
 extends GdUnitTestSuite
 
+
+## The real roster factories read the shipped catalog (content-migration story
+## 024), so boot it once for this suite (the machine itself uses a stub).
+func before() -> void:
+	BattleContentSeam.ensure_catalog()
+
 const _FIXTURES_DIR: String = "res://tests/unit/game_state/fixtures/"
 const _BATTLE_MODE_SCENE: String = "res://src/battle/battle_mode.tscn"
 

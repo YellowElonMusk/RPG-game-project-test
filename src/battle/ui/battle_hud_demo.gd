@@ -38,6 +38,9 @@ var _hud: BattleHud
 
 
 func _ready() -> void:
+	# Harness scene: boots the shipped catalog the factories read (content-migration
+	# story 024; ADR-0004 harness allowance). A no-op once booted.
+	ContentBootstrap.run(BattleCatalog.shipped())
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	var args: PackedStringArray = OS.get_cmdline_user_args()
 

@@ -56,9 +56,22 @@ var is_stunned: bool = false
 ## down once per round (BattleCore._tick_round_effects()), not per turn.
 var vulnerable_rounds_left: int = 0
 
+## Catalog record ID this combatant was built from (ADR-0011 §5;
+## content-migration story 024). Identity only: the damage resolver never
+## reads it. Empty for a combatant built without a record. Read-only after
+## construction.
+var record_id: String:
+	get:
+		return _record_id
+	set(_value):
+		push_error("Combatant.record_id is immutable after construction.")
+
+var _record_id: String = ""
+
 
 func _init(p_display_name: String, p_max_hp: int, p_max_mp: int, p_attack: int,
-		p_defense: int, p_speed: int, p_is_enemy: bool, p_is_boss: bool = false) -> void:
+		p_defense: int, p_speed: int, p_is_enemy: bool, p_is_boss: bool = false,
+		p_record_id: String = "") -> void:
 	display_name = p_display_name
 	max_hp = p_max_hp
 	max_mp = p_max_mp
@@ -67,6 +80,7 @@ func _init(p_display_name: String, p_max_hp: int, p_max_mp: int, p_attack: int,
 	speed = p_speed
 	is_enemy = p_is_enemy
 	is_boss = p_is_boss
+	_record_id = p_record_id
 	hp = p_max_hp
 	mp = p_max_mp
 

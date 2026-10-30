@@ -14,6 +14,9 @@ var _command_box: VBoxContainer
 
 
 func _ready() -> void:
+	# Harness scene: boots the shipped catalog the factories read (content-migration
+	# story 024; ADR-0004 harness allowance). A no-op once booted.
+	ContentBootstrap.run(BattleCatalog.shipped())
 	_build_data_and_battle()
 	_build_ui()
 	_battle.turn_started.connect(func(_combatant: Combatant) -> void: _render_turn())

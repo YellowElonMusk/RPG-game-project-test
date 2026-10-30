@@ -1,12 +1,12 @@
 # Story 024: `make_clerk()` and `make_supervisor()` build their Combatants from the `enemy_clerk` and `enemy_supervisor` records, and the Step 0 suite passes unchanged (merged with story 025)
 
 > **Epic**: Content Migration
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -33,13 +33,13 @@
 
 *Migration criterion from ADR-0001 Migration Step 3, scoped to this story:*
 
-- [ ] GIVEN the catalog READY on `res://data`, WHEN `BureaucratiaRule.make_clerk()` and `make_supervisor()` run, THEN each returns a new `Combatant` copied from its Enemy record with `record_id` set to the record ID, and story 009's gate passes (003, 006 and 008 green, unchanged).
+- [x] GIVEN the catalog READY on `res://data`, WHEN `BureaucratiaRule.make_clerk()` and `make_supervisor()` run, THEN each returns a new `Combatant` copied from its Enemy record with `record_id` set to the record ID, and story 009's gate passes (003, 006 and 008 green, unchanged).
 
 *Merged from story 025, 2026-10-24:*
 
 *Migration criterion from ADR-0001 Migration Step 3, scoped to this story:*
 
-- [ ] GIVEN the catalog READY, WHEN the three `MegaCorpRule` factories run, THEN each returns a new `Combatant` copied from its Enemy record through `EnemyAdapter`, with `record_id` set, and story 009's gate passes (004, 006 and 008 green, unchanged).
+- [x] GIVEN the catalog READY, WHEN the three `MegaCorpRule` factories run, THEN each returns a new `Combatant` copied from its Enemy record through `EnemyAdapter`, with `record_id` set, and story 009's gate passes (004, 006 and 008 green, unchanged).
 
 ---
 
@@ -121,7 +121,7 @@
 **Required evidence**:
 - Logic: `tests/unit/battle/battle_enemy_adapter_test.gd` — must exist and pass, and story 009's gate passes. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing — `tests/unit/battle/battle_enemy_adapter_test.gd` (tests/unit/battle: 153/153 green, 2026-10-30)
 
 *Merged from story 025, 2026-10-24:*
 
@@ -131,7 +131,7 @@
 **Required evidence**:
 - Logic: `tests/unit/battle/battle_enemy_adapter_test.gd` (MegaCorp cases) — must exist and pass, and story 009's gate passes. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing — `tests/unit/battle/battle_enemy_adapter_test.gd` (tests/unit/battle: 153/153 green, 2026-10-30)
 
 ---
 
@@ -139,3 +139,22 @@
 
 - Depends on: `production/epics/content-migration/story-009-characterization-regression-gate.md`, `story-015-author-bureaucratia-enemies.md`, `story-021-migrated-set-validates-clean.md`
 - Unlocks: `story-030-delete-bureaucratia-constants.md`, `story-034-delete-roster-factories.md`, `production/epics/content-migration/story-026-faction-rule-decisions-from-records.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30
+
+- `EnemyAdapter.from_record()/from_catalog()`; all five factories (Bureaucratia + MegaCorp, merged 025) adapt their records. No fallback to constants; constants left for story 030.
+- `Combatant.record_id` added (trailing defaulted ctor param, read-only setter).
+- `move_ids` deliberately not copied onto enemy Combatants (unchanged behaviour).
+- Harness scenes `battle_debug_harness.gd` and `battle_hud_demo.gd` now run `ContentBootstrap.run()` (ADR-0004 harness allowance). Suites that call factories without the seam (`battle_command_menu_test`, `squad_moves_test`, `battle_mode_snapshot_test`, integration `game_state_battle_mode_test`) call `BattleContentSeam.ensure_catalog()` in `before()`.
+- Step 0 suite and story 009 gate green; Supervisor still 110/15/10/9.
+
+**Files changed**:
+- `src/battle/enemy_adapter.gd` (new), `src/battle/combatant.gd`
+- `src/battle/factions/bureaucratia.gd`, `src/battle/factions/megacorp.gd`
+- `src/battle/battle_debug_harness.gd`, `src/battle/ui/battle_hud_demo.gd`
+- `tests/unit/battle/battle_enemy_adapter_test.gd`
+- `tests/unit/battle/{battle_command_menu,squad_moves,battle_mode_snapshot}_test.gd`, `tests/integration/game_state/game_state_battle_mode_test.gd` (catalog boot in `before()`)

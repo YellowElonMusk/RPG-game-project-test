@@ -3,6 +3,12 @@
 ## does (`setup()`, then `handle_action()`). No new cases invented.
 extends GdUnitTestSuite
 
+
+## The roster and specials factories read the shipped catalog (content-migration
+## stories 024/028), so boot it once for this suite.
+func before() -> void:
+	BattleContentSeam.ensure_catalog()
+
 const _MENU_SCENE: String = "res://src/battle/ui/battle_command_menu.tscn"
 const _CHARACTER_IDS: Array[String] = [
 	"char_baguette_thrower", "char_florida_man", "char_karen", "char_michelin_chef",

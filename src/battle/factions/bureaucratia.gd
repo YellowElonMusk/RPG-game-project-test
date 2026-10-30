@@ -60,18 +60,19 @@ const SUPERVISOR_SPEED: int = 9
 ## A regular Bureaucratia enemy for this chapter's non-boss fights
 ## (Acceptance Criterion 5). It has no MP of its own.
 ## Example: [code]var clerk := BureaucratiaRule.make_clerk()[/code]
+## Built from the `enemy_clerk` record (content-migration story 024); the
+## constants above are unused until story 030 deletes them.
 static func make_clerk() -> Combatant:
-	return Combatant.new(CLERK_DISPLAY_NAME, CLERK_MAX_HP, 0, CLERK_ATTACK,
-			CLERK_DEFENSE, CLERK_SPEED, true)
+	return EnemyAdapter.from_catalog(BattleCatalog.shipped(), "enemy_clerk")
 
 
 ## The Bureaucratia boss. He has more HP than a Clerk (Acceptance Criterion 6)
 ## and is flagged `is_boss`, which makes him "the manager" for is_manager()
 ## (Acceptance Criterion 7).
 ## Example: [code]var boss := BureaucratiaRule.make_supervisor()[/code]
+## Built from the `enemy_supervisor` record (content-migration story 024).
 static func make_supervisor() -> Combatant:
-	return Combatant.new(SUPERVISOR_DISPLAY_NAME, SUPERVISOR_MAX_HP, 0,
-			SUPERVISOR_ATTACK, SUPERVISOR_DEFENSE, SUPERVISOR_SPEED, true, true)
+	return EnemyAdapter.from_catalog(BattleCatalog.shipped(), "enemy_supervisor")
 
 
 ## True if `combatant` is immune to moves that target "the manager", because
@@ -114,24 +115,27 @@ func choose_enemy_action(enemy: Combatant, living_squad: Array[Combatant],
 			if round_number % 2 == 0:
 				var actions: Array = []
 				for member in living_squad:
-					actions.append({"move": _named_attack("Mass Audit", MASS_AUDIT_POWER),
+					actions.append({"move": _named_attack("move_mass_audit"),
 							"target": member})
 				return actions
-			return [{"move": _named_attack("Final Notice", FINAL_NOTICE_POWER), "target": weakest}]
-		return [{"move": _named_attack("Late Fee", LATE_FEE_POWER), "target": weakest}]
+			return [{"move": _named_attack("move_final_notice"), "target": weakest}]
+		return [{"move": _named_attack("move_late_fee"), "target": weakest}]
 
 	if _hp_fraction(weakest) <= LOW_HP_THRESHOLD:
-		return [{"move": _named_attack("Red Tape", FOCUS_ATTACK_POWER), "target": weakest}]
+		return [{"move": _named_attack("move_red_tape"), "target": weakest}]
 
 	var jab_target: Combatant = living_squad[rng.randi_range(0, living_squad.size() - 1)]
 	return [
 		{"move": Move.make_defend(), "target": null},
-		{"move": _named_attack("Pen Jab", HUNKER_JAB_POWER), "target": jab_target},
+		{"move": _named_attack("move_pen_jab"), "target": jab_target},
 	]
 
 
-func _named_attack(display_name: String, power: int) -> Move:
-	return Move.new(display_name, Move.Category.ATTACK, 0, power, Move.TargetType.SINGLE_ENEMY)
+# Builds a named attack from its Move record through MoveAdapter
+# (content-migration story 023). TODO(content-migration): story 026 reads the
+# move IDs from the rule record's params in `_configure()`.
+func _named_attack(move_id: String) -> Move:
+	return MoveAdapter.from_catalog(BattleCatalog.shipped(), move_id)
 
 
 func _weakest(combatants: Array[Combatant]) -> Combatant:

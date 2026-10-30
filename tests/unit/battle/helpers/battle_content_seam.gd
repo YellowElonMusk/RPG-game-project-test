@@ -9,8 +9,8 @@
 ## (never a factory call, never `display_name`) and reads effects only
 ## through `BattleCore` or this seam's own helpers. When a later migration
 ## story changes one of those three APIs, it edits this file and nothing else
-## (story 023 replaces `_NAMED_ATTACKS`' hand-built `Move.new()` with the
-## catalog adapter; story 006/ADR-0007 Step 3 changes `arrange_vitals()` to
+## (story 023 replaced the hand-built named attacks with the catalog
+## adapter; story 006/ADR-0007 Step 3 changes `arrange_vitals()` to
 ## call `restore_vitals()`; ADR-0011 Step 2 changes `enemy_turn()`'s read of
 ## `choose_enemy_action()`'s return value).
 ##
@@ -26,33 +26,34 @@
 class_name BattleContentSeam
 extends RefCounted
 
-## Display name and power for each of the 9 named attacks (story's
-## Implementation Notes: neither rule exposes a move-by-ID lookup today, so
-## Step 0 builds them by hand). Values are literal copies of today's rule
-## constants, read once, never a cross-class const reference — the same
-## "never derived from the factories' consts" rule the fixture follows, so
-## this table keeps working unchanged after story 030 deletes those consts.
-## Source: src/battle/factions/bureaucratia.gd (HUNKER_JAB_POWER,
-## FOCUS_ATTACK_POWER, LATE_FEE_POWER, MASS_AUDIT_POWER, FINAL_NOTICE_POWER),
-## megacorp.gd (LASER_SCAN_POWER, UPSELL_POWER, LAYOFFS_POWER,
-## HOSTILE_TAKEOVER_POWER).
-const _NAMED_ATTACKS: Dictionary = {
-	"move_pen_jab": {"name": "Pen Jab", "power": 5},
-	"move_red_tape": {"name": "Red Tape", "power": 10},
-	"move_late_fee": {"name": "Late Fee", "power": 16},
-	"move_mass_audit": {"name": "Mass Audit", "power": 8},
-	"move_final_notice": {"name": "Final Notice", "power": 18},
-	"move_laser_scan": {"name": "Laser Scan", "power": 11},
-	"move_upsell": {"name": "Upsell", "power": 6},
-	"move_layoffs": {"name": "Layoffs", "power": 8},
-	"move_hostile_takeover": {"name": "Hostile Takeover", "power": 18},
-}
+## Story 023/024: every seam builder first boots the shipped catalog once per
+## test process (`ensure_catalog()`), because the factories and both rules'
+## named attacks now read their records from it. `_static_init()` does the
+## same the moment any test script referencing this seam is loaded, so a
+## characterization test that calls a factory directly before any seam
+## builder (story 006's) still finds the catalog READY.
+static func _static_init() -> void:
+	ensure_catalog()
+
+
+## Runs `ContentBootstrap.run()` on the `ContentCatalog` autoload against
+## `res://data`; a no-op once the catalog is not UNLOADED. A test-harness
+## call (the allowance ADR-0004 gives harness scenes), never production
+## lazy-loading: production factories never trigger a load and fail loudly
+## if the catalog isn't READY.
+## Example: [code]BattleContentSeam.ensure_catalog()[/code]
+static func ensure_catalog() -> void:
+	var main_loop: SceneTree = Engine.get_main_loop() as SceneTree
+	if main_loop == null or main_loop.root == null or not main_loop.root.has_node(^"ContentCatalog"):
+		return
+	ContentBootstrap.run(BattleCatalog.shipped())
 
 
 ## Builds the enemy for `id` from today's faction-rule factories (Acceptance
 ## Criterion). An unknown id fails the calling test.
 ## Example: [code]var clerk: Combatant = BattleContentSeam.enemy("enemy_clerk")[/code]
 static func enemy(id: String) -> Combatant:
+	ensure_catalog()
 	match id:
 		"enemy_clerk": return BureaucratiaRule.make_clerk()
 		"enemy_supervisor": return BureaucratiaRule.make_supervisor()
@@ -64,29 +65,29 @@ static func enemy(id: String) -> Combatant:
 			return null
 
 
-## Builds the move for `id`: one of the 9 named attacks (built by hand from
-## `_NAMED_ATTACKS`, story's Implementation Notes) or one of the squad's 5
-## Specials (built from `SquadSpecials`' own factories). An unknown id fails
-## the calling test.
+## Builds the move for `id`: one of the squad's 5 Specials (built from
+## `SquadSpecials`' own factories) or one of the 9 named attacks (built from
+## its Move record through `MoveAdapter`, story 023). An unknown id fails the
+## calling test.
 ## Example: [code]var move: Move = BattleContentSeam.move("move_late_fee")[/code]
 static func move(id: String) -> Move:
-	if _NAMED_ATTACKS.has(id):
-		var data: Dictionary = _NAMED_ATTACKS[id]
-		return Move.new(data["name"], Move.Category.ATTACK, 0, data["power"], Move.TargetType.SINGLE_ENEMY)
+	ensure_catalog()
 	match id:
 		"move_speak_to_the_manager": return SquadSpecials.make_speak_to_the_manager()
 		"move_family_meal": return SquadSpecials.make_family_meal()
 		"move_appetizer": return SquadSpecials.make_appetizer()
 		"move_viral_stunt": return SquadSpecials.make_viral_stunt()
 		"move_home_run": return SquadSpecials.make_home_run()
-		_:
-			_fail_unknown_id("move", id)
-			return null
+	var named: Move = MoveAdapter.from_catalog(BattleCatalog.shipped(), id) 			if BattleCatalog.shipped().has_record(&"move", id) else null
+	if named == null:
+		_fail_unknown_id("move", id)
+	return named
 
 
 ## Builds the faction rule for `id`. An unknown id fails the calling test.
 ## Example: [code]var rule: FactionRule = BattleContentSeam.rule("rule_bureaucratia_permit")[/code]
 static func rule(id: String) -> FactionRule:
+	ensure_catalog()
 	match id:
 		"rule_bureaucratia_permit": return BureaucratiaRule.new()
 		"rule_megacorp_billing": return MegaCorpRule.new()
@@ -174,6 +175,7 @@ static func resolved_log(battle: BattleCore) -> Array:
 ## Example: [code]var rule := BattleContentSeam.scripted_rule([{"move_id": "move_late_fee", "target_index": 1}])[/code]
 ## Example (literal move): [code]var rule := BattleContentSeam.scripted_rule([{"move": Move.make_defend(), "target_index": 0}])[/code]
 static func scripted_rule(script: Array) -> FactionRule:
+	ensure_catalog()
 	return _ScriptedEnemyRule.new(script)
 
 

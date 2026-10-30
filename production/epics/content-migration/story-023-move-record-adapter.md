@@ -1,12 +1,12 @@
 # Story 023: Each enemy named attack the rules emit is built from its Move record by one adapter, and the Step 0 suite passes unchanged
 
 > **Epic**: Content Migration
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *Migration criterion from ADR-0001 Migration Step 3 and ADR-0010 §8, scoped to this story:*
 
-- [ ] GIVEN `MoveAdapter.from_record(record: MoveData) -> Move`, WHEN both rules build their named attacks through it from the catalog, THEN story 009's gate passes (005 and 006 green, unchanged), and the adapter's own test maps each of the six descriptor types to its pinned `category`/`special_effect`/`power`/`effect_rounds`, and maps an unregistered type to an error (`push_error`, returns `null`), never to a silent `NONE`.
+- [x] GIVEN `MoveAdapter.from_record(record: MoveData) -> Move`, WHEN both rules build their named attacks through it from the catalog, THEN story 009's gate passes (005 and 006 green, unchanged), and the adapter's own test maps each of the six descriptor types to its pinned `category`/`special_effect`/`power`/`effect_rounds`, and maps an unregistered type to an error (`push_error`, returns `null`), never to a silent `NONE`.
 
 ---
 
@@ -101,7 +101,7 @@
 **Required evidence**:
 - Logic: `tests/unit/battle/battle_move_adapter_test.gd` — must exist and pass, and story 009's gate passes. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing — `tests/unit/battle/battle_move_adapter_test.gd` (tests/unit/battle: 153/153 green, 2026-10-30)
 
 ---
 
@@ -109,3 +109,20 @@
 
 - Depends on: `production/epics/content-migration/story-009-characterization-regression-gate.md`, `story-014-author-enemy-named-attack-moves.md`, `story-021-migrated-set-validates-clean.md`
 - Unlocks: `production/epics/content-migration/story-026-faction-rule-decisions-from-records.md`, `story-028-squad-specials-adapter.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30
+
+- `MoveAdapter.from_record()` (one `match`, six types) plus `from_catalog(catalog, id)`. Unknown type, unknown `target_type`, null record, or != 1 descriptor -> `push_error` + `null`.
+- Both rules' `_named_attack(move_id)` read the catalog through new `BattleCatalog.shipped()` (autoload accessor, ADR-0001 autoload exception; story 026 moves it to `_configure()`). Deviation: `src/battle/battle_catalog.gd` is an extra file not listed in the story.
+- Seam: `_NAMED_ATTACKS` removed, named attacks go through the adapter; `ensure_catalog()` added and called by every builder, plus `_static_init()` so story 006's frozen test (which calls factories directly) finds the catalog READY even when run alone.
+- Step 0 suite and story 009 gate green, characterization files untouched.
+
+**Files changed**:
+- `src/battle/move_adapter.gd`, `src/battle/battle_catalog.gd` (new)
+- `src/battle/factions/bureaucratia.gd`, `src/battle/factions/megacorp.gd`
+- `tests/unit/battle/helpers/battle_content_seam.gd`
+- `tests/unit/battle/battle_move_adapter_test.gd`

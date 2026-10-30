@@ -1,12 +1,12 @@
 # Story 022: No migrated record names a file path: every cross-reference is a record ID and every asset field is an asset ID
 
 > **Epic**: Content Migration
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *Migration criterion from ADR-0001 Implementation Guidelines, scoped to this story:*
 
-- [ ] GIVEN every `.tres` under `data/factions/`, `data/enemies/`, `data/moves/` and `data/faction_rules/` (and `data/characters/` if story 019 lands), WHEN the test scans each file, THEN no quoted String/StringName value in a property line matches `(?i)(res|user|uid)://` or `(?i)\.(tres|res|tscn|scn|gd|gdshader|png|jpe?g|webp|svg|ogg|wav|mp3|json|ttf|otf)\b`; the file has exactly one `[ext_resource` line, `type="Script"`, with its path under `res://src/data/records/`; and it has no `[sub_resource` section unless its script is in the record-script allowlist.
+- [x] GIVEN every `.tres` under `data/factions/`, `data/enemies/`, `data/moves/` and `data/faction_rules/` (and `data/characters/` if story 019 lands), WHEN the test scans each file, THEN no quoted String/StringName value in a property line matches `(?i)(res|user|uid)://` or `(?i)\.(tres|res|tscn|scn|gd|gdshader|png|jpe?g|webp|svg|ogg|wav|mp3|json|ttf|otf)\b`; the file has exactly one `[ext_resource` line, `type="Script"`, with its path under `res://src/data/records/`; and it has no `[sub_resource` section unless its script is in the record-script allowlist.
 
 ---
 
@@ -84,7 +84,7 @@
 **Required evidence**:
 - Logic: `tests/unit/battle/battle_migrated_records_no_paths_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing — `tests/unit/battle/battle_migrated_records_no_paths_test.gd` (tests/unit/battle: 153/153 green, 2026-10-30)
 
 ---
 
@@ -92,3 +92,17 @@
 
 - Depends on: `production/epics/content-migration/story-013-author-faction-records.md`, `story-014-author-enemy-named-attack-moves.md`, `story-015-author-bureaucratia-enemies.md`, `story-017-author-faction-rule-records.md`, `story-018-author-squad-special-moves.md`
 - Unlocks: `production/epics/content-migration/story-035-no-hardcoded-battle-content-lint.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30
+
+- Scan covers factions, enemies, moves, faction_rules and characters (story 019 landed). Pinned RC-7 regexes compiled once; only quoted values on non-header lines are checked.
+- Fixtures under `tests/unit/battle/fixtures/no_paths/`: scheme path, file extension, second ext_resource, unlisted sub_resource, script outside `src/data/records/` (all fail) and `good_decimal.tres` (`0.5` + sentence period, passes). `_SUB_RESOURCE_ALLOWLIST` is empty.
+- Source-tree (CI) only; not valid on exported binaries.
+
+**Files changed**:
+- `tests/unit/battle/battle_migrated_records_no_paths_test.gd`
+- `tests/unit/battle/fixtures/no_paths/*.tres` (6 fixtures)

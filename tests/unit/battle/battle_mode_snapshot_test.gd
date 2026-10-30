@@ -7,6 +7,12 @@
 extends GdUnitTestSuite
 
 
+## The roster and specials factories read the shipped catalog (content-migration
+## stories 024/028), so boot it once for this suite.
+func before() -> void:
+	BattleContentSeam.ensure_catalog()
+
+
 func test_loss_restores_fight_start_state() -> void:
 	# Arrange: a BattleMode built directly (no GameStateMachine involved --
 	# capture/restore are called straight through, as the machine itself
