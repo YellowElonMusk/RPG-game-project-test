@@ -1,12 +1,12 @@
 # Story 032: `SquadSpecials` declares no MP-cost, power or rounds constant for any special, and the Step 0 suite passes unchanged
 
 > **Epic**: Content Migration
-> **Status**: Merged into story 030 (2026-10-24)
+> **Status**: Complete (2026-10-30) (merged into story 030 on 2026-10-24; implemented on its own because 030's Bureaucratia and MegaCorp parts are blocked by 026 and 027)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *Migration criterion from ADR-0001 Migration Step 4, scoped to this story:*
 
-- [ ] GIVEN `src/battle/squad/specials.gd`, THEN it contains none of `SPEAK_TO_MANAGER_MP_COST`, `APPETIZER_MP_COST`, `APPETIZER_POWER`, `FAMILY_MEAL_MP_COST`, `FAMILY_MEAL_POWER`, `VIRAL_STUNT_MP_COST`, `VIRAL_STUNT_ROUNDS`, `HOME_RUN_MP_COST`, `HOME_RUN_POWER`, and none of the five shipped special names from `CharacterizationExpected` ("Speak to the Manager", "Family Meal", "Appetizer", "Viral Stunt", "Home Run") as a literal; a grep of `src/` for each deleted const name finds nothing; and story 009's gate passes.
+- [x] GIVEN `src/battle/squad/specials.gd`, THEN it contains none of `SPEAK_TO_MANAGER_MP_COST`, `APPETIZER_MP_COST`, `APPETIZER_POWER`, `FAMILY_MEAL_MP_COST`, `FAMILY_MEAL_POWER`, `VIRAL_STUNT_MP_COST`, `VIRAL_STUNT_ROUNDS`, `HOME_RUN_MP_COST`, `HOME_RUN_POWER`, and none of the five shipped special names from `CharacterizationExpected` ("Speak to the Manager", "Family Meal", "Appetizer", "Viral Stunt", "Home Run") as a literal; a grep of `src/` for each deleted const name finds nothing; and story 009's gate passes.
 
 ---
 
@@ -83,7 +83,7 @@
 **Required evidence**:
 - Logic: `tests/unit/battle/battle_no_hardcoded_content_test.gd` (specials case) — must exist and pass, and story 009's gate passes. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing: `tests/unit/battle/battle_no_hardcoded_content_test.gd` (4 specials tests); `-a res://tests/unit/battle` 157/157 including story 009's gate (2026-10-30)
 
 ---
 
@@ -91,3 +91,15 @@
 
 - Depends on: `production/epics/content-migration/story-009-characterization-regression-gate.md`, `story-028-squad-specials-adapter.md`
 - Unlocks: `production/epics/content-migration/story-035-no-hardcoded-battle-content-lint.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30
+**Criteria**: 1/1 passing (AC-1)
+**Files**:
+- `src/battle/squad/specials.gd`: deleted the nine MP cost, power and rounds constants. Updated the doc comments, so Viral Stunt's duration now points at the record's `effect_rounds`. Kept `HEAL_ATTACK_SCALE` (Stats epic).
+- `tests/unit/battle/battle_command_menu_test.gd`: the unaffordable-Home-Run tooltip test now gets the cost from `SquadSpecials.make_home_run().mp_cost`, not the deleted const. The test is not a characterization test, so the gated files are unchanged.
+- `tests/unit/battle/battle_no_hardcoded_content_test.gd` (new): the specials case. It checks for none of the 9 const names, none of the 5 `CharacterizationExpected.SPECIALS` display names as a quoted literal, that `HEAL_ATTACK_SCALE` is still present, and that `src/` has no deleted names.
+**Deviations**: none. Balance is unchanged because the values were already read from the Move records (story 028). The file's Bureaucratia and MegaCorp cases are left to story 030 and 031.

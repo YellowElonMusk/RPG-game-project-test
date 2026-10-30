@@ -114,7 +114,7 @@ func test_menu_hidden_after_battle_ended() -> void:
 
 func test_unaffordable_special_disabled_with_mp_reason() -> void:
 	var squad: Array[Combatant] = _make_real_squad()
-	squad[0].mp = 0  # Baguette Thrower: Home Run costs SquadSpecials.HOME_RUN_MP_COST
+	squad[0].mp = 0  # Baguette Thrower: Home Run's cost comes from its Move record
 	var battle := BattleCore.new(squad, [BureaucratiaRule.make_clerk()],
 			RandomNumberGenerator.new(), FactionRule.new())
 	battle.start_battle(false)
@@ -128,7 +128,7 @@ func test_unaffordable_special_disabled_with_mp_reason() -> void:
 	assert_bool(special_button.disabled).override_failure_message(
 			"Home Run should be disabled with 0 MP").is_true()
 	assert_str(special_button.tooltip_text).is_equal(
-			"Not enough MP (needs %d)" % SquadSpecials.HOME_RUN_MP_COST)
+			"Not enough MP (needs %d)" % SquadSpecials.make_home_run().mp_cost)
 
 
 func _build_menu() -> BattleCommandMenu:

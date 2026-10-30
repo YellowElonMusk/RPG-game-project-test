@@ -44,7 +44,7 @@
 
 *Migration criterion from ADR-0001 Migration Step 4, scoped to this story:*
 
-- [ ] GIVEN `src/battle/squad/specials.gd`, THEN it contains none of `SPEAK_TO_MANAGER_MP_COST`, `APPETIZER_MP_COST`, `APPETIZER_POWER`, `FAMILY_MEAL_MP_COST`, `FAMILY_MEAL_POWER`, `VIRAL_STUNT_MP_COST`, `VIRAL_STUNT_ROUNDS`, `HOME_RUN_MP_COST`, `HOME_RUN_POWER`, and none of the five shipped special names from `CharacterizationExpected` ("Speak to the Manager", "Family Meal", "Appetizer", "Viral Stunt", "Home Run") as a literal; a grep of `src/` for each deleted const name finds nothing; and story 009's gate passes.
+- [x] GIVEN `src/battle/squad/specials.gd`, THEN it contains none of `SPEAK_TO_MANAGER_MP_COST`, `APPETIZER_MP_COST`, `APPETIZER_POWER`, `FAMILY_MEAL_MP_COST`, `FAMILY_MEAL_POWER`, `VIRAL_STUNT_MP_COST`, `VIRAL_STUNT_ROUNDS`, `HOME_RUN_MP_COST`, `HOME_RUN_POWER`, and none of the five shipped special names from `CharacterizationExpected` ("Speak to the Manager", "Family Meal", "Appetizer", "Viral Stunt", "Home Run") as a literal; a grep of `src/` for each deleted const name finds nothing; and story 009's gate passes. *(Done 2026-10-30 as story 032, see that file. The Bureaucratia and MegaCorp criteria are still blocked by stories 026 and 027.)*
 
 ---
 

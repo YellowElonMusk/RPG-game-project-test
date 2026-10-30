@@ -23,32 +23,12 @@
 ## # the effect itself runs through SquadSpecials.apply_stun().
 ## [/codeblock]
 ## Content-migration story 028: the five factories adapt their Move records
-## (`move_speak_to_the_manager` etc.) through `MoveAdapter`; the cost/power
-## constants below are unused until story 030 deletes them.
+## (`move_speak_to_the_manager` etc.) through `MoveAdapter`. Content-migration
+## story 032 deleted the old cost/power/rounds constants: each special's MP
+## cost, power and duration live only in its Move record. `HEAL_ATTACK_SCALE`
+## stays until ADR-0007 Migration Step 2 moves it to `StatsConfig`.
 class_name SquadSpecials
 extends RefCounted
-
-## Karen's stun: spends MP, targets one enemy.
-const SPEAK_TO_MANAGER_MP_COST: int = 4
-
-## The Chef's single-target heal: spends MP, heals one chosen ally (F4).
-const APPETIZER_MP_COST: int = 3
-const APPETIZER_POWER: int = 10
-
-## The Chef's party-wide heal: spends MP, heals every living squad member (F4).
-const FAMILY_MEAL_MP_COST: int = 5
-const FAMILY_MEAL_POWER: int = 5
-
-## Florida Man's damage-taken debuff: spends MP, no power of its own — its
-## magnitude is DamageCalculator.VULNERABLE_PCT, its duration is this many
-## rounds (Move.effect_rounds).
-const VIRAL_STUNT_MP_COST: int = 3
-const VIRAL_STUNT_ROUNDS: int = 2
-
-## The Baguette Thrower's direct-damage special: spends MP, same damage
-## pipeline as Attack (DamageCalculator.calculate_damage()) with its own power.
-const HOME_RUN_MP_COST: int = 4
-const HOME_RUN_POWER: int = 18
 
 ## Attack scaling for the heal formula (Stats & Damage GDD F4): attack this
 ## high adds +100% to a heal's base power. Same constant as the prototype's
@@ -76,7 +56,7 @@ static func make_appetizer() -> Move:
 
 
 ## Florida Man's *Viral Stunt*: makes one enemy take more damage for
-## VIRAL_STUNT_ROUNDS rounds (Acceptance Criterion 5).
+## its record's `effect_rounds` rounds (Acceptance Criterion 5).
 static func make_viral_stunt() -> Move:
 	return MoveAdapter.from_catalog(BattleCatalog.shipped(), "move_viral_stunt")
 
