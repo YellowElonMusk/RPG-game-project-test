@@ -282,6 +282,12 @@ static func _cap_monotonic(stage_records: Array) -> PackedStringArray:
 ## the unbanded shortest route (GDD rule 12, Tuning Knobs `bypass_ratio_min`,
 ## 1.2, range 1.1-1.5; story 085).
 @export var bypass_ratio_min: float = 1.2
+## The first-encounter map's first patrol: its bypass ceiling over its section
+## of the leg (`first_bypass_ratio_max`, 1.1, range 1.05-1.2; story 086)
+## and its clearance past the entry's safe zone and notice radius
+## (`first_patrol_clearance_m`, 3 m, range 2-5; story 119).
+@export var first_bypass_ratio_max: float = 1.1
+@export var first_patrol_clearance_m: float = 3.0
 ## How long a patrolling symbol is on screen before the leader can reach its
 ## notice radius, in seconds (GDD Formulas `chase_visibility`, Tuning Knobs
 ## `see_lead_s`, 0.25, range 0.2-0.3). Sets `see_m()`.

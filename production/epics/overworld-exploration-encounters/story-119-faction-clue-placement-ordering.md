@@ -1,7 +1,7 @@
 # Story 119: Each faction's first-encounter clue sits on the critical path before the first patrol
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Blocked (2026-10-30): the segment's first patrol and clue placement fail the rule; needs a level-design pass
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-50 [D] (R16)** On each faction's first-encounter map, at least one marker tagged `faction_clue` lies within `interact_reach_m` of a cell on the critical path. Distances are **arc lengths along the leg's `L_crit` path from the leg's start EntryPoint** (for the Paris segment, the Town-side one). The clue comes before the first point within any notice radius, and the first patrol lies at least `safe_radius_m + symbol_chase_m + first_patrol_clearance_m` along it. A marker tagged `optional_teach` satisfies the same ordering, and it is a proximity bark or on-screen art, never a `confirm`-only line.
+- [x] **AC-50 [D] (R16)** On each faction's first-encounter map, at least one marker tagged `faction_clue` lies within `interact_reach_m` of a cell on the critical path. Distances are **arc lengths along the leg's `L_crit` path from the leg's start EntryPoint** (for the Paris segment, the Town-side one). The clue comes before the first point within any notice radius, and the first patrol lies at least `safe_radius_m + symbol_chase_m + first_patrol_clearance_m` along it. A marker tagged `optional_teach` satisfies the same ordering, and it is a proximity bark or on-screen art, never a `confirm`-only line.
 
 ---
 
@@ -64,7 +64,7 @@ planned ones; `/dev-story` replaces the list with the files it changed; `/story-
 checks scope against it.*
 
 - `tools/ci/validate_maps.gd` (faction-clue and `optional_teach` placement/ordering check)
-- `tests/unit/overworld/data/faction_clue_placement_test.gd`
+- `tests/unit/overworld/first_encounter_placement_test.gd`
 
 ---
 
@@ -77,9 +77,9 @@ checks scope against it.*
 ## Test Evidence
 
 **Story Type**: Logic
-**Required evidence**: `tests/unit/overworld/data/faction_clue_placement_test.gd` — must exist and pass.
+**Required evidence**: `tests/unit/overworld/first_encounter_placement_test.gd` — must exist and pass.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -97,3 +97,18 @@ Measured on the shipped segment (the Paris first-encounter map) along `L_crit` f
 - The `faction_clue` poster (8.5, 12.5) is **not within `interact_reach_m` of any critical-path cell**.
 
 Fixing it is a segment level-design pass: move the west Clerk past 10.5 m along the path, and put the clue poster and the `optional_teach` NPC on the path before the first notice point. Do it together with story 086 (first-patrol bypass ratio and the teaching speaker) and story 103 (dungeon density). Then re-prove the bypass and pressure validators, recapture story 087's walk-ins, and update the tests that pin segment coordinates. The validator itself (arc lengths over the `L_crit` cell set, where distance-from-start plus distance-to-end equals `L_crit`) is straightforward and should land with the content.
+
+## Completion Notes (2026-10-30): the segment level-design pass
+
+- `MapValidator.first_encounter_metrics()` and `check_first_encounter()` run in `validate_maps`. Test: `tests/unit/overworld/first_encounter_placement_test.gd`. The first-encounter map is the first chapter step's map holding a patrol (Paris: the segment, leg `segment_to_dungeon` from `from_town`).
+- Measurements are arcs along `L_crit`; the path set is every cell on a tied shortest route.
+- New knobs: `first_bypass_ratio_max` 1.1 and `first_patrol_clearance_m` 3.
+- The tool `tools/level_review/first_encounter_report.gd` prints the numbers for level review.
+- **Content change:**
+  - The west Clerk's patrol moved from (9.5, 5.5)–(14.5, 5.5) to (14.5, 7.5)–(17.5, 7.5).
+  - The `faction_clue` poster moved from (8.5, 12.5) to (10.5, 6.5), beside the row 7–9 wall on the path.
+  - Old layout: first notice 3.4 m, first patrol 6.2 m, clue off the path, section ratio 1.43.
+  - New layout: first notice 8.8 m, first patrol 10.8 m (≥ 10.5), clue at 5.8 m, the Café regular's teaching bark at 1.0 m, section ratio 1.0.
+- The candidate (15.5, 7.5)–(15.5, 10.5) passed every rule but failed three of story 087's south walk-ins (0% visible behind the row-12 wall block), so it was rejected.
+- Story 087's walk-ins were recaptured: 24 approaches, 0 failures. I opened the west Clerk's 225° and 270° captures myself; the Clerk is unoccluded in both.
+- `validate_maps` is clean, and the suite passes 1149/1149.

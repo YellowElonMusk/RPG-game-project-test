@@ -70,6 +70,7 @@ static func validate_catalog(catalog: ContentCatalogService, cfg: OverworldConfi
 	errors.append_array(check_reaction_sets(steps, maps))
 	if steps != null:
 		errors.append_array(WalkBudget.compute(steps, records, maps, cfg)["errors"])
+	errors.append_array(check_first_encounter(steps, records, maps, cfg))
 	for rec: Resource in catalog.all_records(&"map"):
 		var rec_map: OverworldMap = maps.get(String(rec.get("id"))) as OverworldMap
 		if rec_map != null and rec is MapData:
@@ -434,4 +435,165 @@ static func check_reaction_sets(steps: ChapterSteps, maps: Dictionary) -> Packed
 			ribs = ribs or (not gag.liberated_role.is_empty() and gag.ribs_squad)
 		if not ribs:
 			errors.append("%s: no liberation reaction is tagged ribs_squad" % map_id)
+	return errors
+
+
+## Stories 086 and 119 (GDD rules 12 "First patrol", 16): measurements along
+## `leg`'s `L_crit` on the first-encounter map. The path set is every cell on
+## some shortest route (distance from the start plus distance to the end
+## equals `L_crit`); a cell's arc is its walk distance from the leg's start
+## EntryPoint. Returns `l_crit`, `first_notice` (arc of the first path cell
+## within `symbol_chase_m` of any patrol), `first_patrol` (arc of the path
+## cell nearest the first patrol's path), `clue` and `teach` (arcs of the
+## first path cell within reach of a `faction_clue` gag / `optional_teach`
+## NPC; INF when none), `section_ratio` (the first patrol's band section:
+## `L_bypass / L_crit` from the last path cell before its band to the first
+## after it) and `first_symbol`.
+static func first_encounter_metrics(map: OverworldMap, leg: CriticalPathLeg, cfg: OverworldConfig) -> Dictionary:
+	var out: Dictionary = {"l_crit": INF, "first_notice": INF, "first_patrol": INF, "clue": INF,
+			"teach": INF, "section_ratio": INF, "first_symbol": ""}
+	var entry: EntryPoint = map.find_entry_point(leg.from_entry)
+	if entry == null:
+		return out
+	var grid: WalkGrid = map.bake_walk_grid(cfg)
+	for cp: CheckpointMarker in map.checkpoints():
+		grid.set_blocked(OverworldMode.checkpoint_cells(cp, grid), true)
+	var start: Array[Vector2i] = [grid.cell_of(entry.ground_position(map))]
+	var goal: Dictionary = BypassSearch._goal_cells(map, grid, leg.to, cfg)
+	var ds: Dictionary = MapStructureValidator.walk_distances(grid, start)
+	var goal_cells: Array[Vector2i] = []
+	for c: Vector2i in goal:
+		goal_cells.append(c)
+	var dg: Dictionary = MapStructureValidator.walk_distances(grid, goal_cells)
+	var l_crit: float = INF
+	for c: Vector2i in goal:
+		l_crit = minf(l_crit, float(ds.get(c, INF)))
+	out["l_crit"] = l_crit
+	if l_crit == INF:
+		return out
+	var path: Array[Vector2i] = []
+	for c: Vector2i in ds:
+		if dg.has(c) and absf(float(ds[c]) + float(dg[c]) - l_crit) < 1e-3:
+			path.append(c)
+	# The first patrol: the patrolling symbol whose path comes nearest the
+	# leg earliest (smallest arc of a path cell within its notice radius).
+	var first: EncounterSymbol = null
+	for sym: EncounterSymbol in map.symbol_markers():
+		if sym.is_static or sym.patrol_path.is_empty():
+			continue
+		for c: Vector2i in path:
+			if _patrol_distance(sym, grid.cell_center(c)) <= cfg.symbol_chase_m \
+					and float(ds[c]) < float(out["first_notice"]):
+				out["first_notice"] = float(ds[c])
+				first = sym
+	if first != null:
+		out["first_symbol"] = first.symbol_id if not first.symbol_id.is_empty() else first.encounter_id
+		var nearest: float = INF
+		for c: Vector2i in path:
+			var d: float = _patrol_distance(first, grid.cell_center(c))
+			if d < nearest - 1e-6 or (absf(d - nearest) < 1e-6 and float(ds[c]) < float(out["first_patrol"])):
+				nearest = d
+				out["first_patrol"] = float(ds[c])
+		# Its section: the last path cell before its band to the first after.
+		var band: Dictionary = {}
+		for c: Vector2i in BypassSearch._band_cells(map, first, cfg):
+			band[c] = true
+		var band_lo: float = INF
+		var band_hi: float = -INF
+		for c: Vector2i in path:
+			if band.has(c):
+				band_lo = minf(band_lo, float(ds[c]))
+				band_hi = maxf(band_hi, float(ds[c]))
+		var s0: Vector2i = Vector2i(-1, -1)
+		var s1: Vector2i = Vector2i(-1, -1)
+		for c: Vector2i in path:
+			if band.has(c):
+				continue
+			var a: float = float(ds[c])
+			if a < band_lo and (s0 == Vector2i(-1, -1) or a > float(ds[s0])):
+				s0 = c
+			if a > band_hi and (s1 == Vector2i(-1, -1) or a < float(ds[s1])):
+				s1 = c
+		if s0 != Vector2i(-1, -1) and s1 != Vector2i(-1, -1):
+			var section_crit: float = float(ds[s1]) - float(ds[s0])
+			var banded: WalkGrid = map.bake_walk_grid(cfg)
+			for cp: CheckpointMarker in map.checkpoints():
+				banded.set_blocked(OverworldMode.checkpoint_cells(cp, banded), true)
+			banded.set_blocked(BypassSearch._band_cells(map, first, cfg), true)
+			var from: Array[Vector2i] = [s0]
+			var bypass: float = float(MapStructureValidator.walk_distances(banded, from).get(s1, INF))
+			out["section_ratio"] = bypass / section_crit if section_crit > 0.0 else INF
+	for gag: GagInteractable in map.gags():
+		if gag.faction_clue:
+			for c: Vector2i in path:
+				if grid.cell_center(c).distance_to(gag.ground_position(map)) <= cfg.interact_reach_m + grid.cell_m * 0.5:
+					out["clue"] = minf(float(out["clue"]), float(ds[c]))
+	for npc: NpcSpawn in map.npc_spawns():
+		if npc.optional_teach and npc.liberated_role.is_empty():
+			for c: Vector2i in path:
+				if grid.cell_center(c).distance_to(npc.ground_position(map)) <= 2.0 * cfg.interact_reach_m + grid.cell_m * 0.5:
+					out["teach"] = minf(float(out["teach"]), float(ds[c]))
+	return out
+
+
+## Distance from `p` to `sym`'s patrol polyline (a loop's closing segment
+## included).
+static func _patrol_distance(sym: EncounterSymbol, p: Vector2) -> float:
+	var pts: PackedVector2Array = sym.patrol_path
+	if pts.size() == 1:
+		return p.distance_to(pts[0])
+	var best: float = INF
+	var n: int = pts.size()
+	var segs: int = n if sym.path_mode == SymbolBrain.PathMode.LOOP and n > 2 else n - 1
+	for i: int in segs:
+		var q: Vector2 = Geometry2D.get_closest_point_to_segment(p, pts[i], pts[(i + 1) % n])
+		best = minf(best, q.distance_to(p))
+	return best
+
+
+## Stories 086 and 119 (AC-31c, AC-50; GDD rules 12, 16): for each faction,
+## its first-encounter map is the map of the first chapter step whose map
+## holds a patrolling symbol of that faction's map record. Along that
+## step's leg (`first_encounter_metrics`): the first patrol is at least
+## `safe_radius_m + symbol_chase_m + first_patrol_clearance_m` along
+## `L_crit`; a `faction_clue` marker and the `optional_teach` speaker (an
+## NPC: a proximity bark, never a confirm-only gag) come before the first
+## notice point; the first patrol's section has `L_bypass / L_crit <=
+## first_bypass_ratio_max`.
+static func check_first_encounter(steps: ChapterSteps, records: Dictionary, maps: Dictionary,
+		cfg: OverworldConfig) -> PackedStringArray:
+	var errors := PackedStringArray()
+	if steps == null:
+		return errors
+	var seen: Dictionary = {}
+	for step: ChapterStep in steps.steps:
+		var rec: MapData = records.get(step.map_id) as MapData
+		var map: OverworldMap = maps.get(step.map_id) as OverworldMap
+		if rec == null or map == null or seen.has(rec.faction_id):
+			continue
+		var patrols: bool = false
+		for sym: EncounterSymbol in map.symbol_markers():
+			patrols = patrols or (not sym.is_static and not sym.patrol_path.is_empty())
+		if not patrols:
+			continue
+		seen[rec.faction_id] = true
+		var leg: CriticalPathLeg = null
+		for l: CriticalPathLeg in rec.critical_path:
+			if l != null and l.id == step.leg_id:
+				leg = l
+		if leg == null:
+			continue
+		var m: Dictionary = first_encounter_metrics(map, leg, cfg)
+		var tag: String = "%s: first-encounter leg '%s'" % [rec.id, leg.id]
+		var clearance: float = cfg.safe_radius_m + cfg.symbol_chase_m + cfg.first_patrol_clearance_m
+		if float(m["first_patrol"]) < clearance:
+			errors.append("%s: first patrol %s is %.1f m along L_crit (< %.1f)"
+					% [tag, m["first_symbol"], m["first_patrol"], clearance])
+		if not float(m["clue"]) < float(m["first_notice"]):
+			errors.append("%s: no faction_clue marker before the first notice point (%.1f m)" % [tag, m["first_notice"]])
+		if not float(m["teach"]) < float(m["first_notice"]):
+			errors.append("%s: no optional_teach speaker before the first notice point (%.1f m)" % [tag, m["first_notice"]])
+		if float(m["section_ratio"]) > cfg.first_bypass_ratio_max:
+			errors.append("%s: first patrol's section bypass ratio %.2f > first_bypass_ratio_max %.2f"
+					% [tag, m["section_ratio"], cfg.first_bypass_ratio_max])
 	return errors

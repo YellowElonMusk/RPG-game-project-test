@@ -149,7 +149,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 083 | [The ordered search finds a bypass lane round every patrol band on every critical-path leg](story-083-bypass-lane-ordered-search.md) | Logic | Complete | ADR-0012 |
 | 084 | [No walk-grid route reaches the dungeon's boss-chamber exit without crossing the story encounter](story-084-story-encounter-not-routable-around.md) | Logic | Complete | ADR-0012 |
 | 085 | [The dungeon's pressure floor — at least half the symbols' bands cross the shortest critical path](story-085-dungeon-pressure-floor.md) | Logic | Complete | ADR-0012 |
-| 086 | [The first-encounter map's teaching bypass is visibly easy, and its speaker stands before the first notice radius](story-086-first-patrol-bypass-ratio-and-teaching-speaker.md) | Logic | Ready | ADR-0012 |
+| 086 | [The first-encounter map's teaching bypass is visibly easy, and its speaker stands before the first notice radius](story-086-first-patrol-bypass-ratio-and-teaching-speaker.md) | Logic | Complete | ADR-0012 |
 | 087 | [Every symbol's patrol is on screen from every approach, before the leader can be noticed](story-087-patrol-visibility-before-the-notice-radius.md) | Visual/Feel | In Review | ADR-0012 |
 | 088 | [Contact with the boss never finds it moved, and its descriptor forbids Flee but allows Retreat](story-088-boss-contact-descriptor-flags.md) | Integration | Complete | ADR-0012 |
 | 089 | [Defeat → Retreat against the boss goes to the pre-dungeon camp once it is passed, or the Town café before](story-089-story-encounter-flee-returns-to-registered-camp.md) | Integration | Complete | ADR-0012 |
@@ -182,7 +182,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 116 | [Measure the share of chapter time spent walking against the budget](story-116-paris-walk-share-playtest.md) | Integration | Ready | ADR-0012 |
 | 117 | [Every active clutter marker either responds or blocks a route](story-117-clutter-marker-gag-or-blocker-validation.md) | Logic | Ready | ADR-0012 |
 | 118 | [Each gag response type behaves as specified](story-118-gag-response-behavior.md) | Logic | Complete | ADR-0012 |
-| 119 | [Each faction's first-encounter clue sits on the critical path before the first patrol](story-119-faction-clue-placement-ordering.md) | Logic | Blocked | ADR-0012 |
+| 119 | [Each faction's first-encounter clue sits on the critical path before the first patrol](story-119-faction-clue-placement-ordering.md) | Logic | Complete | ADR-0012 |
 | 120 | [The Paris clue is legible on the Deck and the comprehension check passes](story-120-faction-clue-narrative-signoff-and-comprehension.md) | Config/Data | Ready | ADR-0012 |
 | 121 | [Every narrative guardrail item has a passing sign-off entry](story-121-narrative-guardrail-signoff-checklist.md) | Config/Data | Ready | ADR-0012 |
 | 122 | [Confirm at a clue poster or decree gag shows its LocText verbatim](story-122-clue-and-decree-loctext-display.md) | Logic | Ready | ADR-0012 |

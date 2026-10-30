@@ -60,7 +60,7 @@ facing = Vector2(1, 0)
 [node name="SymbolClerksWest" type="Marker3D" parent="." unique_id=88134525]
 script = ExtResource("4_kglc8")
 encounter_id = "enc_paris_clerks_west"
-patrol_path = PackedVector2Array(9.5, 5.5, 14.5, 5.5)
+patrol_path = PackedVector2Array(14.5, 7.5, 17.5, 7.5)
 
 [node name="SymbolClerksEast" type="Marker3D" parent="." unique_id=208026303]
 script = ExtResource("4_kglc8")
@@ -92,7 +92,7 @@ line = "They won't follow you past the café paving. Union rules."
 optional_teach = true
 
 [node name="GagPermitPoster" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0, 12.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, 0, 6.5)
 script = ExtResource("6_gag")
 marker_id = &"gag_permit_poster"
 response = 2
