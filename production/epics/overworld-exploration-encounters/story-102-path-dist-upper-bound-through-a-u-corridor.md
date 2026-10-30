@@ -1,7 +1,7 @@
 # Story 102: `path_dist` stays a true upper bound on the leader's path distance through a U-shaped corridor
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -30,7 +30,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-40c [L] (`path_dist`)** GIVEN a U-shaped corridor in which the leader rounds a wall end between repaths, THEN on every frame `path_dist` is at least the true walk-grid path distance from symbol to leader, and from the first frame on which `path_dist > symbol_giveup_m`, it stays above `symbol_giveup_m` on every frame until Returning, unless the true path distance falls below it.
+- [x] **AC-40c [L] (`path_dist`)** GIVEN a U-shaped corridor in which the leader rounds a wall end between repaths, THEN on every frame `path_dist` is at least the true walk-grid path distance from symbol to leader, and from the first frame on which `path_dist > symbol_giveup_m`, it stays above `symbol_giveup_m` on every frame until Returning, unless the true path distance falls below it.
 
 ---
 
@@ -73,7 +73,7 @@
 **Required evidence**:
 - `tests/unit/overworld/path_dist_upper_bound_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -81,3 +81,11 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-101-symbol-speeds-escape-timing.md`
 - Unlocks: None further in this epic
+
+## Completion Notes (2026-10-30)
+
+- Test: `tests/unit/overworld/path_dist_upper_bound_test.gd`, on a U corridor 14 × 26 with the wall on column 6. The leader walks down one arm, round the end and up the other, so it rounds the wall between repaths.
+- Interpretation, flagged: "true path distance" is the exact point geodesic (straight when clear, else round the wall end's two corners), not cell-centre grid distance. The latter is not a lower bound for real positions: two points in opposite corners of their cells sat 1.5 m under it, so the first draft failed on a correct `path_dist`.
+- The symbol cuts the bend and closes in there, so the test gives up at 5.0 m rather than 6.5; otherwise the chase never went beyond give-up in the fixture.
+- Both `+INF` gaps are covered: a leader in a SAFE cell at `t0`, and a route end walled off from the leader.
+- Mutation checked: dropping the leader-travel term (an underestimate) fails a test here.
