@@ -1,7 +1,7 @@
 # Story 104: The chapter's planned walk share stays under `walk_share_max`
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-42 [D] (`chapter_walk_budget`)** `walk_share` ≤ `walk_share_max`, where each leg's length is its `L_bypass` maximum over reachable stages and `passes(leg)` is counted from the ChapterFlow step list. A fixture step list that names a leg twice doubles that leg's term.
+- [x] **AC-42 [D] (`chapter_walk_budget`)** `walk_share` ≤ `walk_share_max`, where each leg's length is its `L_bypass` maximum over reachable stages and `passes(leg)` is counted from the ChapterFlow step list. A fixture step list that names a leg twice doubles that leg's term.
 
 ---
 
@@ -58,7 +58,7 @@
 ## Files
 
 - `tools/ci/validate_maps.gd`
-- `tests/unit/overworld/data/chapter_walk_budget_test.gd`
+- `tests/unit/overworld/chapter_walk_budget_test.gd`
 
 ---
 
@@ -72,9 +72,9 @@
 
 **Story Type**: Logic (Config/Data validation)
 **Required evidence**:
-- `tests/unit/overworld/data/chapter_walk_budget_test.gd` — must exist and pass. Gate level: BLOCKING.
+- `tests/unit/overworld/chapter_walk_budget_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -82,3 +82,11 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-083-bypass-lane-ordered-search.md`, `production/epics/overworld-exploration-encounters/story-085-dungeon-pressure-floor.md`
 - Unlocks: None further in this epic
+
+## Completion Notes (2026-10-30)
+
+- `WalkBudget.compute()` sums each step's leg `L_bypass`, so passes are counted from the step list. It runs in `validate_maps`.
+- `L_bypass` comes from the new `BypassSearch.bypass_length()`: the same banded search as rule 12, through the story encounter's split (counter, boom depth, beyond), and `L_crit` on the boss map.
+- New knobs: `k_tort` 1.4; `t_chapter_s` 2700 (the low end of 45–60 min, so the share is not flattered); `walk_share_max` 0.15.
+- Shipped placeholder chapter: about 25 s of walking, a share of 0.9%. The placeholder maps are far smaller than the GDD example's (310 m), and Town's café leg is 0 m because the segment EntryPoint sits inside the café's safe zone.
+- The shipped-data test failed first: the split computed its "beyond" cells after opening the boom, so the dungeon's boss leg measured INF. Fixed to match `check()`.

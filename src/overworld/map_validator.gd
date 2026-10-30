@@ -68,6 +68,8 @@ static func validate_catalog(catalog: ContentCatalogService, cfg: OverworldConfi
 	errors.append_array(CheckpointRules.check(maps, records, steps, catalog, cfg))
 	errors.append_array(check_clutter_placement(maps, cfg, PresentationConfig.new()))
 	errors.append_array(check_reaction_sets(steps, maps))
+	if steps != null:
+		errors.append_array(WalkBudget.compute(steps, records, maps, cfg)["errors"])
 	for rec: Resource in catalog.all_records(&"map"):
 		var rec_map: OverworldMap = maps.get(String(rec.get("id"))) as OverworldMap
 		if rec_map != null and rec is MapData:

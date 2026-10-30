@@ -147,6 +147,14 @@ func v_chase() -> float:
 @export var d_max_overworld: int = 250
 @export var d_min_dungeon: int = 80
 @export var d_max_dungeon: int = 120
+## Chapter walk budget (`chapter_walk_budget`; story 104): the exploring /
+## escape / walk-back allowance `k_tort` (1.4, range 1.2-1.8), the chapter
+## length `T_chapter` in seconds (2700, the low end of the 45-60 min
+## target, so the share is not flattered; range 2700-3600) and the gate
+## `walk_share_max` (0.15, range 0.10-0.20).
+@export var k_tort: float = 1.4
+@export var t_chapter_s: float = 2700.0
+@export var walk_share_max: float = 0.15
 
 ## `dt_max` is Presentation's knob; this default (the GDD's) stands in until
 ## `presentation_settings` is injected (see `OverworldMode`).

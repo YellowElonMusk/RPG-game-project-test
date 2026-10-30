@@ -239,3 +239,40 @@ static func _subsets(items: Array, size: int) -> Array:
 		out.append([first] + s)
 	out.append_array(_subsets(rest, size))
 	return out
+
+
+## Story 104: the length of a leg's bypass lane, `L_bypass(leg)` in metres
+## (the walk an avoiding player takes), by the same search as `check()`:
+## through the story encounter's checkpoint by the split when the leg needs
+## it (start to the counter, then from beyond its boom; the boom's own
+## depth is counted). A boss map has no patrols, so `L_bypass = L_crit`
+## there. INF when no lane exists (`check()` reports it).
+static func bypass_length(map: OverworldMap, leg: CriticalPathLeg, cfg: OverworldConfig) -> float:
+	var entry: EntryPoint = map.find_entry_point(leg.from_entry)
+	if entry == null:
+		return INF
+	var grid: WalkGrid = banded_grid(map, cfg) if not MapStructureValidator._holds_boss(map) \
+			else map.bake_walk_grid(cfg)
+	var start: Array[Vector2i] = [grid.cell_of(entry.ground_position(map))]
+	var goal: Dictionary = _goal_cells(map, grid, leg.to, cfg)
+	var direct: float = _shortest(grid, start, goal)
+	if direct < INF:
+		return direct
+	var story: EncounterSymbol = null
+	for sym: EncounterSymbol in map.symbol_markers():
+		if sym.is_static and sym.start_on == EncounterSymbol.StartOn.CONFIRM:
+			story = sym
+	var story_cp: CheckpointMarker = map.find_checkpoint(story.checkpoint_id) if story != null else null
+	if story_cp == null:
+		return INF
+	var to_counter: float = _shortest(grid, start, _within(grid, story.patrol_path[0], cfg.interact_reach_m))
+	var cp_cells: Array[Vector2i] = OverworldMode.checkpoint_cells(story_cp, grid)
+	var reach: Dictionary = MapStructureValidator.walk_distances(grid, start)
+	grid.set_blocked(cp_cells, false)
+	var beyond: Array[Vector2i] = []
+	for c: Vector2i in cp_cells:
+		for n: Vector2i in [c + Vector2i.UP, c + Vector2i.DOWN, c + Vector2i.LEFT, c + Vector2i.RIGHT]:
+			if grid.is_walkable(n) and not cp_cells.has(n) and not reach.has(n):
+				beyond.append(n)
+	var depth: float = story_cp.blocked_rect.size.y if story_cp.blocked_rect.size.y > 0.0 else grid.cell_m
+	return to_counter + depth + _shortest(grid, beyond, goal)
