@@ -34,6 +34,7 @@ func test_continue_mid_chase_resets_symbols_to_patrol() -> void:
 		frames += 1
 	_run_to_idle(root.machine)
 	DebugLaunchArgs.force_outcome((root.current_mode_node() as BattleMode).battle, DebugLaunchArgs.VICTORY)
+	(root.current_mode_node() as BattleMode).settle_replay()
 	root.machine.report_results_done()
 	_run_to_idle(root.machine)
 	assert_bool(root.world_state.is_resolved(_SEGMENT, resolved_id)).is_true()

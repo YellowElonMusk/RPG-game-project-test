@@ -73,6 +73,7 @@ func _beat_the_boss(root: GameRoot) -> void:
 		frames += 1
 	_run_to_idle(root.machine)
 	DebugLaunchArgs.force_outcome((root.current_mode_node() as BattleMode).battle, DebugLaunchArgs.VICTORY)
+	(root.current_mode_node() as BattleMode).settle_replay()
 	assert_int(root.machine.report_results_done()).is_equal(GameStateMachine.RequestResult.OK)
 	_run_to_idle(root.machine)
 	# The post-battle Dialogue is up on the reveal; cancel and menu are

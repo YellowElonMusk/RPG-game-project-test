@@ -37,6 +37,10 @@ var _target_title: Label = null
 var _target_list: VBoxContainer = null
 
 var _battle: BattleCore = null
+## The Battle mode's replay controller (ADR-0006), or null. When set, the menu
+## opens only on its `turn_started_after_replay` and closes on submit, so it
+## stays hidden while the turn plays back (sprite-camera story 033).
+var _replay: BattleReplayController = null
 var _pending_move: Move = null
 
 
@@ -46,7 +50,11 @@ var _pending_move: Move = null
 ## before the menu is added to the tree (same note as `BattleHud`/
 ## `DefeatPrompt`'s own `setup()`), and the `%` unique-name lookup does not
 ## need tree membership.
-func setup(battle: BattleCore) -> void:
+##
+## With `replay`, the menu connects only to the controller's gated turn and
+## end signals, never to `BattleCore`'s (ADR-0006 Implementation Guidelines),
+## and starts hidden unless the controller is already IDLE.
+func setup(battle: BattleCore, replay: BattleReplayController = null) -> void:
 	_command_panel = %CommandPanel
 	_command_title = %CommandTitle
 	_command_list = %CommandList
@@ -54,8 +62,16 @@ func setup(battle: BattleCore) -> void:
 	_target_title = %TargetTitle
 	_target_list = %TargetList
 	_battle = battle
-	_battle.turn_started.connect(_on_turn_started)
-	_battle.battle_ended.connect(_on_battle_ended)
+	_replay = replay
+	if _replay != null:
+		_replay.turn_started_after_replay.connect(_on_turn_started)
+		_replay.battle_ended_after_replay.connect(_on_battle_ended)
+		if _replay.get_state() != BattleReplayController.State.IDLE:
+			visible = false
+			return
+	else:
+		_battle.turn_started.connect(_on_turn_started)
+		_battle.battle_ended.connect(_on_battle_ended)
 	_refresh_for_current_state()
 
 
@@ -182,6 +198,8 @@ func _on_target_chosen(move: Move, target: Combatant) -> void:
 
 func _submit(move: Move, target: Combatant) -> void:
 	_pending_move = null
+	if _replay != null:
+		visible = false
 	_battle.submit_action(move, target)
 
 

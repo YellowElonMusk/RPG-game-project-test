@@ -67,6 +67,7 @@ func test_victory_returns_to_map_without_the_symbol() -> void:
 	var source: EncounterSource = ow.get_encounter_sources()[0]
 	var battle_mode: BattleMode = _touch_and_enter_battle(root, ow, source)
 	DebugLaunchArgs.force_outcome(battle_mode.battle, DebugLaunchArgs.VICTORY)
+	battle_mode.settle_replay()
 	assert_int(machine.report_results_done()).is_equal(GameStateMachine.RequestResult.OK)
 	_run_to_idle(machine)
 	assert_int(machine.current_mode).is_equal(GameStateMachine.Mode.OVERWORLD)
@@ -101,6 +102,7 @@ func test_defeat_retry_restarts_the_same_fight() -> void:
 	var source: EncounterSource = ow.get_encounter_sources()[1]
 	var battle_mode: BattleMode = _touch_and_enter_battle(root, ow, source)
 	DebugLaunchArgs.force_outcome(battle_mode.battle, DebugLaunchArgs.DEFEAT)
+	battle_mode.settle_replay()
 	assert_int(machine.overlay_stack.back()).is_equal(GameStateMachine.OverlayKind.DEFEAT_PROMPT)
 	assert_int(machine.choose_retry()).is_equal(GameStateMachine.RequestResult.OK)
 	_run_to_idle(machine)
@@ -109,6 +111,7 @@ func test_defeat_retry_restarts_the_same_fight() -> void:
 	var rec: EncounterData = root.catalog().get_record(&"encounter", source.enc_id) as EncounterData
 	assert_int(retried.battle.enemies.size()).is_equal(rec.enemy_ids.size())
 	DebugLaunchArgs.force_outcome(retried.battle, DebugLaunchArgs.VICTORY)
+	retried.settle_replay()
 	assert_int(machine.report_results_done()).is_equal(GameStateMachine.RequestResult.OK)
 	_run_to_idle(machine)
 	assert_bool(root.world_state.is_resolved(_MAP_ID, source.symbol_id)).is_true()

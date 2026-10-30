@@ -1,12 +1,12 @@
 # Story 033: the command menu, Defeat Prompt and outcome report open only after the replay, never off BattleCore's raw signals
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (awaiting /story-done)
 > **Layer**: Core
 > **Type**: Integration
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/sprite-camera-presentation.md`, scoped to this story:*
 
-- [ ] **AC-29 [I]** (P-01, P-04) (Game State, Turn Battle) With a real, seeded `BattleCore`, the controller and a stub Game State: GIVEN a battle entry, THEN the first command menu opens only after the reveal, and in a boss fight only after the takeover. GIVEN a command that ends the battle, THEN the outcome reaches Game State only after the last beat and the end-of-fight hold, and the Defeat Prompt opens only after that. GIVEN a command that does not, THEN the command menu opens only when the next turn is released. The HUD has no connection to `BattleCore`'s own turn, round or end signals.
+- [x] **AC-29 [I]** (P-01, P-04) (Game State, Turn Battle) With a real, seeded `BattleCore`, the controller and a stub Game State: GIVEN a battle entry, THEN the first command menu opens only after the reveal, and in a boss fight only after the takeover. GIVEN a command that ends the battle, THEN the outcome reaches Game State only after the last beat and the end-of-fight hold, and the Defeat Prompt opens only after that. GIVEN a command that does not, THEN the command menu opens only when the next turn is released. The HUD has no connection to `BattleCore`'s own turn, round or end signals.
 
 ---
 
@@ -61,7 +61,10 @@
 ## Files
 
 - `src/battle/battle_replay_controller.gd`
-- `tests/integration/battle/replay_gating_test.gd`
+- `tests/integration/battle/replay_gating_test.gd` (new)
+- `src/battle/battle_mode.gd` (constructs and drives the controller; end-of-fight hold; reveal gate on `transition_finished(BATTLE)`)
+- `src/battle/ui/battle_hud.gd`, `src/battle/ui/battle_command_menu.gd` (optional `replay` argument: gated signals and `get_display()` only)
+- 8 existing integration tests: `settle_replay()` after a forced or fought outcome (outcome is no longer reported synchronously)
 
 ---
 
@@ -77,7 +80,7 @@
 **Required evidence**:
 - Integration: `tests/integration/battle/replay_gating_test.gd` OR playtest doc
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing -- `tests/integration/battle/replay_gating_test.gd` (6/6); screenshots in `production/qa/evidence/story-033-replay-wired/`
 
 ---
 
@@ -85,3 +88,16 @@
 
 - Depends on: `BattleReplayController` (ADR-0006, no epic yet); ADR-0002 Migration Step 2 (the Battle mode, not `ChapterFlow`, must construct `BattleCore` before this controller can connect — ADR-0006's own hard prerequisite)
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30
+**Criteria**: AC-29 covered by `replay_gating_test.gd` (reveal gate, boss takeover, non-ending command, win after last beat + `victory_hold`, Defeat Prompt after `defeat_hold`, structural no-connection check over `BattleCore`'s four signals).
+**Deviations**:
+- `battle_replay_controller.gd` needed no change; the wiring lives in `BattleMode`, `BattleHud` and `BattleCommandMenu` (the HUD/menu keep a no-replay path for the standalone HUD demo and existing unit tests).
+- No battle sprites exist, so the controller gets empty `windup`/`ko_landing` callables: every beat takes the debug path (`beat_min`). `TODO(sprite-camera)` in `battle_mode.gd`.
+- Retry cancels the replay and releases the first turn at once (story 040 owns the rest).
+- `BattleMode.settle_replay()` / `step_replay()` added for tests and capture tooling.
+**Balance**: `BattleCore` untouched.

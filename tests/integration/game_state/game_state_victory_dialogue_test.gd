@@ -86,6 +86,7 @@ func test_dialogue_after_transition_finished() -> void:
 		battle.submit_action(Move.make_attack(), battle.get_living_enemies()[0])
 		rounds += 1
 	assert_int(battle.state).is_equal(BattleCore.State.WON)
+	battle_mode.settle_replay()
 
 	# Victory -> report_results_done (the banner confirm) -> return to Overworld.
 	recorder.clear()

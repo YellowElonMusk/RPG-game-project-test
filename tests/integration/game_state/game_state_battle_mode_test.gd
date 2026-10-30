@@ -108,6 +108,7 @@ func test_victory_carryover_and_report_order() -> void:
 		battle.submit_action(Move.make_attack(), target)
 		rounds += 1
 	assert_int(battle.state).is_equal(BattleCore.State.WON)
+	battle_mode.settle_replay()
 
 	# report_battle_outcome(VICTORY) is recorded as soon as the fight ends --
 	# battle_mode connects its own battle_ended handler before calling

@@ -29,6 +29,7 @@ func test_boss_stays_absent_through_retreat_save_and_continue() -> void:
 	var chamber: OverworldMode = _go(root, _CHAMBER, &"from_dungeon")
 	_walk_into_first_symbol(root, chamber)
 	DebugLaunchArgs.force_outcome((root.current_mode_node() as BattleMode).battle, DebugLaunchArgs.VICTORY)
+	(root.current_mode_node() as BattleMode).settle_replay()
 	assert_int(root.machine.report_results_done()).is_equal(GameStateMachine.RequestResult.OK)
 	_run_to_idle(root.machine)
 	assert_bool(root.world_state.is_resolved(_CHAMBER, _BOSS)).is_true()

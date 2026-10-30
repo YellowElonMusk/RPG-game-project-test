@@ -36,6 +36,10 @@ const COLOR_PANEL: Color = Color("#2a2d40")
 const COLOR_BG: Color = Color("#1b1d2b")
 
 var _battle: BattleCore
+## The Battle mode's replay controller (ADR-0006), or null for the standalone
+## demo. When set, every value and every repaint comes from it, never from
+## `BattleCore`'s own signals or live state (sprite-camera story 033).
+var _replay: BattleReplayController = null
 var _ui_built: bool = false
 
 var _banner_panel: PanelContainer
@@ -59,15 +63,30 @@ var _float_slots: Dictionary = {}
 ## state directly rather than through BattleCore's own methods (see
 ## battle_hud_demo.gd, which forces round_number and a knockout this way for
 ## screenshot capture).
-func setup(battle: BattleCore) -> void:
+##
+## With `replay` (the Battle mode, ADR-0006 Implementation Guidelines) the HUD
+## connects only to the controller's gated signals and reads HP/MP through
+## `get_display()` and the round through `get_display_round()`; floating
+## numbers appear at each beat's impact. Without it (the demo), it listens to
+## `BattleCore` directly as before.
+func setup(battle: BattleCore, replay: BattleReplayController = null) -> void:
 	_battle = battle
+	_replay = replay
 	if not _ui_built:
 		_build_static_ui()
 		_ui_built = true
-	_battle.turn_started.connect(_on_turn_started)
-	_battle.action_resolved.connect(_on_action_resolved)
-	_battle.round_advanced.connect(_on_round_advanced)
-	_battle.battle_ended.connect(_on_battle_ended)
+	if _replay != null:
+		_replay.turn_started_after_replay.connect(_on_turn_started)
+		_replay.beat_impact.connect(_on_beat_impact)
+		_replay.beat_finished.connect(_on_beat_finished)
+		_replay.round_advanced_after_replay.connect(_on_round_advanced)
+		_replay.battle_ended_after_replay.connect(_on_battle_ended)
+		_replay.display_resynced.connect(refresh)
+	else:
+		_battle.turn_started.connect(_on_turn_started)
+		_battle.action_resolved.connect(_on_action_resolved)
+		_battle.round_advanced.connect(_on_round_advanced)
+		_battle.battle_ended.connect(_on_battle_ended)
 	_build_cards()
 	refresh()
 
@@ -208,43 +227,44 @@ func _refresh_card(combatant: Combatant) -> void:
 	var nodes: Dictionary = _cards.get(combatant, {})
 	if nodes.is_empty():
 		return
+	var shown: CombatantDisplay = _shown(combatant)
 
 	var hp_bar: ProgressBar = nodes["hp_bar"]
-	hp_bar.value = combatant.hp
+	hp_bar.value = shown.hp
 	var mp_bar: ProgressBar = nodes["mp_bar"]
 	if mp_bar != null:
-		mp_bar.value = combatant.mp
+		mp_bar.value = shown.mp
 
-	var knocked_out: bool = combatant.is_knocked_out()
+	var knocked_out: bool = shown.hp <= 0
 	var info_label: Label = nodes["info_label"]
 	if knocked_out:
 		info_label.text = "KNOCKED OUT"
 	elif mp_bar != null:
-		info_label.text = "HP %d/%d   MP %d/%d" % [combatant.hp, combatant.max_hp, combatant.mp, combatant.max_mp]
+		info_label.text = "HP %d/%d   MP %d/%d" % [shown.hp, combatant.max_hp, shown.mp, combatant.max_mp]
 	else:
-		info_label.text = "HP %d/%d" % [combatant.hp, combatant.max_hp]
+		info_label.text = "HP %d/%d" % [shown.hp, combatant.max_hp]
 
 	var panel: PanelContainer = nodes["panel"]
 	panel.modulate = KNOCKED_OUT_MODULATE if knocked_out else Color.WHITE
-	panel.tooltip_text = _card_tooltip(combatant)
+	panel.tooltip_text = _card_tooltip(combatant, knocked_out)
 
 
 ## Builds a card's tooltip from the faction rule's own text (Acceptance
 ## Criterion 5) plus this combatant's own state — never a per-faction
 ## branch here, only faction_rule method calls (Acceptance Criterion 6).
-func _card_tooltip(combatant: Combatant) -> String:
+func _card_tooltip(combatant: Combatant, knocked_out: bool) -> String:
 	var lines: PackedStringArray = PackedStringArray([combatant.display_name])
-	lines.append(_battle.faction_rule.get_tooltip_text(_battle.round_number))
+	lines.append(_battle.faction_rule.get_tooltip_text(_shown_round()))
 	var note: String = _battle.faction_rule.get_combatant_tooltip_note(combatant)
 	if note != "":
 		lines.append(note)
-	if combatant.is_knocked_out():
+	if knocked_out:
 		lines.append("Knocked out.")
 	return "\n".join(lines)
 
 
 func _refresh_banner() -> void:
-	var round_number: int = _battle.round_number
+	var round_number: int = _shown_round()
 	_banner_label.text = _battle.faction_rule.get_banner_text(round_number)
 	var style := StyleBoxFlat.new()
 	style.bg_color = _battle.faction_rule.get_banner_color(round_number)
@@ -264,6 +284,16 @@ func _on_action_resolved(outcome: BattleOutcome) -> void:
 	if outcome.target != null:
 		_refresh_card(outcome.target)
 	_spawn_floats(outcome)
+
+
+## A beat reached its impact: its numbers float now; the cards update when
+## the beat finishes (the displayed snapshot changes only then).
+func _on_beat_impact(plan: BeatPlan) -> void:
+	_spawn_floats(plan.outcome)
+
+
+func _on_beat_finished(_plan: BeatPlan) -> void:
+	_refresh_all_cards()
 
 
 func _on_round_advanced(_round_number: int) -> void:
@@ -313,3 +343,17 @@ func _float_near(combatant: Combatant, text: String, color: Color) -> void:
 	tween.tween_property(label, "position:y", label.position.y - FLOAT_RISE_PX, FLOAT_RISE_DURATION_SEC)
 	tween.tween_property(label, "modulate:a", 0.0, FLOAT_FADE_DURATION_SEC).set_delay(FLOAT_FADE_DELAY_SEC)
 	tween.finished.connect(label.queue_free)
+
+
+## The values this HUD shows for `combatant`: the replay's displayed state
+## when wired to one (ADR-0006: HP/MP/status only through `get_display()`),
+## else live state.
+func _shown(combatant: Combatant) -> CombatantDisplay:
+	if _replay != null:
+		return _replay.get_display(combatant)
+	return CombatantDisplay.from_combatant(combatant)
+
+
+## The round this HUD shows: `get_display_round()` when wired to a replay.
+func _shown_round() -> int:
+	return _replay.get_display_round() if _replay != null else _battle.round_number

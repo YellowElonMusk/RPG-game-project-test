@@ -58,6 +58,7 @@ func test_play_sets_no_stage_raising_flag() -> void:
 	dungeon.handle_action(InputActions.CONFIRM, true)
 	_run_to_idle(root.machine)
 	DebugLaunchArgs.force_outcome((root.current_mode_node() as BattleMode).battle, DebugLaunchArgs.VICTORY)
+	(root.current_mode_node() as BattleMode).settle_replay()
 	root.machine.report_results_done()
 	_run_to_idle(root.machine)
 	var after: Array = root.world_state.to_dict()["flags"]

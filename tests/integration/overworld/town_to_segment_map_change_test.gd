@@ -94,6 +94,7 @@ func test_victory_then_walk_to_town_and_back_respawns_per_policy() -> void:
 	var battle_mode: BattleMode = root.current_mode_node() as BattleMode
 	assert_object(battle_mode).is_not_null()
 	DebugLaunchArgs.force_outcome(battle_mode.battle, DebugLaunchArgs.VICTORY)
+	battle_mode.settle_replay()
 	assert_int(machine.report_results_done()).is_equal(GameStateMachine.RequestResult.OK)
 	_run_to_idle(machine)
 	assert_bool(root.world_state.is_resolved(_SEG_ID, source.symbol_id)).is_true()
@@ -179,6 +180,7 @@ func test_permit_counter_confirm_fight_and_victory_open_the_boom() -> void:
 	var battle_mode: BattleMode = root.current_mode_node() as BattleMode
 	assert_object(battle_mode).is_not_null()
 	DebugLaunchArgs.force_outcome(battle_mode.battle, DebugLaunchArgs.VICTORY)
+	battle_mode.settle_replay()
 	assert_int(root.machine.report_results_done()).is_equal(GameStateMachine.RequestResult.OK)
 	_run_to_idle(root.machine)
 	assert_bool(is_same(root.current_mode_node(), dungeon)).is_true()
