@@ -26,6 +26,20 @@ extends Marker3D
 ## Position in the leg's chain, ascending from the start; unique per leg.
 @export var order: int = 0
 
+## Story 112: `true` while this beacon is in the current leg's chain (set
+## only by `OverworldMode` through `BeaconGuide.apply_lit()`). The view reads
+## it, or `lit_changed`, to show the lit or unlit banner (ADR-0005 owns the
+## look). TODO(ui): the lit/unlit banner swap in the drawn set.
+var lit: bool = false:
+	set(value):
+		if lit == value:
+			return
+		lit = value
+		lit_changed.emit(value)
+
+## Emitted when `lit` changes.
+signal lit_changed(is_lit: bool)
+
 
 ## Ground position (`x`, `z`) relative to `map_root` (see
 ## `OverworldMap.ground_position_of`).

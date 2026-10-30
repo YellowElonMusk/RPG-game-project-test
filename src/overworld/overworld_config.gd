@@ -142,10 +142,19 @@ func v_chase() -> float:
 ## Tallest set wall, in metres (`wall_h_max`, 2.5 m, range 2.0-3.0; I18).
 @export var wall_h_max: float = 2.5
 ## Junction coverage radius, in metres (story 110, GDD rule 19 "Junctions";
-## implementation knob, not yet in the GDD Tuning Knobs): a junction node
+## GDD Tuning Knobs, safe range 1.0–2.0 m): a junction node
 ## covers a branch cell, and a leg's last beacon stands on its end, when its
 ## cell centre lies within this distance of that cell's centre.
 @export var junction_cover_m: float = 1.5
+## Beacon reach radius, in metres (story 112, GDD rule 19 "Optional
+## marker"): a lit beacon counts as reached once the leader stands within
+## this distance of it, and the "Show next destination" arrow moves on to
+## the next beacon in the chain.
+@export var beacon_reach_m: float = 1.5
+## The "Show next destination" arrow's shape glyph (story 112; GDD rule 19,
+## guardrail 5: a shape, never a colour-only cue), drawn rotated to the
+## arrow's direction.
+@export var next_destination_glyph: String = "▲"
 ## Symbol density bands, cells per symbol (`D_min` / `D_max`; I10): the
 ## overworld 150 / 250 (range 120-300), the dungeon 80 / 120 (range 60-150).
 @export var d_min_overworld: int = 150

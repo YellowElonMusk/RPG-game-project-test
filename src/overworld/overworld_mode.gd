@@ -302,6 +302,7 @@ func _commit_map_entry() -> void:
 	if world_state != null and world_state.map_id != _map.map_id:
 		world_state.on_map_entered(_map.map_id, WorldState.EntryKind.MAP_ENTRY)
 	_advance_step_on_entry()
+	refresh_beacons()
 	_compute_stage()
 	_resolve_presentation()
 	_activate_markers()
@@ -412,6 +413,7 @@ func step_frame(ow_dt: float, input_vec: Vector2) -> void:
 	if _check_exits(leader_from, _leader_pos):
 		return
 	_check_camp_registration()
+	_update_beacon_progress()
 	_check_barks_and_sight()
 	_check_teach_barks()
 	if _budget == null:
@@ -2025,3 +2027,88 @@ func _advance_step_on_entry() -> void:
 func _end_chapter() -> void:
 	chapter_end_calls += 1
 	chapter_end_requested.emit()
+
+
+# --- Story 112: the leg beacon chain, objective line and arrow ---------------
+# GDD rule 19 ("Diegetic beacon chain", "Objective line", "Optional marker");
+# ADR-0012 §8: the current leg is `world_state.chapter_step`'s
+# `{map_id, leg_id}` in the interim `ChapterSteps` data.
+
+## "Show next destination" (GDD rule 19, default off). Injected until a
+## settings service exists. TODO(settings): read it from the Settings system.
+var show_next_destination: bool = false
+## `func(ground: Vector2) -> bool`: `true` while that ground point is on
+## screen (the view's camera answers it). Unset = never on screen.
+## TODO(ui): the overworld view injects its camera probe here.
+var beacon_on_screen: Callable = Callable()
+var _guide: BeaconGuide = BeaconGuide.new()
+var _lit_chain: Array[WaypointBeacon] = []
+var _lit_key: String = ""
+var _beacon_progress: int = -1
+
+
+## The Menu's objective line: the current chapter step's `objective`, or
+## `""` with no current step (GDD rule 19 "Objective line").
+func objective_line() -> String:
+	var step: ChapterStep = _step_by_id(world_state.chapter_step) if world_state != null else null
+	return step.objective if step != null else ""
+
+
+## The current leg on the loaded map (`""` when the current step is on
+## another map, or there is none).
+func current_leg_id() -> String:
+	if _map == null or world_state == null:
+		return ""
+	return BeaconGuide.current_leg(chapter_steps(), world_state.chapter_step, _map.map_id)
+
+
+## Lights only the current leg's chain on the loaded map; idempotent, and
+## resets the chain progress when the map or leg changes. Runs on the map
+## entry commit and every exploring frame (the step can change between).
+func refresh_beacons() -> void:
+	if _map == null:
+		return
+	var leg: String = current_leg_id()
+	var key: String = "%d|%s" % [_map.get_instance_id(), leg]
+	if key == _lit_key:
+		return
+	_lit_key = key
+	_beacon_progress = -1
+	_lit_chain = BeaconGuide.apply_lit(_map, leg)
+
+
+## The lit chain, in `order` (empty when no leg on this map is current).
+func lit_chain() -> Array[WaypointBeacon]:
+	return _lit_chain.duplicate()
+
+
+## The beacon the arrow leads to: the first not yet reached in the lit
+## chain (the last, on the leg's end, once all are), or null.
+func next_beacon() -> WaypointBeacon:
+	var i: int = BeaconGuide.next_index(_lit_chain.size(), _beacon_progress)
+	return _lit_chain[i] if i >= 0 else null
+
+
+## The "Show next destination" arrow: direction along the walk-grid path's
+## next segment toward `next_beacon()`, hidden while the setting is off,
+## there is no path, or the beacon is on screen.
+func next_destination_arrow() -> BeaconGuide.Arrow:
+	var arrow := BeaconGuide.Arrow.new()
+	arrow.glyph = config.next_destination_glyph if config != null else ""
+	var target: WaypointBeacon = next_beacon()
+	if target == null or not show_next_destination:
+		return arrow
+	arrow.target_marker_id = target.marker_id
+	var at: Vector2 = target.ground_position(_map)
+	arrow.direction = _guide.path_direction(_grid, _leader_pos, at)
+	var on_screen: bool = beacon_on_screen.is_valid() and bool(beacon_on_screen.call(at))
+	arrow.visible = BeaconGuide.arrow_shown(show_next_destination, arrow.direction, on_screen)
+	return arrow
+
+
+func _update_beacon_progress() -> void:
+	refresh_beacons()
+	if _lit_chain.is_empty() or config == null:
+		return
+	_beacon_progress = BeaconGuide.advance_progress(
+			_lit_chain, _beacon_progress, _leader_pos, _map, config.beacon_reach_m)

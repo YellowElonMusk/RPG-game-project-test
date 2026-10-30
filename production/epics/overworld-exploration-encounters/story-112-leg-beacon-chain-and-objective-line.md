@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: — (not yet implemented)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-45c [L] (R19)** On each map, only the current leg's beacon chain is lit, and its last beacon is on the leg's end (exit, story encounter, boss or café). The objective line equals the step's `objective_text`. With the setting on, the arrow points along the walk-grid path's next segment toward the beacon, and is hidden while the beacon is on screen.
+- [x] **AC-45c [L] (R19)** On each map, only the current leg's beacon chain is lit, and its last beacon is on the leg's end (exit, story encounter, boss or café). The objective line equals the step's `objective_text`. With the setting on, the arrow points along the walk-grid path's next segment toward the beacon, and is hidden while the beacon is on screen.
 
 ---
 
@@ -60,12 +60,12 @@
 
 ## Files
 
-*The code and test files this story creates or changes. `/create-stories` lists the
-planned ones; `/dev-story` replaces the list with the files it changed; `/story-done`
-checks scope against it.*
+*Changed by /dev-story (2026-10-30):*
 
-- `src/overworld/overworld_mode.gd` (current-leg beacon activation, objective line, optional-arrow pathing)
-- `src/overworld/world_state.gd` (`chapter_step` read, interim `ChapterSteps` data read)
+- `src/overworld/beacon_guide.gd` (new: current leg, lit chain, chain progress, leader-legal A* arrow direction, arrow visibility, `Arrow` state)
+- `src/overworld/overworld_mode.gd` (`refresh_beacons`, `lit_chain`, `next_beacon`, `objective_line`, `current_leg_id`, `next_destination_arrow`, injected `show_next_destination` / `beacon_on_screen`)
+- `src/overworld/waypoint_beacon.gd` (`lit` flag + `lit_changed`)
+- `src/overworld/overworld_config.gd` (`beacon_reach_m`, `next_destination_glyph`)
 - `tests/unit/overworld/beacon_chain_test.gd`
 
 ---
@@ -81,7 +81,7 @@ checks scope against it.*
 **Story Type**: Logic
 **Required evidence**: `tests/unit/overworld/beacon_chain_test.gd` — must exist and pass.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing — `tests/unit/overworld/beacon_chain_test.gd`, 16/16; full suite 1196/1196 (2026-10-30)
 
 ---
 
@@ -89,3 +89,15 @@ checks scope against it.*
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-110-beacon-junction-coverage-validation.md`
 - Unlocks: `production/epics/overworld-exploration-encounters/story-109-beacon-chain-walkin-capture.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30
+**Criteria**: AC-45c covered by `tests/unit/overworld/beacon_chain_test.gd` (16 tests, all passing; suite 1196/1196).
+
+- **Lit chain**: `BeaconGuide.apply_lit()` sets `WaypointBeacon.lit` only on the current leg's chain (`world_state.chapter_step` -> `ChapterStep.{map_id, leg_id}`; nothing lit when the step is on another map). `OverworldMode.refresh_beacons()` runs on the map-entry commit and each exploring frame (idempotent, keyed on map + leg). The leg-end placement of the last beacon stays story 110's validation; this story asserts the lit chain is ordered and ends on that marker.
+- **Objective line**: `OverworldMode.objective_line()` returns the current step's text. **Deviation (naming)**: the field is `ChapterStep.objective`, not `objective_text`.
+- **Arrow**: `show_next_destination` (default false, injected; `TODO(settings)`), `beacon_on_screen` Callable injected by the view (`TODO(ui)`). Next beacon = first not reached (`OverworldConfig.beacon_reach_m`, new knob, 1.5 m). Direction = first segment of an `AStarGrid2D` path over `WalkGrid.is_walkable()` (re-synced per `revision()`). **Deviation**: the grid's own A* is symbol-legal (excludes SAFE cells the leader can stand in), so `BeaconGuide` keeps a leader-legal twin with identical settings. Glyph = `OverworldConfig.next_destination_glyph` (U+25B2, rotated by direction).
+- **Out of scope / TODO(ui)**: the drawn screen-edge widget and the lit/unlit banner visuals (ADR-0005).
