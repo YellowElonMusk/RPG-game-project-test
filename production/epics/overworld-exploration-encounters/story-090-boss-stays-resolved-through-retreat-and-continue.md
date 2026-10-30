@@ -1,7 +1,7 @@
 # Story 090: A later Retreat, a Save and a reload never un-resolve the boss
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Integration
 > **Estimate**: M
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-33c [I] (R13)** After Victory over the boss, then a Retreat in a later fight, then Save, Continue and a reload, the boss stays absent.
+- [x] **AC-33c [I] (R13)** After Victory over the boss, then a Retreat in a later fight, then Save, Continue and a reload, the boss stays absent.
 
 ---
 
@@ -72,7 +72,7 @@
 **Required evidence**:
 - `tests/integration/overworld/boss_resolution_persists_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -80,3 +80,10 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-088-boss-contact-descriptor-flags.md`, `production/epics/overworld-exploration-encounters/story-089-story-encounter-flee-returns-to-registered-camp.md`, `production/epics/overworld-exploration-encounters/story-095-save-round-trips-camp-interactables-and-flags.md`
 - Unlocks: None further in this epic
+
+## Completion Notes (2026-10-30)
+
+- Unblocked by building ADR-0009 Save/Load (the save half): `src/save/` (`SaveService`, `SaveFileSystem`, `SaveReader`, `SaveParticipant`, `SaveStage`, `LoadedSave`, `SaveConfig`), participants `game_state` (last camp) and `overworld` (`WorldState`, plus a Camp save continuing at the camp return point), registered in `src/boot/save_bootstrap.gd`. The loader commits a `LoadedSave` in SWAP; Title Continue reads and preflights the latest slot.
+- **Provisional (Save/Load GDD not written):** setting out from camp autosaves to slot 1, the only save trigger until the Menu exists; Continue loads the lowest slot holding a save.
+- **Not built:** `SettingsService` (ADR-0009 §7-8) and a squad participant (party HP; no Squad Roster system yet).
+- The later fight in the test is the Permit Counter: the street Clerk records forbid Retreat.

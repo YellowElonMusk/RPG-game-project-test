@@ -1,7 +1,10 @@
 ## Title mode scene (story 031; ADR-0002 §2: mode scenes extend `GameMode`;
 ## rule 12). New Game is focused on open and starts
-## `request_transition(OVERWORLD)`; Continue is disabled until Save/Load
-## exists (ADR-0009) -- it stays in the focus chain regardless (default
+## `request_transition(OVERWORLD)` after `SaveService.reset_all_to_new_game()`;
+## Continue (story 090, ADR-0009 §6) is enabled when a slot exists and loads
+## the latest one: read + preflight, and only a clean preflight requests the
+## transition, with the `LoadedSave` as its payload. It stays in the focus
+## chain regardless (default
 ## `Button.focus_mode`, untouched here) so GDD rule 12's lock glyph and
 ## unlock-reason tooltip can still show on focus; Settings goes nowhere until
 ## Settings exists; Quit opens `QuitConfirm`, a child panel of this scene,
@@ -33,6 +36,10 @@ var _quit_confirm: QuitConfirm = null
 var _buttons: Control = null
 
 var _machine: GameStateMachine = null
+## Injected by `GameRoot` before `setup()`; null in tests that do not need it.
+var save_service: SaveService = null
+## The last Continue preflight, for tests and the load report.
+var last_load: LoadedSave = null
 
 
 func setup(machine: GameStateMachine, _payload: RefCounted) -> void:
@@ -43,7 +50,8 @@ func setup(machine: GameStateMachine, _payload: RefCounted) -> void:
 	_quit_confirm = %QuitConfirm
 	_buttons = $Buttons
 
-	_continue_button.disabled = true
+	_continue_button.disabled = save_service == null or not save_service.has_any_save()
+	_continue_button.pressed.connect(_on_continue_pressed)
 	_new_game_button.pressed.connect(_on_new_game_pressed)
 	_quit_button.pressed.connect(_on_quit_pressed)
 	_quit_confirm.configure()
@@ -90,8 +98,26 @@ func handle_action(action: StringName, pressed: bool) -> bool:
 
 
 func _on_new_game_pressed() -> void:
+	if save_service != null:
+		save_service.reset_all_to_new_game()
 	if _machine != null:
 		_machine.request_transition(GameStateMachine.Mode.OVERWORLD, null)
+
+
+## Story 090 (ADR-0009 §6): read and preflight the latest slot; a failed
+## load is reported and requests nothing, so there is nothing to roll back.
+## TODO(save-load): a slot list and the damaged-slot / backup prompt belong
+## to the Save/Load GDD.
+func _on_continue_pressed() -> void:
+	if save_service == null or _machine == null:
+		return
+	last_load = save_service.preflight(save_service.read_slot(save_service.latest_slot()))
+	if not last_load.is_ok():
+		push_warning("Continue: slot %d did not load (status %d): %s"
+				% [last_load.slot, last_load.status, ", ".join(last_load.report)])
+		_continue_button.disabled = true
+		return
+	_machine.request_transition(GameStateMachine.Mode.OVERWORLD, last_load)
 
 
 func _on_quit_pressed() -> void:

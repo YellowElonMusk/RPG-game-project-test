@@ -28,6 +28,8 @@ const _BINDINGS_RECORD_ID: String = "bindings_default"
 ## before `add_child()` to boot against a fixture content root instead of
 ## resolving `--data-root=` / the default `res://data`. Empty in production.
 var data_root_override: String = ""
+## Tests point saves at their own folder (default `user://saves`).
+var save_dir_override: String = ""
 
 ## Read-only: the one `GameStateMachine` for this session, handed to tests
 ## and the demo scene so neither needs a second way to reach it (Game State
@@ -59,6 +61,8 @@ var world_state: WorldState:
 var _world_state: WorldState = null
 ## Every camp's return (story 089), read from the map scenes at boot.
 var _camp_directory: CampDirectory = null
+## Save/Load (ADR-0009), under Services.
+var _save_service: SaveService = null
 var _squad: Array[Combatant] = []
 var _machine: GameStateMachine = null
 var _loader: ModeHostSceneLoader = null
@@ -101,6 +105,13 @@ func _ready() -> void:
 	_services.add_child(input_system)
 	input_system.setup(resolver)
 
+	# ADR-0009: Save/Load, built before the machine so the machine's
+	# mark_unsaved hook can point at it; set up once the machine exists.
+	_save_service = SaveService.new()
+	_save_service.name = "SaveService"
+	_services.add_child(_save_service)
+	if _world_state == null:
+		_world_state = WorldState.new()
 	var presenter := InterimFadePresenter.new(_transition_layer)
 	# machine_box: ModeHostSceneLoader is a constructor argument of
 	# GameStateMachine, so it is built first and has no reference to the
@@ -112,6 +123,9 @@ func _ready() -> void:
 			_inject_overworld(mode as OverworldMode, payload)
 		elif mode is InterimCampMode:
 			(mode as InterimCampMode).camp_directory = _camp_directory
+			(mode as InterimCampMode).save_service = _save_service
+		elif mode is TitleMode:
+			(mode as TitleMode).save_service = _save_service
 		mode.setup(machine_box[0], payload)
 	# The loader's result getter: the thawed Overworld's on_thawed() needs the
 	# battle result, and the return swap carries no payload (story 014).
@@ -124,12 +138,20 @@ func _ready() -> void:
 	# TODO(presentation): inject the real FlashGate once ADR-0005 ships --
 	# flash_gate stays null (never capped) until then.
 	var machine := GameStateMachine.new(
-			loader, presenter, config, catalog(), get_tree().quit, game_log, null, Callable())
+			loader, presenter, config, catalog(), get_tree().quit, game_log, null,
+			_save_service.mark_unsaved)
 	machine_box[0] = machine
 	_machine = machine
 	loader.set_machine(machine)
 	machine.mode_entered.connect(loader.on_mode_entered)
 	machine.bind_action_source(resolver)
+	var save_config := SaveConfig.new()
+	if not save_dir_override.is_empty():
+		save_config.save_dir = save_dir_override
+	_save_service.setup(machine, catalog(), SaveFileSystem.new(), save_config,
+			SaveBootstrap.participants(machine, _world_state, _camp_return),
+			func() -> int: return int(Time.get_unix_time_from_system()))
+	loader.save_commit = _save_service.commit_if_loaded
 
 	# Mode-entry lighting (sprite-camera story 008), as overworld_demo.gd.
 	var director := PresentationDirector.new()
@@ -154,8 +176,15 @@ func _ready() -> void:
 ## (`MapEntryPayload`) keeps the same `WorldState` and squad; any other entry
 ## (New Game) builds fresh ones.
 func _inject_overworld(overworld: OverworldMode, payload: RefCounted = null) -> void:
-	if not (payload is MapEntryPayload) or _world_state == null:
+	if _world_state == null:
 		_world_state = WorldState.new()
+	# New Game (no payload): the one WorldState back to defaults, a fresh
+	# squad. A map change keeps both; a Continue (`LoadedSave`) keeps the
+	# WorldState Save/Load just committed (ADR-0009 §6).
+	if payload == null:
+		_world_state.reset_to_new_game()
+		_squad = ChapterFlow.build_squad(catalog())
+	elif _squad.is_empty():
 		_squad = ChapterFlow.build_squad(catalog())
 	var squad: Array[Combatant] = _squad
 	overworld.world_state = _world_state
@@ -177,6 +206,9 @@ func _validate_maps() -> void:
 func _process(delta: float) -> void:
 	if _machine != null:
 		_machine.tick(delta)
+		# Playtime stops while the Menu is open (ADR-0009 §3).
+		if _save_service != null and not (GameStateMachine.OverlayKind.MENU in _machine.overlay_stack):
+			_save_service.add_playtime(delta)
 
 
 ## E8 (manifest advisory): a detached, frozen Overworld is never reparented
@@ -263,3 +295,14 @@ func _free_frozen_overworld() -> void:
 ## main loop so it also works before this node is in the tree.
 func catalog() -> ContentCatalogService:
 	return (Engine.get_main_loop() as SceneTree).root.get_node(^"ContentCatalog") as ContentCatalogService
+
+
+## Where a save made in Camp continues: the camp's return EntryPoint
+## (`CampDirectory`), bound into the overworld save participant.
+func _camp_return(camp_id: String) -> MapEntryPayload:
+	return _camp_directory.return_payload(camp_id) if _camp_directory != null else null
+
+
+## The Save/Load service (ADR-0009), for tests and the Menu.
+func save_service() -> SaveService:
+	return _save_service

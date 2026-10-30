@@ -9,6 +9,11 @@ class_name InterimCampMode extends GameMode
 
 ## Injected by `GameRoot` before `setup()`.
 var camp_directory: CampDirectory = null
+## Injected by `GameRoot`: setting out autosaves to slot 1 (provisional, the
+## Save/Load GDD owns when saves happen; ADR-0009 §4).
+var save_service: SaveService = null
+## The last autosave result (tests).
+var last_save_result: int = -1
 var _machine: GameStateMachine = null
 ## The camp being rested at (the payload's ID; may be empty on a Retreat
 ## with no camp registered).
@@ -37,4 +42,6 @@ func set_out() -> GameStateMachine.RequestResult:
 	if target == null or _machine == null:
 		push_error("InterimCampMode: no return for camp '%s'" % camp_id)
 		return GameStateMachine.RequestResult.REJECTED_INVALID_PAYLOAD
+	if save_service != null:
+		last_save_result = save_service.save_to_slot(1)
 	return _machine.request_transition(GameStateMachine.Mode.OVERWORLD, target)

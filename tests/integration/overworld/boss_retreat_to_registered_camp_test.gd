@@ -96,6 +96,7 @@ func _new_game(root: GameRoot) -> void:
 func _boot() -> GameRoot:
 	var root: GameRoot = preload(_GAME_ROOT_SCENE).instantiate()
 	root.data_root_override = "res://data"
+	root.save_dir_override = "user://test_saves_089"
 	add_child(root)
 	auto_free(root)
 	_run_to_idle(root.machine)
@@ -109,3 +110,11 @@ func _run_to_idle(machine: GameStateMachine) -> void:
 		ticks += 1
 	assert_bool(ticks < 600).override_failure_message(
 			"transition did not finish within 600 ticks").is_true()
+
+
+func after_test() -> void:
+	# Setting out from camp autosaves (story 090); clear this test's folder.
+	var dir := DirAccess.open("user://test_saves_089")
+	if dir != null:
+		for f: String in dir.get_files():
+			dir.remove(f)

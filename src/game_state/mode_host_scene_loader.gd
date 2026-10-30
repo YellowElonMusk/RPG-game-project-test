@@ -74,6 +74,11 @@ var _pending_thaw_result: int = -1
 var _replaced_overworld: GameMode = null
 var _map_swap_failed: bool = false
 var _swap_status: SwapStatus = SwapStatus.DONE
+## ADR-0009 §6 (amendment to ADR-0002): `(payload) -> bool`, called in SWAP
+## before the target mode is instantiated. `GameRoot` binds it to
+## `SaveService.commit_if_loaded`; false fails the swap, so a Continue that
+## cannot commit rolls back to Title with nothing built.
+var save_commit: Callable = Callable()
 
 
 func _init(mode_host: Node, config: TransitionConfig, log_sink: GameStateLog,
@@ -100,6 +105,9 @@ func set_machine(machine: GameStateMachine) -> void:
 ## returns, so `poll_swap()` always reports `DONE` on its first call.
 func begin_swap(from: int, to: int, payload: RefCounted) -> void:
 	_swap_status = SwapStatus.DONE
+	if save_commit.is_valid() and payload != null and not bool(save_commit.call(payload)):
+		_swap_status = SwapStatus.FAILED
+		return
 	if from == GameStateMachine.Mode.OVERWORLD and to == GameStateMachine.Mode.BATTLE:
 		_freeze_overworld_and_enter_battle(payload)
 	elif from == GameStateMachine.Mode.BATTLE and to == GameStateMachine.Mode.OVERWORLD:

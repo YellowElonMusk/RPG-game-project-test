@@ -332,6 +332,14 @@ func request_in_mode_fade(callback: Callable) -> RequestResult:
 ## `camp_id`, any other mode, or a running transition is logged and ignored.
 ## Emits no signal, and marks unsaved progress for ADR-0009 via the injected
 ## `_mark_unsaved` hook until SaveService exists.
+## Save/Load's restore path for `last_camp_id` (ADR-0009 §3: Game State's
+## section holds only it): set by the `game_state` participant's `commit()`
+## during a Continue's SWAP, and cleared on New Game. The machine stays the
+## only writer.
+func restore_last_camp_id(camp_id: String) -> void:
+	_last_camp_id = camp_id
+
+
 func register_camp(camp_id: String) -> void:
 	if camp_id.is_empty():
 		_log.warning(&"empty_camp_id", {})

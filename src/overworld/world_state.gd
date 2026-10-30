@@ -30,6 +30,10 @@ var map_id: String = ""
 var party_pos: Vector2 = Vector2.ZERO
 ## The leader's facing (ADR-0012 §4).
 var party_facing: Vector2 = Vector2.ZERO
+## A Continue lands on this EntryPoint of `map_id` instead of `party_pos`
+## (a save made at Camp continues at the camp's return point, ADR-0009 §3);
+## empty otherwise.
+var continue_entry: String = ""
 
 # map_id -> { symbol_id -> Respawn }
 var _resolved: Dictionary = {}
@@ -99,3 +103,65 @@ func has_flag(flag: String) -> bool:
 ## Sets story flag `flag` (GDD rule 14).
 func set_flag(flag: String) -> void:
 	_flags[flag] = true
+
+
+## New Game (ADR-0009 §3 `reset_to_new_game`): every field to its default.
+func reset_to_new_game() -> void:
+	map_id = ""
+	party_pos = Vector2.ZERO
+	party_facing = Vector2.ZERO
+	continue_entry = ""
+	_resolved = {}
+	_opened = {}
+	_flags = {}
+
+
+## JSON-safe snapshot for the `overworld` save section (ADR-0009 §3):
+## Vector2 as [x, y], respawn policies as ints, sets as sorted arrays.
+func to_dict() -> Dictionary:
+	var resolved: Dictionary = {}
+	for m: String in _resolved:
+		var per_map: Dictionary = {}
+		for s: String in _resolved[m]:
+			per_map[s] = int(_resolved[m][s])
+		resolved[m] = per_map
+	var opened: Dictionary = {}
+	for m: String in _opened:
+		var ids: Array = []
+		for id: StringName in _opened[m]:
+			ids.append(String(id))
+		ids.sort()
+		opened[m] = ids
+	var flags: Array = _flags.keys()
+	flags.sort()
+	return {
+		"map_id": map_id,
+		"party_pos": [party_pos.x, party_pos.y],
+		"party_facing": [party_facing.x, party_facing.y],
+		"continue_entry": continue_entry,
+		"resolved": resolved,
+		"opened": opened,
+		"flags": flags,
+	}
+
+
+## Replaces every field from a `to_dict()` snapshot already validated by the
+## save participant's `stage()`.
+func from_dict(data: Dictionary) -> void:
+	reset_to_new_game()
+	map_id = data.get("map_id", "")
+	party_pos = data.get("party_pos", Vector2.ZERO)
+	party_facing = data.get("party_facing", Vector2.ZERO)
+	continue_entry = data.get("continue_entry", "")
+	var resolved: Dictionary = data.get("resolved", {})
+	for m: String in resolved:
+		_resolved[m] = {}
+		for s: String in resolved[m]:
+			(_resolved[m] as Dictionary)[s] = resolved[m][s] as Respawn
+	var opened: Dictionary = data.get("opened", {})
+	for m: String in opened:
+		_opened[m] = {}
+		for id: String in opened[m]:
+			(_opened[m] as Dictionary)[StringName(id)] = true
+	for f: String in data.get("flags", []):
+		_flags[f] = true

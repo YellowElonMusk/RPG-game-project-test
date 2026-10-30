@@ -183,6 +183,9 @@ var _follower_trail: FollowerTrail = FollowerTrail.new()
 ## Set by `load_map()` during a transition: the `WorldState` entry and the
 ## symbol placement wait for `mode_entered(OVERWORLD)` (`_commit_map_entry()`).
 var _entry_commit_pending: bool = false
+## Set by `setup()` for Title's Continue (a `LoadedSave` payload): `_ready()`
+## loads `world_state.map_id` at the saved position (ADR-0009 §6).
+var _continuing: bool = false
 
 
 func _init() -> void:
@@ -196,6 +199,7 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 	_machine = machine
 	if payload is MapEntryPayload:
 		_entry_payload = payload as MapEntryPayload
+	_continuing = payload is LoadedSave
 	if machine == null:
 		return
 	_transitioning = machine.phase != GameStateMachine.Phase.IDLE
@@ -212,6 +216,9 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 ## the exported `map_scene` at its spawn cell.
 func _ready() -> void:
 	if _map != null:
+		return
+	if _continuing and world_state != null and not world_state.map_id.is_empty():
+		_continue_from_save()
 		return
 	if _entry_payload != null:
 		var path: String = OverworldMap.scene_path(_entry_payload.map_id, config.map_scene_dir)
@@ -381,6 +388,7 @@ func step_frame(ow_dt: float, input_vec: Vector2) -> void:
 		if _grid != null:
 			source.brain.step(ow_dt, _leader_pos, _grid, grace_active, config, _budget)
 	_check_contact(leader_from, symbol_from)
+	_mirror_world_state()
 
 
 ## Registers an encounter symbol (ADR-0012 §5): `enc_id` names its
@@ -459,6 +467,7 @@ func redirect_leader(pos: Vector2, facing: Vector2 = Vector2.ZERO) -> GameStateM
 func _reform_followers() -> void:
 	_follower_trail.snap(_leader_pos, _leader_facing, config.max_followers, config, _grid)
 	_follower_positions = _follower_trail.step(_leader_pos, config.max_followers, config)
+	_mirror_world_state()
 	party_placed.emit(_leader_pos)
 
 
@@ -1169,3 +1178,33 @@ func _check_teach_barks() -> void:
 		if _teach_pending.has(npc) and not name_card_showing:
 			_teach_pending.erase(npc)
 			barked.emit(npc.line, at)
+
+
+## Title's Continue (ADR-0009 §6, ADR-0012 §4): the committed `WorldState`
+## names the map; the party lands on `continue_entry` when the save was
+## made in Camp, else on the saved position and facing. Continue respawns
+## nothing (`EntryKind.CONTINUE`: `map_id` already matches).
+func _continue_from_save() -> void:
+	var path: String = OverworldMap.scene_path(world_state.map_id, config.map_scene_dir)
+	var scene: PackedScene = ResourceLoader.load(path) as PackedScene if ResourceLoader.exists(path) else null
+	if scene == null:
+		push_error("OverworldMode: no map scene at %s for Continue" % path)
+		return
+	var entry: StringName = StringName(world_state.continue_entry)
+	var pos: Vector2 = world_state.party_pos
+	var facing: Vector2 = world_state.party_facing
+	load_map(scene.instantiate() as OverworldMap, entry)
+	if entry == &"":
+		_leader_pos = pos
+		if not facing.is_zero_approx():
+			_leader_facing = facing.normalized()
+		_reform_followers()
+	world_state.continue_entry = ""
+
+
+## ADR-0012 §4: `WorldState` holds the party's position and facing, written
+## every frame, so a save is always current.
+func _mirror_world_state() -> void:
+	if world_state != null and _map != null:
+		world_state.party_pos = _leader_pos
+		world_state.party_facing = _leader_facing
