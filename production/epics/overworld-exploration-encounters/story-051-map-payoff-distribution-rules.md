@@ -1,7 +1,7 @@
 # Story 051: Every map's payoff distribution follows the facet, cap and tell rules
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: L
@@ -30,7 +30,7 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-21c [D] (R7a)** On each non-Town, non-boss map: at least one symbol carries an `open` payoff that leads to an optional pocket or (on the dungeon) the dungeon shortcut; at least half of the non-story symbols carry `clue` or `open`; no two `clue` payoffs in the region share a facet, and none repeats the first-encounter poster's facet; each payoff's tell (gate, envelope prop or rolled poster) lies within `R_vis` of a vertex of its symbol's patrol; every payoff reference resolves; and no `item` payoff meets a critical-path requirement. At most ⌊N_sym/3⌋ symbols per map carry `none`, never a Static symbol and never the first symbol along the critical path; every optional pocket holds a `change` gag plus a recruit remark or a clue facet.
+- [x] **AC-21c [D] (R7a)** On each non-Town, non-boss map: at least one symbol carries an `open` payoff that leads to an optional pocket or (on the dungeon) the dungeon shortcut; at least half of the non-story symbols carry `clue` or `open`; no two `clue` payoffs in the region share a facet, and none repeats the first-encounter poster's facet; each payoff's tell (gate, envelope prop or rolled poster) lies within `R_vis` of a vertex of its symbol's patrol; every payoff reference resolves; and no `item` payoff meets a critical-path requirement. At most ⌊N_sym/3⌋ symbols per map carry `none`, never a Static symbol and never the first symbol along the critical path; every optional pocket holds a `change` gag plus a recruit remark or a clue facet.
 
 ---
 
@@ -63,7 +63,7 @@ table, not a runtime behaviour test.
 - `tools/ci/validate_maps.gd`
 - `src/data/records/encounter_data.gd`
 - `data/encounters/`
-- `tests/unit/overworld/data/payoff_distribution_rules_test.gd`
+- `tests/unit/overworld/payoff_rules_test.gd`
 
 ---
 
@@ -77,9 +77,9 @@ table, not a runtime behaviour test.
 
 **Story Type**: Logic (Config/Data criterion, BLOCKING per the GDD evidence-tag table)
 **Required evidence**:
-- `tests/unit/overworld/data/payoff_distribution_rules_test.gd` — must exist and pass (BLOCKING)
+- `tests/unit/overworld/payoff_rules_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -87,3 +87,23 @@ table, not a runtime behaviour test.
 
 - Depends on: `story-050-first-victory-grants-payoff.md`, `story-017-zone-rate-zero-on-every-mvp-map.md` / `story-019-faction-patrol-archetype-id-resolves.md` (AC-8/AC-8b, the `validate_maps.gd` data-validation pattern this story follows)
 - Unlocks: None
+
+## Completion Notes (2026-10-30)
+
+- `PayoffRules.check()` runs in `validate_maps` over each banded map, with facets checked region-wide. Test: `tests/unit/overworld/payoff_rules_test.gd`, one broken fixture per rule.
+- Pocket versus shortcut: a gate is a pocket when opening it adds cells the map's entries could not reach. Otherwise it is a shortcut, which counts only on a story-encounter map and only if it shortens a camp's walk to an exit.
+- Payoffs are per record (GDD rule 7a), so the dungeon Clerks got their own records: `enc_paris_clerks_first_room`, `_hall`, `_shortcut`, `_pocket`, `_keen`.
+- **Segment:**
+  - West: clue, "permit takes three rounds", with a rolled-poster tell.
+  - East: `open` to the archive courtyard. That is a new 3 × 3 pocket in the south-east corner, walled with a gate at (20, 11) and holding a `change` gag plus a recruit remark. The walls were added by the new `tools/maps/build_segment_pocket.gd`.
+- **Dungeon:**
+  - First room: clue, "binds both sides".
+  - Hall gap: clue, "Clerks wait", the third facet.
+  - Hall north: `open` to the back stairs, a shortcut through the hall wall at x 15–16 that shortens the camp's walk to the boss exit.
+  - South far-west: `open` to the stamp cupboard, a new pocket in the hall's south-west corner.
+  - South-west and north-west: `none` (2 ≤ ⌊6/3⌋). The first-room Clerk, first along the critical path, is not `none`.
+  - Rolled-poster tells for both clue Clerks.
+- No `item` payoffs ship. The rule is checked against fixtures.
+- **Owed narrative sign-off (AC-51):** three gate lines, two pocket gag lines, the rolled-poster text and the new clue stub. The recruit remarks are IDs only, until Squad Roster exists.
+- Story 087 recaptured afterwards: 46 approaches, 0 failures.
+- Tests updated: the battle content-warning fixture lists the new records, story 092's test gives its East Clerk a clue copy, and the dungeon's W is now 666.

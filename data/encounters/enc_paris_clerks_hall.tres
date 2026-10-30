@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EncounterData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/encounter_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "enc_paris_clerks_hall"
+enemy_ids = PackedStringArray("enemy_clerk")
+battle_stage_id = "stage_chapter_interim"
+faction_id = "faction_bureaucratia"
+is_boss = false
+can_flee = true
+retreat_allowed = false
+respawn = true
+victory_payoff = {
+"facet": "clerks_wait",
+"text": "Rumour: while they wait for their permit, Clerks just shove. Plain attacks, nothing special.",
+"type": "clue"
+}

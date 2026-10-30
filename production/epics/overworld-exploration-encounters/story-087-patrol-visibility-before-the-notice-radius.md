@@ -92,3 +92,4 @@
 - 2026-10-30: recaptured at the new 12.0 m camera height (story 099, OQ-1): 24 approaches, all 100% visible, none clipped. I opened a sample myself (segment east s0, dungeon first room s4, hall s7): the Clerk is unoccluded in each, and the first-room one sits near the right edge but inside the frame.
 - Art-director sign-off recorded in `production/qa/evidence/signoff-overworld.md` (2026-10-30).
 - 2026-10-30 (level-design pass, stories 086/119/103): recaptured after the segment's west Clerk moved and the dungeon gained four Clerks. 46 approaches, 0 failures. The new dungeon north-west Clerk is near the frame's top edge on its 270° approach; please look at that capture when signing off.
+- 2026-10-30, after sign-off: recaptured again because story 051 added walls (the segment's archive courtyard, the dungeon's back stairs and stamp cupboard). 46 approaches, 0 failures. The East Clerk's captures show the new courtyard wall; a re-look is optional.

@@ -13,7 +13,7 @@ func test_the_band_formula_matches_the_gdd_example() -> void:
 	# GDD: an overworld segment with W = 720 holds 3-5 symbols.
 	var cfg := OverworldConfig.new()
 	assert_object(MapValidator.density_band("overworld", 720, cfg)).is_equal(Vector2i(3, 5))
-	assert_object(MapValidator.density_band("dungeon", 670, cfg)).is_equal(Vector2i(6, 8))
+	assert_object(MapValidator.density_band("dungeon", 666, cfg)).is_equal(Vector2i(6, 8))
 	# N_min never falls below 1.
 	assert_int(MapValidator.density_band("overworld", 40, cfg).x).is_equal(1)
 
@@ -34,7 +34,7 @@ func test_the_old_two_clerk_dungeon_is_under_its_band() -> void:
 			sym.free()
 	var errors: PackedStringArray = MapValidator.check_density(maps, _records(), OverworldConfig.new())[0]
 	assert_array(Array(errors)).is_equal(
-			["%s: 2 patrolling symbol(s), outside the dungeon band [6, 8] for W 670" % _DUNGEON_ID])
+			["%s: 2 patrolling symbol(s), outside the dungeon band [6, 8] for W 666" % _DUNGEON_ID])
 
 
 func _records() -> Dictionary:

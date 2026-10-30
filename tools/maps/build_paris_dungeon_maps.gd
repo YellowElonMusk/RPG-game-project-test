@@ -37,16 +37,16 @@ const _DUNGEON: Array[String] = [
 	"#......................#",
 	"#......................#",
 	"#......................#",
-	"#...##############...###",
+	"#...###########..#...###",
 	"#......................#",
 	"#......................#",
 	"#......................#",
 	"#......................#",
 	"#......................#",
+	"#####..................#",
+	"#...#..................#",
 	"#......................#",
-	"#......................#",
-	"#......................#",
-	"#......................#",
+	"#...#..................#",
 	"################..######",
 	"################..######",
 	"#......................#",
@@ -142,9 +142,9 @@ func _build_dungeon(tile_set: TileSet) -> OverworldMap:
 	# room's east wall, and one in the hall's near gap, across the short
 	# route; both clear of every safe zone (story 077), the west gap left as
 	# the bypass lane (story 083) and the near gap as the pressure (085).
-	_patrol(map, "SymbolClerksFirstRoom", "enc_paris_clerks_east", "sym_dungeon_clerks_first_room",
+	_patrol(map, "SymbolClerksFirstRoom", "enc_paris_clerks_first_room", "sym_dungeon_clerks_first_room",
 			PackedVector2Array([Vector2(20.5, 23.5), Vector2(20.5, 26.5)]))
-	_patrol(map, "SymbolClerksHall", "enc_paris_clerks_west", "sym_dungeon_clerks_hall",
+	_patrol(map, "SymbolClerksHall", "enc_paris_clerks_hall", "sym_dungeon_clerks_hall",
 			PackedVector2Array([Vector2(18.5, 11.5), Vector2(20.5, 11.5)]))
 	# Story 103 (GDD `symbol_density`, dungeon band 80/120 cells per symbol):
 	# W 670 needs 6-8 patrols. Four more, found by search against every
@@ -154,14 +154,35 @@ func _build_dungeon(tile_set: TileSet) -> OverworldMap:
 	# and a Clerk walked up on from the north sits at the frame's near
 	# edge, so the south-half ones stand under the long hall wall, where no
 	# approach comes from the north.
-	_patrol(map, "SymbolClerksHallSouthFarWest", "enc_paris_clerks_east", "sym_dungeon_clerks_hall_south_far_west",
+	_patrol(map, "SymbolClerksHallSouthFarWest", "enc_paris_clerks_pocket", "sym_dungeon_clerks_hall_south_far_west",
 			PackedVector2Array([Vector2(7.5, 16.5), Vector2(9.5, 16.5)]))
-	_patrol(map, "SymbolClerksHallSouthWest", "enc_paris_clerks_west", "sym_dungeon_clerks_hall_south_west",
+	_patrol(map, "SymbolClerksHallSouthWest", "enc_paris_clerks_keen", "sym_dungeon_clerks_hall_south_west",
 			PackedVector2Array([Vector2(11.5, 17.5), Vector2(11.5, 19.5)]))
-	_patrol(map, "SymbolClerksHallNorthWest", "enc_paris_clerks_east", "sym_dungeon_clerks_hall_north_west",
+	_patrol(map, "SymbolClerksHallNorthWest", "enc_paris_clerks_keen", "sym_dungeon_clerks_hall_north_west",
 			PackedVector2Array([Vector2(5.5, 1.5), Vector2(7.5, 1.5)]))
-	_patrol(map, "SymbolClerksHallNorth", "enc_paris_clerks_west", "sym_dungeon_clerks_hall_north",
+	_patrol(map, "SymbolClerksHallNorth", "enc_paris_clerks_shortcut", "sym_dungeon_clerks_hall_north",
 			PackedVector2Array([Vector2(13.5, 8.5), Vector2(15.5, 8.5)]))
+	# Story 051 (GDD rule 7a): payoffs and their tells. The hall Clerk's
+	# back stairs (an `open` shortcut through the hall wall beside the
+	# boom's route, so a boss retry from the camp walks less) and the stamp
+	# cupboard (an `open` pocket in the hall's south-west corner, holding a
+	# `change` gag and a recruit remark). The two clue Clerks get rolled
+	# posters within R_vis of their patrols.
+	_gate(map, "BackStairs", &"cp_dungeon_shortcut", "dungeon_shortcut_unbolted", "enc_paris_clerks_shortcut",
+			Rect2(15, 11, 2, 1), Vector2(15.5, 13.5), Vector2.DOWN,
+			"Bolted. A note on the door: STAFF ONLY. STAFF ARE ON A BREAK.")
+	_gate(map, "StampCupboardDoor", &"cp_dungeon_pocket", "dungeon_pocket_unlatched", "enc_paris_clerks_pocket",
+			Rect2(4, 19, 1, 1), Vector2(5.5, 19.5), Vector2.RIGHT,
+			"Locked. The sign says: STAMPS. AUTHORISED HANDS ONLY.")
+	var stamps := GagInteractable.new()
+	stamps.name = "GagStampCupboard"
+	stamps.marker_id = &"gag_stamp_cupboard"
+	stamps.response = GagInteractable.Response.CHANGE
+	stamps.text = "You knock over a rack of rubber stamps. APPROVED, APPROVED, DENIED, APPROVED."
+	stamps.recruit_remark = "remark_paris_stamp_cupboard"
+	_place(map, stamps, Vector2(2.5, 19.5))
+	_tell(map, "TellFirstRoomPoster", &"tell_first_room_poster", "sym_dungeon_clerks_first_room", Vector2(22.5, 24.5))
+	_tell(map, "TellHallPoster", &"tell_hall_poster", "sym_dungeon_clerks_hall", Vector2(22.5, 12.5))
 	return map
 
 
@@ -251,3 +272,30 @@ func _save(map: OverworldMap, file_name: String) -> bool:
 		return false
 	print("build_paris_dungeon_maps: wrote ", file_name)
 	return true
+
+
+## A closed gate an `open` payoff opens (rule 7a): a redirect checkpoint
+## whose requirement flag is met by that Victory.
+func _gate(map: OverworldMap, node_name: String, id: StringName, flag: String, enc_id: String,
+		rect: Rect2, return_marker: Vector2, return_facing: Vector2, line: String) -> void:
+	var cp := CheckpointMarker.new()
+	cp.name = node_name
+	cp.marker_id = id
+	cp.requirement_flag = flag
+	cp.obtained_at = enc_id
+	cp.failure_outcome = CheckpointMarker.FailureOutcome.REDIRECT
+	cp.failure_line = line
+	cp.blocked_rect = rect
+	cp.return_marker = return_marker
+	cp.return_facing = return_facing
+	_place(map, cp, rect.get_center())
+
+
+## A payoff's tell prop (rule 7a): a rolled poster for a `clue` Clerk.
+func _tell(map: OverworldMap, node_name: String, id: StringName, symbol_id: String, at: Vector2) -> void:
+	var gag := GagInteractable.new()
+	gag.name = node_name
+	gag.marker_id = id
+	gag.text = "A rolled-up poster sticks out of the Clerk's in-tray."
+	gag.payoff_tell = symbol_id
+	_place(map, gag, at)

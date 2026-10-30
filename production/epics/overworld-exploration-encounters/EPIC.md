@@ -114,7 +114,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 048 | [Grace, notice, give-up, cooldown and stun timers freeze under overlays and transitions](story-048-timers-freeze-under-overlays.md) | Logic | Ready | ADR-0012 |
 | 049 | [Overworld → Battle → Overworld preserves a mid-chase snapshot except rule 7's changes](story-049-thaw-preserves-mid-chase-snapshot.md) | Integration | Ready | ADR-0002 |
 | 050 | [The first Victory over a symbol grants its payoff and shows a payoff card](story-050-first-victory-grants-payoff.md) | Logic | Complete | ADR-0012 |
-| 051 | [Every map's payoff distribution follows the facet, cap and tell rules](story-051-map-payoff-distribution-rules.md) | Logic | Ready | ADR-0012 |
+| 051 | [Every map's payoff distribution follows the facet, cap and tell rules](story-051-map-payoff-distribution-rules.md) | Logic | Complete | ADR-0012 |
 | 052 | [An off-screen Victory plays the off-screen sting and the payoff card together](story-052-offscreen-liberation-payoff-card.md) | Logic | Ready | ADR-0012 |
 | 053 | [The occupation stage formula is monotonic and matches the flag-to-stage table](story-053-occupation-stage-formula.md) | Logic | Complete | ADR-0012 |
 | 054 | [A flag set mid-visit leaves the stage and active markers unchanged until the next load](story-054-stage-change-waits-for-next-load.md) | Logic | Complete | ADR-0012 |

@@ -15,6 +15,11 @@
 # truthfully reports them unreferenced until map records exist. Story 075
 # adds the dungeon story encounter and the boss, referenced the same way.
 enc_paris_clerks_east |
+enc_paris_clerks_first_room |
+enc_paris_clerks_hall |
+enc_paris_clerks_keen |
+enc_paris_clerks_pocket |
+enc_paris_clerks_shortcut |
 enc_paris_clerks_west |
 enc_paris_permit_counter |
 enc_paris_supervisor |

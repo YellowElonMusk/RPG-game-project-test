@@ -71,6 +71,7 @@ static func validate_catalog(catalog: ContentCatalogService, cfg: OverworldConfi
 	if steps != null:
 		errors.append_array(WalkBudget.compute(steps, records, maps, cfg)["errors"])
 	errors.append_array(check_first_encounter(steps, records, maps, cfg))
+	errors.append_array(PayoffRules.check(maps, records, catalog, cfg, PresentationConfig.new()))
 	var density: Array = check_density(maps, records, cfg)
 	errors.append_array(density[0])
 	for line: String in density[1]:

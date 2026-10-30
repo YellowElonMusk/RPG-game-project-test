@@ -65,6 +65,12 @@ func _catalog() -> RecordCatalogDouble:
 	for f: String in DirAccess.get_files_at("res://data/encounters"):
 		if f.ends_with(".tres"):
 			catalog.add(&"encounter", load("res://data/encounters/" + f))
+	# The east Clerk's shipped payoff is now `open` (story 051); this test needs
+	# a Victory that sets a story flag with a Dialogue, so its copy is a clue.
+	var east: EncounterData = (catalog.get_record(&"encounter", _CLERK) as EncounterData).duplicate()
+	east.victory_payoff = {"type": "clue", "facet": "permit_binds_both_sides",
+			"text": "Rumour: the Permit Ban binds the Clerks too. They wait, same as you."}
+	catalog.add(&"encounter", east)
 	return catalog
 
 

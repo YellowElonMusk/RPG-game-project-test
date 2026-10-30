@@ -20,6 +20,9 @@ const STORY_VICTORY: String = "story_victory"
 const GAG_CHANGE: String = "gag_change"
 ## The region boss's Victory (`region_liberation_flag`).
 const BOSS_VICTORY: String = "boss_victory"
+## An `open` victory payoff's checkpoint (rule 7a): the payoff opens the gate
+## directly; the flag names the requirement the Victory meets.
+const VICTORY_PAYOFF: String = "victory_payoff"
 
 @export var chapter_id: String = ""
 ## Flag name -> what sets it (one of the constants above).

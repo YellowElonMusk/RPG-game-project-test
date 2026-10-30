@@ -7,7 +7,10 @@ script = ExtResource("1_reg")
 chapter_id = "chapter_paris"
 flags = Dictionary[String, String]({
 "counter_cleared": "story_victory",
+"dungeon_pocket_unlatched": "victory_payoff",
+"dungeon_shortcut_unbolted": "victory_payoff",
 "form_27b_stamped": "gag_change",
 "paris_liberated": "boss_victory",
-"permits_mandatory": "chapter_step"
+"permits_mandatory": "chapter_step",
+"segment_pocket_unlatched": "victory_payoff"
 })

@@ -37,6 +37,11 @@ enum Response { LINE, CHANGE, CLUE }
 ## recruit-remark ID. Recruit remarks are undesigned (Squad Roster), so the
 ## reference is carried but not resolved yet; a gag validates either way.
 @export var recruit_remark: String = ""
+## Story 051 (rule 7a "Readable before the choice"): this prop is the tell
+## of the named symbol's payoff: a rolled poster for `clue`, a sealed
+## envelope for `item`. It must stand within `R_vis` of a vertex of that
+## symbol's patrol. (An `open` payoff's tell is its closed gate.)
+@export var payoff_tell: String = ""
 ## Rule 16 marker tag: the faction's first-encounter rule clue.
 @export var faction_clue: bool = false
 
