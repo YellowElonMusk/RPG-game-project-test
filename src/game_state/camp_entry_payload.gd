@@ -5,3 +5,6 @@
 class_name CampEntryPayload extends RefCounted
 
 var camp_id: String = ""
+## Story 021: `true` only on the Retreat path -- Camp performs the party's
+## full restore on entry. Ordinary Overworld -> Camp entry leaves it `false`.
+var full_restore: bool = false

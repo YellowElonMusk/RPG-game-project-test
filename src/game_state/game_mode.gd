@@ -33,6 +33,13 @@ func on_thawed(_encounter_id: String, _result: GameStateMachine.BattleResult) ->
 	pass
 
 
+## Overworld only (story 021, ADR-0012 §4 `CampSpot.is_region_default`): the
+## current region's default camp, Retreat's fallback when no camp has been
+## registered. The base has none (`""`).
+func get_region_default_camp_id() -> String:
+	return ""
+
+
 ## Battle only. The base returns `null`, which the machine treats as a swap
 ## failure, so a Battle mode that forgets to override this fails loudly
 ## instead of silently losing Retry.

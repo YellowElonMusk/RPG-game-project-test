@@ -1,12 +1,12 @@
 # Story 003: Every from → to pair not in the transitions table is rejected
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/game-state-scene-flow.md`, scoped to this story:*
 
-- [ ] **AC-4 [L]** Parametrized over every from → to pair *not* in the table: the request is rejected.
+- [x] **AC-4 [L]** Parametrized over every from → to pair *not* in the table: the request is rejected.
 
 ---
 
@@ -82,7 +82,7 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_invalid_pairs_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing: `tests/unit/game_state/game_state_invalid_pairs_test.gd` (game_state unit 184/184; with overworld + game_state integration 242/242, 2026-10-30)
 
 ---
 
@@ -90,3 +90,12 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-002-transition-table-rows-succeed.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30
+- request_transition() now logs one error `invalid_pair` {from, to} on every invalid pair, including every request from Content Error (code stays REJECTED_TERMINAL there).
+- Complement generated from Mode x Mode - _TRANSITION_TYPES (23 cases, asserted == 36 - |table|); outcome-driven Battle rows covered explicitly.
+- Files: src/game_state/game_state_machine.gd, tests/unit/game_state/game_state_invalid_pairs_test.gd

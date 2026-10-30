@@ -1,12 +1,12 @@
 # Story 023: Dialogue cannot open over the Menu, but the Menu can open over Dialogue
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Deferred (2026-10-24): needs Dialogue, which does not exist yet; build with the Dialogue epic
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/game-state-scene-flow.md`, scoped to this story:*
 
-- [ ] **AC-21 [L]** GIVEN the Menu open, WHEN Dialogue requests to open, THEN it is rejected. GIVEN Dialogue open, WHEN the Menu opens, THEN it succeeds.
+- [x] **AC-21 [L]** GIVEN the Menu open, WHEN Dialogue requests to open, THEN it is rejected. GIVEN Dialogue open, WHEN the Menu opens, THEN it succeeds.
 
 ---
 
@@ -82,7 +82,7 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_overlay_precedence_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing: `tests/unit/game_state/game_state_overlay_precedence_test.gd` (game_state unit 184/184; with overworld + game_state integration 242/242, 2026-10-30)
 
 ---
 
@@ -90,3 +90,12 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-022-overlay-stack-input-and-order.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30
+- Built at machine level against OverlayKind.DIALOGUE (the interim line dialogue already uses it); no real Dialogue system needed.
+- _OVERLAY_ALLOWED_MODES table in open_overlay(): Dialogue over Overworld/Camp, Menu over Overworld/Camp/Battle, Defeat Prompt never via open_overlay -> REJECTED_INVALID_PAIR. Dialogue with Menu on the stack -> REJECTED_OVERLAY_BLOCKS, not queued.
+- Files: src/game_state/game_state_machine.gd, tests/unit/game_state/game_state_overlay_precedence_test.gd

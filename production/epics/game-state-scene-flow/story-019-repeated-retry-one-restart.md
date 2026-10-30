@@ -1,12 +1,12 @@
 # Story 019: Repeated Retry inputs during the Retry transition cause exactly one restart
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/game-state-scene-flow.md`, scoped to this story:*
 
-- [ ] **AC-18 [L]** GIVEN repeated Retry inputs during the Retry transition, THEN exactly one restart occurs.
+- [x] **AC-18 [L]** GIVEN repeated Retry inputs during the Retry transition, THEN exactly one restart occurs.
 
 ---
 
@@ -80,7 +80,7 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_retry_debounce_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing: `tests/unit/game_state/game_state_retry_debounce_test.gd` (game_state unit 184/184; with overworld + game_state integration 242/242, 2026-10-30)
 
 ---
 
@@ -88,3 +88,11 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-010-input-locked-during-transition.md`, `production/epics/game-state-scene-flow/story-017-defeat-prompt-and-retry-snapshot.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30
+- Deviation from 'tests only': choose_retry() (and choose_retreat()) returned REJECTED_INVALID_PAIR mid-transition; a busy check was added after the Content Error check so they return REJECTED_BUSY.
+- Files: src/game_state/game_state_machine.gd, tests/unit/game_state/game_state_retry_debounce_test.gd

@@ -13,6 +13,10 @@ var last_push_overlay_payload: RefCounted = null
 var current_mode_node_value: Node = null
 var current_overlay_node_value: Node = null
 var free_frozen_overworld_count: int = 0
+## Story 007: every `poll_swap()` call, so a test can prove no work was skipped.
+var poll_count: int = 0
+## Story 021: what `frozen_overworld_node()` returns (the detached Overworld).
+var frozen_overworld_node_value: Node = null
 ## One entry per `set_mode_time_stopped()` call, in order (story 025).
 var set_mode_time_stopped_calls: Array[bool] = []
 
@@ -37,6 +41,7 @@ func begin_swap(from: int, to: int, payload: RefCounted) -> void:
 
 
 func poll_swap() -> SwapStatus:
+	poll_count += 1
 	if _queue.is_empty():
 		return SwapStatus.DONE
 	return _queue.pop_front()
@@ -79,3 +84,7 @@ func current_mode_node() -> Node:
 
 func current_overlay_node() -> Node:
 	return current_overlay_node_value
+
+
+func frozen_overworld_node() -> Node:
+	return frozen_overworld_node_value

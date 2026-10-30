@@ -1,12 +1,12 @@
 # Story 028: The in-mode fade fires only transition_started and transition_finished, and is legal only in a bare Overworld
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/game-state-scene-flow.md`, scoped to this story:*
 
-- [ ] **AC-27 [L]** (in-mode fade, rule 2) GIVEN Overworld with no overlay, WHEN the in-mode fade is requested, THEN exactly `transition_started(Overworld, Overworld)` and `transition_finished(Overworld)` fire (no `mode_exited`, no `mode_entered`), the callback runs once at the zero-length swap, input is locked from start to finish, and a save request during it is refused. GIVEN Battle, Camp, or Overworld with Dialogue open, THEN the request is rejected and nothing changes.
+- [x] **AC-27 [L]** (in-mode fade, rule 2) GIVEN Overworld with no overlay, WHEN the in-mode fade is requested, THEN exactly `transition_started(Overworld, Overworld)` and `transition_finished(Overworld)` fire (no `mode_exited`, no `mode_entered`), the callback runs once at the zero-length swap, input is locked from start to finish, and a save request during it is refused. GIVEN Battle, Camp, or Overworld with Dialogue open, THEN the request is rejected and nothing changes.
 
 ---
 
@@ -89,7 +89,7 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_in_mode_fade_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing: `tests/unit/game_state/game_state_in_mode_fade_test.gd` (game_state unit 184/184; with overworld + game_state integration 242/242, 2026-10-30)
 
 ---
 
@@ -97,3 +97,11 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-010-input-locked-during-transition.md`, `production/epics/game-state-scene-flow/story-011-quit-waits-for-transition.md`, `production/epics/game-state-scene-flow/story-022-overlay-stack-input-and-order.md`, `production/epics/game-state-scene-flow/story-026-focus-loss-opens-menu.md`
 - Unlocks: None in this epic (the Overworld epic's checkpoint redirect, future)
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30
+- request_in_mode_fade / is_in_mode_fade / is_save_safe already held; tests added (signals, callback, input lock, save safety table, rejections, freed callback, focus loss, quit).
+- Files: tests/unit/game_state/game_state_in_mode_fade_test.gd

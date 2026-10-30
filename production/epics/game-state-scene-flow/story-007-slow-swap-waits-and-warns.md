@@ -1,12 +1,12 @@
 # Story 007: A slow swap makes the in phase wait and logs a performance warning
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/game-state-scene-flow.md`, scoped to this story:*
 
-- [ ] **AC-26 [P]** *(part: the slow-swap test only)* "A second test injects a slow swap and asserts that the *in* phase waits and a performance warning is logged." (The hardware benchmark half is story 037.)
+- [x] **AC-26 [P]** *(part: the slow-swap test only)* "A second test injects a slow swap and asserts that the *in* phase waits and a performance warning is logged." (The hardware benchmark half is story 037.)
 
 ---
 
@@ -82,7 +82,7 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_swap_overrun_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing: `tests/unit/game_state/game_state_swap_overrun_test.gd` (game_state unit 184/184; with overworld + game_state integration 242/242, 2026-10-30)
 
 ---
 
@@ -90,3 +90,12 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-006-transition-time-and-budget-check.md`
 - Unlocks: `production/epics/game-state-scene-flow/story-037-transition-budget-hardware-bench.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30
+- New _warn_if_swap_over_budget(): warning `swap_over_budget` {type, t_swap, allowance} once at swap DONE (normal and Retry swaps) when t_swap > budget - t_out - t_in (+1e-9). `none` and types without a budget row are skipped. Equality is not an overrun.
+- Formula test runs on the fixture row and a non-default row. StubSceneLoader gained poll_count.
+- Files: src/game_state/game_state_machine.gd, tests/unit/game_state/game_state_swap_overrun_test.gd, tests/unit/game_state/doubles/stub_scene_loader.gd

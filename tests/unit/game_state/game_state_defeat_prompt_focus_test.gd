@@ -222,6 +222,9 @@ func _build_battle_env(recorder: SequenceRecorder, retreat_allowed: bool) -> Dic
 	_run_to_idle(machine)
 	assert_int(machine.current_mode).is_equal(GameStateMachine.Mode.OVERWORLD)
 
+	# Story 021: Retreat is offered only with a camp to go to.
+	machine.register_camp("camp_a")
+
 	# Overworld -> Battle (battle_wipe): stub_battle_mode.tscn is instantiated
 	# under mode_host for real.
 	var descriptor: EncounterDescriptor = GameStateFixtures.make_encounter_descriptor()

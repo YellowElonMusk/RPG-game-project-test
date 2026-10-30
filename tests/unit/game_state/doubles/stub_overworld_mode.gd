@@ -18,6 +18,9 @@ var npc_states: Dictionary = {"npc_01": "idle", "npc_02": "hostile"}
 var enemy_states: Dictionary = {"enemy_01": "patrolling"}
 var story_flags: Dictionary = {"flag_intro_seen": true, "flag_boss_defeated": false}
 
+## Story 021: returned by `get_region_default_camp_id()`.
+var region_default_camp_id: String = ""
+
 var freeze_count: int = 0
 var thaw_calls: Array[Dictionary] = []
 
@@ -106,3 +109,7 @@ func _enter_tree() -> void:
 
 func _exit_tree() -> void:
 	exit_tree_count += 1
+
+
+func get_region_default_camp_id() -> String:
+	return region_default_camp_id

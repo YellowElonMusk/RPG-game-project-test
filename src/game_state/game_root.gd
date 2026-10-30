@@ -121,6 +121,7 @@ func _ready() -> void:
 	var pre_setup := func(mode: GameMode, payload: RefCounted) -> void:
 		if mode is OverworldMode:
 			_inject_overworld(mode as OverworldMode, payload)
+			(mode as OverworldMode).camp_directory = _camp_directory
 		elif mode is InterimCampMode:
 			(mode as InterimCampMode).camp_directory = _camp_directory
 			(mode as InterimCampMode).save_service = _save_service

@@ -220,6 +220,11 @@ func current_mode_node() -> Node:
 	return _current_mode_node_ref
 
 
+## Story 021: the detached Overworld while frozen, else `null`.
+func frozen_overworld_node() -> Node:
+	return _frozen_overworld
+
+
 ## Connect this to `GameStateMachine.mode_entered` (both `GameRoot` and this
 ## story's test do). `mode_entered` fires synchronously from inside the
 ## machine's own SWAP-end handling, before this loader gets another call —

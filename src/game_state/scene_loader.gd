@@ -47,6 +47,13 @@ func free_frozen_overworld() -> void:
 	pass
 
 
+## Interface addition (story 021): the detached Overworld while one is frozen
+## (Overworld -> Battle until the return or Retreat), else `null`. The machine
+## asks it for `get_region_default_camp_id()` at Defeat Prompt open and Retreat.
+func frozen_overworld_node() -> Node:
+	return null
+
+
 ## Interface addition: the live `GameMode` node currently under `ModeHost`, or
 ## `null` if none.
 func current_mode_node() -> Node:

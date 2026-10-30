@@ -1,12 +1,12 @@
 # Story 021: Retreat goes to the last camp registered, else the region default camp, else is not offered
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Deferred (2026-10-24): needs the Camp, which does not exist yet; build with the Camp epic
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S (shrank from M: the registered-camp Retreat path moved to story 020)
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/game-state-scene-flow.md`, scoped to this story:*
 
-- [ ] **AC-17 [L]** GIVEN a registered camp, WHEN Retreat is chosen, THEN the mode is Camp at that camp, the party is fully restored, and the frozen overworld snapshot is discarded. GIVEN no camp registered, THEN the region's default camp is used. GIVEN no registered camp and no default camp, THEN Retreat is not offered and an error is logged.
+- [x] **AC-17 [L]** GIVEN a registered camp, WHEN Retreat is chosen, THEN the mode is Camp at that camp, the party is fully restored, and the frozen overworld snapshot is discarded. GIVEN no camp registered, THEN the region's default camp is used. GIVEN no registered camp and no default camp, THEN Retreat is not offered and an error is logged.
 
 ---
 
@@ -94,7 +94,7 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_retreat_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing: `tests/unit/game_state/game_state_retreat_test.gd` (game_state unit 184/184; with overworld + game_state integration 242/242, 2026-10-30)
 
 ---
 
@@ -102,3 +102,13 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-018-retreat-offer-no-stale-flag.md`, `production/epics/game-state-scene-flow/story-020-register-camp-and-retreat-to-it.md`; the ADR-0002 technical-director annotation above
 - Unlocks: `production/epics/game-state-scene-flow/story-040-screenshot-camp.md`; the future Camp & Party Management epic
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30
+- Retreat target: last_camp_id, else frozen Overworld's get_region_default_camp_id() (new SceneLoader.frozen_overworld_node(), GameMode base returns ""). offers_retreat now also needs a camp; with retreat_allowed and no camp, error `no_camp_for_retreat` is logged at prompt open. CampEntryPayload.full_restore = true on Retreat only.
+- Outside listed Files: OverworldMode gained camp_directory + get_region_default_camp_id() override, injected by GameRoot pre_setup (the boss-retreat integration tests needed it). game_state_defeat_prompt_focus_test now registers a camp so its offers_retreat=true case stays meaningful.
+- DEFERRED: the real party restore (Camp & Party Management epic) and story 040's screenshot.
+- Files: src/game_state/{game_state_machine,scene_loader,mode_host_scene_loader,game_mode,camp_entry_payload,game_root}.gd, src/overworld/overworld_mode.gd, tests/unit/game_state/game_state_retreat_test.gd, tests/unit/game_state/doubles/{stub_scene_loader,stub_overworld_mode}.gd

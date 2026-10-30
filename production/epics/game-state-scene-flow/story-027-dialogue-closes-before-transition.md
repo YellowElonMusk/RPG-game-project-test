@@ -1,12 +1,12 @@
 # Story 027: A transition requested by a Dialogue line closes the Dialogue before transition_started
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Deferred (2026-10-24): needs Dialogue, which does not exist yet; build with the Dialogue epic
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/game-state-scene-flow.md`, scoped to this story:*
 
-- [ ] **AC-32 [L]** (rule 11) GIVEN Dialogue open, WHEN its line requests a transition, THEN the Dialogue overlay closes (`overlay_closed`) before `transition_started` fires.
+- [x] **AC-32 [L]** (rule 11) GIVEN Dialogue open, WHEN its line requests a transition, THEN the Dialogue overlay closes (`overlay_closed`) before `transition_started` fires.
 
 ---
 
@@ -82,7 +82,7 @@
 **Required evidence**:
 - Logic: `tests/unit/game_state/game_state_dialogue_then_transition_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing: `tests/unit/game_state/game_state_dialogue_then_transition_test.gd` (game_state unit 184/184; with overworld + game_state integration 242/242, 2026-10-30)
 
 ---
 
@@ -90,3 +90,11 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-022-overlay-stack-input-and-order.md`
 - Unlocks: `production/epics/game-state-scene-flow/story-036-victory-dialogue-after-transition.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30
+- AC already held; tests added. The 'line' is a test function standing in for the future Dialogue system.
+- Files: tests/unit/game_state/game_state_dialogue_then_transition_test.gd

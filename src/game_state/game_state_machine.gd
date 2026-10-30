@@ -74,6 +74,17 @@ const _MENU_ACTION: StringName = InputActions.MENU
 ## too (story 030).
 const _MENU_ALLOWED_MODES: Array[Mode] = [Mode.OVERWORLD, Mode.CAMP, Mode.BATTLE]
 
+## The GDD Overlays table's "can open over" column (story 023, AC-21):
+## overlay kind -> the modes `open_overlay()` accepts it over. The Defeat
+## Prompt's list is empty on purpose -- it opens only through
+## `report_battle_outcome(DEFEAT)`, never through `open_overlay()`. Dialogue is
+## Overworld/Camp only (Battle banter is not an overlay, GDD rule 11).
+const _OVERLAY_ALLOWED_MODES: Dictionary = {
+	OverlayKind.DIALOGUE: [Mode.OVERWORLD, Mode.CAMP],
+	OverlayKind.MENU: [Mode.OVERWORLD, Mode.CAMP, Mode.BATTLE],
+	OverlayKind.DEFEAT_PROMPT: [],
+}
+
 ## Rule 10 (ADR-0002 §5-§6, story 029): the Menu's entries by mode, pinned
 ## order. Battle (including Battle with the Defeat Prompt on top) is cut down
 ## to settings and quit; Overworld and Camp get the full menu.
@@ -225,7 +236,11 @@ func _init(loader: SceneLoader, presenter: TransitionPresenter, config: Transiti
 ## transition the Menu is allowed to start. Every other target is rejected
 ## with `REJECTED_OVERLAY_BLOCKS` while any overlay is open, Menu or not.
 func request_transition(target: Mode, payload: RefCounted = null) -> RequestResult:
+	# Story 003, AC-4: Content Error has no outbound row, so every request from
+	# it is also an invalid pair -- logged the same way, but the code stays
+	# REJECTED_TERMINAL (story 005).
 	if _current_mode == Mode.CONTENT_ERROR:
+		_log_invalid_pair(target)
 		return RequestResult.REJECTED_TERMINAL
 	if _phase != Phase.IDLE:
 		return RequestResult.REJECTED_BUSY
@@ -235,6 +250,7 @@ func request_transition(target: Mode, payload: RefCounted = null) -> RequestResu
 		return RequestResult.REJECTED_OVERLAY_BLOCKS
 	var targets: Array = _REQUESTABLE_TARGETS.get(_current_mode, [])
 	if not targets.has(target):
+		_log_invalid_pair(target)
 		return RequestResult.REJECTED_INVALID_PAIR
 	# Story 013, ADR-0002 §8: the Encounter descriptor is validated at request
 	# time, before OUT and before any detach -- an invalid descriptor returns
@@ -258,6 +274,15 @@ func open_overlay(kind: OverlayKind, payload: RefCounted = null) -> RequestResul
 		return RequestResult.REJECTED_TERMINAL
 	if _phase != Phase.IDLE:
 		return RequestResult.REJECTED_BUSY
+	# Story 023, AC-21 (ruling 2026-10-23): a kind not allowed over the
+	# current mode is an invalid pair; the Defeat Prompt is never opened here.
+	var allowed_modes: Array = _OVERLAY_ALLOWED_MODES.get(kind, [])
+	if not allowed_modes.has(_current_mode):
+		return RequestResult.REJECTED_INVALID_PAIR
+	# Dialogue never opens over the Menu, and is not queued: the Dialogue
+	# system retries after overlay_closed(MENU) (GDD Edge Cases).
+	if kind == OverlayKind.DIALOGUE and _overlay_stack.has(OverlayKind.MENU):
+		return RequestResult.REJECTED_OVERLAY_BLOCKS
 	_overlay_stack.append(kind)
 	_loader.push_overlay(kind, payload)
 	if kind == OverlayKind.MENU:
@@ -390,6 +415,11 @@ func report_battle_outcome(result: BattleResult) -> RequestResult:
 			_pending_outcome = result
 			var prompt_payload := DefeatPromptPayload.new()
 			prompt_payload.offers_retreat = _offers_retreat()
+			if (_current_descriptor != null and _current_descriptor.retreat_allowed
+					and _retreat_camp_id().is_empty()):
+				_log.error(&"no_camp_for_retreat", {
+					"encounter_id": _current_descriptor.encounter_id,
+					"note": "retreat_allowed with no registered or region default camp: content bug"})
 			_overlay_stack.append(OverlayKind.DEFEAT_PROMPT)
 			_loader.push_overlay(OverlayKind.DEFEAT_PROMPT, prompt_payload)
 			overlay_opened.emit(OverlayKind.DEFEAT_PROMPT)
@@ -412,10 +442,14 @@ func report_results_done() -> RequestResult:
 	return RequestResult.OK
 
 
-## Story 005: Content Error is terminal and is checked first.
+## Story 005: Content Error is terminal and is checked first. Story 019,
+## AC-18: a call while any transition runs (including the Retry it started)
+## returns `REJECTED_BUSY`, so repeated Retry inputs cause one restart.
 func choose_retry() -> RequestResult:
 	if _current_mode == Mode.CONTENT_ERROR:
 		return RequestResult.REJECTED_TERMINAL
+	if _phase != Phase.IDLE:
+		return RequestResult.REJECTED_BUSY
 	if _pending_outcome != BattleResult.DEFEAT:
 		return RequestResult.REJECTED_INVALID_PAIR
 	_pending_outcome = -1
@@ -425,10 +459,15 @@ func choose_retry() -> RequestResult:
 	return RequestResult.OK
 
 
-## Story 005: Content Error is terminal and is checked first.
+## Story 005: Content Error is terminal and is checked first; busy next
+## (story 019). Story 021, AC-17: the target is `last_camp_id`, else the frozen
+## Overworld's region default camp; the payload carries `full_restore = true`
+## (Camp performs the restore on entry).
 func choose_retreat() -> RequestResult:
 	if _current_mode == Mode.CONTENT_ERROR:
 		return RequestResult.REJECTED_TERMINAL
+	if _phase != Phase.IDLE:
+		return RequestResult.REJECTED_BUSY
 	if _pending_outcome != BattleResult.DEFEAT:
 		return RequestResult.REJECTED_INVALID_PAIR
 	if not _offers_retreat():
@@ -436,7 +475,8 @@ func choose_retreat() -> RequestResult:
 	_pending_outcome = -1
 	_close_defeat_prompt()
 	var payload := CampEntryPayload.new()
-	payload.camp_id = _last_camp_id
+	payload.camp_id = _retreat_camp_id()
+	payload.full_restore = true
 	_begin_transition(Mode.BATTLE, Mode.CAMP,
 			_TRANSITION_TYPES[Mode.BATTLE][Mode.CAMP], payload)
 	return RequestResult.OK
@@ -634,6 +674,7 @@ func _end_retry_swap() -> void:
 	if battle_node != null:
 		battle_node.restore_start_snapshot(_battle_snapshot)
 	_current_mode = Mode.BATTLE
+	_warn_if_swap_over_budget()
 	mode_entered.emit(Mode.BATTLE)
 	_begin_in_phase()
 
@@ -664,6 +705,7 @@ func _end_swap_phase_success() -> void:
 	# _last_camp_id).
 	if _pending_payload is CampEntryPayload:
 		_last_camp_id = (_pending_payload as CampEntryPayload).camp_id
+	_warn_if_swap_over_budget()
 	mode_entered.emit(_pending_to_mode)
 	_begin_in_phase()
 
@@ -677,6 +719,24 @@ func _end_swap_phase_failure(cause: StringName) -> void:
 	mode_entered.emit(_pending_from_mode)
 	_pending_to_mode = _pending_from_mode
 	_begin_in_phase()
+
+
+## Story 007, AC-26 / ADR-0002 overrun rule: logged once, when the swap
+## reaches DONE, if the measured `t_swap` ran past
+## `transition_budget - t_out - t_in` for this type. The budget is never
+## enforced by skipping work: IN has already waited for the swap. `none` has
+## no Budgets row (same skip as `TransitionConfig.validate()`), nor does a
+## type missing from `transition_budget`. Equality is not an overrun.
+func _warn_if_swap_over_budget() -> void:
+	if _pending_transition_type == &"none":
+		return
+	if not _config.transition_budget.has(_pending_transition_type):
+		return
+	var allowance: float = (float(_config.transition_budget[_pending_transition_type])
+			- _current_t_out - _current_t_in)
+	if _t_swap > allowance + _PHASE_EPSILON:
+		_log.warning(&"swap_over_budget", {
+			"type": _pending_transition_type, "t_swap": _t_swap, "allowance": allowance})
 
 
 ## `presenter.play_in()` at the start of IN.
@@ -714,8 +774,21 @@ func _end_in_phase() -> void:
 ## same descriptor) never carries a stale flag into a later Defeat in the
 ## same battle. Shared by the Defeat payload and `choose_retreat()`'s guard
 ## so the two can never disagree.
+## Story 021: also false when there is no camp to retreat to.
 func _offers_retreat() -> bool:
-	return _current_descriptor != null and _current_descriptor.retreat_allowed
+	return (_current_descriptor != null and _current_descriptor.retreat_allowed
+			and not _retreat_camp_id().is_empty())
+
+
+## Story 021, AC-17: the last camp registered wins; with none, the frozen
+## Overworld's `get_region_default_camp_id()`; `""` when neither exists.
+func _retreat_camp_id() -> String:
+	if not _last_camp_id.is_empty():
+		return _last_camp_id
+	var frozen: Node = _loader.frozen_overworld_node()
+	if frozen is GameMode:
+		return (frozen as GameMode).get_region_default_camp_id()
+	return ""
 
 
 ## Quit to Title from the Menu (story 025, ADR-0002 §4/§5 ruling 2026-10-23).
@@ -734,6 +807,11 @@ func _quit_to_title() -> RequestResult:
 	var transition_type: StringName = _TRANSITION_TYPES[_current_mode][Mode.TITLE]
 	_begin_transition(_current_mode, Mode.TITLE, transition_type, null)
 	return RequestResult.OK
+
+
+## Story 003, AC-4: one structured error per rejected invalid pair.
+func _log_invalid_pair(target: Mode) -> void:
+	_log.error(&"invalid_pair", {"from": _current_mode, "to": target})
 
 
 func _close_defeat_prompt() -> void:
