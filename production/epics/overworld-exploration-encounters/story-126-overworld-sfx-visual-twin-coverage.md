@@ -1,12 +1,12 @@
 # Story 126: Every overworld SFX event has its visual twin on the same frame
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Ready (implemented, awaiting /story-done)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: — (not yet implemented)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-53 [L] (Visual/Audio, twins)** For every overworld SFX event in the audio table, the event spy records the sound together with its visual twin on the same frame (the payoff card counts for the off-screen sting).
+- [x] **AC-53 [L] (Visual/Audio, twins)** For every overworld SFX event in the audio table, the event spy records the sound together with its visual twin on the same frame (the payoff card counts for the off-screen sting).
 
 ---
 
@@ -72,7 +72,9 @@ Every sound has a visual twin ([A11Y] preamble). The audio table pairs each even
 planned ones; `/dev-story` replaces the list with the files it changed; `/story-done`
 checks scope against it.*
 
-- `tests/unit/overworld/audio_visual_twin_test.gd` (event spy over the audio table's six rows)
+- `src/overworld/overworld_sfx.gd` (new: the six audio-table event ids)
+- `src/overworld/overworld_mode.gd` (additive: `sfx_cue` signal and its six emission points)
+- `tests/unit/overworld/audio_visual_twin_test.gd` (new: event spy over the audio table's six rows)
 
 ---
 
@@ -87,7 +89,7 @@ checks scope against it.*
 **Story Type**: Logic
 **Required evidence**: `tests/unit/overworld/audio_visual_twin_test.gd` — must exist and pass.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (9/9 in `audio_visual_twin_test.gd`)
 
 ---
 
@@ -95,3 +97,15 @@ checks scope against it.*
 
 - Depends on: `story-059-liberated-set-persists-across-respawn-and-stage.md` (AC-25, liberation visuals), Audio Manager (no epic yet, named as a dependency)
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30 (awaiting /story-done)
+**Criteria**: 1/1 (AC-53) covered by automated test.
+
+- No Audio Manager or SFX triggers existed, so this story adds the minimal seam, not an Audio Manager: `OverworldMode.sfx_cue(event: StringName, subject: String)`, with the six ids in `OverworldSfx`. Nothing listens yet (`TODO(audio-manager)`).
+- Emission points: Notice and Chase in `step_frame` on the brain's sub-state change; Stun on the reveal (`transition_finished`) for a symbol Fled stunned, not under the wipe; on-screen Liberation in `_start_removals`; the off-screen sting in `_show_payoff_card` with the "Street cleared" line; Checkpoint denial when the failure line's Dialogue opens.
+- **Deviation / limitation**: visual twins are asserted on the model state the presentation reads (sub-state, `is_removing`, payoff card, Dialogue line); no view code draws the poses, slips or DENIED stamp yet (story 125 and art). `pending_thaw` stands for "scene under the wipe".
+- The test spy filters by subject: the Paris segment's own off-screen markers (`poster_permit_queue`) also sting on the East Clerk's Victory.

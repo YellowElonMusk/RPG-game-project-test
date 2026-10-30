@@ -42,6 +42,15 @@ const _DT_MAX_FALLBACK: float = 0.10
 ## Emitted once when the leader crosses into a `MapExit` (enter edge only).
 signal map_exit_requested(exit_id: StringName)
 
+## Story 126 (AC-53): an overworld SFX event (an `OverworldSfx` id) fires on
+## the frame its visual twin first shows. `subject` names the symbol,
+## clutter marker or checkpoint. The Audio Manager will listen; nothing does yet.
+signal sfx_cue(event: StringName, subject: String)
+## Fled symbols stunned under the wipe: their stun cue fires on the reveal.
+var _stun_cues_due: Array[EncounterSource] = []
+## Off-screen liberated markers: their sting fires with the payoff card.
+var _sting_cues_due: Array[String] = []
+
 ## The GDD States table rows this mode implements so far. EncounterStarting
 ## is transient inside `start_encounter()`.
 enum State { EXPLORING, FROZEN, REDIRECTING }
@@ -412,9 +421,23 @@ func step_frame(ow_dt: float, input_vec: Vector2) -> void:
 	for source: EncounterSource in _sources:
 		symbol_from.append(source.brain.position)
 		if _grid != null:
+			var was: SymbolBrain.SubState = source.brain.sub_state
 			source.brain.step(ow_dt, _leader_pos, _grid, grace_active, config, _budget)
+			_cue_brain_change(source, was)
 	_check_contact(leader_from, symbol_from)
 	_mirror_world_state()
+
+
+## Story 126: a symbol entering Noticing or Chasing this step fires its cue
+## (its notice / chase pose shows from this frame).
+func _cue_brain_change(source: EncounterSource, was: SymbolBrain.SubState) -> void:
+	var now: SymbolBrain.SubState = source.brain.sub_state
+	if now == was:
+		return
+	if now == SymbolBrain.SubState.NOTICING:
+		sfx_cue.emit(OverworldSfx.NOTICE, source.symbol_id)
+	elif now == SymbolBrain.SubState.CHASING:
+		sfx_cue.emit(OverworldSfx.CHASE, source.symbol_id)
 
 
 ## Registers an encounter symbol (ADR-0012 §5): `enc_id` names its
@@ -728,6 +751,8 @@ func on_thawed(encounter_id: String, result: GameStateMachine.BattleResult) -> v
 				open_checkpoint(source.checkpoint_id)
 		GameStateMachine.BattleResult.FLED:
 			source.brain.on_fled(_leader_pos, _leader_facing, _grid, config)
+			if source.brain.sub_state == SymbolBrain.SubState.STUNNED:
+				_stun_cues_due.append(source)
 			# Rule 13a: Fled places the squad at the return marker, under the wipe.
 			if source.return_marker != Vector2.ZERO:
 				_leader_pos = source.return_marker
@@ -787,6 +812,11 @@ func _on_transition_finished(to: GameStateMachine.Mode) -> void:
 	grace_starts += 1
 	for source: EncounterSource in _sources:
 		source.brain.on_grace_started()
+	# Story 126: the stun shows (and sounds) on the reveal, not under the wipe.
+	for source: EncounterSource in _stun_cues_due:
+		if source.brain.sub_state == SymbolBrain.SubState.STUNNED:
+			sfx_cue.emit(OverworldSfx.STUN, source.symbol_id)
+	_stun_cues_due.clear()
 	# Story 111: a map load's reveal shows its name card (never a thaw or a
 	# redirect: those load no map).
 	if _name_card_due:
@@ -934,7 +964,10 @@ func confirm_checkpoint(marker_id: StringName) -> void:
 			# Story 071: the line, then on the same frame as its close the
 			# input-locked redirect to the return marker. `queue` differs only
 			# in its line; neither waits on a timed or held input.
-			say(_failure_line(cp), redirect_leader.bind(cp.return_marker, cp.return_facing))
+			if say(_failure_line(cp), redirect_leader.bind(cp.return_marker, cp.return_facing)) \
+					== GameStateMachine.RequestResult.OK:
+				# Story 126: the stamp thunk lands with the DENIED line.
+				sfx_cue.emit(OverworldSfx.CHECKPOINT_DENIED, String(marker_id))
 
 
 ## The encounter source a checkpoint's `encounter` outcome fights from: a
@@ -1527,6 +1560,10 @@ func _show_payoff_card() -> void:
 	_payoff_lines.clear()
 	payoff_card_phase = CardPhase.SHOWN
 	_payoff_card_elapsed = 0.0
+	# Story 126: the off-screen sting's twin is this card's "Street cleared" line.
+	for marker_id: String in _sting_cues_due:
+		sfx_cue.emit(OverworldSfx.LIBERATION_OFF_SCREEN, marker_id)
+	_sting_cues_due.clear()
 
 
 ## The card holds for `text_hold` summed over its lines (GDD UI
@@ -1786,6 +1823,7 @@ func _liberate_for(symbol_id: String) -> void:
 		else:
 			_finish_removal(gag)
 			_payoff_lines.append("Street cleared: %s" % (gag.street_label if not gag.street_label.is_empty() else String(gag.marker_id)))
+			_sting_cues_due.append(String(gag.marker_id))
 
 
 ## Whether ground point `p` is on screen from the leader (the camera's
@@ -1799,6 +1837,7 @@ func _on_screen(p: Vector2) -> bool:
 func _start_removals() -> void:
 	for gag: GagInteractable in _removals_due:
 		_removals.append([gag, 0.0])
+		sfx_cue.emit(OverworldSfx.LIBERATION, String(gag.marker_id))
 	_removals_due.clear()
 
 
