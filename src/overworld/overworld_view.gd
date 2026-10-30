@@ -137,6 +137,7 @@ func _present(delta: float) -> void:
 	var grid: WalkGrid = mode.get_walk_grid()
 	if grid != null:
 		bounds = OverworldMap.ground_bounds(grid)
+	_camera.held = mode.is_dialogue_open()
 	_camera.advance(mode.get_leader_position(), delta, aspect, bounds.position, bounds.end)
 	_camera.apply_transform(FollowCamera.compute_footprint(
 			_camera.height, _camera.pitch_degrees, _camera.fov_degrees, aspect))

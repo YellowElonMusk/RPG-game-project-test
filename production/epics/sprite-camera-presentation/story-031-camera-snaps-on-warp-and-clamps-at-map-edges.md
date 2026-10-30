@@ -1,12 +1,12 @@
 # Story 031: the follow camera snaps on a warp and stays clamped inside the map
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/sprite-camera-presentation.md`, scoped to this story:*
 
-- [ ] **AC-27 [L]** (P-07) GIVEN a warp, map change or retreat, THEN the camera snaps during the hidden swap phase (zero smoothing frames). At a map edge, the ground hits of the view's four corner rays lie inside the map's bounds. GIVEN a map narrower than the footprint on one axis, THEN the camera's position on that axis equals the centre of its clamp bounds on every frame.
+- [x] **AC-27 [L]** (P-07) GIVEN a warp, map change or retreat, THEN the camera snaps during the hidden swap phase (zero smoothing frames). At a map edge, the ground hits of the view's four corner rays lie inside the map's bounds. GIVEN a map narrower than the footprint on one axis, THEN the camera's position on that axis equals the centre of its clamp bounds on every frame.
 
 ---
 
@@ -59,8 +59,8 @@
 
 ## Files
 
-- `src/presentation/sprite_projection.gd`
-- `tests/unit/presentation/follow_camera_clamp_test.gd`
+- `src/presentation/follow_camera.gd`
+- `tests/unit/presentation/follow_camera_clamp_test.gd`, `tests/integration/presentation/follow_camera_overlay_hold_test.gd`
 
 ---
 
@@ -76,7 +76,7 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/follow_camera_clamp_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`, both later)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (see Completion Notes)
 
 ---
 
@@ -84,3 +84,11 @@
 
 - Depends on: `story-001-windowed-engine-spike.md` (the spike probes the perspective follow-camera path at 16:10 and 4:3); the Overworld (ADR-0012, no epic yet — owns what the camera follows and the map bounds data)
 - Unlocks: `story-044-dialogue-holds-the-follow-camera.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30. `FollowCamera.snap_to()` on `party_placed` (warp, map change, retreat) is zero smoothing frames; `clamp_to_map()` keeps the four corner-ray ground hits inside the map at every edge and aspect, and centres an axis the footprint doesn't fit. Tests: `follow_camera_clamp_test.gd` (corner rays, narrow axis, snap) and the assembled-scene case `test_party_placed_snaps_camera_with_zero_smoothing` in `follow_camera_overlay_hold_test.gd`, all passing.
+
+**Deviations**: the clamp lives in `follow_camera.gd`, not `sprite_projection.gd` (where the camera already was). Finding: the default 24x16 test map is smaller than the shipped footprint on both axes, so the camera is centred and never moves there; the integration tests lower the camera height to make tracking observable.

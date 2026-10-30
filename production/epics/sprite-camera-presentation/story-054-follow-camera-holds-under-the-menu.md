@@ -1,12 +1,12 @@
 # Story 054: The follow camera holds still while the Menu is open
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/sprite-camera-presentation.md`, scoped to this story:*
 
-- [ ] **AC-50 [L]** (P-07) (follow camera under the Menu) GIVEN the Overworld with the Menu open, WHEN the party anchor moves, THEN the camera is unchanged on every frame while the Menu is open. WHEN the Menu closes, THEN the first frame's movement equals one formula step with `dt ≤ dt_max`: no catch-up jump.
+- [x] **AC-50 [L]** (P-07) (follow camera under the Menu) GIVEN the Overworld with the Menu open, WHEN the party anchor moves, THEN the camera is unchanged on every frame while the Menu is open. WHEN the Menu closes, THEN the first frame's movement equals one formula step with `dt ≤ dt_max`: no catch-up jump.
 
 ---
 
@@ -59,7 +59,7 @@ The follow camera (§6) advances only from calls driven by mode time, exactly li
 ## Files
 
 - `src/presentation/follow_camera.gd`
-- `tests/unit/presentation/follow_camera_menu_freeze_test.gd`
+- `tests/unit/presentation/follow_camera_clamp_test.gd`, `tests/integration/presentation/follow_camera_overlay_hold_test.gd`
 
 ---
 
@@ -73,9 +73,9 @@ The follow camera (§6) advances only from calls driven by mode time, exactly li
 
 **Story Type**: Logic
 **Required evidence**:
-- `tests/unit/presentation/follow_camera_menu_freeze_test.gd` — must exist and pass
+- `tests/unit/presentation/follow_camera_clamp_test.gd` + `tests/integration/presentation/follow_camera_overlay_hold_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (see Completion Notes)
 
 ---
 
@@ -83,3 +83,11 @@ The follow camera (§6) advances only from calls driven by mode time, exactly li
 
 - Depends on: `production/epics/sprite-camera-presentation/story-001-windowed-engine-spike.md` (the follow camera's perspective-path formula, including `F_v_eff`, is probed in the spike)
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30. No new code: the camera has no clock of its own; only `OverworldView` steps it, and the view inherits the mode's process mode, which ModeHost disables under the Menu (ADR-0002 §5). The first frame after close is clamped by `ease_step()`'s `min(dt, dt_max)`. Tests: `test_first_step_after_freeze_is_one_dt_max_step` (unit) and `test_menu_freezes_camera_and_first_frame_after_is_one_dt_max_step` (assembled scene, 5 s first frame equals one `dt_max` step).
+
+**Deviations**: test files differ from the planned `follow_camera_menu_freeze_test.gd`.

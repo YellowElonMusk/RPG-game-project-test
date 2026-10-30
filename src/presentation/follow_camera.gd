@@ -74,6 +74,10 @@ class Footprint:
 ## `cam`). Set via `snap_to()` to teleport with no smoothing (Edge Cases:
 ## map change, warp, retreat to camp).
 var cam_ground: Vector2 = Vector2.ZERO
+## While true, `advance()` leaves `cam_ground` exactly where it is (story
+## 044: Dialogue holds the follow camera; ambience keeps running). Tracking
+## resumes from the held position, never a snap, when it clears.
+var held: bool = false
 
 
 func _ready() -> void:
@@ -241,6 +245,8 @@ static func clamp_to_map(cam: Vector2, footprint: Footprint, map_min: Vector2,
 ## only on resize (Edge Cases: "the follow camera's footprint and dead zone
 ## are recalculated from the new size").
 func advance(target: Vector2, dt: float, aspect: float, map_min: Vector2, map_max: Vector2) -> Vector2:
+	if held:
+		return cam_ground
 	var footprint: Footprint = compute_footprint(height, pitch_degrees, fov_degrees, aspect)
 	var dz: Vector2 = dead_zone(footprint, dead_zone_fraction)
 	var eased: Vector2 = ease_step(cam_ground, target, dz, tau, dt, dt_max)

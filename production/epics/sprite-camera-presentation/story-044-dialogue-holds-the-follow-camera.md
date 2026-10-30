@@ -1,12 +1,12 @@
 # Story 044: the follow camera holds its position while Dialogue is open
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/sprite-camera-presentation.md`, scoped to this story:*
 
-- [ ] **AC-40 [L]** (P-07) (overlay camera hold) GIVEN Dialogue open in the Overworld, WHEN the party anchor moves, THEN the follow camera's position is unchanged until the Dialogue closes.
+- [x] **AC-40 [L]** (P-07) (overlay camera hold) GIVEN Dialogue open in the Overworld, WHEN the party anchor moves, THEN the follow camera's position is unchanged until the Dialogue closes.
 
 ---
 
@@ -59,8 +59,9 @@
 
 ## Files
 
-- `src/presentation/sprite_projection.gd`
-- `tests/unit/presentation/follow_camera_dialogue_hold_test.gd`
+- `src/presentation/follow_camera.gd`
+- `src/overworld/overworld_mode.gd` (`is_dialogue_open()`), `src/overworld/overworld_view.gd`
+- `tests/unit/presentation/follow_camera_clamp_test.gd`, `tests/integration/presentation/follow_camera_overlay_hold_test.gd`
 
 ---
 
@@ -74,9 +75,9 @@
 
 **Story Type**: Logic
 **Required evidence**:
-- Logic: `tests/unit/presentation/follow_camera_dialogue_hold_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`, both later)
+- Logic: `tests/unit/presentation/follow_camera_clamp_test.gd` + `tests/integration/presentation/follow_camera_overlay_hold_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`, both later)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (see Completion Notes)
 
 ---
 
@@ -84,3 +85,11 @@
 
 - Depends on: `story-031-camera-snaps-on-warp-and-clamps-at-map-edges.md`; the Overworld (ADR-0012, no epic yet — owns the party anchor and Dialogue's overlay announcement)
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30. `FollowCamera.held` makes `advance()` a no-op; `OverworldView._present()` sets it from `OverworldMode.is_dialogue_open()` (Dialogue anywhere in the overlay stack) every frame, so tracking resumes from the held position (one formula step, never a snap) on the first frame after close. Tests: `test_held_camera_is_unchanged_then_resumes_from_held_position` (unit) and `test_dialogue_holds_camera_until_it_closes` (assembled scene, 30 frames held, then one step); seen failing with the hold line removed.
+
+**Deviations**: the hold lives in `follow_camera.gd`/`overworld_view.gd`, not `sprite_projection.gd`; the test file names differ from the planned `follow_camera_dialogue_hold_test.gd`.

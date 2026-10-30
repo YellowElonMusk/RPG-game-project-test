@@ -109,7 +109,7 @@ Each of the fourteen rules gets its own fixture `PresentationConfig` that breaks
 
 **Deviations**:
 - Fixtures are factory functions in the test, not `.tres` files under `data/presentation/presentation_config_fixtures/` (the coding standard allows either).
-- `ContentBootstrap` does not exist yet, so `validate()` is not yet registered as a boot validator (`TODO(sprite-camera-presentation)`); flash sequences and capped variants are plain injected inputs until FlashGate's source declarations (§12) exist.
+- Boot registration (2026-10-30 follow-up): NOT registered. `ContentBootstrap` exists, but ADR-0004 gives the catalog only per-record-type validators (`register_record_validator(type, ...)`) and `PresentationConfig` is not a catalog record type; no `data/config/presentation_config.tres` ships, and ADR-0005 §9 has `run()` load the config and return it, which needs a config-level catalog hook plus a `ContentBootResult` field (`src/data`, Game State scope). Left as `TODO(sprite-camera-presentation)` in `presentation_config.gd` and `content_bootstrap.gd`; flash sequences and capped variants are plain injected inputs until FlashGate's source declarations (§12) exist.
 - The 1e-6 tolerance applies to `D < reaction_hold` and `dt_max < beat_min` too, so equality passes ("a config exactly on each boundary passes"); key:fill alone is strict, because the AC says "at or below" fails.
 - `dt_max` is the existing `follow_camera_dt_max` (the GDD shares it); `D` is `punch_duration`.
 

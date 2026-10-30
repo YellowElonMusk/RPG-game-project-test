@@ -69,6 +69,9 @@ var party_source: Callable = Callable()
 ## injector. TODO(overworld): GameRoot does not inject it yet; null means
 ## Victory removes the symbol for this visit only (logged as an error).
 var world_state: WorldState = null
+## Assigned by GameRoot's `pre_setup` (game-state story 021): the source of
+## `get_region_default_camp_id()`. `null` means no region default.
+var camp_directory: CampDirectory = null
 ## Encounter grace (GDD rule 7): `true` while grace time is left. Started
 ## only by `transition_finished` (story 047); setting it `true` starts a full
 ## `config.encounter_grace_s`, `false` ends it.
@@ -2227,3 +2230,17 @@ func _update_beacon_progress() -> void:
 		return
 	_beacon_progress = BeaconGuide.advance_progress(
 			_lit_chain, _beacon_progress, _leader_pos, _map, config.beacon_reach_m)
+
+
+## Whether a Dialogue overlay is open over this mode (anywhere in the
+## overlay stack). The view holds the follow camera while it is
+## (sprite-camera story 044, ADR-0005 §4/§6).
+func is_dialogue_open() -> bool:
+	return _machine != null \
+			and _machine.overlay_stack.has(GameStateMachine.OverlayKind.DIALOGUE)
+
+
+## Game-state story 021 (ADR-0012 §4 `CampSpot.is_region_default`): Retreat's
+## fallback camp when none has been registered; `""` without a directory.
+func get_region_default_camp_id() -> String:
+	return camp_directory.region_default_camp_id if camp_directory != null else ""

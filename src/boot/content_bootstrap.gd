@@ -70,6 +70,9 @@ static func run(catalog: ContentCatalogService, data_root: String = "res://data"
 			func(_faction: FactionData, _rule: FactionRuleData) -> FactionRule: return FactionRule.new(),
 			func(_rule: FactionRuleData) -> Array[Dictionary]: return [])
 	register_faction_rule_validator(catalog, result.registry)
+	# TODO(sprite-camera-presentation): ADR-0005 §9 PresentationConfig load rules
+	# (`PresentationConfig.validate()`) need a config-level validator hook;
+	# ADR-0004 only offers per-record-type validators.
 	# Step 3 (ADR-0003 §6): the bindings record validator, before load_all().
 	catalog.register_record_validator(&"bindings", InputBindingsValidator.validate)
 	catalog.load_all(data_root)

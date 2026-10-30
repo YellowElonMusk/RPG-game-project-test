@@ -163,8 +163,11 @@ const RULE_HORIZON := "pitch - F_v_eff(4:3)/2 >= horizon_margin"
 ##   `battle_speed_mult` and `ff_mult`;
 ## - `capped_variants`: each capped variant's declared frames as
 ##   `{"general": bool, "red": bool, "area": float}`.
-## TODO(sprite-camera-presentation): `ContentBootstrap` (ADR-0004/0005 §9)
-## registers this as a boot validator once it exists; FlashGate's source
+## TODO(sprite-camera-presentation): register with `ContentBootstrap` (ADR-0005 §9)
+## once ADR-0004 gains a config-level (non-record) validator hook and a
+## shipped `presentation_config.tres` exists; `register_record_validator`
+## is per catalog record type and `PresentationConfig` is not a record. Then
+## FlashGate's source
 ## declarations (§12) replace the plain sequence/variant inputs.
 func validate(non_boss_profiles: Array[LightingProfile] = [],
 		reserved_sequences: Array[PackedFloat64Array] = [],
