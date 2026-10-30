@@ -185,3 +185,6 @@ func validate() -> PackedStringArray:
 ## symbol must already be on screen. 4.70 m at the defaults.
 func see_m() -> float:
 	return symbol_chase_m + body_radius + (walk_speed + v_patrol()) * see_lead_s
+## The chapter step list `validate_maps` checks (ADR-0012 §8, interim data;
+## story 074).
+@export var chapter_steps_path: String = "res://data/chapters/chapter_paris_steps.tres"

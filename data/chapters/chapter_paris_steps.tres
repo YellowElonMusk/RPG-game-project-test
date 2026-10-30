@@ -1,0 +1,59 @@
+[gd_resource type="Resource" script_class="ChapterSteps" load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://src/chapters/chapter_steps.gd" id="1_steps"]
+[ext_resource type="Script" path="res://src/chapters/chapter_step.gd" id="2_step"]
+
+[sub_resource type="Resource" id="step_1"]
+script = ExtResource("2_step")
+id = "step_leave_town"
+objective = "Head out of town toward the Prefecture."
+map_id = "map_paris_town_placeholder"
+leg_id = "town_out"
+flags_on_enter = PackedStringArray("permits_mandatory")
+
+[sub_resource type="Resource" id="step_2"]
+script = ExtResource("2_step")
+id = "step_reach_prefecture"
+objective = "Cross the Rue de Rivoli to the Prefecture."
+map_id = "map_paris_segment_placeholder"
+leg_id = "segment_to_dungeon"
+
+[sub_resource type="Resource" id="step_3"]
+script = ExtResource("2_step")
+id = "step_take_a_number"
+objective = "Get past the Permit Counter."
+map_id = "map_paris_dungeon_placeholder"
+leg_id = "dungeon_to_counter"
+
+[sub_resource type="Resource" id="step_4"]
+script = ExtResource("2_step")
+id = "step_find_supervisor"
+objective = "Find the Supervisor."
+map_id = "map_paris_dungeon_placeholder"
+leg_id = "dungeon_to_boss"
+
+[sub_resource type="Resource" id="step_5"]
+script = ExtResource("2_step")
+id = "step_defeat_supervisor"
+objective = "Defeat the Supervisor."
+map_id = "map_paris_boss_chamber_placeholder"
+leg_id = "boss_fight"
+
+[sub_resource type="Resource" id="step_6"]
+script = ExtResource("2_step")
+id = "step_walk_home_a"
+objective = "Walk home through the liberated streets."
+map_id = "map_paris_segment_placeholder"
+leg_id = "segment_home"
+
+[sub_resource type="Resource" id="step_7"]
+script = ExtResource("2_step")
+id = "step_walk_home_b"
+objective = "Back to the café."
+map_id = "map_paris_town_placeholder"
+leg_id = "town_home"
+
+[resource]
+script = ExtResource("1_steps")
+chapter_id = "chapter_paris"
+steps = Array[ExtResource("2_step")]([SubResource("step_1"), SubResource("step_2"), SubResource("step_3"), SubResource("step_4"), SubResource("step_5"), SubResource("step_6"), SubResource("step_7")])

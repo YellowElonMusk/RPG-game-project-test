@@ -1,8 +1,7 @@
 ## Story 074, AC-30a (GDD rules 0, 11): every MapExit's target map has an
 ## exit back; every `critical_path` leg starts at an existing EntryPoint and
 ## ends at an existing MapExit, Static symbol or CampSpot, with unique leg
-## IDs. The ChapterFlow step clause has no step data to check yet
-## (`tools/ci/validate_maps.gd` reports it NOT ASSESSED).
+## IDs; every chapter step names an existing map and a leg on it.
 extends GdUnitTestSuite
 
 const _MAPS: Array[String] = ["town", "segment", "dungeon", "boss_chamber"]
@@ -81,3 +80,27 @@ func _maps() -> Dictionary:
 func _free(maps: Dictionary) -> void:
 	for map: OverworldMap in maps.values():
 		map.free()
+
+
+func test_shipped_chapter_steps_name_existing_legs() -> void:
+	var steps: ChapterSteps = load(OverworldConfig.new().chapter_steps_path) as ChapterSteps
+	assert_int(steps.steps.size()).is_equal(7)
+	assert_array(Array(MapValidator.validate_steps(steps, _records()))).is_empty()
+
+
+func test_step_with_unknown_map_leg_or_repeated_id_is_reported() -> void:
+	var steps: ChapterSteps = (load(OverworldConfig.new().chapter_steps_path) as ChapterSteps).duplicate(true)
+	steps.steps[0].map_id = "map_nowhere"
+	steps.steps[1].leg_id = "leg_nowhere"
+	steps.steps[2].id = steps.steps[3].id
+	var errors: PackedStringArray = MapValidator.validate_steps(steps, _records())
+	assert_int(errors.size()).is_equal(3)
+	assert_str(", ".join(errors)).contains("map_nowhere").contains("leg_nowhere").contains("repeated")
+
+
+func _records() -> Dictionary:
+	var out: Dictionary = {}
+	for name: String in _MAPS:
+		var rec: MapData = _record(name)
+		out[rec.id] = rec
+	return out

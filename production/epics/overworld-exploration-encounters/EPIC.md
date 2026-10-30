@@ -137,7 +137,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 071 | [Redirect and queue failures lock input, snap the party to the return marker and start grace](story-071-checkpoint-redirect-and-queue-failure.md) | Logic | Complete | ADR-0012 |
 | 072 | [An encounter-outcome checkpoint starts its linked fight, and Victory opens it](story-072-checkpoint-encounter-outcome.md) | Logic | Complete | ADR-0012 |
 | 073 | [Every checkpoint has exactly one resolving requirement, reachable fight-free on the critical path](story-073-checkpoint-requirement-and-critical-path-reachability.md) | Logic | Ready | ADR-0012 |
-| 074 | [Every MapExit, critical-path leg and ChapterFlow step reference resolves](story-074-map-exit-and-critical-path-reference-integrity.md) | Logic | In Progress | ADR-0012 |
+| 074 | [Every MapExit, critical-path leg and ChapterFlow step reference resolves](story-074-map-exit-and-critical-path-reference-integrity.md) | Logic | Complete | ADR-0012 |
 | 075 | [Town, dungeon, story-encounter and boss placement match the map-structure rules](story-075-town-dungeon-story-encounter-and-boss-placement.md) | Logic | Complete | ADR-0012 |
 | 076 | [Retained walk-in screenshot — the Permit Counter is on screen from the pre-dungeon camp](story-076-permit-counter-telegraph-screenshot.md) | Visual/Feel | Complete | ADR-0012 |
 | 077 | [No spawn point or patrol segment crowds a safe zone or a return marker](story-077-patrol-and-spawn-safe-zone-clearance.md) | Logic | Complete | ADR-0012 |

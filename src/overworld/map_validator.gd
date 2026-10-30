@@ -46,6 +46,17 @@ static func validate_catalog(catalog: ContentCatalogService, cfg: OverworldConfi
 			errors.append("%s: scene map_id is '%s'" % [map_id, map.map_id])
 		maps[map_id] = map
 	errors.append_array(validate_maps(maps, cfg))
+	var records: Dictionary = {}
+	for rec: Resource in catalog.all_records(&"map"):
+		if rec is MapData:
+			records[String(rec.get("id"))] = rec
+	var steps: ChapterSteps = null
+	if ResourceLoader.exists(cfg.chapter_steps_path):
+		steps = ResourceLoader.load(cfg.chapter_steps_path) as ChapterSteps
+	if steps == null:
+		errors.append("chapter steps: no ChapterSteps at %s" % cfg.chapter_steps_path)
+	else:
+		errors.append_array(validate_steps(steps, records))
 	for rec: Resource in catalog.all_records(&"map"):
 		var rec_map: OverworldMap = maps.get(String(rec.get("id"))) as OverworldMap
 		if rec_map != null and rec is MapData:
@@ -140,3 +151,28 @@ static func _has_exit_to(map: OverworldMap, target_map_id: String) -> bool:
 		if exit.target_map_id == target_map_id:
 			return true
 	return false
+
+
+## Story 074, AC-30a (GDD rule 0): every chapter step names an existing
+## `map_` record and a `critical_path` leg on it, with unique step IDs.
+static func validate_steps(steps: ChapterSteps, records: Dictionary) -> PackedStringArray:
+	var errors := PackedStringArray()
+	var seen: Dictionary = {}
+	for step: ChapterStep in steps.steps:
+		if step == null:
+			errors.append("%s: an empty step" % steps.chapter_id)
+			continue
+		if step.id.is_empty() or seen.has(step.id):
+			errors.append("%s: step id '%s' is empty or repeated" % [steps.chapter_id, step.id])
+		seen[step.id] = true
+		var rec: MapData = records.get(step.map_id) as MapData
+		if rec == null:
+			errors.append("%s: step '%s' names unknown map '%s'" % [steps.chapter_id, step.id, step.map_id])
+			continue
+		var found: bool = false
+		for leg: CriticalPathLeg in rec.critical_path:
+			found = found or (leg != null and leg.id == step.leg_id)
+		if not found:
+			errors.append("%s: step '%s' names leg '%s', which %s does not have"
+					% [steps.chapter_id, step.id, step.leg_id, step.map_id])
+	return errors

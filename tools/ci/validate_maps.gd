@@ -47,8 +47,5 @@ func _initialize() -> void:
 	var errors: PackedStringArray = MapValidator.validate_catalog(catalog, OverworldConfig.new())
 	for err: String in errors:
 		printerr("validate_maps: ", err)
-	# Story 074 clause 3 cannot run yet: no ChapterFlow step data exists
-	# (TODO(dialogue-quests) in chapter_flow.gd). Said by name, never skipped silently.
-	print("validate_maps: ChapterFlow steps NOT ASSESSED (no step list exists; story 074 owes the {map_id, leg_id} check)")
 	print("validate_maps: %d map(s), %d error(s)" % [catalog.all_records(&"map").size(), errors.size()])
 	quit(min(errors.size(), 1))

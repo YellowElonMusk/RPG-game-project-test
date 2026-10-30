@@ -1,7 +1,7 @@
 # Story 074: Every MapExit, critical-path leg and ChapterFlow step reference resolves
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: In Progress (2026-10-30): exits and legs done; ChapterFlow step clause blocked on step data
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-30a [D] (R11, rule 0)** For every shipped map, every MapExit target exists with a reciprocal exit. Every `critical_path` leg names an existing EntryPoint and an existing MapExit, story-encounter or boss `symbol_id`, or CampSpot. Every ChapterFlow step names an existing `{map_id, leg_id}`.
+- [x] **AC-30a [D] (R11, rule 0)** For every shipped map, every MapExit target exists with a reciprocal exit. Every `critical_path` leg names an existing EntryPoint and an existing MapExit, story-encounter or boss `symbol_id`, or CampSpot. Every ChapterFlow step names an existing `{map_id, leg_id}`.
 
 ---
 
@@ -75,7 +75,7 @@
 **Required evidence**:
 - `tests/unit/overworld/data/map_exit_and_leg_reference_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
 
-**Status**: [x] Created and passing (exit and leg clauses)
+**Status**: [x] Created and passing
 
 ---
 
@@ -88,3 +88,4 @@
 
 - Done: reciprocal exits (`MapValidator.validate_maps`) and leg references (`MapValidator.validate_legs`). `MapData.critical_path` is now `Array[CriticalPathLeg]` (`{id, from_entry, to}`); the four Paris records carry seven legs.
 - **Blocked:** "every ChapterFlow step names an existing `{map_id, leg_id}`". No step list exists (`chapter_flow.gd` TODO(dialogue-quests)); `tools/ci/validate_maps.gd` prints NOT ASSESSED for it on every run.
+- **Unblocked 2026-10-30:** `ChapterStep` / `ChapterSteps` (ADR-0012 §8 interim step list) and `data/chapters/chapter_paris_steps.tres` (seven steps, leave Town to the walk home; the first sets `permits_mandatory`). `MapValidator.validate_steps()` checks every step names an existing map and leg; `validate_maps` no longer prints NOT ASSESSED.
