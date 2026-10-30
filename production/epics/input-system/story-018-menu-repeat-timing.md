@@ -1,12 +1,12 @@
 # Story 018: A held direction steps exactly at `step_time(k)` on a fixed tick, including a non-multiple interval and every due step in order during a hitch, and stops on release
 
 > **Epic**: Input System
-> **Status**: Deferred (2026-10-24): controller polish, not needed for a playable build; build before release
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -117,7 +117,7 @@ Edge cases:
 **Required evidence**:
 - Logic: `tests/unit/input/input_menu_repeat_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30; tests/unit/input 240/240, single-dir run, tag sin3)
 
 ---
 
@@ -131,3 +131,11 @@ Edge cases:
   - `production/epics/input-system/story-019-direction-change-restart.md`
   - `production/epics/input-system/story-020-menu-stick-threshold.md`
   - `production/epics/input-system/story-021-nav-pressed-only-reinjection.md`
+
+## Completion Notes
+
+*2026-10-30, implementation (autonomous run, tag sin3).*
+
+- **Files**: `tests/unit/input/input_menu_repeat_test.gd` (story 018 section). No source change: the engine from story 020's run already met AC-7.
+- **Tests**: schedule over T = 1.0 s for boundary (interval 0.05, last step due exactly at T), DEFAULT (non-multiple 0.08) and NON_DEFAULT, asserting every step's tick index and the closed-form count; hitch tick(0.25) after 24 ticks fires each due step as a separate entry (DEFAULT and NON_DEFAULT, non-vacuous); hitch straight after press as documented known negative; release stops steps, no released(nav_*); key + d-pad hold, releasing one keeps the schedule.
+- **Deviations**: none.

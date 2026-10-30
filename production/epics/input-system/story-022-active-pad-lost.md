@@ -1,12 +1,12 @@
 # Story 022: The active pad disconnecting while `fast_forward` is held emits `released(fast_forward)` and then `device_lost`
 
 > **Epic**: Input System
-> **Status**: Deferred (2026-10-24): controller polish, not needed for a playable build; build before release
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -96,7 +96,7 @@ Edge cases:
 **Required evidence**:
 - Logic: `tests/unit/input/input_device_connection_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30; tests/unit/input 240/240, single-dir run, tag sin3)
 
 ---
 
@@ -109,3 +109,11 @@ Edge cases:
   - `production/epics/input-system/story-023-non-active-pad-lost.md`
   - `production/epics/input-system/story-024-device-restored.md`
   - `production/epics/input-system/story-025-focus-lost-and-gained.md`
+
+## Completion Notes
+
+*2026-10-30, implementation (autonomous run, tag sin3).*
+
+- **Files**: `src/input/input_resolver.gd` (`on_joy_connection(device, false, _)`: releases the pad's held-set sources in hold order, drops its move sources, axes and latches, re-derives the menu repeat, then for the active pad only clears it, emits device_lost, then active_device_changed(KEYBOARD_MOUSE, unchanged style)); `tests/unit/input/input_device_connection_test.gd`.
+- **Tests**: exact order [released(fast_forward), device_lost, active_device_changed(KBM, xbox)]; west+south+stick, with both releases before device_lost and get_move_vector() ZERO inside the device_lost handler; fast_forward also on Shift gives only device_lost; no nav_* after the disconnect.
+- **Deviations**: none. Game State's Menu response is out of scope.

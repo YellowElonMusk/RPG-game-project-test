@@ -39,6 +39,12 @@
 ## stream: step 0 on the press inside `feed_event()`, later steps in `tick()`
 ## per the GDD `step_time` formula, single stream where the newest direction
 ## is the held one (story 018/019 readings).
+## Story 014 resolves `pad_style` from the joy name stored by
+## `on_joy_connection()` through `InputConfig.pad_style_patterns`; story 015
+## re-elects the active pad per switch to gamepad; stories 022-024 add the
+## disconnect path (the pad's sources released, then `device_lost()` for the
+## active pad only, then the kind change) and `device_restored()` on every
+## connection; story 026 adds `apply_overrides()`.
 ##
 ## Usage example:
 ## [codeblock]
@@ -94,6 +100,10 @@ const _NAV_TIME_EPS: float = 1e-9
 # an unrecognized pad is `generic`). Story 014 sets real styles.
 const _DEFAULT_PAD_STYLE: StringName = &"generic"
 
+# `InputBindings.id` of make_fallback_bindings(): apply_overrides() is
+# refused on it (story 026, ADR-0009 §7 guard).
+const _FALLBACK_BINDINGS_ID: String = "bindings_fallback"
+
 # ActionSource contract (ADR-0002) -- names unchanged.
 signal action_pressed(action: StringName)
 signal action_released(action: StringName)
@@ -111,9 +121,17 @@ signal pointer_cancel(position: Vector2)
 signal wheel_step(direction: int)
 signal binding_override_discarded(reason: String)
 
-# The project config supplying every tuning value (ADR-0003 §4). Stored for
-# later stories' formulas; this story reads none of it yet.
+# The project config supplying every tuning value (ADR-0003 §4).
 var _config: InputConfig
+
+# The defaults record this resolver was built from; overrides merge over it
+# (story 026).
+var _bindings: InputBindings
+
+# Joy name per connected pad (device -> String), stored by
+# on_joy_connection() so story 014 can resolve the style when that pad
+# becomes active.
+var _joy_names: Dictionary = {}
 
 # Whether the game window currently has focus. No signal fires from this yet
 # (story 025); stored so later stories do not need a new field.
@@ -192,6 +210,14 @@ var active_pad: int:
 		return _active_pad
 
 
+## The style of the active pad (story 014): `xbox`, `playstation`,
+## `nintendo` or `generic`. Unchanged when the kind switches to
+## keyboard_mouse.
+var pad_style: StringName:
+	get:
+		return _pad_style
+
+
 ## The latest pointer position, from every `InputEventMouseMotion` and
 ## `InputEventMouseButton` (story 009, ADR-0008 §6 polls it).
 var pointer_position: Vector2:
@@ -201,7 +227,8 @@ var pointer_position: Vector2:
 
 func _init(bindings: InputBindings, config: InputConfig) -> void:
 	_config = config
-	_compile_bindings(bindings)
+	_bindings = bindings
+	_compile_bindings(bindings.bindings)
 
 
 ## Feeds one engine `InputEvent` into the resolver. Only `InputEventKey`,
@@ -288,13 +315,121 @@ func set_window_focused(focused: bool) -> void:
 		focus_lost.emit()
 
 
-## Records a joypad connecting or disconnecting. `device_restored()` fires
-## for any pad reconnecting, focused or not (ADR-0003 §8). Tracking the
-## active pad and releasing its held actions before `device_lost()` on
-## disconnect is a later story's concern.
-func on_joy_connection(_device: int, connected: bool, _joy_name: String) -> void:
+## Records a joypad connecting or disconnecting (ADR-0003 §8).
+## A connection stores `joy_name` for the pad-style lookup (story 014) and
+## emits `device_restored()` for any pad, active or not, focused or not,
+## including the first connection at boot (story 024 pinned reading).
+## A disconnect (stories 022, 023) removes every held-set source of
+## `device`, emitting `action_released` for each action whose set becomes
+## empty (hold order), zeroes that pad's axes and re-derives the menu
+## repeat. Then, only if `device` is the active pad, the active pad is
+## cleared, `device_lost()` fires, then `active_device_changed(
+## KEYBOARD_MOUSE, <unchanged pad_style>)`.
+func on_joy_connection(device: int, connected: bool, joy_name: String) -> void:
 	if connected:
+		_joy_names[device] = joy_name
 		device_restored.emit()
+		return
+	_joy_names.erase(device)
+	var prefix: String = "pad:%d:" % device
+	for action: StringName in _discrete_held.keys():
+		var holders: Dictionary = _discrete_held[action]
+		var had_any: bool = not holders.is_empty()
+		for source_key: String in holders.keys():
+			if source_key.begins_with(prefix):
+				holders.erase(source_key)
+		if had_any and holders.is_empty():
+			action_released.emit(action)
+	for action: StringName in _move_sources.keys():
+		var sources: Dictionary = _move_sources[action]
+		for source_key: String in sources.keys():
+			if source_key.begins_with(prefix):
+				sources.erase(source_key)
+	var axis_prefix: String = "%d:" % device
+	for table: Dictionary in [_axis_raw, _device_axis_raw, _axis_recentre_latch]:
+		for axis_key: String in table.keys():
+			if axis_key.begins_with(axis_prefix):
+				table.erase(axis_key)
+	_update_nav()
+	if device != _active_pad:
+		return
+	_active_pad = -1
+	device_lost.emit()
+	if _active_device == DeviceKind.GAMEPAD:
+		_active_device = DeviceKind.KEYBOARD_MOUSE
+		_pointer_distance = 0.0
+		active_device_changed.emit(_active_device, _pad_style)
+
+
+## The pad style for `joy_name` (story 014, ADR-0003 §4): the style of the
+## first `"substring:style"` entry of `patterns` whose substring occurs in
+## the name, case-insensitively; `generic` when none matches (including an
+## empty name). An entry with no `:` is skipped.
+static func resolve_pad_style(joy_name: String, patterns: PackedStringArray) -> StringName:
+	var lowered: String = joy_name.to_lower()
+	if lowered.is_empty():
+		return _DEFAULT_PAD_STYLE
+	for entry: String in patterns:
+		var split_at: int = entry.rfind(":")
+		if split_at <= 0:
+			continue
+		var needle: String = entry.substr(0, split_at).to_lower()
+		if lowered.contains(needle):
+			return StringName(entry.substr(split_at + 1))
+	return _DEFAULT_PAD_STYLE
+
+
+## Applies the player's binding overrides (story 026; ADR-0003 §3, ADR-0009
+## §7): `"action:device:input"` triples merged over the defaults record
+## (`merge_overrides()`) and validated with `InputBindingsValidator`'s
+## rules. Valid: the binding table is recompiled, with no engine-global
+## mutation. Invalid: the defaults table stays untouched and
+## `binding_override_discarded(reason)` fires exactly once, however many
+## triples are bad. An empty array is a no-op with no signal. Refused with a
+## warning and no signal on the fallback bindings (GameRoot never calls it
+## there; defensive guard).
+func apply_overrides(overrides: PackedStringArray) -> void:
+	if overrides.is_empty():
+		return
+	if _bindings.id == _FALLBACK_BINDINGS_ID:
+		push_warning("InputResolver.apply_overrides ignored on fallback bindings")
+		return
+	var merged: Array[Dictionary] = merge_overrides(_bindings.bindings, overrides)
+	var errors: Array[Dictionary] = InputBindingsValidator.validate_rows(merged)
+	if not errors.is_empty():
+		var fields: PackedStringArray = PackedStringArray()
+		for error: Dictionary in errors:
+			fields.append(String(error.get("field", "")))
+		binding_override_discarded.emit("invalid binding override: %s" % ", ".join(fields))
+		return
+	_compile_bindings(merged)
+
+
+## The override merge step, isolated so the open add-vs-replace ruling
+## changes one place (story 026 OPEN item). Current reading: each override
+## triple replaces the default rows of its own action and device, then is
+## appended. A triple that does not split into three parts is appended with
+## the parts it has, which the validator then rejects.
+static func merge_overrides(defaults: Array, overrides: PackedStringArray) -> Array[Dictionary]:
+	var parsed: Array[Dictionary] = []
+	for triple: String in overrides:
+		var parts: PackedStringArray = triple.split(":", true, 2)
+		parsed.append({
+			"action": parts[0] if parts.size() > 0 else "",
+			"device": parts[1] if parts.size() > 1 else "",
+			"input": parts[2] if parts.size() > 2 else "",
+		})
+	var rows: Array[Dictionary] = []
+	for row: Dictionary in defaults:
+		var replaced: bool = false
+		for override: Dictionary in parsed:
+			if override["device"] != "" and row.get("action", "") == override["action"] \
+					and row.get("device", "") == override["device"]:
+				replaced = true
+		if not replaced:
+			rows.append(row.duplicate())
+	rows.append_array(parsed)
+	return rows
 
 
 ## The deadzone-rescaled, per-axis-arbitrated, diagonal-normalized move
@@ -375,8 +510,11 @@ static func make_fallback_bindings() -> InputBindings:
 # resolve (an unknown device, an unparseable key token, device="mouse") is
 # silently skipped -- bindings validation is story 003's concern, not this
 # resolver's.
-func _compile_bindings(bindings: InputBindings) -> void:
-	for entry: Dictionary in bindings.bindings:
+func _compile_bindings(rows: Array) -> void:
+	_key_actions.clear()
+	_pad_button_actions.clear()
+	_pad_axis_actions.clear()
+	for entry: Dictionary in rows:
 		var action: StringName = StringName(entry.get("action", ""))
 		var device: String = String(entry.get("device", ""))
 		var input: String = String(entry.get("input", ""))
@@ -601,14 +739,21 @@ func _feed_mouse_motion(event: InputEventMouseMotion) -> void:
 # Records one meaningful input of `kind` (GDD rule 4). Non-mouse input resets
 # the pointer counter; a change of kind resets it too and emits
 # `active_device_changed` once, at this event (stories 012, 017). The first
-# pad to send meaningful input becomes the active pad.
+# pad to send meaningful input after a switch to gamepad becomes the active
+# pad and sets `pad_style` from its stored joy name (stories 014, 015
+# per-switch re-election); a switch to keyboard_mouse clears the active pad
+# but keeps `pad_style`.
 func _note_meaningful(kind: DeviceKind, pad_device: int, from_mouse: bool) -> void:
 	if not from_mouse:
 		_pointer_distance = 0.0
 	if kind == DeviceKind.GAMEPAD and _active_pad == -1:
 		_active_pad = pad_device
+		_pad_style = resolve_pad_style(String(_joy_names.get(pad_device, "")),
+				_config.pad_style_patterns)
 	if kind == _active_device:
 		return
+	if kind == DeviceKind.KEYBOARD_MOUSE:
+		_active_pad = -1
 	_active_device = kind
 	_pointer_distance = 0.0
 	active_device_changed.emit(kind, _pad_style)

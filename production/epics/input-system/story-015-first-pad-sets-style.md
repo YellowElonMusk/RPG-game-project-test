@@ -1,12 +1,12 @@
 # Story 015: With two pads, the first pad's input sets `pad_style` and the second pad's input fires nothing
 
 > **Epic**: Input System
-> **Status**: Deferred (2026-10-24): controller polish, not needed for a playable build; build before release
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -91,7 +91,7 @@ The re-election edge case is asserted: the per-switch reading is pinned in this 
 **Required evidence**:
 - Logic: `tests/unit/input/input_pad_style_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30; tests/unit/input 240/240, single-dir run, tag sin3)
 
 ---
 
@@ -101,3 +101,11 @@ The re-election edge case is asserted: the per-switch reading is pinned in this 
   - `production/epics/input-system/story-013-no-device-change.md`
   - `production/epics/input-system/story-014-pad-style-from-joy-name.md`
 - Unlocks: `production/epics/input-system/story-023-non-active-pad-lost.md`
+
+## Completion Notes
+
+*2026-10-30, implementation (autonomous run, tag sin3).*
+
+- **Files**: `src/input/input_resolver.gd` (`_note_meaningful()`: the first pad after a switch to gamepad becomes the active pad and sets the style; a switch to keyboard_mouse clears the active pad and keeps `pad_style`); `tests/unit/input/input_pad_style_test.gd` (story 015 section).
+- **Tests**: one active_device_changed(GAMEPAD, xbox) for pads A then B, style stays xbox, two pressed(confirm); B's stick fires nothing; per-switch re-election after a key press gives (GAMEPAD, playstation) and active_pad 1.
+- **Reading recorded**: per-switch re-election (pinned at QL-STORY-READY). The GDD owner still needs to confirm it. Clearing the active pad on the switch to keyboard_mouse also means a pad disconnect while keyboard_mouse is active emits no device_lost (story 022).

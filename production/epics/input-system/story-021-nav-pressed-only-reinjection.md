@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (resolver half implemented; UI half still blocked)
 
 ## Context
 
@@ -104,7 +104,7 @@ Edge cases:
 - Logic: `tests/unit/input/input_nav_actions_test.gd` — must exist and pass. Gate level: BLOCKING.
 - Logic (ui-framework epic): `tests/unit/ui/ui_navigator_test.gd` — must exist and pass before this story closes.
 
-**Status**: [ ] Not yet created
+**Status**: [~] Resolver half created and passing (2026-10-30, `tests/unit/input/input_nav_actions_test.gd`); UI half (`tests/unit/ui/ui_navigator_test.gd`) not yet created
 
 ---
 
@@ -114,3 +114,10 @@ Edge cases:
   - `production/epics/input-system/story-018-menu-repeat-timing.md`
   - the ui-framework epic's `UiNavigator` story (epic not yet created)
 - Unlocks: None
+
+## Completion Notes
+
+*2026-10-30, partial (autonomous run, tag sin3). Status stays Blocked.*
+
+- **Done (resolver half)**: `tests/unit/input/input_nav_actions_test.gd`. With S, D, W and A each held 1.0 s (keys, and the stick path), each direction emits story 018's computed step count of pressed(nav_*), with 0 held(nav_*) and 0 released(nav_*), under DEFAULT and NON_DEFAULT; focus loss during a hold emits no released(nav_*). No source change needed.
+- **Blocked**: the UI half (`UiNavigator.route()` re-injecting atomic ui_* pairs, ADR-0008 §3) needs the ui-framework epic, which does not exist yet.

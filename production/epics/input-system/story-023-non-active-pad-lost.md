@@ -1,12 +1,12 @@
 # Story 023: A non-active pad disconnecting emits no `device_lost`, and its held actions release only if no other device holds them
 
 > **Epic**: Input System
-> **Status**: Deferred (2026-10-24): controller polish, not needed for a playable build; build before release
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -88,7 +88,7 @@ Edge cases:
 **Required evidence**:
 - Logic: `tests/unit/input/input_device_connection_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30; tests/unit/input 240/240, single-dir run, tag sin3)
 
 ---
 
@@ -98,3 +98,11 @@ Edge cases:
   - `production/epics/input-system/story-015-first-pad-sets-style.md`
   - `production/epics/input-system/story-022-active-pad-lost.md`
 - Unlocks: None
+
+## Completion Notes
+
+*2026-10-30, implementation (autonomous run, tag sin3).*
+
+- **Files**: same code path as story 022 in `src/input/input_resolver.gd`; `tests/unit/input/input_device_connection_test.gd` (story 023 section).
+- **Tests**: case 1 gives exactly [released(confirm)], with no device_lost or device change; case 2 (Enter also held) emits nothing, then the next tick emits held(confirm); pad 1's stick leaves get_move_vector(); a disconnect with nothing held emits nothing.
+- **Deviations**: none.

@@ -18,7 +18,15 @@ extends Resource
 ## Cumulative pointer movement, in pixels, that switches the active device to
 ## keyboard_mouse or moves hover focus (GDD rule 3-4, Tuning Knobs). Safe range 4-32 px.
 @export var pointer_switch_px: int = 8
-## Pad-style name patterns, `"style:substring"` pairs matched case-insensitively
-## against `Input.get_joy_name()` (ADR-0003 §4). Interpreted by the active-device
-## story; empty until that story defines real patterns.
-@export var pad_style_patterns: PackedStringArray = PackedStringArray()
+## Pad-style name patterns, `"substring:style"` entries matched
+## case-insensitively against `Input.get_joy_name()`, first match wins
+## (ADR-0003 §4; story 014). Styles: `xbox | playstation | nintendo |
+## generic`; no match gives `generic`. Steam Virtual Gamepad and Steam Deck
+## report `xbox` (GDD rule 4).
+@export var pad_style_patterns: PackedStringArray = PackedStringArray([
+	"steam virtual gamepad:xbox", "steam deck:xbox", "xbox:xbox",
+	"playstation:playstation", "dualsense:playstation", "dualshock:playstation",
+	"ps4:playstation", "ps5:playstation",
+	"nintendo:nintendo", "switch:nintendo", "pro controller:nintendo",
+	"joy-con:nintendo",
+])

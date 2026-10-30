@@ -1,12 +1,12 @@
 # Story 024: A pad reconnecting emits `device_restored`, also while unfocused
 
 > **Epic**: Input System
-> **Status**: Deferred (2026-10-24): controller polish, not needed for a playable build; build before release
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -95,7 +95,7 @@ Edge cases: none
 **Required evidence**:
 - Logic: `tests/unit/input/input_device_connection_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30; tests/unit/input 240/240, single-dir run, tag sin3)
 
 ---
 
@@ -103,3 +103,11 @@ Edge cases: none
 
 - Depends on: `production/epics/input-system/story-022-active-pad-lost.md`
 - Unlocks: None
+
+## Completion Notes
+
+*2026-10-30, implementation (autonomous run, tag sin3).*
+
+- **Files**: `src/input/input_resolver.gd` (connection stores the joy name and emits device_restored for any pad; the unfocused pad-drop gate already came from story 025); `tests/unit/input/input_device_connection_test.gd` (story 024 section).
+- **Tests**: reconnect gives [device_restored]; boot and non-active connections also emit it; while unfocused, device_restored fires and the pad's south press emits nothing.
+- **Deviations**: none.

@@ -1,12 +1,12 @@
 # Story 014: Synthetic joy names map to `xbox`, `playstation`, `nintendo`, `xbox` for Steam Virtual Gamepad and Steam Deck, and `generic` otherwise
 
 > **Epic**: Input System
-> **Status**: Deferred (2026-10-24): controller polish, not needed for a playable build; build before release
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -115,7 +115,7 @@ DEFERRED: real Xbox, PlayStation, Nintendo and Steam Deck hardware names under S
 - Logic: `tests/unit/input/input_pad_style_test.gd` — must exist and pass. Gate level: BLOCKING.
 - Manual (deferred, not part of the done gate): real-hardware joy-name log in `production/qa/evidence/`.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30; tests/unit/input 240/240, single-dir run, tag sin3)
 
 ---
 
@@ -123,3 +123,11 @@ DEFERRED: real Xbox, PlayStation, Nintendo and Steam Deck hardware names under S
 
 - Depends on: `production/epics/input-system/story-012-active-device-changed.md`
 - Unlocks: `production/epics/input-system/story-015-first-pad-sets-style.md`
+
+## Completion Notes
+
+*2026-10-30, implementation (autonomous run, tag sin3).*
+
+- **Files**: `src/input/input_resolver.gd` (`pad_style` getter, static `resolve_pad_style()`, joy names stored by `on_joy_connection()`, style resolved when a pad becomes active); `src/input/input_config.gd` (default `pad_style_patterns` as `substring:style`, Steam/Deck rows first); `tests/unit/input/fixtures/joy_names.gd`; `tests/unit/input/input_pad_style_test.gd`.
+- **Tests**: all 9 literal fixture rows, non-default list, first-match-wins, unconnected pad gives generic.
+- **Deviations / follow-ups**: (1) `data/config/input_config.tres` (outside this run's scope) still sets `pad_style_patterns = PackedStringArray()` explicitly, which overrides the script default, so in-game every pad is `generic` until that line is removed or filled. (2) ADR-0003 §4 needs an annotation for the Deck/Steam row (manifest E9). (3) Real-hardware SDL3 names remain the deferred manual item.

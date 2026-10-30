@@ -9,4 +9,3 @@ repeat_delay = 0.4
 repeat_interval = 0.08
 menu_stick_threshold = 0.6
 pointer_switch_px = 8
-pad_style_patterns = PackedStringArray()

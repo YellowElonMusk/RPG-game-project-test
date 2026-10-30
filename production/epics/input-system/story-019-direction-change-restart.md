@@ -1,12 +1,12 @@
 # Story 019: Changing the held direction mid-repeat fires one immediate step and restarts the timer from `repeat_delay`
 
 > **Epic**: Input System
-> **Status**: Deferred (2026-10-24): controller polish, not needed for a playable build; build before release
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -101,7 +101,7 @@ OPEN (not in the done gate): a perpendicular press while a direction is held —
 **Required evidence**:
 - Logic: `tests/unit/input/input_menu_repeat_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30; tests/unit/input 240/240, single-dir run, tag sin3)
 
 ---
 
@@ -109,3 +109,11 @@ OPEN (not in the done gate): a perpendicular press while a direction is held —
 
 - Depends on: `production/epics/input-system/story-018-menu-repeat-timing.md`
 - Unlocks: None
+
+## Completion Notes
+
+*2026-10-30, implementation (autonomous run, tag sin3).*
+
+- **Files**: `tests/unit/input/input_menu_repeat_test.gd` (story 019 section). No source change: `_update_nav()` (single stream, newest direction wins) already met AC-8.
+- **Tests** (DEFAULT and NON_DEFAULT): down released + right pressed fires nav_right inside feed_event, then the schedule from repeat_delay after the change, no nav_down; A+D cancelled (no steps), releasing A fires nav_right then the schedule; pressing D while A repeats stops the x-axis repeat.
+- **Deviations**: the perpendicular-press case stays untested, as the story says (game-designer ruling OPEN). The implementation follows the recommended single-stream reading.

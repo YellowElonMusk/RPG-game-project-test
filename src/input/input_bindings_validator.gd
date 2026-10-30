@@ -35,6 +35,13 @@ const _KNOWN_DEVICES: Array[String] = ["key", "pad", "pad_axis"]
 ## record gives the same result (story 003 QA purity edge case). An empty
 ## array means valid.
 static func validate(record: InputBindings) -> Array[Dictionary]:
+	return validate_rows(record.bindings)
+
+
+## The shared rule core (story 026): validates a bare `{action, device,
+## input}` row set -- a record's `bindings`, or the defaults merged with
+## player overrides -- with exactly the record rules above. Pure.
+static func validate_rows(rows: Array) -> Array[Dictionary]:
 	var errors: Array[Dictionary] = []
 	# "device:input" token -> the first action that claimed it. Scoping the
 	# token by device is what makes the same input string legal on both `key`
@@ -43,8 +50,8 @@ static func validate(record: InputBindings) -> Array[Dictionary]:
 	var has_key: Dictionary = {}
 	var has_pad: Dictionary = {}
 
-	for index: int in record.bindings.size():
-		var parsed: Dictionary = _parse_entry(record.bindings[index])
+	for index: int in rows.size():
+		var parsed: Dictionary = _parse_entry(rows[index])
 		if parsed.is_empty():
 			errors.append(_error("bindings[%d]" % index))
 			continue

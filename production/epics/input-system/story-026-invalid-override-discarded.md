@@ -1,12 +1,12 @@
 # Story 026: An invalid player override is discarded, defaults stay active, and exactly one notice fires; the next load fires none
 
 > **Epic**: Input System
-> **Status**: Deferred (2026-10-24): controller polish, not needed for a playable build; build before release
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -119,7 +119,7 @@ OPEN (not in the done gate): override merge semantics (add vs replace) — techn
 **Required evidence**:
 - Logic: `tests/unit/input/input_overrides_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30; tests/unit/input 240/240, single-dir run, tag sin3)
 
 ---
 
@@ -129,3 +129,11 @@ OPEN (not in the done gate): override merge semantics (add vs replace) — techn
   - `production/epics/input-system/story-001-default-bindings-press-release.md`
   - `production/epics/input-system/story-003-bindings-validation.md`
 - Unlocks: None
+
+## Completion Notes
+
+*2026-10-30, implementation (autonomous run, tag sin3).*
+
+- **Files**: `src/input/input_resolver.gd` (`apply_overrides(PackedStringArray)`, isolated static `merge_overrides()`, fallback guard via `bindings.id == bindings_fallback` with push_warning, recompiling the table only when valid); `src/input/input_bindings_validator.gd` (`validate_rows()` shared rule core, `validate()` delegates to it); `tests/unit/input/input_overrides_test.gd`.
+- **Tests**: each of the 5 invalid fixtures gives exactly 1 notice, and story 001's discrete table still passes on the same resolver; after the mixed set, E emits nothing; an empty set is a no-op; next load through StubSettings gives 1 notice, a stored value of [], then 0 notices on R2; the fallback guard gives 0 notices and Enter still emits confirm.
+- **Deviations / OPEN**: merge rule implemented as *replace per (action, device)* in one function, pending the technical-director/game-designer ruling. No valid-path test, per the story. SettingsService/GameRoot wiring (connecting to clear_bindings) does not exist yet; it belongs to the Save/Load and GameRoot epics.
