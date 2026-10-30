@@ -131,6 +131,13 @@ func _build_dungeon(tile_set: TileSet) -> OverworldMap:
 	counter.bark_line = "Take a number."
 	counter.fled_line = "Your number was called. You were absent. Please take a new number."
 	_place(map, counter, Vector2(16.5, 23.5))
+	# Rule 13a: the camp decree announcing the counter, on first sight.
+	var decree := GagInteractable.new()
+	decree.name = "DecreeTakeANumber"
+	decree.marker_id = &"decree_take_a_number"
+	decree.text = "ALL PERMITS MUST BE PROCESSED. TAKE A NUMBER."
+	decree.decree_first_sight = "sym_paris_permit_counter"
+	_place(map, decree, Vector2(12.5, 28.5))
 	# Denser symbols than the segment (GDD rule 11): a Clerk pacing the first
 	# room's east wall, and one in the hall's near gap, across the short
 	# route; both clear of every safe zone (story 077), the west gap left as

@@ -1,9 +1,8 @@
 ## Story 057, AC-23d (GDD rule 8): on a New Game, `permits_mandatory` is
 ## set before the first input is accepted, and the overworld segment's first
-## load is at stage 2 whatever route the player takes. Beating a symbol,
-## entering a map or registering a camp sets no stage-raising flag. The
-## segment's decree gag at both EntryPoints waits for decree gags (story
-## 056).
+## load is at stage 2, with its decree gag up at both EntryPoints, whatever
+## route the player takes. Beating a symbol, entering a map or registering a
+## camp sets no stage-raising flag.
 extends GdUnitTestSuite
 
 const _GAME_ROOT_SCENE: String = "res://src/game_state/game_root.tscn"
@@ -24,7 +23,14 @@ func test_new_game_sets_the_flag_before_input_and_the_segment_loads_at_stage_2()
 		root.machine.request_transition(GameStateMachine.Mode.OVERWORLD,
 				MapEntryPayload.new("map_paris_segment_placeholder", entry))
 		_run_to_idle(root.machine)
-		assert_int((root.current_mode_node() as OverworldMode).current_stage).is_equal(2)
+		var seg: OverworldMode = root.current_mode_node() as OverworldMode
+		assert_int(seg.current_stage).is_equal(2)
+		# Its decree is up at both EntryPoints (story 056).
+		var active: int = 0
+		for gag: GagInteractable in seg.get_map().gags():
+			if gag.decree_stage > 0 and seg.is_gag_active(gag):
+				active += 1
+		assert_int(active).is_equal(2)
 
 
 func test_play_sets_no_stage_raising_flag() -> void:

@@ -91,3 +91,4 @@
 
 - **Deviation:** the camp decree gag marker does not exist yet (gags are stories 016/122). The first-sight trigger is built: the first frame the Counter is within the camera visibility edge sets `seen:<symbol_id>` (`OverworldMode.is_first_seen()`), which the decree will read.
 - The ticket prompt and the bark window are placeholder labels in `OverworldView` (stories 015 and 130 own the real widgets). Evidence: `production/qa/evidence/story-091-permit-counter/`.
+- **Resolved 2026-10-30 (story 056):** the camp decree ("TAKE A NUMBER") is a first-sight decree gag, active once the Counter has been on screen.

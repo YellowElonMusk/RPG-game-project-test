@@ -1,7 +1,7 @@
 # Story 056: Decree gags stay eligible and exempt from stage caps
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-23c [L] (R8)** A decree gag is active only at or above its new stage, is not counted against any cap, never blocks a cell, is eligible for `confirm`, and is inactive once `region_liberation_flag` is set.
+- [x] **AC-23c [L] (R8)** A decree gag is active only at or above its new stage, is not counted against any cap, never blocks a cell, is eligible for `confirm`, and is inactive once `region_liberation_flag` is set.
 
 ---
 
@@ -76,7 +76,7 @@
 **Required evidence**:
 - `tests/unit/overworld/decree_gag_stage_eligibility_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -84,3 +84,8 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-053-occupation-stage-formula.md` (the `occupation_stage` formula)
 - Unlocks: `production/epics/overworld-exploration-encounters/story-057-new-game-permits-mandatory-timing.md`
+
+## Completion Notes (2026-10-30)
+
+- Decree gags are `GagInteractable`s with `decree_stage` (active at and above) or `decree_first_sight` (a symbol ID). Stage caps do not exist yet (story 058), so exemption from them is trivially true.
+- Content: the segment decree at both EntryPoints (stage 2) and the dungeon camp first-sight decree announcing the Permit Counter.

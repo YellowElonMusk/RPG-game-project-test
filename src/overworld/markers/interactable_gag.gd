@@ -40,3 +40,18 @@ enum Response { LINE, CHANGE, CLUE }
 ## Ground position (`x`, `z`) relative to `map_root`.
 func ground_position(map_root: Node) -> Vector2:
 	return OverworldMap.ground_position_of(self, map_root)
+
+## Decree gag (GDD rule 8, story 056): the in-world announcement of a stage
+## raise. Active at and above this occupation stage; 0 = not a decree.
+## A decree is exempt from stage caps and from the "no clutter in a safe
+## zone" rule, never blocks, always answers `confirm` with its text, and is
+## inactive once its map's `region_liberation_flag` is set.
+@export var decree_stage: int = 0
+## Decree gag triggered on first sight of this symbol instead (rule 13a: the
+## camp decree announcing the story encounter); raises no stage.
+@export var decree_first_sight: String = ""
+
+
+## `true` for a decree gag (either trigger).
+func is_decree() -> bool:
+	return decree_stage > 0 or not decree_first_sight.is_empty()

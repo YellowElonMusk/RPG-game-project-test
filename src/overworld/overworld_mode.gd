@@ -282,6 +282,7 @@ func _commit_map_entry() -> void:
 	if world_state != null and world_state.map_id != _map.map_id:
 		world_state.on_map_entered(_map.map_id, WorldState.EntryKind.MAP_ENTRY)
 	_compute_stage()
+	_refresh_gags()
 	_place_symbols(_map)
 
 
@@ -935,6 +936,8 @@ func probe() -> Object:
 			candidates.append([cp, cp.ground_position(_map)])
 	if _map != null:
 		for gag: GagInteractable in _map.gags():
+			if not is_gag_active(gag):
+				continue
 			if gag.response != GagInteractable.Response.CHANGE or not _has_flag(_gag_flag("changed", gag)):
 				candidates.append([gag, gag.ground_position(_map)])
 	var best: Object = null
@@ -971,6 +974,9 @@ func confirm() -> void:
 ## drops out of `probe()` for good; `CLUE` repeats its line and adds its
 ## rumour only the first time.
 func confirm_gag(gag: GagInteractable) -> void:
+	if gag.is_decree():
+		say(gag.text)  # a decree repeats its text, always (rule 3)
+		return
 	var used: bool = _has_flag(_gag_flag("used", gag))
 	_set_flag(_gag_flag("used", gag))
 	match gag.response:
@@ -1115,6 +1121,7 @@ func _check_barks_and_sight() -> void:
 		if not _has_flag("seen:" + source.symbol_id) and offset.length() \
 				<= ChaseVisibility.edge_reach(offset, presentation, config.walk_speed):
 			_set_flag("seen:" + source.symbol_id)
+			_refresh_gags()
 
 
 ## `true` once `symbol_id` has been on screen (rule 13a first sight; its
@@ -1456,3 +1463,39 @@ func _compute_stage() -> void:
 		push_warning(result[1])
 	if world_state != null:
 		world_state.store_stage(_map.map_id, current_stage)
+
+
+# -- Decree gags (story 056) --------------------------------------------------
+
+## `true` while `gag` is active: an ordinary gag always (until clutter
+## liberation, stories 059-060); a decree at and above its stage, or once
+## its symbol has been seen; never once the map's region is liberated.
+func is_gag_active(gag: GagInteractable) -> bool:
+	if not gag.is_decree():
+		return true
+	if is_region_liberated():
+		return false
+	if gag.decree_stage > 0 and current_stage < gag.decree_stage:
+		return false
+	if not gag.decree_first_sight.is_empty() and not is_first_seen(gag.decree_first_sight):
+		return false
+	return true
+
+
+## `true` once the current map's `region_liberation_flag` is set (rule 9:
+## evaluated on every load and check, never stored per marker).
+func is_region_liberated() -> bool:
+	if encounter_catalog == null or _map == null:
+		return false
+	var rec: MapData = encounter_catalog.call(&"get_record", &"map", _map.map_id) as MapData
+	return rec != null and not rec.region_liberation_flag.is_empty() and _has_flag(rec.region_liberation_flag)
+
+
+## Shows only the active gags' placeholder boards (and hides a `change` gag
+## already changed).
+func _refresh_gags() -> void:
+	if _map == null:
+		return
+	for gag: GagInteractable in _map.gags():
+		var changed: bool = gag.response == GagInteractable.Response.CHANGE and _has_flag(_gag_flag("changed", gag))
+		_map.set_gag_shown(gag.marker_id, is_gag_active(gag) and not changed)

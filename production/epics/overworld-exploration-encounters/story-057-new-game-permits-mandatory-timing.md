@@ -88,3 +88,4 @@
 ## Completion Notes (2026-10-30)
 
 - **Deviation:** the segment decree gag at both EntryPoints waits for decree gags (story 056). The flag, its timing and the stage-2 first load are done; the opening step flags come from `data/chapters/chapter_paris_steps.tres`.
+- **Resolved 2026-10-30 (story 056):** the segment decree is up at both EntryPoints on its stage-2 first load.
