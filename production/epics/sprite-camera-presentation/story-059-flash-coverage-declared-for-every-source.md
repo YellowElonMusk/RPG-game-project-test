@@ -1,12 +1,12 @@
 # Story 059: Every flash-capable source is declared and classified
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30
 
 ## Context
 
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/sprite-camera-presentation.md`, scoped to this story:*
 
-- [ ] **AC-55 [L]** (P-05) (flash coverage) Every flash-capable source in the shipped data is declared gated, reserved, exempt-by-area or exempt-by-swing, with its transitions. The sources are:
+- [x] **AC-55 [L]** (P-05) (flash coverage) Every flash-capable source in the shipped data is declared gated, reserved, exempt-by-area or exempt-by-swing, with its transitions. The sources are:
   - the victory burst and the boss flood;
   - each attack and comedy VFX;
   - Game State's retry flash, wipes and fades;
@@ -82,7 +82,7 @@ Every listed source gets a `FlashSourceDecl` resource under `data/presentation/f
 **Required evidence**:
 - `tests/unit/presentation/flash_coverage_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created — 26 tests passing (suite 1716/1716). `flash_gate.gd` itself (request/booking, AC-25) is left to story 029; this story ships the declarations and their boot validation.
 
 ---
 

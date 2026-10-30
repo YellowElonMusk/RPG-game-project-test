@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="FlashSourceDecl" format=3]
+
+[ext_resource type="Script" path="res://src/presentation/flash_source_decl.gd" id="1_ubs1f"]
+[ext_resource type="Script" path="res://src/presentation/flash_transition.gd" id="2_ftdam"]
+
+[sub_resource type="Resource" id="Resource_8wbt6"]
+script = ExtResource("2_ftdam")
+area = 0.6
+
+[sub_resource type="Resource" id="Resource_w6pkd"]
+script = ExtResource("2_ftdam")
+offset = 0.2
+rising = false
+area = 0.6
+
+[resource]
+script = ExtResource("1_ubs1f")
+source_id = &"ui_results_open"
+clock = &"real"
+transitions = Array[ExtResource("2_ftdam")]([SubResource("Resource_8wbt6"), SubResource("Resource_w6pkd")])
+capped_luma_swing = 0.06
+capped_area = 0.6

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="FlashSourceDecl" format=3]
+
+[ext_resource type="Script" path="res://src/presentation/flash_source_decl.gd" id="1_fkinl"]
+[ext_resource type="Script" path="res://src/presentation/flash_transition.gd" id="2_qopm7"]
+
+[sub_resource type="Resource" id="Resource_1iti2"]
+script = ExtResource("2_qopm7")
+area = 0.4
+
+[sub_resource type="Resource" id="Resource_qpo87"]
+script = ExtResource("2_qopm7")
+offset = 0.2
+rising = false
+area = 0.4
+
+[resource]
+script = ExtResource("1_fkinl")
+source_id = &"vfx_confetti"
+clock = &"mode"
+transitions = Array[ExtResource("2_qopm7")]([SubResource("Resource_1iti2"), SubResource("Resource_qpo87")])
+capped_luma_swing = 0.05
+capped_area = 0.4

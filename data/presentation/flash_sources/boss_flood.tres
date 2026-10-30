@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FlashSourceDecl" format=3]
+
+[ext_resource type="Script" path="res://src/presentation/flash_source_decl.gd" id="1_lwgsx"]
+[ext_resource type="Script" path="res://src/presentation/flash_transition.gd" id="2_7om51"]
+
+[sub_resource type="Resource" id="Resource_8encn"]
+script = ExtResource("2_7om51")
+rising = false
+
+[resource]
+script = ExtResource("1_lwgsx")
+source_id = &"boss_flood"
+flash_class = &"reserved"
+clock = &"mode"
+transitions = Array[ExtResource("2_7om51")]([SubResource("Resource_8encn")])

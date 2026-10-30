@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="FlashSourceDecl" format=3]
+
+[ext_resource type="Script" path="res://src/presentation/flash_source_decl.gd" id="1_hjc8r"]
+[ext_resource type="Script" path="res://src/presentation/flash_transition.gd" id="2_lumm8"]
+
+[sub_resource type="Resource" id="Resource_hr7b8"]
+script = ExtResource("2_lumm8")
+area = 0.3
+
+[sub_resource type="Resource" id="Resource_htxbi"]
+script = ExtResource("2_lumm8")
+offset = 0.1
+rising = false
+area = 0.3
+
+[resource]
+script = ExtResource("1_hjc8r")
+source_id = &"vfx_impact_burst"
+clock = &"replay"
+transitions = Array[ExtResource("2_lumm8")]([SubResource("Resource_hr7b8"), SubResource("Resource_htxbi")])
+capped_luma_swing = 0.07
+capped_area = 0.3

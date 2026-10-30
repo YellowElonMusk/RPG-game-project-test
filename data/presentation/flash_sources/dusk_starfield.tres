@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="FlashSourceDecl" format=3]
+
+[ext_resource type="Script" path="res://src/presentation/flash_source_decl.gd" id="1_l7a3y"]
+[ext_resource type="Script" path="res://src/presentation/flash_transition.gd" id="2_0m3kt"]
+
+[sub_resource type="Resource" id="Resource_lplgc"]
+script = ExtResource("2_0m3kt")
+area = 0.02
+
+[sub_resource type="Resource" id="Resource_yr5ii"]
+script = ExtResource("2_0m3kt")
+offset = 1.5
+rising = false
+area = 0.02
+
+[resource]
+script = ExtResource("1_l7a3y")
+source_id = &"dusk_starfield"
+flash_class = &"exempt_area"
+clock = &"mode"
+transitions = Array[ExtResource("2_0m3kt")]([SubResource("Resource_lplgc"), SubResource("Resource_yr5ii")])
+max_area = 0.02

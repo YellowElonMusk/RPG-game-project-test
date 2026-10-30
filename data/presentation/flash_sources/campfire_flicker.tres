@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="FlashSourceDecl" format=3]
+
+[ext_resource type="Script" path="res://src/presentation/flash_source_decl.gd" id="1_5gwt8"]
+[ext_resource type="Script" path="res://src/presentation/flash_transition.gd" id="2_o5u3v"]
+
+[resource]
+script = ExtResource("1_5gwt8")
+source_id = &"campfire_flicker"
+flash_class = &"exempt_swing"
+clock = &"mode"
+peak_luma_swing = 0.06

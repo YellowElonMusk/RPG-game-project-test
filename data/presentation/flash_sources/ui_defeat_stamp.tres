@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="FlashSourceDecl" format=3]
+
+[ext_resource type="Script" path="res://src/presentation/flash_source_decl.gd" id="1_cyn7k"]
+[ext_resource type="Script" path="res://src/presentation/flash_transition.gd" id="2_j3ybi"]
+
+[sub_resource type="Resource" id="Resource_d81ao"]
+script = ExtResource("2_j3ybi")
+red = true
+area = 0.3
+
+[sub_resource type="Resource" id="Resource_1ju2e"]
+script = ExtResource("2_j3ybi")
+offset = 0.12
+rising = false
+red = true
+area = 0.3
+
+[resource]
+script = ExtResource("1_cyn7k")
+source_id = &"ui_defeat_stamp"
+clock = &"real"
+transitions = Array[ExtResource("2_j3ybi")]([SubResource("Resource_d81ao"), SubResource("Resource_1ju2e")])
+capped_luma_swing = 0.06
+capped_red_change = 10.0
+capped_area = 0.3

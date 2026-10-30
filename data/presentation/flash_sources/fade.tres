@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="FlashSourceDecl" format=3]
+
+[ext_resource type="Script" path="res://src/presentation/flash_source_decl.gd" id="1_ixbi0"]
+[ext_resource type="Script" path="res://src/presentation/flash_transition.gd" id="2_vvg61"]
+
+[resource]
+script = ExtResource("1_ixbi0")
+source_id = &"fade"
+flash_class = &"exempt_swing"
+clock = &"real"
+peak_luma_swing = 0.09

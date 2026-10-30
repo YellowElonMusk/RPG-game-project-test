@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="FlashSourceDecl" format=3]
+
+[ext_resource type="Script" path="res://src/presentation/flash_source_decl.gd" id="1_4yxr3"]
+[ext_resource type="Script" path="res://src/presentation/flash_transition.gd" id="2_xedqn"]
+
+[sub_resource type="Resource" id="Resource_bt61s"]
+script = ExtResource("2_xedqn")
+offset = 0.05
+red = true
+area = 0.35
+
+[sub_resource type="Resource" id="Resource_wrfeh"]
+script = ExtResource("2_xedqn")
+offset = 0.15
+rising = false
+red = true
+area = 0.35
+
+[resource]
+script = ExtResource("1_4yxr3")
+source_id = &"vfx_faction_stamp"
+clock = &"replay"
+transitions = Array[ExtResource("2_xedqn")]([SubResource("Resource_bt61s"), SubResource("Resource_wrfeh")])
+capped_luma_swing = 0.06
+capped_red_change = 10.0
+capped_area = 0.35

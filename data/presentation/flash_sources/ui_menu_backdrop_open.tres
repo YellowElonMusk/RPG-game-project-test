@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FlashSourceDecl" format=3]
+
+[ext_resource type="Script" path="res://src/presentation/flash_source_decl.gd" id="1_lkhfq"]
+[ext_resource type="Script" path="res://src/presentation/flash_transition.gd" id="2_vtv72"]
+
+[sub_resource type="Resource" id="Resource_f1syt"]
+script = ExtResource("2_vtv72")
+rising = false
+
+[resource]
+script = ExtResource("1_lkhfq")
+source_id = &"ui_menu_backdrop_open"
+clock = &"real"
+transitions = Array[ExtResource("2_vtv72")]([SubResource("Resource_f1syt")])
+capped_luma_swing = 0.08

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="FlashSourceDecl" format=3]
+
+[ext_resource type="Script" path="res://src/presentation/flash_source_decl.gd" id="1_b5rft"]
+[ext_resource type="Script" path="res://src/presentation/flash_transition.gd" id="2_qph4r"]
+
+[sub_resource type="Resource" id="Resource_8vqnv"]
+script = ExtResource("2_qph4r")
+
+[sub_resource type="Resource" id="Resource_lvyex"]
+script = ExtResource("2_qph4r")
+offset = 0.15
+rising = false
+
+[resource]
+script = ExtResource("1_b5rft")
+source_id = &"retry_flash"
+clock = &"real"
+transitions = Array[ExtResource("2_qph4r")]([SubResource("Resource_8vqnv"), SubResource("Resource_lvyex")])
+capped_luma_swing = 0.08

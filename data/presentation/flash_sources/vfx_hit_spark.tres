@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="FlashSourceDecl" format=3]
+
+[ext_resource type="Script" path="res://src/presentation/flash_source_decl.gd" id="1_upbrb"]
+[ext_resource type="Script" path="res://src/presentation/flash_transition.gd" id="2_u1ap8"]
+
+[sub_resource type="Resource" id="Resource_vspao"]
+script = ExtResource("2_u1ap8")
+area = 0.04
+
+[sub_resource type="Resource" id="Resource_y5lao"]
+script = ExtResource("2_u1ap8")
+offset = 0.05
+rising = false
+area = 0.04
+
+[resource]
+script = ExtResource("1_upbrb")
+source_id = &"vfx_hit_spark"
+flash_class = &"exempt_area"
+clock = &"replay"
+transitions = Array[ExtResource("2_u1ap8")]([SubResource("Resource_vspao"), SubResource("Resource_y5lao")])
+max_area = 0.04

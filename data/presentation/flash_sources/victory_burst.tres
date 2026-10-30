@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="FlashSourceDecl" format=3]
+
+[ext_resource type="Script" path="res://src/presentation/flash_source_decl.gd" id="1_3lo0k"]
+[ext_resource type="Script" path="res://src/presentation/flash_transition.gd" id="2_3evxm"]
+
+[sub_resource type="Resource" id="Resource_sx78h"]
+script = ExtResource("2_3evxm")
+area = 0.8
+
+[sub_resource type="Resource" id="Resource_6d2h2"]
+script = ExtResource("2_3evxm")
+offset = 0.3
+rising = false
+area = 0.8
+
+[resource]
+script = ExtResource("1_3lo0k")
+source_id = &"victory_burst"
+clock = &"mode"
+transitions = Array[ExtResource("2_3evxm")]([SubResource("Resource_sx78h"), SubResource("Resource_6d2h2")])
+capped_luma_swing = 0.06
+capped_area = 0.8
