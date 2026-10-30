@@ -168,7 +168,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 102 | [`path_dist` stays a true upper bound on the leader's path distance through a U-shaped corridor](story-102-path-dist-upper-bound-through-a-u-corridor.md) | Logic | Ready | ADR-0012 |
 | 103 | [Every map's active symbol count lies within its density band at every reachable stage](story-103-symbol-density-band-per-map.md) | Logic | Ready | ADR-0012 |
 | 104 | [The chapter's planned walk share stays under `walk_share_max`](story-104-chapter-walk-budget-share.md) | Logic | Ready | ADR-0012 |
-| 105 | [No overworld flow requires a hold or a timed press](story-105-no-held-or-timed-overworld-input.md) | Logic | Ready | ADR-0012 |
+| 105 | [No overworld flow requires a hold or a timed press](story-105-no-held-or-timed-overworld-input.md) | Logic | Complete | ADR-0012 |
 | 106 | [Every accessibility cue clears 3:1 contrast against a 4px dilation of its own mask](story-106-event-cue-contrast-against-its-ring.md) | Visual/Feel | Ready | ADR-0012 |
 | 107 | [The interact prompt's mask clears 3:1 contrast against its own ring on the same poses](story-107-interact-prompt-contrast-against-its-ring.md) | Visual/Feel | Ready | ADR-0012 |
 | 108 | [Retained screenshots cover the interact prompt, name card, payoff card, bark window, camp prompts and the next-destination arrow](story-108-ui-screenshots-prompts-cards-and-prompts.md) | UI | Ready | ADR-0012 |

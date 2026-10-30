@@ -1,7 +1,7 @@
 # Story 105: No overworld flow requires a hold or a timed press
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -30,7 +30,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-43 [L] (accessibility)** No overworld action requires a hold or a timed press (input-map audit). Every flow completes with discrete presses plus `move`.
+- [x] **AC-43 [L] (accessibility)** No overworld action requires a hold or a timed press (input-map audit). Every flow completes with discrete presses plus `move`.
 
 ---
 
@@ -56,7 +56,7 @@
 
 ## Files
 
-- `tests/unit/overworld/accessibility_input_audit_test.gd`
+- `tests/unit/overworld/no_held_or_timed_input_test.gd`
 
 ---
 
@@ -70,9 +70,9 @@
 
 **Story Type**: Logic
 **Required evidence**:
-- `tests/unit/overworld/accessibility_input_audit_test.gd` — must exist and pass. Gate level: BLOCKING.
+- `tests/unit/overworld/no_held_or_timed_input_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -80,3 +80,9 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-010-input-locked-during-transition.md`
 - Unlocks: None further in this epic
+
+## Completion Notes (2026-10-30)
+
+- Static audit: the source of the overworld's input handlers (`OverworldMode`, the interim Dialogue, the interim Camp) contains no press-duration or window reads (`is_action_pressed`, `echo`, hold timers and similar). An injected `Input.is_action_pressed` fails it.
+- Flow audit: interaction and its close, the checkpoint redirect, the camp prompt (Yes / No / cancel) and the chapter-end prompt each complete with single press-and-release pairs.
+- The Dialogue's 0.15 s `input_guard` is a debounce (a confirm inside it is refused, a later one works); no flow requires waiting for it.
