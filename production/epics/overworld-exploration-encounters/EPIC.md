@@ -194,7 +194,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 128 | [SAFE cell tagging is precise at the 0.01 m boundary](story-128-safe-cell-bake-boundary-precision.md) | Logic | Complete | ADR-0012 |
 | 129 | [Symbols, followers and civilians never block or push each other; a touched symbol resumes from its contact point](story-129-symbol-follower-civilian-non-collision.md) | Logic | Complete | ADR-0012 |
 | 130 | [The name card, payoff card and bark window each hold for text_hold(text), pausing under overlays](story-130-timed-text-hold-and-overlay-pause.md) | Logic | Complete | ADR-0012 |
-| 131 | [AStarGrid2D setup stays frozen after bake, and sprite frames never drift from ow_dt](story-131-astargrid-pathing-setup-invariants.md) | Logic | Ready | ADR-0012 |
+| 131 | [AStarGrid2D setup stays frozen after bake, and sprite frames never drift from ow_dt](story-131-astargrid-pathing-setup-invariants.md) | Logic | In Progress | ADR-0012 |
 | 132 | [A narrow aspect logs one warning; a freed blocker invalidates stale paths](story-132-aspect-warning-and-freed-blocker-edge-cases.md) | Logic | Ready | ADR-0012 |
 | 133 | [Build the perf_overworld fixture, debug flags and the step_symbols() performance monitor](story-133-overworld-performance-fixture-tooling.md) | Integration | Ready | ADR-0012 |
 | 134 | [Tag every overworld cue with a capture-ID for the presentation capture tool](story-134-capture-id-tags-for-overworld-cues.md) | Integration | Ready | ADR-0005 |

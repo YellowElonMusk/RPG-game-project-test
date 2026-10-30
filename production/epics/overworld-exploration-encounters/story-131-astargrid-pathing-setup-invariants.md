@@ -1,7 +1,7 @@
 # Story 131: AStarGrid2D setup stays frozen after bake, and sprite frames never drift from ow_dt
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: In Progress (2026-10-30): A* half done; the animation-frame clause waits on animated overworld sprites
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -87,3 +87,13 @@ checks scope against it.*
 
 - Depends on: `story-001-leader-speed-from-move-input.md` (AC-1a, `ow_dt` clock foundation)
 - Unlocks: None
+
+## Progress Notes (2026-10-30)
+
+- **A* half done.** `tests/unit/overworld/astar_setup_invariants_test.gd`:
+  - The A* is built once and never rebuilt.
+  - It is not dirty before any query.
+  - `region`, `cell_size` and `offset` are unchanged across queries and `set_blocked` calls.
+  - A one-cell `set_blocked` round trip changes no other cell's solid flag.
+  - Mutation checked: rebuilding the A* per revision fails a test here.
+- **Open:** "a sprite's animation frame always equals the frame computed from the accumulated `ow_dt`". The overworld's placeholder sprites show one static frame (`show_frame(&"idle", &"down", ..., 0)`), so there is no animation to test. It lands with the sprite sets (Sprite & Camera Presentation).
