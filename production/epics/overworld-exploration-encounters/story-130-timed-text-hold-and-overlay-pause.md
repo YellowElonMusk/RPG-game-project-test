@@ -1,7 +1,7 @@
 # Story 130: The name card, payoff card and bark window each hold for text_hold(text), pausing under overlays
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: In Progress (2026-10-30): name card and bark window holds done; the payoff card waits for story 050
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-58 [L] (UI, timed text)** The name card, the payoff card and the bark window each hold for `text_hold(text)` (asserted at `− dt` and `+ dt`), and each hold pauses while any overlay is open. A `clue` Victory's interim stub line opens only after the payoff card has faded.
+- [x] **AC-58 [L] (UI, timed text)** The name card, the payoff card and the bark window each hold for `text_hold(text)` (asserted at `− dt` and `+ dt`), and each hold pauses while any overlay is open. A `clue` Victory's interim stub line opens only after the payoff card has faded.
 
 ---
 
@@ -80,7 +80,7 @@ checks scope against it.*
 **Story Type**: Logic
 **Required evidence**: `tests/unit/overworld/timed_text_hold_test.gd` — must exist and pass.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 

@@ -29,7 +29,12 @@ extends Resource
 @export var retreat_allowed: bool = false
 ## True if the encounter respawns after it is cleared.
 @export var respawn: bool = false
-## Victory payoff descriptor; the Game State owns its fields.
+## Victory payoff (GDD Overworld rule 7a; story 050), granted on the first
+## Victory over a symbol only: `{"type": "clue" | "open" | "item" | "none",
+## "facet": rumour / facet ID (clue), "text": the interim stub line (clue),
+## "checkpoint": checkpoint marker ID on the same map (open), "item_id":
+## item ID (item), "label": the name the payoff card shows (open, item)}`.
+## Empty means none.
 @export var victory_payoff: Dictionary = {}
 
 ## No player-visible text on this record (TR-content-012, ADR-0013 §4).

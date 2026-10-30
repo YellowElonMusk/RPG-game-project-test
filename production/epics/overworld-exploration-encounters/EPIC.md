@@ -113,7 +113,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 047 | [Encounter grace starts on transition_finished, never on_thawed](story-047-encounter-grace-starts-on-reveal.md) | Logic | Ready | ADR-0012 |
 | 048 | [Grace, notice, give-up, cooldown and stun timers freeze under overlays and transitions](story-048-timers-freeze-under-overlays.md) | Logic | Ready | ADR-0012 |
 | 049 | [Overworld → Battle → Overworld preserves a mid-chase snapshot except rule 7's changes](story-049-thaw-preserves-mid-chase-snapshot.md) | Integration | Ready | ADR-0002 |
-| 050 | [The first Victory over a symbol grants its payoff and shows a payoff card](story-050-first-victory-grants-payoff.md) | Logic | Ready | ADR-0012 |
+| 050 | [The first Victory over a symbol grants its payoff and shows a payoff card](story-050-first-victory-grants-payoff.md) | Logic | Complete | ADR-0012 |
 | 051 | [Every map's payoff distribution follows the facet, cap and tell rules](story-051-map-payoff-distribution-rules.md) | Logic | Ready | ADR-0012 |
 | 052 | [An off-screen Victory plays the off-screen sting and the payoff card together](story-052-offscreen-liberation-payoff-card.md) | Logic | Ready | ADR-0012 |
 | 053 | [The occupation stage formula is monotonic and matches the flag-to-stage table](story-053-occupation-stage-formula.md) | Logic | Ready | ADR-0012 |
@@ -193,7 +193,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 127 | [Exterior stage sky luminance stays at or above L* 60](story-127-exterior-stage-sky-luminance.md) | Visual/Feel | Ready | ADR-0012 |
 | 128 | [SAFE cell tagging is precise at the 0.01 m boundary](story-128-safe-cell-bake-boundary-precision.md) | Logic | Complete | ADR-0012 |
 | 129 | [Symbols, followers and civilians never block or push each other; a touched symbol resumes from its contact point](story-129-symbol-follower-civilian-non-collision.md) | Logic | Ready | ADR-0012 |
-| 130 | [The name card, payoff card and bark window each hold for text_hold(text), pausing under overlays](story-130-timed-text-hold-and-overlay-pause.md) | Logic | In Progress | ADR-0012 |
+| 130 | [The name card, payoff card and bark window each hold for text_hold(text), pausing under overlays](story-130-timed-text-hold-and-overlay-pause.md) | Logic | Complete | ADR-0012 |
 | 131 | [AStarGrid2D setup stays frozen after bake, and sprite frames never drift from ow_dt](story-131-astargrid-pathing-setup-invariants.md) | Logic | Ready | ADR-0012 |
 | 132 | [A narrow aspect logs one warning; a freed blocker invalidates stale paths](story-132-aspect-warning-and-freed-blocker-edge-cases.md) | Logic | Ready | ADR-0012 |
 | 133 | [Build the perf_overworld fixture, debug flags and the step_symbols() performance monitor](story-133-overworld-performance-fixture-tooling.md) | Integration | Ready | ADR-0012 |

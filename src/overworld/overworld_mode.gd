@@ -684,6 +684,7 @@ func _resolve_victory(source: EncounterSource) -> void:
 	else:
 		world_state.mark_resolved(world_state.map_id, source.symbol_id, WorldState.respawn_of(rec))
 	_sources.erase(source)
+	_grant_payoff(source, rec)
 
 
 func _on_transition_started(_from: GameStateMachine.Mode, _to: GameStateMachine.Mode) -> void:
@@ -723,6 +724,8 @@ func _on_transition_finished(to: GameStateMachine.Mode) -> void:
 	# redirect: those load no map).
 	if _name_card_due:
 		_show_name_card()
+	# Story 050: a Victory's payoffs show on this reveal.
+	_show_payoff_card()
 	# Rule 13a: after Fled from the story encounter, its line opens as an
 	# automatic Dialogue on the reveal, guarded against a held confirm.
 	if not _line_on_reveal.is_empty():
@@ -878,11 +881,14 @@ static func checkpoint_source(cp: CheckpointMarker, map: OverworldMap) -> Encoun
 	return source
 
 
-## Rule 10: exactly one requirement, an item or a story flag. Flags read
-## `world_state`. TODO(overworld): items, once an inventory exists.
+## Rule 10: exactly one requirement, an item or a story flag, read from
+## `world_state` (items are the interim `item:<id>` flags `item` payoffs
+## grant, story 050, until an inventory exists).
 func _requirement_met(cp: CheckpointMarker) -> bool:
 	if not cp.requirement_flag.is_empty():
-		return world_state != null and world_state.has_flag(cp.requirement_flag)
+		return _has_flag(cp.requirement_flag)
+	if not cp.requirement_item_id.is_empty():
+		return _has_flag("item:" + cp.requirement_item_id)
 	return false
 
 
@@ -1279,6 +1285,7 @@ func tick_timed_text(dt: float) -> void:
 			_release_after_name_card()
 		elif _name_card_elapsed > hold:
 			name_card_phase = CardPhase.FADING
+	_tick_payoff_card(dt)
 	_tick_bark(dt)
 
 
@@ -1328,3 +1335,96 @@ func _tick_bark(dt: float) -> void:
 func _bark(text: String, at: Vector2) -> void:
 	_start_bark(text)
 	barked.emit(text, at)
+
+
+# -- Victory payoffs and the payoff card (stories 050 and 130) -------------
+
+## The payoff card's text while it is up (one line per result), "" otherwise.
+var payoff_card_text: String = ""
+var payoff_card_phase: CardPhase = CardPhase.HIDDEN
+var _payoff_card_elapsed: float = 0.0
+var _payoff_lines: Array[String] = []
+var _after_payoff_card: Array[String] = []
+## Items granted by `item` payoffs (tests read it).
+var items_added: int = 0
+
+
+## GDD rule 7a: the first Victory over a symbol grants its record's
+## `victory_payoff`; a respawned Clerk (its symbol already paid out) grants
+## nothing. `clue` adds a rumour and queues its interim stub line behind the
+## payoff card; `open` opens the linked checkpoint; `item` adds the item.
+## Each result adds one payoff-card line, shown on the reveal.
+func _grant_payoff(source: EncounterSource, rec: EncounterData) -> void:
+	if rec == null or rec.victory_payoff.is_empty():
+		return
+	var granted: String = "payoff:%s:%s" % [_map_id(), source.symbol_id]
+	if _has_flag(granted):
+		return
+	_set_flag(granted)
+	var p: Dictionary = rec.victory_payoff
+	match String(p.get("type", "none")):
+		"clue":
+			var facet: String = String(p.get("facet", ""))
+			if not facet.is_empty() and not _has_flag("rumour:" + facet):
+				_set_flag("rumour:" + facet)
+				rumours_added += 1
+			_payoff_lines.append("Rumour noted in the Codex")
+			var stub: String = String(p.get("text", ""))
+			if not stub.is_empty():
+				_after_payoff_card.append(stub)
+		"open":
+			var cp_id := StringName(String(p.get("checkpoint", "")))
+			if _checkpoints.has(cp_id):
+				open_checkpoint(cp_id)
+				_payoff_lines.append("Shortcut opened: %s" % String(p.get("label", cp_id)))
+			else:
+				push_error("OverworldMode: payoff opens unknown checkpoint '%s'" % cp_id)
+		"item":
+			var item_id: String = String(p.get("item_id", ""))
+			if not item_id.is_empty():
+				_set_flag("item:" + item_id)
+				items_added += 1
+				_payoff_lines.append("Got: %s" % String(p.get("label", item_id)))
+
+
+## On the reveal after a Victory: shows the payoff card for the granted
+## results, if any (called from `_on_transition_finished`).
+func _show_payoff_card() -> void:
+	# A queued stub line follows only the card fading, never a later reveal.
+	if _payoff_lines.is_empty():
+		return
+	payoff_card_text = "\n".join(_payoff_lines)
+	_payoff_lines.clear()
+	payoff_card_phase = CardPhase.SHOWN
+	_payoff_card_elapsed = 0.0
+
+
+## The card holds for `text_hold` summed over its lines (GDD UI
+## Requirements), then fades; ticked by `tick_timed_text`, so it pauses
+## under overlays.
+func _tick_payoff_card(dt: float) -> void:
+	if payoff_card_phase == CardPhase.HIDDEN:
+		return
+	_payoff_card_elapsed += dt
+	var hold: float = payoff_card_hold()
+	if _payoff_card_elapsed > hold + config.text_fade_s:
+		payoff_card_phase = CardPhase.HIDDEN
+		payoff_card_text = ""
+		_release_after_payoff_card()
+	elif _payoff_card_elapsed > hold:
+		payoff_card_phase = CardPhase.FADING
+
+
+## `text_hold` summed over the payoff card's lines.
+func payoff_card_hold() -> float:
+	var hold: float = 0.0
+	for line: String in payoff_card_text.split("\n", false):
+		hold += config.text_hold(line)
+	return hold
+
+
+## A `clue` payoff's interim stub line opens only after the card has faded.
+func _release_after_payoff_card() -> void:
+	if _after_payoff_card.is_empty():
+		return
+	say(_after_payoff_card.pop_front())

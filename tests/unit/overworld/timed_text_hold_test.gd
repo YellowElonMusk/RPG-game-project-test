@@ -1,9 +1,9 @@
 ## Story 130, AC-58 (UI, timed text): every timed text holds for
 ## `text_hold(text) = max(name_card_s, text_hold_base_s + words *
 ## text_hold_per_word_s)`, asserted at `- dt` and `+ dt`, and every hold
-## pauses while any overlay is open. Covers the bark window and the name
-## card; the payoff card arrives with story 050 (Victory payoffs), which
-## extends this suite with its card and the `clue` stub ordering.
+## pauses while any overlay is open: the bark window, the name card and the
+## payoff card (summed over its lines). A `clue` Victory's interim stub line
+## opens only after the payoff card has faded.
 extends GdUnitTestSuite
 
 const _DT: float = 1.0 / 60.0
@@ -46,3 +46,31 @@ func test_holds_pause_while_an_overlay_is_open() -> void:
 	machine.close_overlay()
 	mode.tick_timed_text(2.0 * _DT)
 	assert_int(mode.bark_phase).is_equal(OverworldMode.CardPhase.FADING)
+
+
+func test_payoff_card_holds_summed_over_its_lines_then_releases_the_stub() -> void:
+	var mode: OverworldMode = auto_free(ProbeFixture.make_mode())
+	mode.set("_payoff_lines", ["Rumour noted in the Codex", "Shortcut opened: Rue des Tampons"] as Array[String])
+	(mode.get("_after_payoff_card") as Array).append("Rumour: the stub line.")
+	mode.call("_show_payoff_card")
+	var hold: float = mode.config.text_hold("Rumour noted in the Codex") \
+			+ mode.config.text_hold("Shortcut opened: Rue des Tampons")
+	assert_float(mode.payoff_card_hold()).is_equal_approx(hold, 1e-6)
+	mode.tick_timed_text(hold - _DT)
+	assert_int(mode.payoff_card_phase).is_equal(OverworldMode.CardPhase.SHOWN)
+	assert_array(mode.lines_said).is_empty()
+	mode.tick_timed_text(2.0 * _DT)
+	assert_int(mode.payoff_card_phase).is_equal(OverworldMode.CardPhase.FADING)
+	assert_array(mode.lines_said).is_empty()
+	mode.tick_timed_text(mode.config.text_fade_s)
+	assert_array(mode.lines_said).is_equal(["Rumour: the stub line."])
+
+
+func test_payoff_card_pauses_under_an_overlay() -> void:
+	var mode: OverworldMode = auto_free(ProbeFixture.make_mode())
+	var machine: GameStateMachine = mode.get("_machine")
+	mode.set("_payoff_lines", ["Got: Form 27-B"] as Array[String])
+	mode.call("_show_payoff_card")
+	machine.open_overlay(GameStateMachine.OverlayKind.MENU)
+	mode.tick_timed_text(30.0)
+	assert_int(mode.payoff_card_phase).is_equal(OverworldMode.CardPhase.SHOWN)

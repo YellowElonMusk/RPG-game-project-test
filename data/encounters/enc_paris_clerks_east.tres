@@ -12,3 +12,8 @@ is_boss = false
 can_flee = true
 retreat_allowed = false
 respawn = true
+victory_payoff = {
+"facet": "permit_binds_both_sides",
+"text": "Rumour: the Permit Ban binds the Clerks too. They wait, same as you.",
+"type": "clue"
+}

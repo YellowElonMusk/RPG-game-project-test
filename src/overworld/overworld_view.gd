@@ -68,6 +68,7 @@ var interact_target: Object = null
 var _bark_label: Label = null
 var _bark_left: float = 0.0
 var _name_card_label: Label = null
+var _payoff_card_label: Label = null
 
 
 func _init() -> void:
@@ -246,6 +247,7 @@ func _on_barked(_text: String, _at: Vector2) -> void:
 func _update_interact_prompt(delta: float) -> void:
 	_draw_timed(_bark_label, mode.bark_text, mode.bark_phase)
 	_draw_timed(_name_card_label, mode.name_card_text, mode.name_card_phase)
+	_draw_timed(_payoff_card_label, mode.payoff_card_text, mode.payoff_card_phase)
 	if _interact_label == null:
 		return
 	# Story 015: one `probe()` per frame, only while Exploring (rule 3
@@ -285,7 +287,16 @@ func _build_hud_labels(layer: CanvasLayer) -> void:
 	_name_card_label.add_theme_font_size_override(&"font_size", 28)
 	_name_card_label.visible = false
 	layer.add_child(_name_card_label)
-	for label: Label in [_bark_label, _name_card_label]:
+	_payoff_card_label = Label.new()
+	_payoff_card_label.name = "PayoffCard"
+	_payoff_card_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_payoff_card_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_payoff_card_label.position = Vector2(-240.0, 160.0)
+	_payoff_card_label.size = Vector2(480.0, 48.0)
+	_payoff_card_label.add_theme_font_size_override(&"font_size", 24)
+	_payoff_card_label.visible = false
+	layer.add_child(_payoff_card_label)
+	for label: Label in [_bark_label, _name_card_label, _payoff_card_label]:
 		var panel := StyleBoxFlat.new()
 		panel.bg_color = Color(0.1, 0.09, 0.08, 0.92)
 		panel.set_content_margin_all(10.0)

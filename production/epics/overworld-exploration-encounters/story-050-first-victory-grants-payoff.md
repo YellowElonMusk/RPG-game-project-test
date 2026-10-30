@@ -1,7 +1,7 @@
 # Story 050: The first Victory over a symbol grants its payoff and shows a payoff card
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -30,7 +30,7 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-21b [L] (R7a)** GIVEN a first Victory over a symbol with each payoff type, THEN `clue` adds one Codex rumour (or calls the interim stub), `open` opens the linked checkpoint, and `item` adds the item. On `transition_finished` the payoff card shows one line naming the result. A second Victory over the respawned Clerk grants nothing and shows no card.
+- [x] **AC-21b [L] (R7a)** GIVEN a first Victory over a symbol with each payoff type, THEN `clue` adds one Codex rumour (or calls the interim stub), `open` opens the linked checkpoint, and `item` adds the item. On `transition_finished` the payoff card shows one line naming the result. A second Victory over the respawned Clerk grants nothing and shows no card.
 
 ---
 
@@ -73,7 +73,7 @@
 **Required evidence**:
 - `tests/unit/overworld/overworld_mode_first_victory_payoff_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing; evidence `production/qa/evidence/story-050-victory-payoff/`
 
 ---
 
@@ -81,3 +81,8 @@
 
 - Depends on: `story-043-victory-respawn-policy.md`
 - Unlocks: `story-051-map-payoff-distribution-rules.md`, `story-052-offscreen-liberation-payoff-card.md`
+
+## Completion Notes (2026-10-30)
+
+- `EncounterData.victory_payoff` shape defined: `{type: clue|open|item|none, facet, text, checkpoint, item_id, label}`. Rumours and items are interim `rumour:` / `item:` flags in `WorldState` until the Codex and an inventory exist; item requirements on checkpoints now read them.
+- Paris content: both Clerk records carry `clue` payoffs with distinct facets (three-round wait; binds both sides). The rule-7a content rules (at least one `open` per map, `none` limits, tells) are story 051.

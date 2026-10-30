@@ -12,3 +12,8 @@ is_boss = false
 can_flee = true
 retreat_allowed = false
 respawn = true
+victory_payoff = {
+"facet": "permit_takes_three_rounds",
+"text": "Rumour: the permit takes three rounds to arrive. Until then, nobody uses a special move.",
+"type": "clue"
+}
