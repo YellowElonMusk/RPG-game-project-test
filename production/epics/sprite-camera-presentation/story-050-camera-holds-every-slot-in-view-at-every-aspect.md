@@ -1,12 +1,12 @@
 # Story 050: every actor slot stays inside the battle camera's view at every supported aspect ratio
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -76,7 +76,7 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/battle_camera_aspect_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`, both later)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing -- `tests/unit/presentation/battle_camera_aspect_test.gd` (presentation suite 99/99, 2026-10-30)
 
 ---
 
@@ -84,3 +84,13 @@
 
 - Depends on: `story-001-windowed-engine-spike.md` (settles `battle_fov`, `near`, and re-measures the lens shift against `battle_framing`'s `y_h` at 16:9 and 16:10); `story-046-no-two-actor-slots-share-a-depth.md` (slot depths this story's containment check also needs)
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30 (tag scp3)
+
+Every shipped stage's slot quads lie inside the frame at 16:9, 21:9, 16:10 and 4:3 (default and non-default config). The CameraState matrix (create_frustum_aspect) keeps tan(F_h/2) at its 16:9 value below 16:9 and tan(F_v/2) at battle_fov at and above it, with a wider horizontal view at 21:9.
+
+**Files**: src/presentation/battle_framing.gd, tests/unit/presentation/battle_camera_aspect_test.gd

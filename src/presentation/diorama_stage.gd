@@ -48,15 +48,98 @@ var current_rim_strength: float = 0.0
 
 var _resolver: Callable
 
+## The mode's one camera (ADR-0005 §3, §6). A battle stage drives it as the
+## level shift-lens battle camera after `configure_battle_camera()`; Camp
+## and Title leave it fixed as authored (Camp may be pitched) -- no hit or
+## party move ever touches a fixed camera (story 007).
+@export var camera: Camera3D
+
+var _battle_stage: BattleStage
+var _battle_config: PresentationConfig
+var _battle_viewport: Vector2i
+var _battle_base_shift: Vector2 = Vector2.ZERO
+var _punch_px: Vector2i = Vector2i.ZERO
+
 
 ## Joins `GROUP` (ADR-0005 §3) so `PresentationDirector` can find this stage
 ## on `mode_entered`, including re-entry (e.g. the Overworld re-attached after
-## a Battle retreat).
-## TODO(sprite-camera-presentation): `camera.current = true` also belongs here
-## (ADR-0005 §3) once this file gains a `camera` export -- a §6 camera
-## story's scope, not Story 008's.
+## a Battle retreat), and makes the stage's camera current.
 func _enter_tree() -> void:
 	add_to_group(GROUP)
+	if camera != null:
+		camera.current = true
+
+
+## Turns `camera` into the level shift-lens battle camera for `stage`
+## (ADR-0005 §6; story 006): `PROJECTION_FRUSTUM`, `KEEP_HEIGHT`, pitch 0,
+## `h_offset`/`v_offset` 0, placed by `stage.camera_transform()`. After this
+## only `size` (on resize) and `frustum_offset` (base shift + punch) change.
+## Inside the tree it follows the viewport's `size_changed`.
+func configure_battle_camera(stage: BattleStage, config: PresentationConfig,
+		viewport_size: Vector2i) -> void:
+	if camera == null:
+		push_error("DioramaStage: configure_battle_camera() without a camera")
+		return
+	_battle_stage = stage
+	_battle_config = config
+	_punch_px = Vector2i.ZERO
+	camera.projection = Camera3D.PROJECTION_FRUSTUM
+	camera.keep_aspect = Camera3D.KEEP_HEIGHT
+	camera.h_offset = 0.0
+	camera.v_offset = 0.0
+	camera.near = config.battle_camera_near
+	camera.far = config.battle_camera_far
+	camera.transform = stage.camera_transform()
+	on_viewport_resized(viewport_size)
+	if is_inside_tree() and not get_viewport().size_changed.is_connected(_on_viewport_size_changed):
+		get_viewport().size_changed.connect(_on_viewport_size_changed)
+
+
+## Whether this stage drives a battle camera (else its camera is fixed).
+func is_battle_camera() -> bool:
+	return _battle_stage != null and camera != null
+
+
+## Recomputes the battle camera's `size = h_near` and base lens shift for a
+## `viewport_size` window, keeping any running punch (ADR-0005 §6). A fixed
+## camera ignores it.
+func on_viewport_resized(viewport_size: Vector2i) -> void:
+	if not is_battle_camera() or viewport_size.y <= 0:
+		return
+	_battle_viewport = viewport_size
+	var aspect: float = float(viewport_size.x) / float(viewport_size.y)
+	var size: float = BattleFraming.h_near(_battle_config.battle_camera_near,
+			_battle_config.battle_fov_degrees, aspect)
+	camera.size = size
+	_battle_base_shift = BattleFraming.base_lens_shift(_battle_stage.horizon_frac, size)
+	_apply_lens_shift()
+
+
+## Sets this frame's `hit_punch` offset, in whole screen pixels (y down);
+## `Vector2i.ZERO` ends the punch. The battle camera's `frustum_offset`
+## becomes the base shift plus the punch's lens shift -- its transform,
+## `near`, `size` and `keep_aspect` are untouched. On a fixed (Camp/Title)
+## camera this is a no-op (story 007: the punch path is battle-only).
+func apply_hit_punch(punch_px: Vector2i) -> void:
+	if not is_battle_camera():
+		return
+	_punch_px = punch_px
+	_apply_lens_shift()
+
+
+## The battle camera's base lens shift (no punch) at the current window.
+func battle_base_shift() -> Vector2:
+	return _battle_base_shift
+
+
+func _apply_lens_shift() -> void:
+	camera.frustum_offset = _battle_base_shift + BattleFraming.punch_lens_shift(
+			_punch_px, camera.size, _battle_viewport.y)
+
+
+func _on_viewport_size_changed() -> void:
+	var rect_size: Vector2 = get_viewport().get_visible_rect().size
+	on_viewport_resized(Vector2i(roundi(rect_size.x), roundi(rect_size.y)))
 
 
 func _ready() -> void:
@@ -65,6 +148,8 @@ func _ready() -> void:
 
 func _exit_tree() -> void:
 	remove_from_group(GROUP)
+	if get_viewport() != null and get_viewport().size_changed.is_connected(_on_viewport_size_changed):
+		get_viewport().size_changed.disconnect(_on_viewport_size_changed)
 
 
 ## Pins the light rig's cull masks and shadow casters (ADR-0005 §3). Runs

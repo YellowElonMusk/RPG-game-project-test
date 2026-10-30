@@ -1,12 +1,12 @@
 # Story 007: Camp and Title cameras never move
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -72,7 +72,7 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/fixed_camera_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing -- `tests/unit/presentation/fixed_camera_test.gd` (presentation suite 99/99, 2026-10-30)
 
 ---
 
@@ -80,3 +80,13 @@
 
 - Depends on: `production/epics/sprite-camera-presentation/story-001-windowed-engine-spike.md`, `production/epics/sprite-camera-presentation/story-006-battle-camera-lens-shift-only.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30 (tag scp3)
+
+A DioramaStage without configure_battle_camera() keeps a fixed camera: apply_hit_punch() and on_viewport_resized() are no-ops, so neither a hit nor a party move touches its transform or lens shift. Tested pitched (Camp) and level (Title) over 60 frames of party movement with punches.
+
+**Files**: src/presentation/diorama_stage.gd, tests/unit/presentation/fixed_camera_test.gd

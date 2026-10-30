@@ -43,6 +43,29 @@ extends Resource
 ## sets are authored.
 @export var overworld_card_height_max_m: float = 2.0
 
+## The battle camera and `battle_framing`'s load bounds (GDD `battle_framing`,
+## ADR-0005 §6; stories 006, 022, 046, 050). Per-stage values (`h_cam`,
+## `horizon_frac`, slot depths) live on each `BattleStage`, not here.
+@export_group("Battle Framing")
+## Vertical field of view at 16:9, in degrees (`F_v`, `battle_fov`). Set by
+## the Step 1 spike; 20 degrees is the GDD worked example's value.
+@export var battle_fov_degrees: float = 20.0
+## The battle camera's near plane, in metres (`size = h_near` is measured on
+## it). Never changes in a fight.
+@export var battle_camera_near: float = 0.05
+## The battle camera's far plane, in metres.
+@export var battle_camera_far: float = 200.0
+## Smallest share of any actor's quad that must stay visible at the default
+## battle camera (`actor_visible_min`; Tuning Knobs: 0.85-0.95).
+@export_range(0.85, 0.95, 0.01) var actor_visible_min: float = 0.90
+## Gap in view depth between the farthest slot and where the background blur
+## begins, in metres (`dof_margin`; Tuning Knobs: 0.5-2.0).
+@export_range(0.5, 2.0, 0.1) var dof_margin: float = 1.0
+## Smallest share of the frame the sky must cover on a boss stage
+## (`sky_share_min`; Tuning Knobs: 0.15-0.30). `battle_framing` checks the
+## necessary bound `horizon_frac >= sky_share_min`.
+@export_range(0.15, 0.30, 0.01) var sky_share_min: float = 0.20
+
 ## The replay knobs (GDD `replay_time`, ADR-0006 §9; story 061). Ranges are
 ## the GDD's Tuning Knobs safe ranges; they are chained so every in-range
 ## combination passes `validate()`'s range-guaranteed rules.

@@ -1,12 +1,12 @@
 # Story 063: A moving sprite stays pixel-snapped in every mode
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -75,7 +75,7 @@ This drives `SpriteProjection.screen_rect()` with a foot anchor advancing by 0.3
 **Required evidence**:
 - `tests/unit/presentation/pixel_snap_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing -- `tests/unit/presentation/pixel_snap_test.gd` (presentation suite 99/99, 2026-10-30)
 
 ---
 
@@ -83,3 +83,13 @@ This drives `SpriteProjection.screen_rect()` with a foot anchor advancing by 0.3
 
 - Depends on: `production/epics/sprite-camera-presentation/story-001-windowed-engine-spike.md` (the spike verifies the clip-space quad is pixel-exact under both the level and pitched cameras)
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30 (tag scp3)
+
+Added SpriteProjection.project_to_screen() (unrounded) and round_pixel() (public half-away-from-zero); screen_rect uses them unchanged. Test drives a foot anchor 0.37 px/frame for 120 frames under the level battle camera and the pitched Overworld camera, even and odd widths, plus a non-default config: bottom-centre equals the rounded projection every frame and size never changes; frames 1 and 101 land on half pixels.
+
+**Files**: src/presentation/sprite_projection.gd, tests/unit/presentation/pixel_snap_test.gd

@@ -1,12 +1,12 @@
 # Story 006: The battle camera only changes through frustum_offset: lens shift plus the hit-punch
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -77,7 +77,7 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/battle_camera_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing -- `tests/unit/presentation/battle_camera_test.gd` (presentation suite 99/99, 2026-10-30)
 
 ---
 
@@ -85,3 +85,13 @@
 
 - Depends on: `production/epics/sprite-camera-presentation/story-001-windowed-engine-spike.md`, `production/epics/sprite-camera-presentation/story-004-sprite-projection-pixel-exact-quad.md`
 - Unlocks: `production/epics/sprite-camera-presentation/story-007-camp-and-title-cameras-never-move.md`, `production/epics/sprite-camera-presentation/story-012-one-hit-punch-per-beat-on-impact.md`, `production/epics/sprite-camera-presentation/story-022-battle-framing-keeps-every-slot-in-view.md`, `production/epics/sprite-camera-presentation/story-024-hit-punch-formula-is-pixel-exact.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30 (tag scp3)
+
+DioramaStage gains a `camera` export (made current on enter) and configure_battle_camera()/on_viewport_resized()/apply_hit_punch(): PROJECTION_FRUSTUM, KEEP_HEIGHT, pitch 0, h/v_offset 0, transform from BattleStage.camera_transform(); size = h_near recomputed on size_changed; frustum_offset = base shift + punch shift every frame. Formulas live in new src/presentation/battle_framing.gd. New config knobs battle_fov_degrees (20), battle_camera_near (0.05), battle_camera_far (200). Deviation flagged for game-designer/lead: the ADR's punch mapping (px_x*h/H, -px_y*h/H) is implemented as written, but with '+y moves the image down' a +px_y (screen-down) punch moves the image up and +px_x moves it left -- the sign is the punch direction, so harmless for a decaying shake, but story 024 should confirm. The hit_punch offset function itself is story 024's (not built here).
+
+**Files**: src/presentation/diorama_stage.gd, src/presentation/battle_framing.gd (new), src/presentation/battle_stage.gd (new), src/presentation/presentation_config.gd, tests/unit/presentation/battle_camera_test.gd

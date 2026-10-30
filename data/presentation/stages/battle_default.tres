@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="BattleStage" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/presentation/battle_stage.gd" id="1_stage"]
+
+[resource]
+script = ExtResource("1_stage")
+stage_id = &"battle_default"
+is_boss = false
+h_cam = 1.6
+horizon_frac = 0.3
+background_blur_begin = 16.5
+actor_frame_size = Vector2i(48, 64)
+slot_depth_step = 0.05
+slots = Array[Vector2]([Vector2(-1.8, 9), Vector2(-0.6, 9), Vector2(0.6, 9), Vector2(1.8, 9), Vector2(-2.4, 15), Vector2(-0.8, 15), Vector2(0.8, 15), Vector2(2.4, 15)])

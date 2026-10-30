@@ -127,15 +127,28 @@ static func card_depth(ndc: Vector2, anchor_world: Vector3, cam: CameraState) ->
 	return (hit_world - ray_origin).dot(forward)
 
 
-## Projects `world_point` through `cam` to a rounded screen pixel
-## (round half away from zero on both axes; NDC y is up, screen y is down).
-static func _project_to_pixel(world_point: Vector3, cam: CameraState, viewport_size: Vector2i) -> Vector2i:
+## Projects `world_point` through `cam` to an unrounded screen position in
+## pixels (NDC y is up, screen y is down). `screen_rect` rounds this; tests
+## use it to check the rounding (story 063).
+static func project_to_screen(world_point: Vector3, cam: CameraState,
+		viewport_size: Vector2i) -> Vector2:
 	var view_point: Vector3 = cam.transform.affine_inverse() * world_point
 	var clip: Vector4 = cam.projection * Vector4(view_point.x, view_point.y, view_point.z, 1.0)
 	var ndc: Vector3 = Vector3(clip.x, clip.y, clip.z) / clip.w
-	var screen_x: float = (ndc.x * 0.5 + 0.5) * float(viewport_size.x)
-	var screen_y: float = (1.0 - (ndc.y * 0.5 + 0.5)) * float(viewport_size.y)
-	return Vector2i(_round_half_away_from_zero(screen_x), _round_half_away_from_zero(screen_y))
+	return Vector2((ndc.x * 0.5 + 0.5) * float(viewport_size.x),
+			(1.0 - (ndc.y * 0.5 + 0.5)) * float(viewport_size.y))
+
+
+## Round half away from zero on both axes (GDD `texel_scale`), public so the
+## pixel-snap tests share the exact rule.
+static func round_pixel(screen: Vector2) -> Vector2i:
+	return Vector2i(_round_half_away_from_zero(screen.x), _round_half_away_from_zero(screen.y))
+
+
+## Projects `world_point` through `cam` to a rounded screen pixel
+## (round half away from zero on both axes; NDC y is up, screen y is down).
+static func _project_to_pixel(world_point: Vector3, cam: CameraState, viewport_size: Vector2i) -> Vector2i:
+	return round_pixel(project_to_screen(world_point, cam, viewport_size))
 
 
 ## Round-half-away-from-zero to the nearest int (GDD `texel_scale`'s

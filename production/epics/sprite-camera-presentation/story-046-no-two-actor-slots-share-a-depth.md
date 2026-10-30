@@ -1,12 +1,12 @@
 # Story 046: no two actor slots share a view depth, in every shipped formation
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -76,7 +76,7 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/slot_depth_collision_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`, both later)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing -- `tests/unit/presentation/slot_depth_collision_test.gd` (presentation suite 99/99, 2026-10-30)
 
 ---
 
@@ -84,3 +84,13 @@
 
 - Depends on: `story-001-windowed-engine-spike.md` (settles slot depths and `battle_framing`'s measurement); every shipped battle formation authored
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30 (tag scp3)
+
+BattleStage.slot_depth(i) = base depth + i * slot_depth_step (the GDD stagger); BattleFraming.depth_collisions() reports equal depths and validate() fails them by stage name. PresentationValidators loads and validates every shipped stage. Deviation: the validator is src/presentation/presentation_validators.gd, not data/presentation/presentation_validators.gd (scripts belong in the code root). Not yet registered with ContentBootstrap (TODO, same blocker as PresentationConfig.validate).
+
+**Files**: src/presentation/presentation_validators.gd (new), src/presentation/battle_framing.gd, src/presentation/battle_stage.gd, tests/unit/presentation/slot_depth_collision_test.gd

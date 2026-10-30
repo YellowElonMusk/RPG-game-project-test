@@ -1,12 +1,12 @@
 # Story 022: battle_framing keeps every actor slot in view and the foot row on the formula's curve
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -80,7 +80,7 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/battle_framing_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing -- `tests/unit/presentation/battle_framing_test.gd` (presentation suite 99/99, 2026-10-30)
 
 ---
 
@@ -88,3 +88,13 @@
 
 - Depends on: `production/epics/sprite-camera-presentation/story-001-windowed-engine-spike.md`, `production/epics/sprite-camera-presentation/story-004-sprite-projection-pixel-exact-quad.md`, `production/epics/sprite-camera-presentation/story-006-battle-camera-lens-shift-only.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30 (tag scp3)
+
+BattleFraming.validate(stage, config) runs the load checks: z_near > 0, unique depths, every quad inside the frame at 16:9/21:9/16:10/4:3, visible_share >= actor_visible_min (rounded on-screen quads, exact rectangle-union area, at 16:9), blur >= z_far + dof_margin, boss horizon_frac >= sky_share_min; 1e-6 tolerance in the passing direction. Stage data is a new BattleStage resource; data/presentation/stages/battle_default.tres and battle_boss.tres authored as placeholders (h_cam 1.6, horizon 0.30, party z 9, enemies z 15) until the Step 1 spike sets real values. New knobs actor_visible_min, dof_margin, sky_share_min. Deviation: the formula lives in battle_framing.gd rather than diorama_stage.gd (pure/static, headless). Not yet hooked into a battle load path -- no 3D battle scene exists.
+
+**Files**: src/presentation/battle_framing.gd, src/presentation/battle_stage.gd, src/presentation/presentation_config.gd, data/presentation/stages/battle_default.tres, data/presentation/stages/battle_boss.tres, tests/unit/presentation/battle_framing_test.gd
