@@ -12,6 +12,8 @@ extends SceneTree
 ## `SetLight` (or the live `DioramaStage.set_light`) is the shadow-mask light.
 ## Writes `<pass>.png` plus `measurements.json` into the output directory
 ## (default: the story-002 evidence folder). Exit 0 on success, 1 on failure.
+## `--fixture=cues` adds one node per §14 capture-ID tag and a wall half in
+## front of the beacon (story overworld 134).
 
 const DEFAULT_OUT: String = "res://production/qa/evidence/story-002-capture-tool/"
 
@@ -39,6 +41,8 @@ func _run() -> void:
 		set_light = stage.set_light if stage != null else scene.find_child("SetLight", true, false) as DirectionalLight3D
 	else:
 		scene = _fixture()
+		if String(args.get("fixture", "")) == "cues":
+			_add_cue_fixture(scene)
 		set_light = scene.get_node(^"SetLight") as DirectionalLight3D
 
 	var tool := PresentationCapture.new()
@@ -154,3 +158,24 @@ func _sprite(node_name: String, at: Vector3, colour: Color, tag: String) -> Spri
 	if not tag.is_empty():
 		sp.set_meta(PresentationCapture.META_CAPTURE_ID, tag)
 	return sp
+
+
+## Story overworld 134: one cue per remaining §14 tag, and a set wall that
+## hides about half of the beacon (so `id_set_hidden` shows it whole).
+func _add_cue_fixture(s: Node3D) -> void:
+	var quad := QuadMesh.new()
+	quad.size = Vector2(0.6, 0.4)
+	var cues: Array = [["NoticeSlip", "notice_slip", Vector3(-3.6, 2.2, 0.0)],
+			["ChaseTag", "chase_tag", Vector3(-2.6, 2.2, 0.0)],
+			["StunPose", "stun_pose", Vector3(-1.6, 2.2, 0.0)],
+			["CheckpointClosed", "checkpoint_closed", Vector3(-0.6, 2.2, 0.0)],
+			["CampSign", "camp_sign", Vector3(0.4, 2.2, 0.0)],
+			["InteractPrompt", "interact_prompt", Vector3(1.4, 2.2, 0.0)]]
+	for c: Array in cues:
+		s.add_child(_mesh(String(c[0]), quad, c[2] as Vector3, Color(0.8, 0.8, 0.8), String(c[1])))
+	var paving := PlaneMesh.new()
+	paving.size = Vector2(2.0, 1.2)
+	s.add_child(_mesh("SafePaving", paving, Vector3(-1.0, 0.02, 2.0), Color(0.7, 0.7, 0.75), "safe_paving"))
+	var wall := BoxMesh.new()
+	wall.size = Vector3(0.5, 2.4, 0.2)
+	s.add_child(_mesh("OccludingWall", wall, Vector3(2.4, 1.2, 0.4), Color(0.6, 0.55, 0.5), ""))

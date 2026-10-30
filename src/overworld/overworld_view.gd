@@ -175,6 +175,8 @@ func sync_symbol_sprites() -> void:
 			_setup_sprite(sprite, symbol_tint)
 			_symbol_sprites[brain] = sprite
 		_place(sprite, brain.position)
+		# Story 134 (ADR-0005 §14): the sprite's capture-ID follows its cue.
+		CaptureIdTags.tag(sprite, CaptureIdTags.symbol_tag(brain.sub_state))
 
 
 ## The live symbol sprites, keyed by `SymbolBrain` (tests).
@@ -267,6 +269,9 @@ func _update_interact_prompt(delta: float) -> void:
 func _build_hud_labels(layer: CanvasLayer) -> void:
 	_interact_label = Label.new()
 	_interact_label.name = "InteractPrompt"
+	# Story 134: tagged for the capture tool; a CanvasItem, so its mask is
+	# the `ui` pass, not the 3D ID pass.
+	CaptureIdTags.tag(_interact_label, CaptureIdTags.INTERACT_PROMPT)
 	_interact_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_interact_label.size = Vector2(320.0, 40.0)
 	_interact_label.add_theme_font_size_override(&"font_size", 22)

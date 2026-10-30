@@ -269,6 +269,8 @@ func load_map(map: OverworldMap, entry_marker_id: StringName = &"") -> void:
 	_grid = map.bake_walk_grid(config)
 	map.build_set(_grid)
 	_setup_checkpoints(map)
+	# Story 134 (ADR-0005 §14): capture-ID tags on this map's cue nodes.
+	CaptureIdTags.tag_map(map, is_checkpoint_open)
 	for gag: GagInteractable in map.gags():
 		if _has_flag(_gag_flag("changed", gag)):
 			map.set_gag_shown(gag.marker_id, false)
@@ -976,6 +978,7 @@ func open_checkpoint(marker_id: StringName) -> void:
 	if is_checkpoint_open(marker_id):
 		return
 	_opened_this_visit[marker_id] = true
+	CaptureIdTags.tag(cp, CaptureIdTags.CHECKPOINT_OPEN)
 	if _map != null:
 		_map.set_checkpoint_shown(marker_id, false)
 	if world_state != null:

@@ -1,12 +1,12 @@
 # Story 134: Tag every overworld cue with a capture-ID for the presentation capture tool
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (implemented, awaiting /story-done)
 > **Layer**: Feature
 > **Type**: Integration
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: — (not yet implemented)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story (tooling story per the story map; delivers the GDD's capture-ID Tooling-owed item, test plan OW-T02):*
 
-- [ ] Delivers: per-cue `capture_id` node metadata and mask rendering per ADR-0005 §14, covering `SKY`, `notice_slip`, `chase_tag`, `stun_pose`, `checkpoint_open`, `checkpoint_closed`, `safe_paving`, `exit_beacon`, `camp_sign`, `interact_prompt`, `symbol`; and the "set hidden" ID pass used by the walk-in procedure (O-07). Unblocks AC-44a, AC-44b, AC-54, AC-32 and AC-45e (and AC-30i's measure).
+- [x] Delivers: per-cue `capture_id` node metadata and mask rendering per ADR-0005 §14, covering `SKY`, `notice_slip`, `chase_tag`, `stun_pose`, `checkpoint_open`, `checkpoint_closed`, `safe_paving`, `exit_beacon`, `camp_sign`, `interact_prompt`, `symbol`; and the "set hidden" ID pass used by the walk-in procedure (O-07). Unblocks AC-44a, AC-44b, AC-54, AC-32 and AC-45e (and AC-30i's measure).
 
 ---
 
@@ -63,8 +63,11 @@
 planned ones; `/dev-story` replaces the list with the files it changed; `/story-done`
 checks scope against it.*
 
-- `src/overworld/overworld_mode.gd` (`capture_id` metadata assignment on cue nodes)
-- Presentation capture tool extension point (`production/epics/sprite-camera-presentation/`, consumed not owned by this epic)
+- `src/overworld/capture_id_tags.gd` (new: tag constants, `tag_map`, `symbol_tag`, `checkpoint_tag`)
+- `src/overworld/overworld_mode.gd` (tags the map on load; checkpoint retagged open)
+- `src/overworld/overworld_view.gd` (symbol sprite tag by sub-state; interact prompt label tag)
+- `tools/capture/presentation_capture.gd` (id_set_hidden pass, visible fractions, per-tag masks, WCAG luminance)
+- `tools/capture/capture_main.gd` (`--fixture=cues`)
 - `tests/integration/overworld/capture_id_tags_test.gd`
 
 ---
@@ -80,7 +83,7 @@ checks scope against it.*
 **Story Type**: Integration
 **Required evidence**: `tests/integration/overworld/capture_id_tags_test.gd` OR a documented validation that each of the 11 cue tags renders a stable mask and the hidden-geometry ID pass works — must exist and pass.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing: `tests/integration/overworld/capture_id_tags_test.gd` 10/10 (2026-10-30). Windowed capture `capture_main.gd --fixture=cues` → `production/qa/evidence/story-134-capture-id-tags/`: all 11 tag masks non-empty; beacon behind a wall 47.5% visible (id vs id_set_hidden).
 
 ---
 
@@ -88,3 +91,15 @@ checks scope against it.*
 
 - Depends on: `production/epics/sprite-camera-presentation/story-002-capture-tool.md` (the presentation capture tool, P-09, ADR-0005 Migration Step 1c)
 - Unlocks: `production/epics/overworld-exploration-encounters/story-109-beacon-chain-walkin-capture.md`, `production/epics/overworld-exploration-encounters/story-127-exterior-stage-sky-luminance.md`, `production/epics/overworld-exploration-encounters/story-135-level-review-walkin-tool.md`, `story-106-event-cue-contrast-against-its-ring.md` (AC-44a), `story-107-interact-prompt-contrast-against-its-ring.md` (AC-44b), `story-087-patrol-visibility-before-the-notice-radius.md` (AC-32)
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30
+**Criteria**: 1/1 (tag set, masks and set-hidden pass delivered; headless tests + windowed capture)
+**Deviations**:
+- Tag `beacon`, not `exit_beacon`: ADR-0005 §14 folds the exit beacon into `beacon` and the capture tool already used it.
+- `notice_slip` / `chase_tag` / `stun_pose` currently retag the whole symbol sprite by brain sub-state (no separate slip/tag nodes are drawn yet; TODO(sprite-camera-presentation)).
+- `interact_prompt` is a 2D Label: tagged, but its mask comes from the `ui` pass (the ID pass culls canvas items).
+- No overworld node draws `safe_paving` or a beacon banner yet, and `SKY` is tagged by the presentation layer; those masks render once their geometry exists (fixture proves the path).

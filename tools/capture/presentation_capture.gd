@@ -13,7 +13,12 @@ extends Node
 ##                off (white = in the set-light shadow);
 ##   unlit_albedo `Viewport.DEBUG_DRAW_UNSHADED`;
 ##   ui           the 2D/UI layer alone (3D disabled, transparent background);
-##   glow_input   the glow-input hook (item 15), or a recorded "Pending".
+##   glow_input   the glow-input hook (item 15), or a recorded "Pending";
+##   id_set_hidden the ID pass again with untagged set geometry hidden (O-07
+##                walk-in; story overworld 134), with each class's visible
+##                fraction = normal pixels / set-hidden pixels;
+##   mask_<tag>   each §14 tag's mask from the ID pass (white = the tag);
+##   luminance    WCAG relative luminance (linear sRGB) of the final frame.
 ##
 ## Every pass is taken on the same frozen frame: the scene's processing is
 ## disabled for the whole capture, so only the pass setup differs.
@@ -322,10 +327,29 @@ func capture(scene_root: Node, set_light: DirectionalLight3D, actor_layer: int) 
 	var restore: Dictionary = apply_id_overrides(scene_root, actor_layer)
 	_viewport.canvas_cull_mask = 0
 	images["id"] = await _grab()
+	# Story overworld 134 (O-07): the same ID pass with the set hidden.
+	var hidden: Dictionary = hide_set_geometry(scene_root, actor_layer)
+	images["id_set_hidden"] = await _grab()
+	restore_layers(hidden)
 	restore_overrides(restore)
 	if cam != null:
 		cam.environment = old_env
-	m["passes"]["id"] = {"file": "id.png", "palette": _palette_html(), "classes": measure_id(images["id"])}
+	var id_classes_normal: Dictionary = measure_id(images["id"])
+	var id_classes_hidden: Dictionary = measure_id(images["id_set_hidden"])
+	m["passes"]["id"] = {"file": "id.png", "palette": _palette_html(), "classes": id_classes_normal}
+	m["passes"]["id_set_hidden"] = {"file": "id_set_hidden.png", "hidden_geometry": hidden.size(),
+			"classes": id_classes_hidden,
+			"visible_fraction": visible_fractions(id_classes_normal, id_classes_hidden)}
+	# Per-tag masks (ADR-0005 §14) and the WCAG luminance of the final frame.
+	var masks: Dictionary = {}
+	for tag: String in CAPTURE_TAGS:
+		var tm: Dictionary = tag_mask(images["id"], tag)
+		if int(tm["pixels"]) > 0:
+			images["mask_%s" % tag] = tm["image"]
+			masks[tag] = {"file": "mask_%s.png" % tag, "pixels": tm["pixels"]}
+	m["passes"]["tag_masks"] = masks
+	images["luminance"] = relative_luminance(images["final"])
+	m["passes"]["luminance"] = {"file": "luminance.png", "formula": "WCAG relative luminance, linear sRGB"}
 
 	# Set-light shadow mask: shadow on vs off, UI hidden.
 	if set_light != null:
@@ -473,3 +497,85 @@ static func _snap_key(r: int, g: int, b: int) -> int:
 
 static func _level_key(c: Color) -> int:
 	return _snap_key(c.r8, c.g8, c.b8)
+
+
+# -- Story overworld 134: per-tag masks, luminance and the set-hidden ID pass --
+
+## The mask of one ID class in an ID-pass image: an `L8` image, white where
+## the pixel snaps to `cls`'s palette colour. Returns `{"image": Image,
+## "pixels": n}`; an unknown class gives an all-black mask.
+static func tag_mask(img: Image, cls: String) -> Dictionary:
+	var rgba: Image = _rgba8(img)
+	var w: int = rgba.get_width()
+	var h: int = rgba.get_height()
+	var data: PackedByteArray = rgba.get_data()
+	var colours: Dictionary = palette()
+	var want: int = _level_key(colours[cls] as Color) if colours.has(cls) else -2
+	var mask := PackedByteArray()
+	mask.resize(w * h)
+	var n: int = 0
+	for i: int in w * h:
+		if _snap_key(data[i * 4], data[i * 4 + 1], data[i * 4 + 2]) == want:
+			mask[i] = 255
+			n += 1
+	return {"image": Image.create_from_data(w, h, false, Image.FORMAT_L8, mask), "pixels": n}
+
+
+## WCAG relative luminance of one 8-bit sRGB pixel (linearised, then
+## 0.2126 R + 0.7152 G + 0.0722 B), in 0..1 (AC-44a/b's grayscale).
+static func relative_luminance_of(c: Color) -> float:
+	return 0.2126 * _linear(c.r) + 0.7152 * _linear(c.g) + 0.0722 * _linear(c.b)
+
+
+## The grayscale relative-luminance image of `img` (`L8`, 255 = luminance 1).
+static func relative_luminance(img: Image) -> Image:
+	var rgba: Image = _rgba8(img)
+	var w: int = rgba.get_width()
+	var h: int = rgba.get_height()
+	var data: PackedByteArray = rgba.get_data()
+	var out := PackedByteArray()
+	out.resize(w * h)
+	for i: int in w * h:
+		var c := Color8(data[i * 4], data[i * 4 + 1], data[i * 4 + 2])
+		out[i] = clampi(roundi(relative_luminance_of(c) * 255.0), 0, 255)
+	return Image.create_from_data(w, h, false, Image.FORMAT_L8, out)
+
+
+## Hides every untagged `set`-class geometry under `scene_root` by zeroing its
+## render layers (children keep theirs, so a tagged cue under set geometry
+## still renders). Returns `{GeometryInstance3D: old layers}` for
+## `restore_layers`. The O-07 walk-in's "set hidden" ID pass.
+static func hide_set_geometry(scene_root: Node, actor_layer: int) -> Dictionary:
+	var restore: Dictionary = {}
+	for geo: GeometryInstance3D in _geometry_under(scene_root):
+		if class_of(geo, actor_layer, scene_root) == CLASS_SET:
+			restore[geo] = geo.layers
+			geo.layers = 0
+	return restore
+
+
+## Puts back the layers `hide_set_geometry` zeroed.
+static func restore_layers(restore: Dictionary) -> void:
+	for geo: Variant in restore:
+		if is_instance_valid(geo):
+			(geo as GeometryInstance3D).layers = int(restore[geo])
+
+
+## Visible fraction per class, from two `measure_id` results: the normal ID
+## pass and the set-hidden one. `{class: normal pixels / unoccluded pixels}`
+## for every class with unoccluded pixels (O-07; AC-45e, AC-32).
+static func visible_fractions(normal: Dictionary, unoccluded: Dictionary) -> Dictionary:
+	var out: Dictionary = {}
+	for cls: String in id_classes():
+		if cls == CLASS_SET:
+			continue
+		var full: int = int((unoccluded.get(cls, {}) as Dictionary).get("pixels", 0))
+		if full <= 0:
+			continue
+		var seen: int = int((normal.get(cls, {}) as Dictionary).get("pixels", 0))
+		out[cls] = minf(float(seen) / float(full), 1.0)
+	return out
+
+
+static func _linear(v: float) -> float:
+	return v / 12.92 if v <= 0.04045 else pow((v + 0.055) / 1.055, 2.4)
