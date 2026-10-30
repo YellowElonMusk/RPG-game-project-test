@@ -1,12 +1,12 @@
 # Story 015: A battle replay plays beats in log order, impacting, holding and ending on the controller's own clocks
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Core
 > **Type**: Integration
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -84,7 +84,7 @@
 **Required evidence**:
 - Integration: `tests/integration/presentation/battle_replay_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing — `tests/integration/presentation/battle_replay_test.gd` 14/14 (2026-10-30)
 
 ---
 
@@ -92,3 +92,14 @@
 
 - Depends on: `BattleReplayController` (ADR-0006, no epic yet), `production/epics/sprite-camera-presentation/story-001-windowed-engine-spike.md`, `production/epics/sprite-camera-presentation/story-012-one-hit-punch-per-beat-on-impact.md`
 - Unlocks: `production/epics/sprite-camera-presentation/story-016-replay-never-mutates-battlecore.md`, `production/epics/sprite-camera-presentation/story-017-move-outcome-shapes-match-the-table.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30
+- Integration test drives a real seeded `BattleCore` (S1 hits E1, S2 knocks out E2, E1's Defend-then-Attack turn) through `BattleReplayController`, unlatched, latched and Faster On, with default and a non-default `PresentationConfig`: order, impact frame, end (`hold_i` or `beat_min`), no number before the end, wind-up and unscaled post-impact clocks, back-to-back actor, debug path.
+- Added `BeatPlan.windup_for(impact_frame, fps)` (the `w_i` the Battle mode's `windup` callable returns) and `BeatPlan.frame_at(clock, fps, count)` (beat-driven frame, holds the last frame once run out). `CharacterSprite` unchanged: it already takes frames through `show_frame()` and never references the controller.
+- Deviation: the back-to-back case uses a test `FactionRule` returning Defend then Attack (Bureaucratia's turn shape) rather than the RNG-driven Bureaucratia rule. The "after the beat" idle/knockout-hold poses are covered only as clocks (`frame_at` holds the last frame); no pose state machine exists yet.
+- Not done: wiring the controller into `BattleMode`/`BattleHud` (no 3D stage in Battle mode yet, so nothing player-visible changed; no screenshot). That wiring is story 033's scope.
+- Files: `src/battle/beat_plan.gd`, `tests/integration/presentation/battle_replay_test.gd`.

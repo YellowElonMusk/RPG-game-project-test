@@ -1,12 +1,12 @@
 # Story 064: A stale damage number is cleared before the next one lands
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/sprite-camera-presentation.md`, scoped to this story:*
 
-- [ ] **AC-59 [L]** (P-04) (old number cleared) GIVEN two consecutive beats on the same target, latched, THEN on the second beat's impact frame the first beat's number is removed, and no number is over the target from that frame until the second beat ends.
+- [x] **AC-59 [L]** (P-04) (old number cleared) GIVEN two consecutive beats on the same target, latched, THEN on the second beat's impact frame the first beat's number is removed, and no number is over the target from that frame until the second beat ends.
 
 ---
 
@@ -76,7 +76,7 @@ Each beat's number display is scoped to that beat's own lifetime: it appears at 
 **Required evidence**:
 - `tests/unit/battle/old_number_cleared_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing — `tests/unit/battle/old_number_cleared_test.gd` 3/3 (2026-10-30)
 
 ---
 
@@ -84,3 +84,13 @@ Each beat's number display is scoped to that beat's own lifetime: it appears at 
 
 - Depends on: `BattleReplayController` (ADR-0006, no epic yet)
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30
+- New `BeatNumbers` (`src/battle/beat_numbers.gd`, RefCounted, bound to the controller's signals): a beat's numbers (`BeatPlan.numbers()`) appear at its `beat_finished` (AC-13: none before the end); a later beat's `beat_impact` removes the number over every combatant it touches; `display_resynced` clears all. No controller or `BeatPlan` change was needed.
+- Deviation: the Implementation Notes say a number "appears at `beat_impact`"; AC-13 (story 015) forbids any number before the end, so numbers appear at `beat_finished`. AC-59's window holds either way.
+- Not wired into `BattleHud` yet (HUD still floats numbers off `BattleCore.action_resolved`; story 033/070).
+- Files: `src/battle/beat_numbers.gd`, `tests/unit/battle/old_number_cleared_test.gd`.

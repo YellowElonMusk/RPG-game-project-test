@@ -158,6 +158,38 @@ static func reaction_animation(reaction: int, has_animation: Callable) -> String
 	return &"hit"
 
 
+## The beat's floating numbers: Combatant -> "+N"/"-N", one per non-zero HP
+## change, the actor included (AC-14b). A 0 change has no entry, so no
+## number ever reads "0".
+func numbers() -> Dictionary:
+	var out: Dictionary = {}
+	for c: Combatant in hp_changes.keys():
+		var text: String = number_text(int(hp_changes[c]))
+		if text != "":
+			out[c] = text
+	return out
+
+
+## The 1x wind-up `w_i` for an action animation whose impact lands on
+## `impact_frame` at `fps` frames per second (AC-13); -1.0 (the debug path)
+## when `fps` is not positive. The Battle mode's `windup` callable uses this.
+## Example: [code]BeatPlan.windup_for(4, 12.0)  # 0.333...[/code]
+static func windup_for(impact_frame: int, fps: float) -> float:
+	if fps <= 0.0:
+		return -1.0
+	return float(maxi(impact_frame, 0)) / fps
+
+
+## The frame a beat-driven animation of `frame_count` frames at `fps` shows
+## `clock_s` seconds in (the wind-up or post-impact clock, AC-13). An
+## animation that has run out holds its last frame.
+## Example: [code]BeatPlan.frame_at(controller.get_windup_progress(), 12.0, 6)[/code]
+static func frame_at(clock_s: float, fps: float, frame_count: int) -> int:
+	if frame_count <= 0:
+		return 0
+	return clampi(int(floorf(clock_s * fps + 1e-4)), 0, frame_count - 1)
+
+
 ## The floating number for an HP change: "+N" for a heal, "-N" for damage,
 ## "" for 0 (no number ever reads "0").
 static func number_text(delta: int) -> String:

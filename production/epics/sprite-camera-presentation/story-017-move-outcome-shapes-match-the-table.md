@@ -1,12 +1,12 @@
 # Story 017: Each shipped move resolves to its documented pose, reactions, numbers and punch shape
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -70,7 +70,7 @@
 ## Files
 
 - `src/battle/beat_plan.gd`
-- `data/battle/moves/*`
+- `data/battle/moves/*` (not touched: no such directory; moves come from the shipped catalog)
 - `tests/unit/presentation/outcome_shape_test.gd`
 
 ---
@@ -87,7 +87,7 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/outcome_shape_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing — `tests/unit/presentation/outcome_shape_test.gd` 11/11 (2026-10-30)
 
 ---
 
@@ -95,3 +95,12 @@
 
 - Depends on: `BattleReplayController` (ADR-0006, no epic yet), `production/epics/sprite-camera-presentation/story-016-replay-never-mutates-battlecore.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30
+- `BeatPlan.build()` (story 016) already decided the table's mapping at outcome time; added `BeatPlan.numbers()` (Combatant -> "+N"/"-N", non-zero changes only, the healer included) so the plan, not the HUD, owns "no number reads 0".
+- Every row of AC-14b is checked against a real seeded `BattleCore` (Attack hit and knockout, 0-damage fixture, Defend, Family Meal with one member at full HP, Appetizer, Home Run hit and knockout, Speak to the Manager, Viral Stunt), including the move-specific animation and `status`/`heal` art fallbacks.
+- Files: `src/battle/beat_plan.gd`, `tests/unit/presentation/outcome_shape_test.gd`.
