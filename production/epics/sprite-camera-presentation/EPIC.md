@@ -90,7 +90,7 @@ ADR-0005's Migration Plan sets the order: the windowed spike (Step 1, verificati
 | 026 | [lighting_blend reaches p=0.5 at half its duration and never jumps by more than one frame-step](story-026-lighting-blend-formula-is-exact.md) | Logic | Ready | ADR-0005 |
 | 027 | [replay_time holds the formula across every speed, latch and knockout case](story-027-replay-time-holds-every-case.md) | Logic | Ready | ADR-0006 |
 | 028 | [set_brightness_and_blur matches the lighting curve in every battle-family state](story-028-set-brightness-and-blur-match-lighting-states.md) | Logic | Ready | ADR-0005 |
-| 029 | [FlashGate books every large-area transition at its landing time, not its request](story-029-flash-gate-books-transitions-at-landing-time.md) | Logic | Ready | ADR-0005 |
+| 029 | [FlashGate books every large-area transition at its landing time, not its request](story-029-flash-gate-books-transitions-at-landing-time.md) | Logic | Done | ADR-0005 |
 | 030 | [a Retry or a cancelled first-encounter takeover lands on the right light, never a pop](story-030-retry-and-cancel-in-a-boss-fight.md) | Logic | Ready | ADR-0006 |
 | 031 | [the follow camera snaps on a warp and stays clamped inside the map](story-031-camera-snaps-on-warp-and-clamps-at-map-edges.md) | Logic | Ready | ADR-0005 |
 | 032 | [an alien faction with no boss lighting preset fails boot, never the fight](story-032-missing-boss-preset-fails-boot.md) | Integration | Ready | ADR-0005 |

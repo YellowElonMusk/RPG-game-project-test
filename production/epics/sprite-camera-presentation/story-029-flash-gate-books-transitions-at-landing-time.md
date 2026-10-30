@@ -1,12 +1,12 @@
 # Story 029: FlashGate books every large-area transition at its landing time, not its request
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/sprite-camera-presentation.md`, scoped to this story:*
 
-- [ ] **AC-25 [L]** (P-05) `flash_gate`, driven with an injected real-time clock in integer microseconds and transitions declared as offsets. **Landing, not request**: three stamps declaring ↑ +50,000 µs and ↓ +150,000 µs, requested at 0, 200,000 and 400,000 µs: the first two are allowed and the third is refused and plays capped; with a limit of 5 passed directly into the gate under test, all three are allowed. **Counting**: a fixed sequence of one stamp every 100,000 µs for 10 s never books more than `flash_rate_max` flashes in any closed one-second window; N alternating booked transitions count as N − 1 flashes. **Refusal**: a refused request books nothing and plays the capped variant; with Reduce Flashing On, every gated request is refused. **Reserved**: a boss flood books its transition even when the gate would refuse a gated source; a gated source that would then exceed the limit is refused; a fixture reserved sequence that alone exceeds the limit fails boot validation. **Menu**: with the window already holding `flash_rate_max` booked flashes, a request 200,000 µs later that would add one more is refused, with the Menu opened and closed in between; the Menu's own open/close transitions are gated requests too, refused in this fixture, playing capped and booking nothing. **Frozen source**: a stamp allowed and frozen by the Menu between its ↑ and its ↓ counts as pending at its resume-time landing; on resume the ↓ is re-booked with reserved priority and always lands; no closed one-second window of the composite frame holds more than `flash_rate_max` flashes. **Clock rate**: a gated two-flash source (↑↓↑↓) allowed at 1× and latched after its first ↑ has its unlanded transitions re-booked at compressed landing times; if that would exceed the limit, its first ↓ still lands and its second ↑↓ are dropped and play capped; a transition after a scheduled wind-up-to-hold rate change lands within one frame of its schedule-integrated `t_land`. **Capped means capped**: every source's capped variant has no general transition and no red transition, or stays below `flash_area_min`; a saturated-red capped variant fails boot validation. **Aggregation**: with two area-exempt sparks each at 10% of a window, a third at 10% goes through the gate; one at 4% starts exempt. **Definitions** on fixture frame pairs: a 0.11 swing at darker-state 0.78 is a transition, 0.09 is not; 0.11 at 0.82 is not; a saturated-red fixture pair where linear and gamma encodings disagree is classified as a transition; a change over 26% of one 10° window counts, 24% does not.
+- [x] **AC-25 [L]** (P-05) `flash_gate`, driven with an injected real-time clock in integer microseconds and transitions declared as offsets. **Landing, not request**: three stamps declaring ↑ +50,000 µs and ↓ +150,000 µs, requested at 0, 200,000 and 400,000 µs: the first two are allowed and the third is refused and plays capped; with a limit of 5 passed directly into the gate under test, all three are allowed. **Counting**: a fixed sequence of one stamp every 100,000 µs for 10 s never books more than `flash_rate_max` flashes in any closed one-second window; N alternating booked transitions count as N − 1 flashes. **Refusal**: a refused request books nothing and plays the capped variant; with Reduce Flashing On, every gated request is refused. **Reserved**: a boss flood books its transition even when the gate would refuse a gated source; a gated source that would then exceed the limit is refused; a fixture reserved sequence that alone exceeds the limit fails boot validation. **Menu**: with the window already holding `flash_rate_max` booked flashes, a request 200,000 µs later that would add one more is refused, with the Menu opened and closed in between; the Menu's own open/close transitions are gated requests too, refused in this fixture, playing capped and booking nothing. **Frozen source**: a stamp allowed and frozen by the Menu between its ↑ and its ↓ counts as pending at its resume-time landing; on resume the ↓ is re-booked with reserved priority and always lands; no closed one-second window of the composite frame holds more than `flash_rate_max` flashes. **Clock rate**: a gated two-flash source (↑↓↑↓) allowed at 1× and latched after its first ↑ has its unlanded transitions re-booked at compressed landing times; if that would exceed the limit, its first ↓ still lands and its second ↑↓ are dropped and play capped; a transition after a scheduled wind-up-to-hold rate change lands within one frame of its schedule-integrated `t_land`. **Capped means capped**: every source's capped variant has no general transition and no red transition, or stays below `flash_area_min`; a saturated-red capped variant fails boot validation. **Aggregation**: with two area-exempt sparks each at 10% of a window, a third at 10% goes through the gate; one at 4% starts exempt. **Definitions** on fixture frame pairs: a 0.11 swing at darker-state 0.78 is a transition, 0.09 is not; 0.11 at 0.82 is not; a saturated-red fixture pair where linear and gamma encodings disagree is classified as a transition; a change over 26% of one 10° window counts, 24% does not.
 
 ---
 
@@ -78,7 +78,7 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/flash_gate_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`, both later)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created — 19 tests passing (suite 1735/1735). Not yet wired into GameRoot: `GameStateMachine` still takes the older `FlashGatePort` (`request(id, clock: float, priority)`), which differs from ADR-0005 §12; an adapter or a port update belongs to the consumer story.
 
 ---
 
