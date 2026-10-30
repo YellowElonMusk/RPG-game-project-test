@@ -155,7 +155,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 089 | [Defeat → Retreat against the boss goes to the pre-dungeon camp once it is passed, or the Town café before](story-089-story-encounter-flee-returns-to-registered-camp.md) | Integration | Complete | ADR-0012 |
 | 090 | [A later Retreat, a Save and a reload never un-resolve the boss](story-090-boss-stays-resolved-through-retreat-and-continue.md) | Integration | Complete | ADR-0012 |
 | 091 | [The Permit Counter notices nothing, barks once, and only `confirm` starts its fight](story-091-permit-counter-static-behavior.md) | Logic | Complete | ADR-0012 |
-| 092 | [Liberation flags, on-screen removal, Dialogue and the stage effect apply in a fixed order](story-092-story-flag-order-after-battle.md) | Integration | Ready | ADR-0012 |
+| 092 | [Liberation flags, on-screen removal, Dialogue and the stage effect apply in a fixed order](story-092-story-flag-order-after-battle.md) | Integration | Complete | ADR-0012 |
 | 093 | [World state mirrors the leader every frame and never auto-saves](story-093-world-state-writes-only-position-and-events.md) | Logic | Complete | ADR-0012 |
 | 094 | [A reload moves the leader off a position a new blocker has covered](story-094-load-relocates-off-a-blocked-saved-position.md) | Logic | Complete | ADR-0012 |
 | 095 | [Save and load round-trip the camp, interactables, payoffs, liberation and story-flag state](story-095-save-round-trips-camp-interactables-and-flags.md) | Logic | Complete | ADR-0012 |

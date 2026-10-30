@@ -1,7 +1,7 @@
 # Story 092: Liberation flags, on-screen removal, Dialogue and the stage effect apply in a fixed order
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Integration
 > **Estimate**: M
@@ -30,7 +30,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-34 [I] (R14)** GIVEN a Victory that sets a liberation flag and a story flag, THEN these happen in order:
+- [x] **AC-34 [I] (R14)** GIVEN a Victory that sets a liberation flag and a story flag, THEN these happen in order:
   1. liberation state is written in `on_thawed`;
   2. on-screen removal starts on `transition_finished`;
   3. Dialogue opens after the removal ends;
@@ -63,7 +63,7 @@
 
 ## Files
 
-- `tests/integration/overworld/story_flag_order_test.gd`
+- `tests/integration/overworld/story_flag_order_after_battle_test.gd`
 
 ---
 
@@ -77,9 +77,9 @@
 
 **Story Type**: Integration
 **Required evidence**:
-- `tests/integration/overworld/story_flag_order_test.gd` — must exist and pass. Gate level: BLOCKING.
+- `tests/integration/overworld/story_flag_order_after_battle_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -87,3 +87,9 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-091-permit-counter-static-behavior.md`, `production/epics/game-state-scene-flow/story-036-victory-dialogue-after-transition.md`
 - Unlocks: `production/epics/overworld-exploration-encounters/story-096-continue-resets-symbols-to-patrol-origin.md`
+
+## Completion Notes (2026-10-30)
+
+- The four steps were each built in stories 059/060 (liberation in `on_thawed`, removal from the reveal, Dialogue after removal) and 053/054 (stage on load). This integration test runs them together on the shipped segment for one Victory over the east Clerk, which liberates the on-screen queue and adds its clue rumour with a stub line.
+- The fixture map record raises the stage on that clue flag, so step 4 is observable: still stage 2 this visit, stage 3 on the next load.
+- Mutation checked: starting the removal in `on_thawed` instead of at the reveal fails this test.
