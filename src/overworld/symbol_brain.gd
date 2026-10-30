@@ -605,17 +605,22 @@ func _enter_noticing(leader: Vector2, grid: WalkGrid, cfg: OverworldConfig) -> v
 	_resume_point = position
 	_resume_next = _next
 	_resume_dir = _dir
-	_install_route(_cache_route, _cache_to, leader, grid, cfg)
+	_install_route(_cache_route, _cache_to, leader, grid, cfg, chase_target(leader, grid, cfg))
 
 
 ## Stores a cell route as the symbol's path (waypoints at cell centres) and
 ## restarts `path_dist`'s `t0` bookkeeping. The origin waypoint is dropped
 ## when the next one is reachable in a straight, legal line.
 func _install_route(cells: Array[Vector2i], target_cell: Vector2i, leader: Vector2,
-		grid: WalkGrid, cfg: OverworldConfig) -> void:
+		grid: WalkGrid, cfg: OverworldConfig, end_point: Vector2 = Vector2.INF) -> void:
 	_route.clear()
 	for c: Vector2i in cells:
 		_route.append(grid.cell_center(c))
+	# Story 101: the route ends at the chase target itself (the leader's own
+	# point when its cell is legal, GDD rule 5), not its cell's centre, so
+	# `path_dist` does not overshoot the leader by up to a cell.
+	if not _route.is_empty() and end_point != Vector2.INF and grid.cell_of(end_point) == target_cell:
+		_route[_route.size() - 1] = end_point
 	_route_empty = cells.is_empty()
 	_route_target_cell = target_cell
 	_route_revision = grid.revision()
@@ -647,7 +652,9 @@ func _step_chasing(dt: float, leader: Vector2, grid: WalkGrid, cfg: OverworldCon
 	var stale: bool = target_cell != _route_target_cell or grid.revision() != _route_revision
 	if not stale:
 		_repath_pending = false
-	elif _since_repath >= cfg.repath_s:
+	# Story 101: a symbol that has run out of route repaths at once (still
+	# budgeted), never idling for `repath_s` while the leader walks away.
+	elif _since_repath >= cfg.repath_s or (_route.is_empty() and not _route_empty):
 		if budget == null or budget.request(get_instance_id()):
 			queries_granted += 1
 			repaths_run += 1
@@ -655,7 +662,7 @@ func _step_chasing(dt: float, leader: Vector2, grid: WalkGrid, cfg: OverworldCon
 			var cells: Array[Vector2i] = []
 			if origin != NO_CELL and target_cell != NO_CELL:
 				cells = grid.find_path(origin, target_cell)
-			_install_route(cells, target_cell, leader, grid, cfg)
+			_install_route(cells, target_cell, leader, grid, cfg, target)
 		else:
 			_repath_pending = true  # The old route is kept: pending, never empty.
 	var speed: float = cfg.v_chase()
@@ -668,7 +675,16 @@ func _step_chasing(dt: float, leader: Vector2, grid: WalkGrid, cfg: OverworldCon
 		used_final_approach = true
 		_leg(target, dt, speed, grid, cfg)
 	else:
-		_follow_route(dt, speed, grid, cfg)
+		var left: float = _follow_route(dt, speed, grid, cfg)
+		# Story 101: a route run out mid-frame spends the rest of the step
+		# on the chase target when the straight line there is clear.
+		var clear: bool = grid.segment_clear(position, target, cfg.body_radius, true)
+		if left > 0.0 and _route.is_empty() and not _route_empty and not leader_safe and clear:
+			_leg(target, left, speed, grid, cfg)
+	# Story 101: waypoints the final approach has passed drop out while the
+	# next one is in a straight legal line, so the arc stays a tight real route.
+	while _route.size() > 1 and grid.segment_clear(position, _route[1], cfg.body_radius, true):
+		_route.pop_front()
 	# Give-up test: `giveup_s` without a break of any "beyond" condition.
 	var beyond: bool = leader_safe or (_route_empty and not _repath_pending) \
 			or path_dist(leader) > cfg.symbol_giveup_m
@@ -734,14 +750,15 @@ func _step_returning(dt: float, grid: WalkGrid, cfg: OverworldConfig, budget: Qu
 
 ## Walks the stored route at `speed` for `dt`, carrying leftover time past
 ## each reached waypoint (within `cfg.waypoint_tol_m`) onto the next.
-func _follow_route(dt: float, speed: float, grid: WalkGrid, cfg: OverworldConfig) -> void:
+func _follow_route(dt: float, speed: float, grid: WalkGrid, cfg: OverworldConfig) -> float:
 	var dt_left: float = dt
 	while dt_left > 0.0 and not _route.is_empty():
 		var left: float = _leg(_route[0], dt_left, speed, grid, cfg)
 		if left < 0.0:
-			return
+			return 0.0
 		_route.pop_front()
 		dt_left = left
+	return dt_left
 
 
 ## One straight leg toward `target` through `GroundMover.step()` with the

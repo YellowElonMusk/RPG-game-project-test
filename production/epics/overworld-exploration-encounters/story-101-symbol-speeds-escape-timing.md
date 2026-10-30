@@ -1,7 +1,7 @@
 # Story 101: A chase started at minimum contact distance gives up within one frame of `t_escape`
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -30,7 +30,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-40b [L] (`symbol_speeds`)** GIVEN open ground and a chase starting at `d0` = 2·`body_radius` + 0.05 m (so no contact on the first frame), with the leader walking straight away at `walk_speed`, THEN the symbol is Chasing at `t_escape(d0) − dt` and Returning at `t_escape(d0) + dt`.
+- [x] **AC-40b [L] (`symbol_speeds`)** GIVEN open ground and a chase starting at `d0` = 2·`body_radius` + 0.05 m (so no contact on the first frame), with the leader walking straight away at `walk_speed`, THEN the symbol is Chasing at `t_escape(d0) − dt` and Returning at `t_escape(d0) + dt`.
 
 ---
 
@@ -57,7 +57,7 @@
 ## Files
 
 - `src/overworld/symbol_brain.gd`
-- `tests/unit/overworld/symbol_speeds_escape_test.gd`
+- `tests/unit/overworld/symbol_escape_timing_test.gd`
 
 ---
 
@@ -71,9 +71,9 @@
 
 **Story Type**: Logic
 **Required evidence**:
-- `tests/unit/overworld/symbol_speeds_escape_test.gd` — must exist and pass. Gate level: BLOCKING.
+- `tests/unit/overworld/symbol_escape_timing_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -81,3 +81,15 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-100-swept-contact-at-every-approach-angle.md`
 - Unlocks: `production/epics/overworld-exploration-encounters/story-102-path-dist-upper-bound-through-a-u-corridor.md`
+
+## Completion Notes (2026-10-30)
+
+The test first failed: on open ground the symbol gave up 1.4 s early (crossing at 5.7 s instead of 8.36 s). Three `SymbolBrain` fixes, each seen to move the result:
+
+1. **The route ends at the chase target, not its cell's centre.** The GDD defines the chase target as the leader's own point when its cell is legal. The centre could sit up to a cell past the leader, inflating `path_dist` (`_install_route` now takes the end point).
+2. **Waypoints the final approach has passed drop out** while the next one is in a straight legal line, so `arc(c_S → w_last)` stays a tight real route instead of zigzagging back.
+3. **No idling at a route's end.** A symbol that has run out of route repaths at once (still budgeted) instead of waiting out `repath_s`. A route that runs out mid-frame spends the rest of the step on the chase target when the line is clear, but not when A* found no route: the empty-path hold is unchanged.
+
+- `path_dist` stays an upper bound (each part is still a real route segment). On open ground it now equals the true distance, and the chase ends within one frame of `t_escape(d0)` at dt 1/60, 0.017 and 0.05.
+- The test uses `marker_index` 1. The other markers' sideways chase-target offset (`body_radius`, which spreads multiple chasers) adds a constant gap that the open-ground formula does not model; give-up then comes up to 0.43 s earlier, which is still within the bound.
+- All 121 symbol and chase tests still pass.
