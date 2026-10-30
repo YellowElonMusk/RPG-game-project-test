@@ -123,11 +123,11 @@ ADR-0005's Migration Plan sets the order: the windowed spike (Step 1, verificati
 | 059 | [Every flash-capable source is declared and classified](story-059-flash-coverage-declared-for-every-source.md) | Logic | Ready | ADR-0005 |
 | 060 | [The flash analyser checks composited frames against flash_rate_max](story-060-composite-frame-flash-analysis.md) | Visual/Feel | Ready | ADR-0005 |
 | 061 | [PresentationConfig's load rules are validated at boot](story-061-presentation-config-load-validation.md) | Logic | Ready | ADR-0005 |
-| 062 | [A boss sprite set with no front intro fails boot](story-062-boss-intro-animation-required.md) | Logic | Ready | ADR-0005 |
+| 062 | [A boss sprite set with no front intro fails boot](story-062-boss-intro-animation-required.md) | Logic | Done | ADR-0005 |
 | 063 | [A moving sprite stays pixel-snapped in every mode](story-063-pixel-snap-in-every-mode.md) | Logic | Ready | ADR-0005 |
 | 064 | [A stale damage number is cleared before the next one lands](story-064-old-damage-number-cleared.md) | Logic | Ready | ADR-0006 |
 | 065 | [Presses before the reveal and at replay start are latched correctly](story-065-presses-before-the-reveal-do-nothing.md) | Logic | Ready | ADR-0006 |
-| 066 | [Impact and landing frame data is required at boot](story-066-impact-and-landing-frame-data-required.md) | Logic | Ready | ADR-0005 |
+| 066 | [Impact and landing frame data is required at boot](story-066-impact-and-landing-frame-data-required.md) | Logic | Done | ADR-0005 |
 | 067 | [End-of-fight holds complete before the outcome is reported](story-067-end-of-fight-holds.md) | Logic | Ready | ADR-0006 |
 | 068 | [Reduce Flashing halves the campfire flicker's swing](story-068-reduce-flashing-halves-campfire-flicker.md) | Logic | Ready | ADR-0005 |
 | 069 | [Nothing compiles a rendering pipeline in play, measured](story-069-nothing-compiles-in-play.md) | Integration | Ready | ADR-0005 |

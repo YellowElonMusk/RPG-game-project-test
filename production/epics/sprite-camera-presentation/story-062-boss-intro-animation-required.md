@@ -1,12 +1,12 @@
 # Story 062: A boss sprite set with no front intro fails boot
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30
 
 ## Context
 
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/sprite-camera-presentation.md`, scoped to this story:*
 
-- [ ] **AC-57 [L]** (P-06) (boss intro required) GIVEN an encounter naming a boss whose sprite set has no `front` `intro`, THEN boot ends in a content error naming the set.
+- [x] **AC-57 [L]** (P-06) (boss intro required) GIVEN an encounter naming a boss whose sprite set has no `front` `intro`, THEN boot ends in a content error naming the set.
 
 ---
 
@@ -74,7 +74,7 @@ This is a narrow extension of the `required_animations` boot validator (§9): fo
 **Required evidence**:
 - `tests/unit/presentation/boss_intro_required_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created — passing (suite 1690/1690)
 
 ---
 
