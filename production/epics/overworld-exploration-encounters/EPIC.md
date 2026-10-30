@@ -126,8 +126,8 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 060 | [On-screen liberation removal times to transition_finished; off-screen to on_thawed](story-060-liberation-removal-timing-on-screen-and-off-screen.md) | Logic | Complete | ADR-0012 |
 | 061 | [Retained liberation screenshots — poster, queue, checkpoint, Reduce Motion](story-061-liberation-screenshots-poster-queue-checkpoint.md) | Visual/Feel | Ready | ADR-0012 |
 | 062 | [Liberation grumble share meets its floor; respawned Clerks use the deflated look](story-062-liberation-grumble-share-and-deflated-clerk.md) | Logic | Ready | ADR-0012 |
-| 063 | [Every map's liberation reaction set includes a ribs_squad entry](story-063-liberation-reaction-ribs-squad-tag.md) | Logic | Ready | ADR-0012 |
-| 064 | [Clutter markers with a symbol_id are visible from the patrol they liberate](story-064-clutter-marker-visibility-and-symbol-activity.md) | Logic | Ready | ADR-0012 |
+| 063 | [Every map's liberation reaction set includes a ribs_squad entry](story-063-liberation-reaction-ribs-squad-tag.md) | Logic | Complete | ADR-0012 |
+| 064 | [Clutter markers with a symbol_id are visible from the patrol they liberate](story-064-clutter-marker-visibility-and-symbol-activity.md) | Logic | Complete | ADR-0012 |
 | 065 | [Stage-visual captures meet saturation, luminance and contrast targets](story-065-stage-visual-capture-saturation-and-contrast.md) | Visual/Feel | Ready | ADR-0012 |
 | 066 | [Region-liberation presentation override applies on load, before reveal](story-066-region-liberation-presentation-override-on-load.md) | Logic | Complete | ADR-0012 |
 | 067 | [Retained liberated-Paris screenshots — golden hour, no faction dressing, no celebration](story-067-liberated-paris-screenshots-golden-hour.md) | Visual/Feel | Ready | ADR-0012 |

@@ -1,7 +1,7 @@
 # Story 064: Clutter markers with a symbol_id are visible from the patrol they liberate
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-26c [D] (R9)** Every clutter marker that names a `symbol_id` lies within `R_vis` of at least one vertex of that symbol's patrol, and that symbol is active at every reachable stage where the marker is active.
+- [x] **AC-26c [D] (R9)** Every clutter marker that names a `symbol_id` lies within `R_vis` of at least one vertex of that symbol's patrol, and that symbol is active at every reachable stage where the marker is active.
 
 ---
 
@@ -59,7 +59,7 @@
 
 - `tools/ci/validate_maps.gd`
 - `data/maps/map_town.tres`, `data/maps/map_overworld_segment.tres`, `data/maps/map_dungeon.tres`
-- `tests/unit/overworld/data/clutter_marker_visibility_and_symbol_activity_test.gd`
+- `tests/unit/overworld/clutter_placement_test.gd`
 
 ---
 
@@ -73,9 +73,9 @@
 
 **Story Type**: Logic (Data validation)
 **Required evidence**:
-- `tests/unit/overworld/data/clutter_marker_visibility_and_symbol_activity_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
+- `tests/unit/overworld/clutter_placement_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -83,3 +83,10 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-020-patrol-loop-and-pingpong-traversal.md` (patrol path authoring), `story-058-marker-activation-slots-by-stage-and-cap.md`
 - Unlocks: `production/epics/overworld-exploration-encounters/story-065-stage-visual-capture-saturation-and-contrast.md`
+
+## Completion Notes (2026-10-30)
+
+- `MapValidator.check_clutter_placement()` runs in `validate_maps`: each gag with a `liberate_symbol` must lie within `R_vis` of one of that symbol's patrol vertices.
+- `R_vis` is the new `ChaseVisibility.r_vis()`: the minimum edge over every aspect at the shipped camera (5.23 m at 12 m; 4.99 at 11.5 m, matching the GDD).
+- "Active at every stage the marker is": symbols carry no stage gate, so a placed symbol is active at every stage until region liberation, which frees the marker too. A missing symbol is story 078's error.
+- The shipped queue is 2.83 m from the east Clerk's first vertex. The test moves it to just inside, then just outside, `R_vis`.

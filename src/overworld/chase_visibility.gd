@@ -136,3 +136,14 @@ static func _edges(presentation: PresentationConfig, walk_speed: float, aspect: 
 		var n: Vector2 = edge[0]
 		out.append([n, edge[1], float(edge[1]) - (absf(n.x) * dz_x + absf(n.y) * dz_y) - lag])
 	return out
+
+
+## `R_vis = min(R_near, R_far, R_side)` over every supported aspect: the
+## smallest guaranteed on-screen distance from the leader in any direction
+## (story 064's clutter placement radius).
+static func r_vis(presentation: PresentationConfig, walk_speed: float) -> float:
+	var best: float = INF
+	for aspect: float in ASPECTS:
+		for edge: Array in _edges(presentation, walk_speed, aspect):
+			best = minf(best, float(edge[2]))
+	return best

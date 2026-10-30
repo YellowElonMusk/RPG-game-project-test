@@ -66,6 +66,8 @@ static func validate_catalog(catalog: ContentCatalogService, cfg: OverworldConfi
 		registry = ResourceLoader.load(cfg.flag_registry_path) as StoryFlagRegistry
 	errors.append_array(check_references(maps, catalog, registry))
 	errors.append_array(CheckpointRules.check(maps, records, steps, catalog, cfg))
+	errors.append_array(check_clutter_placement(maps, cfg, PresentationConfig.new()))
+	errors.append_array(check_reaction_sets(steps, maps))
 	for rec: Resource in catalog.all_records(&"map"):
 		var rec_map: OverworldMap = maps.get(String(rec.get("id"))) as OverworldMap
 		if rec_map != null and rec is MapData:
@@ -375,3 +377,59 @@ static func _raised_by_registered_flag(rec: MapData, stage: int, registry: Story
 		if rec.stage_table[flag] >= stage and _registered(registry, flag):
 			return true
 	return false
+
+
+## Story 064 (AC-26c, rule 9 "Placement"): a clutter marker naming a
+## `liberate_symbol` lies within `R_vis` (the shipped camera's) of at least
+## one vertex of that symbol's patrol, so winning shows its result. Symbols
+## carry no stage gate (every placed symbol is active at every stage until
+## the region is liberated, which frees the marker too), so the "active at
+## every stage the marker is" half holds whenever the symbol is on the map;
+## a missing symbol is story 078's error.
+static func check_clutter_placement(maps: Dictionary, cfg: OverworldConfig,
+		presentation: PresentationConfig) -> PackedStringArray:
+	var errors := PackedStringArray()
+	var radius: float = ChaseVisibility.r_vis(presentation, cfg.walk_speed)
+	for map_id: String in maps:
+		var map: OverworldMap = maps[map_id]
+		for gag: GagInteractable in map.gags():
+			if gag.liberate_symbol.is_empty():
+				continue
+			for sym: EncounterSymbol in map.symbol_markers():
+				var sid: String = sym.symbol_id if not sym.symbol_id.is_empty() else sym.encounter_id
+				if sid != gag.liberate_symbol:
+					continue
+				var nearest: float = INF
+				for v: Vector2 in sym.patrol_path:
+					nearest = minf(nearest, v.distance_to(gag.ground_position(map)))
+				if nearest > radius:
+					errors.append("%s: clutter '%s' is %.2f m from %s's patrol (R_vis %.2f)"
+							% [map_id, gag.marker_id, nearest, sid, radius])
+	return errors
+
+
+## Story 063 (AC-26e, rule 9): each last-act map's liberation reaction set
+## (its `liberated_role` markers) has at least one entry tagged
+## `ribs_squad`. Presence only; AC-51 checks the line really ribs the squad.
+static func check_reaction_sets(steps: ChapterSteps, maps: Dictionary) -> PackedStringArray:
+	var errors := PackedStringArray()
+	if steps == null or steps.last_act_from.is_empty():
+		return errors
+	var started: bool = false
+	var act: Dictionary = {}
+	for step: ChapterStep in steps.steps:
+		started = started or (step != null and step.id == steps.last_act_from)
+		if started and step != null:
+			act[step.map_id] = true
+	for map_id: String in act:
+		var map: OverworldMap = maps.get(map_id) as OverworldMap
+		if map == null:
+			continue
+		var ribs: bool = false
+		for npc: NpcSpawn in map.npc_spawns():
+			ribs = ribs or (not npc.liberated_role.is_empty() and npc.ribs_squad)
+		for gag: GagInteractable in map.gags():
+			ribs = ribs or (not gag.liberated_role.is_empty() and gag.ribs_squad)
+		if not ribs:
+			errors.append("%s: no liberation reaction is tagged ribs_squad" % map_id)
+	return errors

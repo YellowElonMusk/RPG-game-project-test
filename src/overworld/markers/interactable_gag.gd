@@ -67,6 +67,9 @@ func is_decree() -> bool:
 ## the region is liberated: `mairie_queue`, `grumbler` or `had_a_point` (the
 ## "Bureaucratia had a point" item). Empty for ordinary content.
 @export var liberated_role: String = ""
+## Story 063 (rule 9): this liberation reaction ribs the squad (AC-51 checks
+## the line really does). Each last-act map needs at least one.
+@export var ribs_squad: bool = false
 
 ## Rule 9 local liberation: the `symbol_id` whose first Victory liberates
 ## this clutter marker (a poster comes down, a queue breaks up), and/or a

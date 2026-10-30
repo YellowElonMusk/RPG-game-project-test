@@ -1,7 +1,7 @@
 # Story 063: Every map's liberation reaction set includes a ribs_squad entry
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-26e [D] (R9)** Each map's liberation reaction set has at least one entry tagged `ribs_squad` (AC-51 confirms the tag is honest).
+- [x] **AC-26e [D] (R9)** Each map's liberation reaction set has at least one entry tagged `ribs_squad` (AC-51 confirms the tag is honest).
 
 ---
 
@@ -59,7 +59,7 @@
 
 - `tools/ci/validate_maps.gd`
 - `data/maps/map_town.tres`, `data/maps/map_overworld_segment.tres`, `data/maps/map_dungeon.tres`
-- `tests/unit/overworld/data/liberation_reaction_ribs_squad_tag_test.gd`
+- `tests/unit/overworld/liberation_reaction_ribs_squad_test.gd`
 
 ---
 
@@ -73,9 +73,9 @@
 
 **Story Type**: Logic (Data validation)
 **Required evidence**:
-- `tests/unit/overworld/data/liberation_reaction_ribs_squad_tag_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
+- `tests/unit/overworld/liberation_reaction_ribs_squad_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -83,3 +83,12 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-062-liberation-grumble-share-and-deflated-clerk.md`
 - Unlocks: `production/epics/overworld-exploration-encounters/story-064-clutter-marker-visibility-and-symbol-activity.md`
+
+## Completion Notes (2026-10-30)
+
+- `MapValidator.check_reaction_sets()` runs in `validate_maps`. A map's liberation reaction set is its `liberated_role` markers (story 066).
+- Each last-act map (segment, Town; the same scope as story 069) needs at least one entry tagged `ribs_squad`, a new field on `NpcSpawn` / `GagInteractable`. The dungeon and boss chamber are closed behind the squad, so nobody sees them liberated.
+- Content:
+  - Town: the café owner sweeping torn posters ("Who is liberating my broom?").
+  - Segment: a street sweeper.
+  - Both lines need rule-18 / AC-51 narrative sign-off.

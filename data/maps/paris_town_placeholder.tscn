@@ -94,3 +94,12 @@ script = ExtResource("7_gag")
 marker_id = &"gag_ticket_machine"
 text = "The queue-number machine still works. Someone keeps taking number 47. It is oddly calming."
 liberated_role = "had_a_point"
+
+[node name="NpcCafeOwner" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.5, 0, 5.5)
+script = ExtResource("6_npc")
+marker_id = &"npc_cafe_owner_sweeping"
+speaker = "Café owner, sweeping torn posters"
+line = "You liberated the street. Lovely. Who is liberating my broom?"
+liberated_role = "grumbler"
+ribs_squad = true
