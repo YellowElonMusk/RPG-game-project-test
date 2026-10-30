@@ -48,11 +48,15 @@ static func base_lens_shift(horizon_frac: float, p_h_near: float) -> Vector2:
 
 
 ## The hit-punch's lens-shift contribution for a `hit_punch` offset of
-## `punch_px` screen pixels (y down): `(px_x * h_near / H, -px_y * h_near / H)`
-## (ADR-0005 §6, as written).
+## `punch_px` screen pixels (y down): `(-px_x * h_near / H, px_y * h_near / H)`,
+## so the image moves BY `punch_px` on screen, as the GDD `hit_punch` formula
+## states ("moves the whole view by `offset` whole screen pixels"). +x in
+## `frustum_offset` moves the image left and +y moves it down (ADR-0005 §6,
+## probed). ADR-0005 §6 as written had both signs flipped, so the image moved
+## by `-punch_px`; ruled a sign error in story 024 (2026-10-30).
 static func punch_lens_shift(punch_px: Vector2i, p_h_near: float, viewport_height: int) -> Vector2:
 	var per_px: float = p_h_near / float(viewport_height)
-	return Vector2(float(punch_px.x) * per_px, -float(punch_px.y) * per_px)
+	return Vector2(-float(punch_px.x) * per_px, float(punch_px.y) * per_px)
 
 
 ## `f_px = H / (2 * tan(F_v_eff / 2))`, the vertical focal length in pixels.

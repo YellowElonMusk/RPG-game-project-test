@@ -1,12 +1,12 @@
 # Story 021: Screen Shake and Reduce Motion settings zero or halve the hit-punch offset
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -56,8 +56,8 @@
 
 ## Files
 
-- `src/presentation/diorama_stage.gd`
-- `src/boot/settings_views.gd`
+- `src/presentation/presentation_settings.gd`
+- `src/presentation/hit_punch.gd`
 - `tests/unit/presentation/hit_punch_test.gd`
 
 ---
@@ -74,7 +74,7 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/hit_punch_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] `tests/unit/presentation/hit_punch_test.gd` created and passing (2026-10-30)
 
 ---
 
@@ -82,3 +82,9 @@
 
 - Depends on: `production/epics/sprite-camera-presentation/story-012-one-hit-punch-per-beat-on-impact.md`, the settings service (ADR-0009, not yet built)
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30. `PresentationSettings` (`src/presentation/presentation_settings.gd`, the ADR-0009 §7 narrow view: `screen_shake` Off/Reduced/Full, `reduce_motion`) is injected into `HitPunch` and read live every frame. Off or Reduce Motion On -> 0; Reduced -> `max(1, floor(A_full/2))` when `A_full > 0`; duration unchanged. Tests: every Off/Reduce-Motion combination stays 0 at 720-2160p, Reduced peak at four heights, 720p A_beat=2 -> 1, same running frames under Reduced, and a mid-punch settings change applying next frame with t unchanged. **Deviation**: no SettingsService exists, so `src/boot/settings_views.gd` was not created; the caller injects the values. TODO for the ADR-0009 epic: fill the view from the service and pass it via the Battle mode's `pre_setup`.

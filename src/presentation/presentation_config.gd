@@ -82,6 +82,12 @@ extends Resource
 @export_range(0.40, 0.50, 0.01) var beat_min: float = 0.40
 ## Hit-punch duration, in seconds (`D`).
 @export_range(0.08, 0.12, 0.01) var punch_duration: float = 0.10
+## Hit-punch peak shift for a normal beat, in screen px at 1080p
+## (`A_beat` normal; GDD Tuning Knobs "Camera and punch").
+@export_range(2.0, 4.0, 0.5) var punch_amplitude_normal: float = 3.0
+## Hit-punch peak shift for a big beat (a knockout, or a hit by the
+## encounter's boss), in screen px at 1080p (`A_beat` big).
+@export_range(6.0, 8.0, 0.5) var punch_amplitude_big: float = 7.0
 
 ## The lighting beats (GDD Tuning Knobs, "Lighting beats").
 @export_group("Lighting Beats")

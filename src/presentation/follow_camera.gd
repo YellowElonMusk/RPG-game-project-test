@@ -96,10 +96,33 @@ const MIN_SUPPORTED_ASPECT: float = 4.0 / 3.0
 var narrow_aspect_warnings: int = 0
 
 
+## The ground footprint at the last `on_viewport_resized` (story 055); null
+## before the first resize.
+var current_footprint: Footprint
+## The dead zone's half-size per axis at the last `on_viewport_resized`.
+var current_dead_zone: Vector2 = Vector2.ZERO
+
+
 func _on_viewport_resized() -> void:
-	var size: Vector2 = get_viewport().get_visible_rect().size
-	if size.y > 0.0:
-		note_resize(size.x / size.y)
+	# Full window pixels, never get_visible_rect() (logical units under the UI
+	# refit; ADR-0005 §1, ADR-0008 §9).
+	var window: Vector2i = get_viewport().size
+	if window.y > 0:
+		note_resize(float(window.x) / float(window.y))
+	on_viewport_resized(window)
+
+
+## Story 055 (GDD Edge Cases "window resized"): recomputes `fov`, the ground
+## footprint and the dead zone from the new aspect's fields of view. Driven
+## by an injected size so it runs headless; idempotent, since the refit
+## fires `size_changed` twice per resize.
+func on_viewport_resized(viewport_size: Vector2i) -> void:
+	if viewport_size.y <= 0:
+		return
+	var aspect: float = float(viewport_size.x) / float(viewport_size.y)
+	apply_fov(aspect)
+	current_footprint = compute_footprint(height, pitch_degrees, fov_degrees, aspect)
+	current_dead_zone = dead_zone(current_footprint, dead_zone_fraction)
 
 
 ## Story 132 (GDD Edge Cases "window resized"): a resize to an aspect

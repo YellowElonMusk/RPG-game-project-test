@@ -48,8 +48,8 @@ func _expected_size(config: PresentationConfig, viewport_size: Vector2i) -> floa
 
 
 func _expected_offset(horizon_frac: float, h: float, punch: Vector2i, height: int) -> Vector2:
-	return Vector2(float(punch.x) * h / float(height),
-			-(0.5 - horizon_frac) * h - float(punch.y) * h / float(height))
+	return Vector2(-float(punch.x) * h / float(height),
+			-(0.5 - horizon_frac) * h + float(punch.y) * h / float(height))
 
 
 func test_battle_camera_setup_is_level_frustum_keep_height(non_default: bool,

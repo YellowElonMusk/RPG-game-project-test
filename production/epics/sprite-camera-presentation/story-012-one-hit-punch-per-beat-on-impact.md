@@ -1,12 +1,12 @@
 # Story 012: Exactly one hit-punch starts per beat, on that beat's impact frame
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -57,7 +57,9 @@
 
 ## Files
 
+- `src/presentation/hit_punch.gd`
 - `src/presentation/diorama_stage.gd`
+- `src/presentation/presentation_config.gd`
 - `tests/unit/presentation/hit_punch_test.gd`
 
 ---
@@ -74,7 +76,7 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/hit_punch_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] `tests/unit/presentation/hit_punch_test.gd` created and passing (2026-10-30)
 
 ---
 
@@ -82,3 +84,9 @@
 
 - Depends on: `production/epics/sprite-camera-presentation/story-001-windowed-engine-spike.md`, `production/epics/sprite-camera-presentation/story-006-battle-camera-lens-shift-only.md`, `BattleReplayController` (ADR-0006, no epic yet)
 - Unlocks: `production/epics/sprite-camera-presentation/story-013-punch-dropped-during-boss-takeover.md`, `production/epics/sprite-camera-presentation/story-014-hit-punch-never-moves-actor-position.md`, `production/epics/sprite-camera-presentation/story-021-screen-shake-and-reduce-motion-scale-the-punch.md`, `production/epics/sprite-camera-presentation/story-024-hit-punch-formula-is-pixel-exact.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30. `HitPunch.on_impact(hp_delta, knocked_out, actor_is_boss, dir)` starts at most one punch per beat: only `hp_delta < 0` punches; a knockout or boss actor uses `punch_amplitude_big`, else `punch_amplitude_normal` (new `PresentationConfig` knobs, GDD ranges 2-4 / 6-8). `DioramaStage.set_punch_offset_px` (ADR name, wraps `apply_hit_punch`) takes the per-frame offset; the stage owns no timer. Tests simulate a replay of five HP-lowering beats (the `started` signal fires on exactly each impact frame with the right amplitude; offset non-zero that frame) and four non-damaging outcomes (heal, Defend/Speak/Viral Stunt as 0 delta, 0-damage, boss heal) with no punch. **Deviation**: `BattleReplayController` (ADR-0006) is not built; the beat clock is simulated in the test, and wiring `on_impact` to it is left to that epic.

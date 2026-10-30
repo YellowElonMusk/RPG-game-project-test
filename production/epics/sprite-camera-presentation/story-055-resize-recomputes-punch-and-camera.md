@@ -1,12 +1,12 @@
 # Story 055: A window resize recomputes the punch and the camera headlessly
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/sprite-camera-presentation.md`, scoped to this story:*
 
-- [ ] **AC-51 [L]** (P-03, P-07) (resize) The resize is driven through an injected viewport size, so the test runs headless.
+- [x] **AC-51 [L]** (P-03, P-07) (resize) The resize is driven through an injected viewport size, so the test runs headless.
   - GIVEN a punch running at 1920×1080, WHEN the window is resized to 2560×1440, THEN on the next frame `T` is 4 and `A_peak` is recomputed from the new height, with the punch's elapsed `t` unchanged and the offset in whole pixels.
   - GIVEN the Overworld, WHEN the window is resized from 16:9 to 21:9 and then to 4:3, THEN the footprint and dead zone are recomputed from the new fields of view each time.
 
@@ -61,8 +61,9 @@ Both halves of this AC reuse existing pure functions driven by an injected viewp
 
 ## Files
 
-- `src/presentation/sprite_projection.gd`
 - `src/presentation/follow_camera.gd`
+- `src/presentation/diorama_stage.gd`
+- `src/presentation/hit_punch.gd`
 - `tests/unit/presentation/resize_test.gd`
 
 ---
@@ -79,7 +80,7 @@ Both halves of this AC reuse existing pure functions driven by an injected viewp
 **Required evidence**:
 - `tests/unit/presentation/resize_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] `tests/unit/presentation/resize_test.gd` created and passing (2026-10-30)
 
 ---
 
@@ -87,3 +88,9 @@ Both halves of this AC reuse existing pure functions driven by an injected viewp
 
 - Depends on: `production/epics/sprite-camera-presentation/story-001-windowed-engine-spike.md` (the spike probes the perspective follow-camera path at 16:10 and 4:3)
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30. Battle half: `DioramaStage.on_viewport_resized` re-sizes the camera and re-maps the current punch; the listener now reads `get_viewport().size`, not `get_visible_rect()`. `HitPunch.current_offset_px(h)` recomputes A_peak from the height each frame, leaving `t` alone. The test resizes 1920x1080 -> 2560x1440 mid-punch (twice: identical output), asserting T = 4, the new A_peak, t unchanged, a whole-pixel offset and the camera's size/frustum_offset. Overworld half: new `FollowCamera.on_viewport_resized(size)` recomputes `fov`, `current_footprint` and `current_dead_zone` (idempotent), and `_on_viewport_resized` now uses `get_viewport().size`. The test steps 16:9 -> 21:9 -> 4:3 and checks each against the formulas. `sprite_projection.gd` needed no change: `texel_scale` is already a pure function of height.

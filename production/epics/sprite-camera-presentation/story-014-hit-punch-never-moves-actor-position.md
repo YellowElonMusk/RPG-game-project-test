@@ -1,12 +1,12 @@
 # Story 014: A hit-punch never changes an actor's world position
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -54,8 +54,8 @@
 
 ## Files
 
+- `src/presentation/hit_punch.gd`
 - `src/presentation/diorama_stage.gd`
-- `src/presentation/character_sprite.gd`
 - `tests/unit/presentation/hit_punch_test.gd`
 
 ---
@@ -72,7 +72,7 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/hit_punch_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] `tests/unit/presentation/hit_punch_test.gd` created and passing (2026-10-30)
 
 ---
 
@@ -80,3 +80,9 @@
 
 - Depends on: `production/epics/sprite-camera-presentation/story-012-one-hit-punch-per-beat-on-impact.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30. No code path touches a sprite: the punch is `frustum_offset` only. `test_punch_never_moves_an_actor_world_position` drives three punches (normal and knockout, three directions) through `DioramaStage.set_punch_offset_px` with three `CharacterSprite`s at different depths, asserting every frame that each sprite's global transform is unchanged, scale is ONE and rotation zero, the camera transform is unchanged and `h_offset`/`v_offset` stay 0, and that the view did move (non-vacuous). `character_sprite.gd` needed no change.

@@ -132,14 +132,33 @@ func battle_base_shift() -> Vector2:
 	return _battle_base_shift
 
 
+## ADR-0005's name for `apply_hit_punch`: sets this frame's punch, in whole
+## screen pixels (y down). The stage owns no punch timer; the owning mode's
+## `HitPunch` (story 012) supplies the offset every frame.
+func set_punch_offset_px(offset: Vector2i) -> void:
+	apply_hit_punch(offset)
+
+
+## The punch currently applied, in whole screen pixels (y down).
+func punch_offset_px() -> Vector2i:
+	return _punch_px
+
+
+## The window height the battle camera was last sized for, in full window
+## pixels (`H_screen` for `HitPunch.current_offset_px`); 0 before configure.
+func battle_viewport_height() -> int:
+	return _battle_viewport.y
+
+
 func _apply_lens_shift() -> void:
 	camera.frustum_offset = _battle_base_shift + BattleFraming.punch_lens_shift(
 			_punch_px, camera.size, _battle_viewport.y)
 
 
 func _on_viewport_size_changed() -> void:
-	var rect_size: Vector2 = get_viewport().get_visible_rect().size
-	on_viewport_resized(Vector2i(roundi(rect_size.x), roundi(rect_size.y)))
+	# Full window pixels, never get_visible_rect() (logical units under the UI
+	# refit; ADR-0005 §1, ADR-0008 §9). Idempotent: it fires twice per refit.
+	on_viewport_resized(get_viewport().size)
 
 
 func _ready() -> void:

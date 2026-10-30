@@ -1,12 +1,12 @@
 # Story 024: hit_punch's offset formula is pixel-exact and never starts while another punch is running
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -61,8 +61,13 @@
 
 ## Files
 
+- `src/presentation/hit_punch.gd`
+- `src/presentation/battle_framing.gd`
 - `src/presentation/diorama_stage.gd`
+- `src/presentation/presentation_config.gd`
 - `tests/unit/presentation/hit_punch_test.gd`
+- `tests/unit/presentation/battle_camera_test.gd`
+- `docs/architecture/adr-0005-sprite-camera-presentation.md`
 
 ---
 
@@ -78,7 +83,7 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/hit_punch_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] `tests/unit/presentation/hit_punch_test.gd` created and passing (2026-10-30)
 
 ---
 
@@ -86,3 +91,11 @@
 
 - Depends on: `production/epics/sprite-camera-presentation/story-012-one-hit-punch-per-beat-on-impact.md`
 - Unlocks: `production/epics/sprite-camera-presentation/story-025-punch-displaces-the-id-pass-by-whole-pixels.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30. `HitPunch` (`src/presentation/hit_punch.gd`) holds the pure `offset_px`/`full_amplitude`/`peak_amplitude` formula (round half away from zero) and the overlap guard (`start` refuses while running, counts `refused_count`). Tests: formula at 1080p/2160p in four directions, the D/2 tie (1 px), the GDD worked example, 60 Hz play with D = 0.105 (non-zero on impact, no sign change, never above A_peak, 0 from the first frame >= D), and a replay latched at `ff_mult` with no overlapping start; each with a non-default config.
+
+**Discrepancy and ruling (sign error).** ADR-0005 §6 mapped the punch to `frustum_offset += (px_x·h_near/H, −px_y·h_near/H)`, and its own probed signs (+x moves the image left, +y moves it down) mean the image moved by `(−px_x, −px_y)`: opposite to the GDD `hit_punch` formula, which says the view moves *by* `offset` pixels. Ruling: implement the GDD's intent. `BattleFraming.punch_lens_shift` now returns `(−px_x·h_near/H, +px_y·h_near/H)`; a one-line erratum is under ADR-0005 §6 Hit-punch; `battle_camera_test.gd`'s expected offset was updated. Regression test `test_punch_lens_shift_moves_image_by_offset` projects points at three depths through the CPU frustum projection and asserts the screen delta equals the punch; it was run against the old mapping and failed (12 failures), then passed on the fix. GPU sign still rests on ADR-0005's probe; story 025's capture confirms it on screen.
