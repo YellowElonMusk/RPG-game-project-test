@@ -56,6 +56,14 @@ func ground_position(map_root: Node) -> Vector2:
 func is_decree() -> bool:
 	return decree_stage > 0 or not decree_first_sight.is_empty()
 
+
+## Story 058 (`marker_activation`): the clutter kind this marker counts
+## against ("poster", "queue", ...), capped per faction x stage by the
+## `occupation_stage` record; empty for an uncapped gag. `min_stage` is the
+## lowest stage at which it is a candidate (1-3).
+@export var clutter_kind: String = ""
+@export var min_stage: int = 1
+
 ## Rule 9 local liberation: the `symbol_id` whose first Victory liberates
 ## this clutter marker (a poster comes down, a queue breaks up), and/or a
 ## story flag that does. Liberated markers drop out of `probe()` for good.

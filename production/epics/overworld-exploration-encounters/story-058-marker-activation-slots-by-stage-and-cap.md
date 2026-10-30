@@ -1,7 +1,7 @@
 # Story 058: Active markers follow the marker_activation formula's slots
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-24 [L] (`marker_activation`)** Using the P1–P6 example and a randomized-order fixture, the active markers equal the formula, sorted by (`min_stage`, marker order). At stage 2, P1, P4, P6 and P2 hold the slots. Liberating P2 shows 3 posters, and P5 stays hidden. At stage 3 with an equal cap of 4, the same four keep their slots.
+- [x] **AC-24 [L] (`marker_activation`)** Using the P1–P6 example and a randomized-order fixture, the active markers equal the formula, sorted by (`min_stage`, marker order). At stage 2, P1, P4, P6 and P2 hold the slots. Liberating P2 shows 3 posters, and P5 stays hidden. At stage 3 with an equal cap of 4, the same four keep their slots.
 
 ---
 
@@ -77,7 +77,7 @@
 **Required evidence**:
 - `tests/unit/overworld/marker_activation_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -85,3 +85,12 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-053-occupation-stage-formula.md` (the `occupation_stage` formula)
 - Unlocks: `production/epics/overworld-exploration-encounters/story-059-liberated-set-persists-across-respawn-and-stage.md`
+
+## Completion Notes (2026-10-30)
+
+- The formula is `MarkerActivation` (`src/overworld/marker_activation.gd`), a pure static helper: `slotted()` and `visible()`.
+- Gags opt in with `clutter_kind` and `min_stage`. `OverworldMode._activate_markers()` runs at the map-entry commit, after the stage, so the order is stage, then markers, then blockers (`_setup_clutter` moved there from `load_map`).
+- Caps come from the `occupation_stage` record matching the map's `faction_id` and the current stage. A kind the record does not cap is uncapped, and a map with no stage slots everything. No Paris `ostage_` records exist yet (story 055), so the shipped maps are uncapped today.
+- Deviation, flagged: activation runs at the map-entry commit (`mode_entered`), not `_ready()`, because that is where the stage is computed here.
+- The I13 non-decreasing cap check is not built; it belongs with the Overworld's own validators (story 098 / 055).
+- Mutations checked: sorting by marker order only, ignoring caps, and not gating gags on slots each fail a test here.

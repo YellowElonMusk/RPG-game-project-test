@@ -15,6 +15,15 @@ func get_record(type: StringName, id: String) -> Resource:
 	return _records.get("%s/%s" % [type, id], null)
 
 
+## Every record of `type`, in insertion order.
+func all_records(type: StringName) -> Array[Resource]:
+	var out: Array[Resource] = []
+	for key: String in _records:
+		if key.begins_with("%s/" % type):
+			out.append(_records[key])
+	return out
+
+
 ## Builds an `encounter` fixture record.
 static func make_encounter(id: String) -> EncounterData:
 	var rec := EncounterData.new()

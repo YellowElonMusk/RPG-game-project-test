@@ -247,7 +247,6 @@ func load_map(map: OverworldMap, entry_marker_id: StringName = &"") -> void:
 	_grid = map.bake_walk_grid(config)
 	map.build_set(_grid)
 	_setup_checkpoints(map)
-	_setup_clutter(map)
 	for gag: GagInteractable in map.gags():
 		if _has_flag(_gag_flag("changed", gag)):
 			map.set_gag_shown(gag.marker_id, false)
@@ -283,6 +282,8 @@ func _commit_map_entry() -> void:
 	if world_state != null and world_state.map_id != _map.map_id:
 		world_state.on_map_entered(_map.map_id, WorldState.EntryKind.MAP_ENTRY)
 	_compute_stage()
+	_activate_markers()
+	_setup_clutter(_map)
 	_refresh_gags()
 	_place_symbols(_map)
 
@@ -1477,13 +1478,62 @@ func _compute_stage() -> void:
 		world_state.store_stage(_map.map_id, current_stage)
 
 
+# -- Marker activation (story 058) --------------------------------------------
+
+## Capped clutter markers holding a slot this visit (`marker_id -> true`).
+var _slotted: Dictionary = {}
+
+
+## Rule 8 / `marker_activation`, once per map load after the stage: every
+## clutter-kind gag (decrees excepted, rule 8) competes for its kind's cap
+## from the faction x stage `occupation_stage` record, sorted by
+## (`min_stage`, marker order). A map with no stage (no record) slots every
+## marker; a kind its record does not cap is uncapped.
+func _activate_markers() -> void:
+	_slotted.clear()
+	if _map == null:
+		return
+	var markers: Array = []
+	var order: int = 0
+	for gag: GagInteractable in _map.gags():
+		order += 1
+		if gag.clutter_kind.is_empty() or gag.is_decree():
+			continue
+		markers.append({"id": gag.marker_id, "kind": gag.clutter_kind,
+				"min_stage": gag.min_stage, "order": order})
+	if current_stage <= 0:
+		for m: Dictionary in markers:
+			_slotted[m["id"]] = true
+		return
+	_slotted = MarkerActivation.slotted(markers, current_stage, _stage_caps())
+
+
+## The current map's faction x stage clutter caps, `{}` when no
+## `occupation_stage` record matches.
+func _stage_caps() -> Dictionary:
+	if encounter_catalog == null or not encounter_catalog.has_method(&"all_records"):
+		return {}
+	var map_rec: MapData = encounter_catalog.call(&"get_record", &"map", _map.map_id) as MapData
+	if map_rec == null:
+		return {}
+	for r: Resource in encounter_catalog.call(&"all_records", &"occupation_stage"):
+		var o: OccupationStageData = r as OccupationStageData
+		if o != null and o.faction_id == map_rec.faction_id and o.stage == current_stage:
+			return o.clutter_caps
+	return {}
+
+
 # -- Decree gags (story 056) --------------------------------------------------
 
 ## `true` while `gag` is active: an ordinary gag always (until clutter
 ## liberation, stories 059-060); a decree at and above its stage, or once
 ## its symbol has been seen; never once the map's region is liberated.
 func is_gag_active(gag: GagInteractable) -> bool:
-	if (gag.is_liberatable() or gag.is_decree()) and _gag_liberated(gag) and not is_removing(gag):
+	var clears: bool = gag.is_liberatable() or gag.is_decree() or not gag.clutter_kind.is_empty()
+	if clears and _gag_liberated(gag) and not is_removing(gag):
+		return false
+	# Story 058: a capped clutter marker shows only while it holds a slot.
+	if not gag.clutter_kind.is_empty() and not gag.is_decree() and not _slotted.has(gag.marker_id):
 		return false
 	if not gag.is_decree():
 		return true
@@ -1534,7 +1584,7 @@ func _setup_clutter(map: OverworldMap) -> void:
 
 ## `true` once `gag` is liberated: its own Victory or flag, or the region.
 func _gag_liberated(gag: GagInteractable) -> bool:
-	if not gag.is_liberatable() and not gag.is_decree():
+	if not gag.is_liberatable() and not gag.is_decree() and gag.clutter_kind.is_empty():
 		return false
 	if is_region_liberated():
 		return true
