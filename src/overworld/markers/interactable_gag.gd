@@ -90,6 +90,10 @@ func is_decree() -> bool:
 @export var blocked_rect: Rect2 = Rect2()
 ## The street name a liberation card line shows ("Street cleared: ...").
 @export var street_label: String = ""
+## Story 062 (GDD rule 9): how many queue civilians react when this marker
+## is liberated; 0 for a marker with no crowd (a poster). Each plays a
+## grumble or a pleased beat (`OverworldMode.liberation_reactions`).
+@export var reacting_civilians: int = 0
 
 
 ## `true` for a clutter marker some Victory or flag can liberate.

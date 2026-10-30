@@ -337,3 +337,7 @@ func text_hold(text: String) -> float:
 ## How long an on-screen liberated marker's removal plays, from the reveal
 ## (GDD rule 9, Tuning Knobs `liberation_duration_s`, 1.0 s, range 0.6-1.5).
 @export var liberation_duration_s: float = 1.0
+## Story 062 (GDD rule 9, Art list "deflated patrol variant"): appended to a
+## symbol's enemy `sprite_set_id` when it respawns onto a liberated street.
+## An asset-naming convention, not a GDD tuning knob.
+@export var deflated_sprite_suffix: String = "_deflated"

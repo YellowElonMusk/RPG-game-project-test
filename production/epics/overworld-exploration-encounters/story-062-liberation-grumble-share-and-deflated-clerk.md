@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-26d [L] (R9)** GIVEN a liberation with N reacting civilians, THEN at least `ceil(liberation_grumble_min · N)` play the grumble beat. GIVEN a Clerk respawned onto a liberated street, THEN its sprite set is the deflated variant and its behaviour parameters equal the normal Clerk's.
+- [x] **AC-26d [L] (R9)** GIVEN a liberation with N reacting civilians, THEN at least `ceil(liberation_grumble_min · N)` play the grumble beat. GIVEN a Clerk respawned onto a liberated street, THEN its sprite set is the deflated variant and its behaviour parameters equal the normal Clerk's.
 
 ---
 
@@ -59,7 +59,8 @@
 ## Files
 
 - `src/overworld/overworld_mode.gd` (liberation reaction roll, seeded RNG)
-- `src/overworld/markers/clutter.gd`
+- `src/overworld/markers/interactable_gag.gd` (story named `clutter.gd`, which does not exist; clutter markers are `GagInteractable`) -- `reacting_civilians`
+- `src/overworld/overworld_config.gd` -- `deflated_sprite_suffix`
 - `tests/unit/overworld/liberation_reaction_and_deflated_clerk_test.gd`
 
 ---
@@ -76,7 +77,7 @@
 **Required evidence**:
 - `tests/unit/overworld/liberation_reaction_and_deflated_clerk_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (7/7; full suite 1273/1273, 2026-10-30)
 
 ---
 
@@ -84,3 +85,15 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-059-liberated-set-persists-across-respawn-and-stage.md`, `story-060-liberation-removal-timing-on-screen-and-off-screen.md`
 - Unlocks: `production/epics/overworld-exploration-encounters/story-063-liberation-reaction-ribs-squad-tag.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30
+**Criteria**: AC-26d covered by `tests/unit/overworld/liberation_reaction_and_deflated_clerk_test.gd` (7 tests).
+
+- `OverworldMode.rng` is the mode's own `RandomNumberGenerator`; `roll_reactions(n, share, rng)` makes exactly `grumble_floor(n, share)` = `ceil(share * n)` (snapped against float error, clamped to n) grumblers, the rest pleased, chosen by a seeded Fisher-Yates. `liberation_grumble_share()` reads the map faction's current `OccupationStageData.liberation_grumble_min` (record default without one).
+- `_liberate_for` stores each liberated marker's reactions in `liberation_reactions[marker_id]` when its new `GagInteractable.reacting_civilians` > 0.
+- `is_deflated(source)` / `symbol_sprite_set(source)`: a symbol whose liberated marker is already liberated draws `enemy.sprite_set_id + config.deflated_sprite_suffix`; brain construction is untouched (test steps a normal and a deflated Clerk side by side, identical).
+- **Deviations / placeholders**: no civilian sprites or deflated Clerk art exist (assets/sprites/enemies/clerk has only base/idle); the view does not yet play beats or swap sets -- `TODO(overworld-view)` seams. No shipped map sets `reacting_civilians` yet. Seeding per visit is left to the caller (ADR: needs nothing special).

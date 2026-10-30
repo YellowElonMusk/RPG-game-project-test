@@ -1835,12 +1835,102 @@ func _liberate_for(symbol_id: String) -> void:
 			continue
 		if world_state != null:
 			world_state.liberate(_map_id(), gag.marker_id)
+		if gag.reacting_civilians > 0:
+			liberation_reactions[gag.marker_id] = roll_liberation_reactions(gag.reacting_civilians)
 		if _on_screen(gag.ground_position(_map)):
 			_removals_due.append(gag)
 		else:
 			_finish_removal(gag)
 			_payoff_lines.append("Street cleared: %s" % (gag.street_label if not gag.street_label.is_empty() else String(gag.marker_id)))
 			_sting_cues_due.append(String(gag.marker_id))
+
+
+# -- Liberation reactions and the deflated Clerk (story 062; GDD rule 9) ----
+
+## The mode's own seeded RNG, the only source of overworld randomness
+## (ADR-0012 Guidelines); never `randi()`/`randf()`. Tests set `rng.seed`.
+var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+## Liberation reactions per marker id: one entry per reacting civilian,
+## `true` = grumble beat, `false` = a small pleased beat.
+## TODO(overworld-view): the view plays these beats once civilian sprites exist.
+var liberation_reactions: Dictionary = {}
+
+
+## AC-26d: the guaranteed grumblers among `n` reacting civilians,
+## `ceil(share * n)` clamped to `[0, n]` (snapped so 0.7 * 10 is 7, not 8).
+static func grumble_floor(n: int, share: float) -> int:
+	if n <= 0:
+		return 0
+	return clampi(ceili(snappedf(share * float(n), 0.0001)), 0, n)
+
+
+## AC-26d: `n` reactions, exactly `grumble_floor(n, share)` of them grumbles
+## and the rest pleased (mixed, never unanimous relief; Pillar 2). Which
+## civilians grumble is a Fisher-Yates pick drawn only from `p_rng`, so a
+## fixed seed gives a fixed result.
+static func roll_reactions(n: int, share: float, p_rng: RandomNumberGenerator) -> Array[bool]:
+	var out: Array[bool] = []
+	if n <= 0:
+		return out
+	var order: Array[int] = []
+	for i: int in n:
+		order.append(i)
+		out.append(false)
+	for i: int in range(n - 1, 0, -1):
+		var j: int = p_rng.randi_range(0, i)
+		var t: int = order[i]
+		order[i] = order[j]
+		order[j] = t
+	for k: int in grumble_floor(n, share):
+		out[order[k]] = true
+	return out
+
+
+## The current map's `liberation_grumble_min` (its faction's current
+## occupation-stage record); the record default when there is none.
+func liberation_grumble_share() -> float:
+	var fallback: float = OccupationStageData.new().liberation_grumble_min
+	if _map == null or encounter_catalog == null:
+		return fallback
+	var map_rec: MapData = encounter_catalog.call(&"get_record", &"map", _map.map_id) as MapData
+	if map_rec == null:
+		return fallback
+	var o: OccupationStageData = _ostage(map_rec.faction_id, maxi(current_stage, 1))
+	return o.liberation_grumble_min if o != null else fallback
+
+
+## Rolls `n` civilians' reactions with this mode's RNG and the map's share.
+func roll_liberation_reactions(n: int) -> Array[bool]:
+	return roll_reactions(n, liberation_grumble_share(), rng)
+
+
+## AC-26d: `true` when `source` patrols a liberated street, i.e. a marker it
+## liberates is already liberated (it respawned after its Victory; rule 9
+## "Permanence"). Only the look changes; its brain is built exactly as a
+## normal Clerk's (rule 5).
+func is_deflated(source: EncounterSource) -> bool:
+	if _map == null or source == null:
+		return false
+	for gag: GagInteractable in _map.gags():
+		if gag.liberate_symbol == source.symbol_id and _gag_liberated(gag):
+			return true
+	return false
+
+
+## The sprite set `source` draws with: its encounter's first enemy's
+## `sprite_set_id`, plus `config.deflated_sprite_suffix` when deflated; ""
+## when the records name none. TODO(overworld-view): the view still draws
+## symbols as tinted placeholders and no deflated art exists yet.
+func symbol_sprite_set(source: EncounterSource) -> String:
+	if source == null or encounter_catalog == null:
+		return ""
+	var rec: EncounterData = encounter_catalog.call(&"get_record", &"encounter", source.enc_id) as EncounterData
+	if rec == null or rec.enemy_ids.is_empty():
+		return ""
+	var enemy: EnemyData = encounter_catalog.call(&"get_record", &"enemy", rec.enemy_ids[0]) as EnemyData
+	if enemy == null or enemy.sprite_set_id.is_empty():
+		return ""
+	return enemy.sprite_set_id + (config.deflated_sprite_suffix if is_deflated(source) else "")
 
 
 ## Whether ground point `p` is on screen from the leader (the camera's
