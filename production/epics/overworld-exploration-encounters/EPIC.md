@@ -163,7 +163,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 097 | [Every row of the Overworld state table enters and exits correctly](story-097-state-table-transitions.md) | Logic | Complete | ADR-0012 |
 | 098 | [`OverworldConfig.validate()` rejects exactly the knob combination that breaks its invariant](story-098-config-invariants-i1-i18.md) | Logic | Complete | ADR-0012 |
 | 099 | [`chase_visibility` (I14) passes the shipped camera at 4:3, 16:9 and 21:9, including the tilt-shift blur bounds](story-099-chase-visibility-validates-at-every-aspect.md) | Logic | Complete | ADR-0012 |
-| 100 | [Swept contact fires at every approach angle and lateral offset, and never lets a frame skip through a wall](story-100-swept-contact-at-every-approach-angle.md) | Logic | Ready | ADR-0012 |
+| 100 | [Swept contact fires at every approach angle and lateral offset, and never lets a frame skip through a wall](story-100-swept-contact-at-every-approach-angle.md) | Logic | Complete | ADR-0012 |
 | 101 | [A chase started at minimum contact distance gives up within one frame of `t_escape`](story-101-symbol-speeds-escape-timing.md) | Logic | Complete | ADR-0012 |
 | 102 | [`path_dist` stays a true upper bound on the leader's path distance through a U-shaped corridor](story-102-path-dist-upper-bound-through-a-u-corridor.md) | Logic | Complete | ADR-0012 |
 | 103 | [Every map's active symbol count lies within its density band at every reachable stage](story-103-symbol-density-band-per-map.md) | Logic | Blocked | ADR-0012 |

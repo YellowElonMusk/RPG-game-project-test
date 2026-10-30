@@ -1,7 +1,7 @@
 # Story 100: Swept contact fires at every approach angle and lateral offset, and never lets a frame skip through a wall
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-40 [L] (Edge Cases, swept contact)** GIVEN a 0.25 s frame (injected `dt`), THEN movement and every timer advance by exactly `dt_max`. Over a fixture set of approach angles 0°–90° in 15° steps, lateral offsets 0 to 2·`body_radius` and both bodies at full speed, every pair whose closest approach is ≤ 2·`body_radius` produces contact, and no other pair does. GIVEN zero relative displacement (`|b|² < 1e-8`), THEN contact equals `|a| ≤ 2·body_radius` with no division. A leader at `walk_speed` never crosses a 1-cell wall.
+- [x] **AC-40 [L] (Edge Cases, swept contact)** GIVEN a 0.25 s frame (injected `dt`), THEN movement and every timer advance by exactly `dt_max`. Over a fixture set of approach angles 0°–90° in 15° steps, lateral offsets 0 to 2·`body_radius` and both bodies at full speed, every pair whose closest approach is ≤ 2·`body_radius` produces contact, and no other pair does. GIVEN zero relative displacement (`|b|² < 1e-8`), THEN contact equals `|a| ≤ 2·body_radius` with no division. A leader at `walk_speed` never crosses a 1-cell wall.
 
 ---
 
@@ -58,7 +58,7 @@
 ## Files
 
 - `src/overworld/ground_mover.gd`
-- `tests/unit/overworld/swept_contact_test.gd`
+- `tests/unit/overworld/swept_contact_and_frame_cap_test.gd`
 
 ---
 
@@ -72,9 +72,9 @@
 
 **Story Type**: Logic
 **Required evidence**:
-- `tests/unit/overworld/swept_contact_test.gd` — must exist and pass. Gate level: BLOCKING.
+- `tests/unit/overworld/swept_contact_and_frame_cap_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -82,3 +82,10 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-098-config-invariants-i1-i18.md`
 - Unlocks: `production/epics/overworld-exploration-encounters/story-101-symbol-speeds-escape-timing.md`
+
+## Completion Notes (2026-10-30)
+
+- **Fix:** `OverworldMode._process` clamped movement and symbols to `dt_max` but passed the raw `delta` to `tick_timed_text`, so the name card, bark, payoff card and liberation removal ran on unclamped time. They now get `ow_dt`; the test watched it fail first.
+- Swept contact: over 7 angles × 9 lateral offsets, with both bodies at full speed and a `dt_max` step, `closest_approach()` matches a 2001-sample brute force, and the contact predicate agrees on every pair. The set includes both contacts and misses.
+- Zero relative displacement returns `|a|` with no division.
+- The leader stepped at `walk_speed` × `dt_max` toward a one-cell wall at 9 angles never crosses it.

@@ -377,7 +377,8 @@ func _process(delta: float) -> void:
 		return
 	var ow_dt: float = minf(delta, _DT_MAX_FALLBACK)
 	step_frame(ow_dt, _machine.get_move_vector(self))
-	tick_timed_text(delta)
+	# Story 100 (GDD Edge Cases): every timer advances by at most `dt_max`.
+	tick_timed_text(ow_dt)
 
 
 ## One Exploring frame in ADR-0012 §5's fixed order: move the leader (corner
