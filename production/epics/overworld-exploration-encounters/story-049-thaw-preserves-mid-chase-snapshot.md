@@ -1,7 +1,7 @@
 # Story 049: Overworld → Battle → Overworld preserves a mid-chase snapshot except rule 7's changes
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Integration
 > **Estimate**: L
@@ -92,3 +92,4 @@ transition sequence rather than calling `on_thawed` directly.
 - Test: `tests/integration/overworld/thaw_preserves_snapshot_test.gd` (Fled and Victory), with the bare-script fixture scene `tests/integration/overworld/fixtures/thaw_overworld_mode.tscn`. It uses the real `GameStateMachine` and `ModeHostSceneLoader` (the game-state story 014 pattern) and the real `start_encounter` request. Fixture records set `can_flee=true` and faction `bureaucratia`. A mid-chase scene (one fought symbol, one Chasing, one Noticing, one deaf patroller, followers) is compared leaf by leaf. Expected changes: grace restarted; Chasing/Noticing switched to Returning; on Fled the fought symbol is Stunned and pushed (`push_distance`); on Victory it is removed and resolved in `WorldState`. Leader position, leader facing and follower positions are unchanged.
 - No source fix was needed. Test-harness finding: `set_process(false)` called before `add_child` is undone by `_ready()` when the script defines `_process`, so the test disables processing again after boot. Otherwise one wall-clock frame after the reveal moved every timer.
 - Out of the snapshot for now: liberated-marker sets and payoffs do not exist yet (stories 050, 052). The follower trail buffer is excluded because rule 7 snaps it.
+- Status synced 2026-10-30 from commit 610805d.

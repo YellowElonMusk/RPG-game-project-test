@@ -1,7 +1,7 @@
 # Story 006: Followers hold formation on the leader's recorded trail at fixed spacing
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Implemented, awaiting /story-done
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -86,6 +86,8 @@ newest→oldest]`; `N_buf = ⌈n_f · follower_spacing_m / trail_sample_m − ε
 **Test Evidence Status**: `tests/unit/overworld/follower_trail_test.gd` exists and passes -- [x] Created and passing. Full suite: 675/675 (0 failures), run foreground via the standard harness.
 
 ---
+
+- Status synced 2026-10-30 from commit 3162bd2.
 
 ## QA Test Cases
 

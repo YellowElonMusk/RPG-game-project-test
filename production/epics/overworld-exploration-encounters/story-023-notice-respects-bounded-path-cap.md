@@ -1,7 +1,7 @@
 # Story 023: A leader behind a fence past notice_path_cap_m is never noticed
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -103,3 +103,4 @@ reach, such as one on the far side of a fence."
 **Deviations**:
 - Check 3 (component labels, AC-9h) is not implemented (TODO(overworld)); check 4 also rejects a disconnected leader, at cap-bounded cost.
 - The chase target is the leader's own cell; the nearest-legal-cell fallback and sideways offset land with Chasing. The waypoint cache (AC-9k) is out of batch.
+- Status synced 2026-10-30 from commit 22c4588.

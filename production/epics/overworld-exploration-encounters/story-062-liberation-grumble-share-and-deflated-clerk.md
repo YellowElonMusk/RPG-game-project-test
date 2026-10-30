@@ -1,7 +1,7 @@
 # Story 062: Liberation grumble share meets its floor; respawned Clerks use the deflated look
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -97,3 +97,4 @@
 - `_liberate_for` stores each liberated marker's reactions in `liberation_reactions[marker_id]` when its new `GagInteractable.reacting_civilians` > 0.
 - `is_deflated(source)` / `symbol_sprite_set(source)`: a symbol whose liberated marker is already liberated draws `enemy.sprite_set_id + config.deflated_sprite_suffix`; brain construction is untouched (test steps a normal and a deflated Clerk side by side, identical).
 - **Deviations / placeholders**: no civilian sprites or deflated Clerk art exist (assets/sprites/enemies/clerk has only base/idle); the view does not yet play beats or swap sets -- `TODO(overworld-view)` seams. No shipped map sets `reacting_civilians` yet. Seeding per visit is left to the caller (ADR: needs nothing special).
+- Status synced 2026-10-30 from commit 16c2175.

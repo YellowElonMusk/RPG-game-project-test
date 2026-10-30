@@ -1,7 +1,7 @@
 # Story 029: The notice search never explores past its path-length cap
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -89,3 +89,5 @@ visited path length exceeds `notice_path_cap_m`.
 ## Completion Notes
 
 Bounded search expands no cell past `notice_path_cap_m` (spied via `last_search_max_expanded_m`); per-symbol cache keyed on (symbol cell, leader cell, grid revision). Closes story 023's waypoint-cache TODO. Test: `symbol_brain_notice_search_cap_test.gd` (3). Shared implementation for stories 028-037: `src/overworld/query_budget.gd` (new), `symbol_brain.gd`, `walk_grid.gd` (component labels, `bounded_route`, `find_path` on AStarGrid2D, `segment_clear`, query spy), `overworld_config.gd` (f_chase, repath_s, repath_per_frame_max, symbol_giveup_m, giveup_s, `v_chase()`). Deviation: `step()` takes `budget: QueryBudget = null` as its last optional argument (ADR-0012 lists it fifth) so earlier callers compile; null serves every query.
+
+- Status synced 2026-10-30 from commit 77024cb.

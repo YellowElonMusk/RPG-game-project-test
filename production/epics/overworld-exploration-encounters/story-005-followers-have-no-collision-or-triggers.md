@@ -1,7 +1,7 @@
 # Story 005: Followers never collide, trigger exits or trigger interactions
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: In Progress (2026-10-29): structural only: AC-3 re-check owed against the real symbols, exits and interactables that now exist
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -54,6 +54,8 @@ failures.
 
 **Test Evidence Status**: `tests/unit/overworld/follower_no_collision_test.gd`
 exists and passes (3/3).
+
+- Status synced 2026-10-30 from commit 4565b0f; owed: structural only: AC-3 re-check owed against the real symbols, exits and interactables that now exist.
 
 ## Acceptance Criteria
 

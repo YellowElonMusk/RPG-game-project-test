@@ -1,7 +1,7 @@
 # Story 022: The notice radius is wider in front than behind, split by the symbol's facing
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -102,3 +102,5 @@ capped at `symbol_chase_m` (I12: "Sneaking is impossible" at the high end).
 - `SymbolBrain.step()` widened to `step(dt, leader, grid, grace, cfg)` (stories 021-025 share one notice-test implementation in `src/overworld/symbol_brain.gd`). `tests/unit/overworld/symbol_brain_patrol_test.gd` (story 020) updated to the new signature, `heading` (the raw movement direction, renamed from `facing`), and `turn_pause_s = 0` so its uninterrupted arc-length checks still hold.
 
 **Deviations**: none.
+
+- Status synced 2026-10-30 from commit 22c4588.

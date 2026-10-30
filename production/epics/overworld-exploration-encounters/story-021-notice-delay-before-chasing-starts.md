@@ -1,7 +1,7 @@
 # Story 021: Noticing holds for notice_delay_s before Chasing starts, whatever the leader does meanwhile
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -103,3 +103,4 @@ query-budget stories outside this batch own those).
 **Deviations**:
 - Chasing has no movement yet: TODO(overworld), stories 031+.
 - `leader_safe` is read from `grid` (`WalkGrid.is_safe()`) rather than passed in; `QueryBudget` is not in the signature yet (stories 028-030).
+- Status synced 2026-10-30 from commit 22c4588.

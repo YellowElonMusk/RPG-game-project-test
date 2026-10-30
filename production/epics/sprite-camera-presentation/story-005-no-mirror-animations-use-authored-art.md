@@ -1,7 +1,7 @@
 # Story 005: no_mirror animations use authored opposite-facing art instead of the shader flip
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S
@@ -132,6 +132,8 @@
   implemented now, since baking is a separate, later decision.
 
 ---
+
+- Status synced 2026-10-30 from commit 95c4606.
 
 ## Dependencies
 

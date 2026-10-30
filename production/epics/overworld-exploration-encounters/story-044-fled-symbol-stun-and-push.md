@@ -1,7 +1,7 @@
 # Story 044: Fled stuns a non-Static symbol and pushes it back along the contact line
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -89,3 +89,4 @@
 **Completed**: 2026-10-29 (implemented, awaiting /story-done)
 - `SymbolBrain.on_fled`, `flee_push_direction`, `push_distance` (grid DDA, 4-connected, x neighbour first on an exact corner). Stops at the first non-symbol-legal cell, backed off by `body_radius` so the body stays clear (interpretation of the GDD stop rule, flagged). Static is never pushed. New knobs `flee_grace_s`, `flee_push_m`, `encounter_grace_s` in `OverworldConfig`. `OverworldMode` now tracks the leader facing (last non-zero input) and re-forms followers in `on_thawed`.
 - Test: `tests/unit/overworld/symbol_brain_fled_push_test.gd` (5 cases).
+- Status synced 2026-10-30 from commit 523dc33.

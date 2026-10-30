@@ -1,7 +1,7 @@
 # Story 122: Confirm at a clue poster or decree gag shows its LocText verbatim
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -99,3 +99,5 @@ checks scope against it.*
 - Out-of-list file: `interim_line_dialogue.gd` now disables auto-translate on its code-set Label (ADR-0013 §1, Verification item 9), otherwise a translated line is looked up a second time and is no longer verbatim.
 - No text-size setting exists yet; the test applies the GDD's named scales 1.0 and 1.5 to the overlay's own font size and asserts the full string, no trimming, no clipping, wrap on.
 **Test Evidence**: Logic — `tests/unit/overworld/gag_loctext_display_test.gd` (clue + decree verbatim at both scales, both through a test `fr` translation, wrong context ignored).
+
+- Status synced 2026-10-30 from commit 1af4ddc.

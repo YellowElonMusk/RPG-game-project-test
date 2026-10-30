@@ -1,7 +1,7 @@
 # Story 037: Chase pathing edge cases — empty path, deferred repath, unreachable resume
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -87,3 +87,5 @@ Three independent branches, one fixture each:
 ## Completion Notes
 
 Empty path (nothing pending) holds still and gives up; deferred repath keeps old route, timer off; unreachable resume holds still deaf, `warnings_logged` == 1 plus one push_warning. Test: `symbol_brain_chase_edge_cases_test.gd` (4). Shared implementation for stories 028-037: `src/overworld/query_budget.gd` (new), `symbol_brain.gd`, `walk_grid.gd` (component labels, `bounded_route`, `find_path` on AStarGrid2D, `segment_clear`, query spy), `overworld_config.gd` (f_chase, repath_s, repath_per_frame_max, symbol_giveup_m, giveup_s, `v_chase()`). Deviation: `step()` takes `budget: QueryBudget = null` as its last optional argument (ADR-0012 lists it fifth) so earlier callers compile; null serves every query.
+
+- Status synced 2026-10-30 from commit 77024cb.

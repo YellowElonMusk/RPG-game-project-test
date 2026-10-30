@@ -1,7 +1,7 @@
 # Story 030: A leader in another symbol-legal component costs zero A* queries
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -90,3 +90,5 @@ can reject a leader who is radius-eligible but unreachable.
 ## Completion Notes
 
 Notice check 3 (4-connected component labels, relabelled lazily per `set_blocked` revision) closes story 023's TODO. Test: `symbol_brain_cross_component_budget_test.gd` (5). Shared implementation for stories 028-037: `src/overworld/query_budget.gd` (new), `symbol_brain.gd`, `walk_grid.gd` (component labels, `bounded_route`, `find_path` on AStarGrid2D, `segment_clear`, query spy), `overworld_config.gd` (f_chase, repath_s, repath_per_frame_max, symbol_giveup_m, giveup_s, `v_chase()`). Deviation: `step()` takes `budget: QueryBudget = null` as its last optional argument (ADR-0012 lists it fifth) so earlier callers compile; null serves every query.
+
+- Status synced 2026-10-30 from commit 77024cb.

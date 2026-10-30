@@ -1,7 +1,7 @@
 # Story 136: A placeholder Paris Town map you can walk around in, with the leader sprite, followers and the follow camera
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Integration
 > **Estimate**: L
@@ -97,6 +97,7 @@
 
 - **Files.** New: `src/overworld/overworld_mode.tscn`, `overworld_map.gd` (`OverworldMap`: bakes the walk layer, builds the set boxes from the grid), `overworld_view.gd` (`OverworldView`: follower trail, `FollowCamera`, sprite placement), `placeholder_actor_frames.gd`, `overworld_demo.gd` and `.tscn`, `data/maps/paris_town_placeholder.tscn` (a 24x16 `TileMapLayer` with a `walk` custom data layer), and `tests/integration/overworld/overworld_walkable_map_test.gd`. Changed: `overworld_mode.gd` gains `map_scene`, `map_parent`, `load_map()`, `get_walk_grid()` and `get_map()`, and `_process()` now passes the baked grid in place of `null`.
 - **Deviation.** Followers and the camera live in `OverworldView`, not in `OverworldMode._process()`. Stories 005 and 006 lock `_process()` to leader-only movement.
+- Status synced 2026-10-30 from commit 54b0ef7.
 
 ## Dependencies
 

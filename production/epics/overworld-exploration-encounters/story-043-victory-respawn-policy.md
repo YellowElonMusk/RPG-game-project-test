@@ -1,7 +1,7 @@
 # Story 043: Victory resolves the symbol per its record's respawn policy
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -89,3 +89,4 @@
 - New `src/overworld/world_state.gd` (`WorldState`: map_id, party_pos/facing, per-map resolved set with `Respawn` policy, `on_map_entered` with `EntryKind`; Continue skips respawn). `OverworldMode.on_thawed` VICTORY marks the source resolved and removes it; `add_symbol` refuses a resolved symbol (absent for the visit). `EncounterSource.symbol_id` added (defaults to enc_id).
 - Deviation (flagged): `EncounterData.respawn` is still a bool, so true maps to ON_MAP_REENTER and false to NEVER (`WorldState.respawn_of`, TODO(content-data)). `mark_resolved` takes the policy as a third argument instead of a catalog lookup in `on_map_entered`. GameRoot does not inject `world_state` yet (null: removed for the visit only, logged).
 - Test: `tests/unit/overworld/overworld_mode_victory_respawn_test.gd` (5 cases).
+- Status synced 2026-10-30 from commit 523dc33.

@@ -1,7 +1,7 @@
 # Story 137: The game boots into the overworld, and a visible symbol starts a real battle and thaws back
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Integration
 > **Estimate**: L
@@ -66,3 +66,4 @@ Stories 020–049 built the symbol brain, contact, `start_encounter`, respawn, f
 - **Tests removed** (they only covered the fight sequence): `chapter_mode_test.gd` (4), `chapter_flow_sequencing_test.gd`, `chapter_flow_descriptor_test.gd`, `chapter_flow_carryover_test.gd` and their helpers `chapter_flow_probe.gd` and `chapter_flow_expected.gd`, plus `test_demo_loop_scripted` in `game_state_game_root_boot_test.gd`. The new test now covers that loop. Two boot tests were updated: New Game now settles in OVERWORLD, and quit-mid-battle starts its battle through `start_encounter`.
 - **Validator fixture:** the two `enc_` records are truthfully reported as "Nothing references this record", because map markers are not records. They were added to `expected_migrated_warnings.txt`. `_entry_keys()` now strips its key so that an empty field can match, which it could not before.
 - **Screenshots (read back):** `01`: the dark-grey symbol sprite on the tan floor, up and left of the orange leader. `02`: the Bureaucratia battle against one Clerk, with the four-character squad at full HP. `03`: the map after Victory, with the leader alone and no symbol sprite in frame. The camera had not fully settled, so the framing differs from `01`.
+- Status synced 2026-10-30 from commit 3947071.

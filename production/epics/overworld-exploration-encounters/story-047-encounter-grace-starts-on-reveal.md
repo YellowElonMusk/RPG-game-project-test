@@ -1,7 +1,7 @@
 # Story 047: Encounter grace starts on transition_finished, never on_thawed
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -86,3 +86,4 @@
 **Completed**: 2026-10-29 (implemented, awaiting /story-done)
 - `grace_active` is now a property over `_grace_left`, started only in `_on_transition_finished(OVERWORLD)` (thaw, map load and redirect alike), ticked on ow_dt at the start of `step_frame`. `pending_thaw` set in `on_thawed`, cleared there. `grace_starts` diagnostic.
 - Test: `tests/unit/overworld/overworld_mode_encounter_grace_timing_test.gd` (5 cases).
+- Status synced 2026-10-30 from commit 523dc33.

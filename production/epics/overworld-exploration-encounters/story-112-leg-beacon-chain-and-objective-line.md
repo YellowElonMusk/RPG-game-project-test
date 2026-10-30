@@ -1,7 +1,7 @@
 # Story 112: Only the current leg's beacon chain is lit, and the objective line matches the step
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -101,3 +101,4 @@
 - **Objective line**: `OverworldMode.objective_line()` returns the current step's text. **Deviation (naming)**: the field is `ChapterStep.objective`, not `objective_text`.
 - **Arrow**: `show_next_destination` (default false, injected; `TODO(settings)`), `beacon_on_screen` Callable injected by the view (`TODO(ui)`). Next beacon = first not reached (`OverworldConfig.beacon_reach_m`, new knob, 1.5 m). Direction = first segment of an `AStarGrid2D` path over `WalkGrid.is_walkable()` (re-synced per `revision()`). **Deviation**: the grid's own A* is symbol-legal (excludes SAFE cells the leader can stand in), so `BeaconGuide` keeps a leader-legal twin with identical settings. Glyph = `OverworldConfig.next_destination_glyph` (U+25B2, rotated by direction).
 - **Out of scope / TODO(ui)**: the drawn screen-edge widget and the lit/unlit banner visuals (ADR-0005).
+- Status synced 2026-10-30 from commit ac013dc.

@@ -1,7 +1,7 @@
 # Story 026: Noticing faces the leader, and sharp turns pause in a look-back pose on the old facing
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -103,3 +103,4 @@ dividing line (dot product 0) counts as in front."
 **Deviations**:
 - The raw movement direction is now `heading` and `facing` is the snapped diagonal enum. The story 020 test was updated for this and sets `turn_pause_s = 0`.
 - The diagonals assume ground +x = screen right and +y = screen down (camera yaw 0). TODO(overworld) for a non-zero yaw.
+- Status synced 2026-10-30 from commit 22c4588.

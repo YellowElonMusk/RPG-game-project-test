@@ -1,7 +1,7 @@
 # Story 004: SpriteProjection returns an exact, pixel-snapped quad at the foot anchor for any camera and frame size
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
@@ -105,3 +105,4 @@
 - `src/presentation/character_sprite.gd`: `setup()`, `show_frame()`, `step_ambient()`, `reset_to_idle()` per Key Interfaces; calls `SpriteProjection` each update and writes `sprite_rect`/`viewport_size`/`foot_anchor`/`card_normal`/`flip_h` via `set_shader_parameter()` on its own `ShaderMaterial` instance. `no_mirror` animation substitution is left to Story 005 (out of scope here); authoring `sprite_actor.gdshader` itself is `godot-shader-specialist`'s domain and not created by this story — `_update_shader_uniforms()` no-ops safely without one.
 - `tests/unit/presentation/sprite_projection_test.gd`: 18 cases — `texel_scale` at all five GDD reference heights (parametrized) plus the floor and minimum-1 edge cases; `screen_rect` dimension formula, the round-half-away-from-zero bottom-centre anchor (via an odd viewport forcing an exact .5 pixel), and the GDD's own 33-texel/1080p worked example; `card_normal` level/pitch-invariant/yaw-following; one `card_depth` on-axis sanity check (full AC-68 coverage deferred, out of this story's scope).
 - Full suite: 614/614 green (596 baseline + 18 new), `--headless --import` clean.
+- Status synced 2026-10-30 from commit e81e268.

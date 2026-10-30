@@ -1,7 +1,7 @@
 # Story 004: Diagonal walls slide the leader, and small corner overlaps get an assist
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -137,6 +137,8 @@ build brief's committed-files note calls `overworld_config.gd` out as a file
 to extend.
 
 ---
+
+- Status synced 2026-10-30 from commit b8bddee.
 
 ## Dependencies
 

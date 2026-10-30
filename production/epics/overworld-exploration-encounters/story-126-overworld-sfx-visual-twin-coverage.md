@@ -1,7 +1,7 @@
 # Story 126: Every overworld SFX event has its visual twin on the same frame
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready (implemented, awaiting /story-done)
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -109,3 +109,4 @@ checks scope against it.*
 - Emission points: Notice and Chase in `step_frame` on the brain's sub-state change; Stun on the reveal (`transition_finished`) for a symbol Fled stunned, not under the wipe; on-screen Liberation in `_start_removals`; the off-screen sting in `_show_payoff_card` with the "Street cleared" line; Checkpoint denial when the failure line's Dialogue opens.
 - **Deviation / limitation**: visual twins are asserted on the model state the presentation reads (sub-state, `is_removing`, payoff card, Dialogue line); no view code draws the poses, slips or DENIED stamp yet (story 125 and art). `pending_thaw` stands for "scene under the wipe".
 - The test spy filters by subject: the Paris segment's own off-screen markers (`poster_permit_queue`) also sting on the East Clerk's Victory.
+- Status synced 2026-10-30 from commit df9a914.

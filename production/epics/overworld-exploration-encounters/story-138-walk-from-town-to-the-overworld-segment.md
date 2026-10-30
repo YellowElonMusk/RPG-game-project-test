@@ -1,7 +1,7 @@
 # Story 138: The party walks out of Town through a MapExit into the overworld segment, where the Clerks patrol
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Integration
 > **Estimate**: L
@@ -57,3 +57,4 @@ Story 137 made the game boot into one placeholder Town map, with the two Clerk s
 - **Deviations (flagged):** map scenes live at `data/maps/<name>.tscn` (`OverworldConfig.map_scene_dir`), not ADR-0012's `scenes/maps/<id>/<id>.tscn`; MapExit rect authored in ground metres, not from the transform; the swap uses the loader's generic free-then-add (no detach/rollback); `WorldState.on_map_entered` still runs in `load_map()`, not on `mode_entered`; both Clerk records now `respawn = true` (were `false`) so AC-138d's respawn is observable.
 - **Resolved 2026-10-29:** the map change now detaches the old Overworld, frees it only when the new one built its map, and rolls back (`rollback_swap()` re-adds the old instance) when the target map scene is missing; the `WorldState` entry and symbol placement commit on `mode_entered(OVERWORLD)`. Tests: `town_to_segment_map_change_test.gd` (rollback, commit timing), watched failing against the old code.
 - **Screenshots (read back):** `01`: Town, an orange-tinted party sprite next to the blue exit patch at the right edge; the red leader is not separately distinguishable. `02`: the grey segment just after arrival, a dark Clerk sprite mid-frame, red leader and a blue follower at the left edge (camera still settling). `03`: Town after walking back, red leader at the from_segment entry with blue, green and orange followers in a line behind it toward the blue exit patch.
+- Status synced 2026-10-30 from commit ff8349b.

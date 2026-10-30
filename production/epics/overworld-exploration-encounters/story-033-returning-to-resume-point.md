@@ -1,7 +1,7 @@
 # Story 033: Returning walks by A* to the resume point, then resumes Patrol deaf
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -88,3 +88,5 @@ test, no contact, whatever the leader does.
 ## Completion Notes
 
 Returning: one budgeted A* to the resume point at `v_patrol`, restores next vertex and direction, then `rejoin_patrol`; `contact_eligible()` added; `on_grace_started()` added. story-024 deaf test no longer asserts a forced Returning symbol stays Returning (it now walks home). Test: `symbol_brain_returning_resume_test.gd` (2). Shared implementation for stories 028-037: `src/overworld/query_budget.gd` (new), `symbol_brain.gd`, `walk_grid.gd` (component labels, `bounded_route`, `find_path` on AStarGrid2D, `segment_clear`, query spy), `overworld_config.gd` (f_chase, repath_s, repath_per_frame_max, symbol_giveup_m, giveup_s, `v_chase()`). Deviation: `step()` takes `budget: QueryBudget = null` as its last optional argument (ADR-0012 lists it fifth) so earlier callers compile; null serves every query.
+
+- Status synced 2026-10-30 from commit 77024cb.

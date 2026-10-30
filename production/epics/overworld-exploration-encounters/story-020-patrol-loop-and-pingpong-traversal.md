@@ -1,7 +1,7 @@
 # Story 020: A patrolling symbol walks its full loop or pingpong path at v_patrol
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -103,3 +103,4 @@ Returning, Stunned) eventually returns to.
 - `step(dt, grid, cfg)` rather than ADR-0012's full `step(dt, leader, leader_safe, grid, budget, grace, cfg)`: `QueryBudget` does not exist yet; stories 021+ widen it.
 - `waypoint_tol_m` default 0.05 m chosen here: neither ADR-0012 nor the GDD gives it a value.
 - `waypoint_tol_m` applies only after a leg that should arrive this step. Applied up front, it skipped up to `tol` of path whenever a frame ended just short of a vertex, which truncates segments.
+- Status synced 2026-10-30 from commit 0745136.

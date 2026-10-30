@@ -1,7 +1,7 @@
 # Story 110: Every leg's junction nodes cover its real branch points
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -110,3 +110,4 @@ checks scope against it.*
 - Shipped authoring: one end beacon per leg (7); dungeon `dungeon_to_boss` needed two junction nodes (counter fork, beyond the boom). Other legs branch only at their EntryPoint.
 - **Deviations**: new knob `OverworldConfig.junction_cover_m` (1.5 m; not yet in the GDD Tuning Knobs table, for game-designer). `L_bypass` paths are not yet checked (TODO; bypass lanes are single-configuration in `BypassSearch`).
 - For story 112: `OverworldMap.beacons(leg_id)` returns the chain sorted by `WaypointBeacon.order`; the last is on the leg end.
+- Status synced 2026-10-30 from commit 2d742c1.

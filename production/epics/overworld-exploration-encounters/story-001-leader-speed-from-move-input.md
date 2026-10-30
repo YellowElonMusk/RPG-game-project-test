@@ -1,7 +1,7 @@
 # Story 001: The leader's displacement matches walk_speed times elapsed time at full tilt
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -119,6 +119,8 @@ run button and no held-input modifier (GDD rule 1).
   harness rule), `N = 37` frames at `dt = 0.013 s` (not a clean threshold).
 
 ---
+
+- Status synced 2026-10-30 from commit 2b1e97d.
 
 ## Dependencies
 

@@ -1,7 +1,7 @@
 # Story 001: Windowed engine spike settles sprite-shader and camera verification on 4.7.2
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: In Progress (2026-10-29): partial spike: Steam Deck run, lead sign-off and the empty-cache pipeline-counter run (item 16) owed; item 15 (glow input) recorded FAIL
 > **Layer**: Core
 > **Type**: Visual/Feel
 > **Estimate**: L
@@ -114,3 +114,5 @@
 | Knobs set | **PASS (spike values)** | battle_fov 32°, near 0.3, h_cam 1.0, horizon_frac 0.42, slot depths 4/6/8.5, humanoid_height_px 120 (target only: the plain card does not enforce T). Not final balance. |
 | Steam Deck native Linux export | **OWED** | No Steam Deck on this PC. |
 | Retained screenshots + lead sign-off | **PARTIAL / OWED** | Screenshots retained (`near_far_rows.png` included); lead sign-off owed. |
+
+- Status synced 2026-10-30 from commit 5c517c0; owed: partial spike: Steam Deck run, lead sign-off and the empty-cache pipeline-counter run (item 16) owed; item 15 (glow input) recorded FAIL.

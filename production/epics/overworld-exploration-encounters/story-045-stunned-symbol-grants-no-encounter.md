@@ -1,7 +1,7 @@
 # Story 045: A Stunned symbol overlapping the leader never starts a second encounter
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -86,3 +86,4 @@
 **Completed**: 2026-10-29 (implemented, awaiting /story-done)
 - STUNNED step ticks `flee_grace_s` then enters Returning; contact eligibility already excluded Stunned. A STUNNED state set without `on_fled` (no armed timer) holds, which keeps the older deaf-substate tests valid.
 - Test: `tests/unit/overworld/symbol_brain_stunned_no_contact_test.gd` (2 cases, default and custom config).
+- Status synced 2026-10-30 from commit 523dc33.

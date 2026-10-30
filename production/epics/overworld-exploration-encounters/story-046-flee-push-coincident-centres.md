@@ -1,7 +1,7 @@
 # Story 046: A flee push with coincident centres goes opposite the leader's facing
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -85,3 +85,4 @@
 **Completed**: 2026-10-29 (implemented, awaiting /story-done)
 - Coincident centres push along -leader_facing; with a zero facing as well the symbol is stunned with no push (never an arbitrary axis).
 - Test: `tests/unit/overworld/symbol_brain_fled_coincident_push_test.gd` (4 diagonals x 2 configs, blocker stop, zero facing).
+- Status synced 2026-10-30 from commit 523dc33.

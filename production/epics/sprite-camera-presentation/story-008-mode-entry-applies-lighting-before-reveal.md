@@ -1,7 +1,7 @@
 # Story 008: Every mode entry applies its lighting profile fully before the transition reveals it
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Core
 > **Type**: Integration
 > **Estimate**: M
@@ -97,3 +97,5 @@
 - Verified: see Test Evidence Status below.
 
 **Test Evidence Status**: `tests/integration/presentation/mode_entry_lighting_test.gd` — 3/3 passing. Full suite: 666/666 green, 0 orphans (`$TEMP/scp008_full.log`).
+
+- Status synced 2026-10-30 from commit b56b4f3.

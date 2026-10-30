@@ -1,7 +1,7 @@
 # Story 023: The follow camera's dead zone, tau and ground-footprint clamp match the formula exactly
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: L
@@ -98,3 +98,5 @@
 - Verified: the GDD worked example (`a_near=5.40, a_far=10.15, w_far=9.03` at 16:9) reproduces exactly; 60fps/30fps ease agreement is exact by construction (exponential decay is step-size-invariant); 75%-by-frame-15 holds at tau 0.15/0.17/0.18; horizon guard checks 4:3 specifically, not 16:9.
 
 **Test Evidence Status**: `tests/unit/presentation/follow_camera_test.gd` — 15/15 passing. Full suite: 631/631 green (`$TEMP/scp023_full.log`).
+
+- Status synced 2026-10-30 from commit 9558205.

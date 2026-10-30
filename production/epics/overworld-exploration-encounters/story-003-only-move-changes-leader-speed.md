@@ -1,7 +1,7 @@
 # Story 003: No action besides move changes the leader's speed
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -119,6 +119,8 @@ scale the leader's speed, however the other actions are driven.
   the new read-only getter and comments.
 
 ---
+
+- Status synced 2026-10-30 from commit 781291c.
 
 ## Dependencies
 

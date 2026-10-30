@@ -1,7 +1,7 @@
 # Story 024: Returning, Stunned, cooldown and grace all skip the notice test entirely
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -101,3 +101,4 @@ notice **and** contact independent of sub-state.
 
 **Deviations**:
 - Returning has no movement yet, so `rejoin_patrol()` is called by tests only (TODO(overworld), stories 031+). `on_grace_started()` (Noticing/Chasing -> Returning) is out of scope.
+- Status synced 2026-10-30 from commit 22c4588.

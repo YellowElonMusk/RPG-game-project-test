@@ -1,7 +1,7 @@
 # Story 002: Leader speed scales with move magnitude, and keyboard diagonals never exceed full speed
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -100,6 +100,8 @@ explaining why it composes with ADR-0003's diagonal normalization rather than
 double-scaling. No change to `src/input/input_resolver.gd` was needed or made.
 
 ---
+
+- Status synced 2026-10-30 from commit d4e502e.
 
 ## Dependencies
 

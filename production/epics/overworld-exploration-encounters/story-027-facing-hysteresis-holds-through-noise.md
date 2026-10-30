@@ -1,7 +1,7 @@
 # Story 027: Facing hysteresis holds through directional noise and while stopped
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -101,3 +101,4 @@ SE 1, SW 2, NW 3)."
 **Deviations**:
 - The 5-degree margin is a named rule constant in `SymbolBrain`, not an `OverworldConfig` field, because the GDD lists no Tuning Knob for it.
 - "Contact pending" has no sub-state yet. TODO(overworld) for the contact story.
+- Status synced 2026-10-30 from commit 22c4588.

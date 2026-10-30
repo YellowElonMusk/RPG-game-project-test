@@ -1,7 +1,7 @@
 # Story 003: Actors are lit only by their key and rim light, never ambient, fill or set light
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S
@@ -102,3 +102,5 @@
 - Verified: targeted test 2/2 passing with 0 orphans; full suite 637/637 green after `--import` (`$TEMP/scp003_full.log`).
 
 **Test Evidence Status**: `tests/unit/presentation/lighting_profile_test.gd` — 2/2 passing. Full suite: 637/637 green (`$TEMP/scp003_full.log`).
+
+- Status synced 2026-10-30 from commit 55678cb.

@@ -1,7 +1,7 @@
 # Story 048: Grace, notice, give-up, cooldown and stun timers freeze under overlays and transitions
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-29)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -89,3 +89,4 @@
 - `OverworldMode.is_exploring()` gates `step_frame`: not Frozen, no overlay (counted from overlay_opened/closed), no transition (transition_started to transition_finished; seeded from `machine.phase` in setup) and no CampPrompt (`set_camp_prompt_open`, TODO: CampSpot flow). No Engine.time_scale anywhere.
 - Interpretation: a transition ends with transition_finished, which by rule 7 restarts grace and turns Noticing/Chasing into Returning, so those three cases assert the freeze and then the rule-7 outcome rather than an exact resume.
 - Test: `tests/unit/overworld/overworld_mode_timers_freeze_test.gd` (5 timers x 4 suspensions).
+- Status synced 2026-10-30 from commit 523dc33.
