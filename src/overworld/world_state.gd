@@ -11,7 +11,7 @@
 ##
 ## Stories 070-072 add opened checkpoints and story flags.
 ##
-## TODO(overworld): camp_returns, chapter_step, other opened interactables,
+## TODO(overworld): camp_returns, other opened interactables,
 ## liberation, stage_stored, granted payoffs, rest_counter and
 ## `reset_to_new_game()` (stories 050+, ADR-0012 §4).
 class_name WorldState
@@ -34,6 +34,9 @@ var party_facing: Vector2 = Vector2.ZERO
 ## (a save made at Camp continues at the camp's return point, ADR-0009 §3);
 ## empty otherwise.
 var continue_entry: String = ""
+## The current ChapterFlow step ID (ADR-0012 §8; story 068). New Game sets
+## the chapter's opening step; the walk home moves it through the last act.
+var chapter_step: String = ""
 
 # map_id -> { symbol_id -> Respawn }
 var _resolved: Dictionary = {}
@@ -116,6 +119,7 @@ func reset_to_new_game() -> void:
 	party_pos = Vector2.ZERO
 	party_facing = Vector2.ZERO
 	continue_entry = ""
+	chapter_step = ""
 	_resolved = {}
 	_opened = {}
 	_flags = {}
@@ -146,6 +150,7 @@ func to_dict() -> Dictionary:
 		"party_pos": [party_pos.x, party_pos.y],
 		"party_facing": [party_facing.x, party_facing.y],
 		"continue_entry": continue_entry,
+		"chapter_step": chapter_step,
 		"resolved": resolved,
 		"opened": opened,
 		"flags": flags,
@@ -162,6 +167,7 @@ func from_dict(data: Dictionary) -> void:
 	party_pos = data.get("party_pos", Vector2.ZERO)
 	party_facing = data.get("party_facing", Vector2.ZERO)
 	continue_entry = data.get("continue_entry", "")
+	chapter_step = data.get("chapter_step", "")
 	var resolved: Dictionary = data.get("resolved", {})
 	for m: String in resolved:
 		_resolved[m] = {}

@@ -82,7 +82,8 @@ func test_faction_rule_texts_dictionary_is_a_loc_field() -> void:
 
 
 func test_scripts_without_player_text_still_declare_empty_loc_fields() -> void:
-	for script: Script in [InputBindings, EncounterData]:
+	# EncounterData gained `post_battle_line` (story 068), a LOC field.
+	for script: Script in [InputBindings]:
 		assert_array(_loc_fields(script)).override_failure_message(
 				"%s should have no LOC fields" % script.resource_path).is_empty()
 		assert_bool(_non_loc_fields(script).has(&"id")).is_true()

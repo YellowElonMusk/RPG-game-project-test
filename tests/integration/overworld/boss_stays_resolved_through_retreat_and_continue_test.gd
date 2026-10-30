@@ -32,6 +32,11 @@ func test_boss_stays_absent_through_retreat_save_and_continue() -> void:
 	assert_int(root.machine.report_results_done()).is_equal(GameStateMachine.RequestResult.OK)
 	_run_to_idle(root.machine)
 	assert_bool(root.world_state.is_resolved(_CHAMBER, _BOSS)).is_true()
+	# Story 068: the post-battle Dialogue, then the walk home to the segment.
+	var line: InterimLineDialogue = root.current_overlay_node() as InterimLineDialogue
+	line.advance_guard(0.2)
+	line.handle_action(InputActions.CONFIRM, true)
+	_run_to_idle(root.machine)
 
 	# Beating the boss liberated Paris: every symbol there is now inactive
 	# (rule 9), so the later Retreat-able fight is started straight from a

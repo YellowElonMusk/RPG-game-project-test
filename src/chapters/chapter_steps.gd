@@ -10,3 +10,6 @@ extends Resource
 ## home, A then B). Its maps need `liberated_profile_id` and
 ## `liberated_kit_id`, and none of them may reach a closed-behind map.
 @export var last_act_from: String = ""
+## The EntryPoint on the first last-act step's map the walk home arrives
+## at (the segment's dungeon side).
+@export var last_act_entry_id: StringName = &""

@@ -1,7 +1,7 @@
 # Story 068: The walk home runs after the boss Victory, through the liberated streets, to the café
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Integration
 > **Estimate**: L
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-27d [I] (R13, walk home)** GIVEN a boss Victory, THEN after the post-battle Dialogue the next transition is a map change to the overworld segment's dungeon-side EntryPoint with the liberated presentation; the segment's exit to the dungeon is disabled and shows the "FERMÉ POUR RESTRUCTURATION" tape; the current leg ends at the Town café CampSpot. A spy shows that chapter-end is called only from Yes in the "End the chapter here?" prompt at the café on the final step (B). Entering Town during step A advances the step to B. Pressing `cancel` and `menu` during the post-battle Dialogue and the fade, and Save → Continue during the free roam, each still lead to the segment load and the same café end. In the prompt, No has the default focus and No or `cancel` returns to the free roam.
+- [x] **AC-27d [I] (R13, walk home)** GIVEN a boss Victory, THEN after the post-battle Dialogue the next transition is a map change to the overworld segment's dungeon-side EntryPoint with the liberated presentation; the segment's exit to the dungeon is disabled and shows the "FERMÉ POUR RESTRUCTURATION" tape; the current leg ends at the Town café CampSpot. A spy shows that chapter-end is called only from Yes in the "End the chapter here?" prompt at the café on the final step (B). Entering Town during step A advances the step to B. Pressing `cancel` and `menu` during the post-battle Dialogue and the fade, and Save → Continue during the free roam, each still lead to the segment load and the same café end. In the prompt, No has the default focus and No or `cancel` returns to the free roam.
 
 ---
 
@@ -61,7 +61,7 @@
 
 - `src/overworld/overworld_mode.gd` (chapter-step advance, walk-home sequencing, café P15 prompt wiring)
 - `src/overworld/world_state.gd` (`chapter_step`)
-- `tests/integration/overworld/walk_home_test.gd`
+- `tests/integration/overworld/walk_home_after_boss_victory_test.gd`
 
 ---
 
@@ -75,9 +75,9 @@
 
 **Story Type**: Integration
 **Required evidence**:
-- `tests/integration/overworld/walk_home_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
+- `tests/integration/overworld/walk_home_after_boss_victory_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -85,3 +85,17 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-066-region-liberation-presentation-override-on-load.md`, `production/epics/game-state-scene-flow/` (done)
 - Unlocks: `production/epics/overworld-exploration-encounters/story-069-liberated-fields-and-dungeon-route-block.md`
+
+## Completion Notes (2026-10-30)
+
+- `WorldState.chapter_step` is new: saved, staged by the participant, and set to the opening step on New Game.
+- A boss Victory that liberates the region queues the walk home. The boss's `post_battle_line` (a new `EncounterData` LocText field, added to the Content Data GDD) opens as a Dialogue on the reveal. Its close starts step A (`ChapterSteps.last_act_from`) and requests the map change to `last_act_entry_id` (the segment's `from_dungeon`). A request Game State refuses is retried every frame.
+- Entering the next step's map advances the step, but only within the last act.
+- On the final step, the region default camp opens the chapter-end prompt instead of "Rest here?": No is focused, and only Yes calls `_end_chapter()`.
+- `_end_chapter()` emits `chapter_end_requested` and counts `chapter_end_calls`. What ending a chapter does is not designed, so GameRoot does not listen yet (TODO dialogue-quests).
+- The dungeon exit tape is story 069's `MapExit.closed_when_flag`.
+- Owed:
+  - The post-battle line needs rule-18 narrative sign-off (AC-51).
+  - The prompt's `accessibility_name` waits on the accessibility layer. The view shows the "End the chapter here?" text.
+- `boss_stays_resolved_through_retreat_and_continue_test.gd` now closes the post-battle Dialogue. `content_data_loc_fields_test.gd` no longer lists EncounterData as text-free.
+- Mutations checked: no walk home queued, no step advance, Yes focused by default, `chapter_step` not saved, and no tape each fail a test here.

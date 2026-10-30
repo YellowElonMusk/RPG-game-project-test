@@ -319,5 +319,6 @@ func _apply_opening_step(cfg: OverworldConfig) -> void:
 	var steps: ChapterSteps = ResourceLoader.load(cfg.chapter_steps_path) as ChapterSteps
 	if steps == null or steps.steps.is_empty():
 		return
+	_world_state.chapter_step = steps.steps[0].id
 	for flag: String in steps.steps[0].flags_on_enter:
 		_world_state.set_flag(flag)

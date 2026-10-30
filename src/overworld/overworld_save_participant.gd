@@ -52,6 +52,7 @@ func stage(data: Dictionary, reader: SaveReader) -> SaveStage:
 		"party_pos": reader.get_vector2("party_pos"),
 		"party_facing": reader.get_vector2("party_facing", Vector2.DOWN),
 		"continue_entry": reader.get_string("continue_entry"),
+		"chapter_step": reader.get_string("chapter_step"),
 		"resolved": {},
 		"opened": {},
 		"flags": [],

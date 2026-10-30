@@ -143,6 +143,9 @@ enum CampChoice { YES, NO }
 
 ## The prompt's focused choice while it is open.
 var camp_prompt_focus: CampChoice = CampChoice.YES
+## Story 068: `true` while the open prompt is the chapter-end one ("End the
+## chapter here?", verb and `accessibility_name` "End chapter"; No focused).
+var camp_prompt_is_chapter_end: bool = false
 ## Camp requests issued from the prompt (tests read it).
 var camp_requests: int = 0
 ## The leader's facing: the last non-zero input direction (ADR-0012 §4
@@ -287,6 +290,7 @@ func _commit_map_entry() -> void:
 	_entry_commit_pending = false
 	if world_state != null and world_state.map_id != _map.map_id:
 		world_state.on_map_entered(_map.map_id, WorldState.EntryKind.MAP_ENTRY)
+	_advance_step_on_entry()
 	_compute_stage()
 	_resolve_presentation()
 	_activate_markers()
@@ -364,6 +368,8 @@ func handle_action(action: StringName, pressed: bool) -> bool:
 ## branches on a discrete action first (AC-1c) -- this function has no way to
 ## see one; `handle_action()` is the only call path actions arrive through.
 func _process(delta: float) -> void:
+	if _walk_home_pending:
+		_try_walk_home()
 	if _machine == null:
 		return
 	var ow_dt: float = minf(delta, _DT_MAX_FALLBACK)
@@ -706,6 +712,7 @@ func _resolve_victory(source: EncounterSource) -> void:
 	_grant_payoff(source, rec)
 	_liberate_for(source.symbol_id)
 	_liberate_region_if_boss(rec)
+	_queue_walk_home(rec)
 
 
 func _on_transition_started(_from: GameStateMachine.Mode, _to: GameStateMachine.Mode) -> void:
@@ -755,6 +762,8 @@ func _on_transition_finished(to: GameStateMachine.Mode) -> void:
 		var line: String = _line_on_reveal
 		_line_on_reveal = ""
 		say(line)
+	# Story 068: the boss's post-battle Dialogue, then the walk home.
+	_open_post_battle_dialogue()
 
 
 ## This frame's `distance_moved` from the last `_process()` step, so a test
@@ -1038,7 +1047,10 @@ func get_camp_prompt_camp() -> CampSpot:
 
 func _open_camp_prompt(camp: CampSpot) -> void:
 	_camp_prompt_camp = camp
-	camp_prompt_focus = CampChoice.YES
+	# Story 068 (rule 13): the region default camp on the final step asks
+	# to end the chapter instead, with No focused (it cannot be undone).
+	camp_prompt_is_chapter_end = camp.is_region_default and is_on_final_step()
+	camp_prompt_focus = CampChoice.NO if camp_prompt_is_chapter_end else CampChoice.YES
 	_camp_prompt_open = true
 
 
@@ -1063,8 +1075,12 @@ func _handle_camp_prompt(action: StringName, pressed: bool) -> bool:
 		InputActions.CONFIRM:
 			var camp: CampSpot = _camp_prompt_camp
 			var choice: CampChoice = camp_prompt_focus
+			var ending: bool = camp_prompt_is_chapter_end
 			_close_camp_prompt()
-			if choice == CampChoice.YES and camp != null:
+			if ending:
+				if choice == CampChoice.YES:
+					_end_chapter()
+			elif choice == CampChoice.YES and camp != null:
 				_rest_at(camp)
 	return true
 
@@ -1751,3 +1767,139 @@ func _liberate_region_if_boss(rec: EncounterData) -> void:
 	var map_rec: MapData = encounter_catalog.call(&"get_record", &"map", _map.map_id) as MapData
 	if map_rec != null and not map_rec.region_liberation_flag.is_empty():
 		_set_flag(map_rec.region_liberation_flag)
+
+
+# -- The walk home (story 068; GDD rule 13) ----------------------------------
+
+## Emitted once, from Yes in the chapter-end prompt on the final step.
+## TODO(dialogue-quests): what ending a chapter does (credits, the next
+## region) is not designed; GameRoot does not listen yet.
+signal chapter_end_requested
+## Chapter-end calls (tests spy on it).
+var chapter_end_calls: int = 0
+## Set by a boss Victory (when the chapter has a last act): the post-battle
+## Dialogue opens on the reveal, and the walk home follows its close.
+var _walk_home_due: bool = false
+var _walk_home_line: String = ""
+## The walk home's map change is owed (the request was busy or blocked);
+## retried every frame until Game State accepts it.
+var _walk_home_pending: bool = false
+var _chapter: ChapterSteps = null
+
+
+## The chapter's step list (from `config.chapter_steps_path`), or null.
+func chapter_steps() -> ChapterSteps:
+	if _chapter == null and config != null and ResourceLoader.exists(config.chapter_steps_path):
+		_chapter = ResourceLoader.load(config.chapter_steps_path) as ChapterSteps
+	return _chapter
+
+
+## Injects a step list (tests).
+func set_chapter_steps(steps: ChapterSteps) -> void:
+	_chapter = steps
+
+
+## The index of `world_state.chapter_step`, or -1.
+func _step_index() -> int:
+	var steps: ChapterSteps = chapter_steps()
+	if steps == null or world_state == null:
+		return -1
+	for i: int in steps.steps.size():
+		if steps.steps[i].id == world_state.chapter_step:
+			return i
+	return -1
+
+
+## `true` on the chapter's final step (B): the café asks to end the chapter.
+func is_on_final_step() -> bool:
+	var steps: ChapterSteps = chapter_steps()
+	var i: int = _step_index()
+	return steps != null and i >= 0 and i == steps.steps.size() - 1
+
+
+## Rule 13: a boss Victory that liberates the region, in a chapter with a
+## last act, queues the walk home.
+func _queue_walk_home(rec: EncounterData) -> void:
+	var steps: ChapterSteps = chapter_steps()
+	if rec == null or not rec.is_boss or steps == null or steps.last_act_from.is_empty():
+		return
+	# Only a Victory that liberated the region (its map names a
+	# `region_liberation_flag`) ends the chapter's middle.
+	if not is_region_liberated():
+		return
+	_walk_home_due = true
+	_walk_home_line = rec.post_battle_line
+
+
+## On the reveal after the boss Victory: the post-battle story Dialogue, then
+## the walk home on its close (whichever input closed it). No line, or a
+## line Game State will not open, goes straight to the walk home.
+func _open_post_battle_dialogue() -> void:
+	if not _walk_home_due:
+		return
+	_walk_home_due = false
+	if _walk_home_line.is_empty() \
+			or say(_walk_home_line, _start_walk_home) != GameStateMachine.RequestResult.OK:
+		_start_walk_home()
+
+
+## Rule 13: step A begins and a map change takes the squad to the first
+## last-act step's map at `last_act_entry_id` (the segment's dungeon side),
+## which loads liberated (story 066) with its dungeon exit taped.
+func _start_walk_home() -> void:
+	var steps: ChapterSteps = chapter_steps()
+	if steps == null:
+		return
+	if world_state != null:
+		world_state.chapter_step = steps.last_act_from
+	_walk_home_pending = true
+	_try_walk_home()
+
+
+func _try_walk_home() -> void:
+	if not _walk_home_pending or _machine == null:
+		return
+	var step: ChapterStep = _step_by_id(chapter_steps().last_act_from)
+	if step == null:
+		_walk_home_pending = false
+		return
+	var result: GameStateMachine.RequestResult = _machine.request_transition(
+			GameStateMachine.Mode.OVERWORLD,
+			MapEntryPayload.new(step.map_id, chapter_steps().last_act_entry_id))
+	if result == GameStateMachine.RequestResult.OK:
+		_walk_home_pending = false
+
+
+## `true` while the walk home's map change is still owed (tests).
+func is_walk_home_pending() -> bool:
+	return _walk_home_pending or _walk_home_due
+
+
+func _step_by_id(id: String) -> ChapterStep:
+	var steps: ChapterSteps = chapter_steps()
+	if steps == null:
+		return null
+	for step: ChapterStep in steps.steps:
+		if step.id == id:
+			return step
+	return null
+
+
+## Rule 13: in the last act, entering the next step's map advances to it
+## (A -> B on entering Town). Called on the map-entry commit.
+func _advance_step_on_entry() -> void:
+	var steps: ChapterSteps = chapter_steps()
+	var i: int = _step_index()
+	if steps == null or world_state == null or i < 0 or i + 1 >= steps.steps.size() or _map == null:
+		return
+	var act_start: int = steps.steps.find(_step_by_id(steps.last_act_from))
+	if act_start < 0 or i < act_start:
+		return
+	if steps.steps[i + 1].map_id == _map.map_id:
+		world_state.chapter_step = steps.steps[i + 1].id
+
+
+## Yes in the chapter-end prompt: the only caller (spied by tests).
+func _end_chapter() -> void:
+	chapter_end_calls += 1
+	chapter_end_requested.emit()

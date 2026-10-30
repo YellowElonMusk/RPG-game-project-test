@@ -220,7 +220,9 @@ func _update_prompt() -> void:
 	_prompt_label.visible = camp != null
 	if camp != null:
 		var yes: bool = mode.camp_prompt_focus == OverworldMode.CampChoice.YES
-		_prompt_label.text = "Rest here?\n%s   %s" % ["[Yes]" if yes else " Yes ", " No " if yes else "[No]"]
+		# Story 068: the café on the final step asks to end the chapter.
+		var question: String = "End the chapter here?" if mode.camp_prompt_is_chapter_end else "Rest here?"
+		_prompt_label.text = "%s\n%s   %s" % [question, "[Yes]" if yes else " Yes ", " No " if yes else "[No]"]
 
 
 ## The camp prompt label (tests).

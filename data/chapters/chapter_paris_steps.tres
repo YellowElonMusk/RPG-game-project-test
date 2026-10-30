@@ -57,4 +57,5 @@ leg_id = "town_home"
 script = ExtResource("1_steps")
 chapter_id = "chapter_paris"
 last_act_from = "step_walk_home_a"
+last_act_entry_id = &"from_dungeon"
 steps = Array[ExtResource("2_step")]([SubResource("step_1"), SubResource("step_2"), SubResource("step_3"), SubResource("step_4"), SubResource("step_5"), SubResource("step_6"), SubResource("step_7")])

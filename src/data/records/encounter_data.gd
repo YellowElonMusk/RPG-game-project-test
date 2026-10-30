@@ -36,9 +36,13 @@ extends Resource
 ## item ID (item), "label": the name the payoff card shows (open, item)}`.
 ## Empty means none.
 @export var victory_payoff: Dictionary = {}
+## The boss's post-battle story Dialogue (GDD Overworld rule 13; story
+## 068): one interim line, opened on the reveal after the Victory; the walk
+## home follows its close. Empty on every non-boss record.
+@export_multiline var post_battle_line: String = ""
 
-## No player-visible text on this record (TR-content-012, ADR-0013 §4).
-const LOC_FIELDS: Array[StringName] = []
+## Player-visible text exports (TR-content-012, ADR-0013 §4).
+const LOC_FIELDS: Array[StringName] = [&"post_battle_line"]
 ## IDs and asset IDs (ADR-0013 §4).
 const NON_LOC_FIELDS: Array[StringName] = [
 	&"id", &"aliases", &"enemy_ids", &"battle_stage_id", &"faction_id",
