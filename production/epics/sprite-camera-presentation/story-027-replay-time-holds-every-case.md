@@ -1,12 +1,12 @@
 # Story 027: replay_time holds the formula across every speed, latch and knockout case
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -82,7 +82,7 @@ This story tests `BattleReplayController.advance()` purely headlessly, against a
 **Required evidence**:
 - Logic: `tests/unit/battle/replay_time_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`, both later)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30): 13/13
 
 ---
 
@@ -90,3 +90,11 @@ This story tests `BattleReplayController.advance()` purely headlessly, against a
 
 - Depends on: `BattleReplayController` (ADR-0006, no epic yet — the controller this story tests does not exist in `src/battle/` yet); `PresentationConfig` (ADR-0005, `src/presentation/presentation_config.gd`, not yet built — supplies `dt_max`, `beat_min`, `ff_mult`, `battle_speed_mult`, `ko_hold`)
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+BattleReplayController.advance() implements ADR-0006 §4/§6 (clamp, one event per call, leftover dt dropped, wind-up/hold scaled by plain speed, post-impact unscaled, beat_min floor padding the hold, debug path at beat_min - reaction_hold at speed 1, latch cleared at replay end/cancel). Deviation: PresentationConfig has no separate replay dt_max, so the controller reads follow_camera_dt_max (the knob RULE_DT_MAX already validates). Victory/Defeat 1x blends belong to the Battle mode (not built); the test asserts only that the latch is cleared before battle_ended_after_replay.
+
+**Files**: src/battle/battle_replay_controller.gd, src/battle/beat_plan.gd, src/battle/combatant_display.gd, src/battle/replay_input_router.gd, tests/unit/battle/helpers/replay_test_kit.gd, tests/unit/battle/replay_time_test.gd

@@ -1,12 +1,12 @@
 # Story 043: a 0.5-second frame never skips a beat or double-fires its events
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -75,7 +75,7 @@
 **Required evidence**:
 - Logic: `tests/unit/battle/slow_frame_clamp_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`, both later)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30): 3/3
 
 ---
 
@@ -83,3 +83,11 @@
 
 - Depends on: `BattleReplayController` (ADR-0006, no epic yet)
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+advance() clamps to dt_max and finishes at most one entry per call; a 0.5 s frame on every call still yields exactly one start/impact/finish per outcome. Markers are released only when no entry is in progress (fixed a bug where a TURN released mid-beat).
+
+**Files**: src/battle/battle_replay_controller.gd, src/battle/beat_plan.gd, src/battle/combatant_display.gd, src/battle/replay_input_router.gd, tests/unit/battle/helpers/replay_test_kit.gd, tests/unit/battle/slow_frame_clamp_test.gd

@@ -1,12 +1,12 @@
 # Story 016: The replay never mutates BattleCore, and the HUD always shows each combatant's live values
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -75,7 +75,7 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/battle_replay_hud_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30): 1/1
 
 ---
 
@@ -83,3 +83,11 @@
 
 - Depends on: `BattleReplayController` (ADR-0006, no epic yet), `production/epics/sprite-camera-presentation/story-015-battle-replay-plays-beats-in-order.md`
 - Unlocks: `production/epics/sprite-camera-presentation/story-017-move-outcome-shapes-match-the-table.md`
+
+---
+
+## Completion Notes
+
+Snapshots (CombatantDisplay copies of every combatant plus round) are recorded at all four BattleCore emissions and released at beat_finished / marker release; the controller never calls a BattleCore mutator. Test drives a real seeded BattleCore (MegaCorp billing, Karen Defend then Speak to the Manager, Chef Family Meal) and checks display == live on every released TURN and on drain, live state unchanged by the replay, and a lagging HP mid-replay. HUD rewiring (BattleHud reading get_display) is not done: no BattleHud change was in scope.
+
+**Files**: src/battle/battle_replay_controller.gd, src/battle/beat_plan.gd, src/battle/combatant_display.gd, src/battle/replay_input_router.gd, tests/unit/battle/helpers/replay_test_kit.gd, tests/unit/presentation/battle_replay_hud_test.gd

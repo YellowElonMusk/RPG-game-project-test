@@ -1,12 +1,12 @@
 # Story 042: the replay indicator shows the right state and every press either latches, un-latches or is refused
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -77,7 +77,7 @@
 **Required evidence**:
 - Logic: `tests/unit/battle/replay_latch_input_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`, both later)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30): 8/8
 
 ---
 
@@ -85,3 +85,11 @@
 
 - Depends on: `BattleReplayController` (ADR-0006, no epic yet); the UI Framework's indicator-click event and refusal feedback (ADR-0008, not yet built — this story stubs both as injected `Callable`s)
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+request_latch/clear_latch/is_press_effective per ADR-0006 §6. Deviation: input routing lives in a new static helper ReplayInputRouter (route() returns consumed, calls the injected refusal Callable once per no-op press; indicator_state() maps controller state to hidden/passive/active/latched) so the Battle mode's handle_action() can call it; Battle mode wiring and the UI indicator widget (ADR-0008) are not built. 'Menu never opens' is shown as Cancel being consumed.
+
+**Files**: src/battle/battle_replay_controller.gd, src/battle/beat_plan.gd, src/battle/combatant_display.gd, src/battle/replay_input_router.gd, tests/unit/battle/helpers/replay_test_kit.gd, tests/unit/battle/replay_latch_input_test.gd
