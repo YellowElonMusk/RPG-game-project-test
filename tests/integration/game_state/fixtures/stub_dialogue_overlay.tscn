@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/unit/game_state/doubles/stub_overlay.gd" id="1"]
+
+[node name="StubDialogueOverlay" type="Control"]
+script = ExtResource("1")

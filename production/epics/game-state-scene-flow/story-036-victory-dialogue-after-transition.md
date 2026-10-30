@@ -1,12 +1,12 @@
 # Story 036: A Victory that triggers story dialogue opens Dialogue only after transition_finished(Overworld)
 
 > **Epic**: Game State & Scene Flow
-> **Status**: Deferred (2026-10-24): needs Dialogue, which does not exist yet; build with the Dialogue epic
+> **Status**: Complete (2026-10-30)
 > **Layer**: Foundation
 > **Type**: Integration
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: Not started (set by /dev-story)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/game-state-scene-flow.md`, scoped to this story:*
 
-- [ ] **AC-24 [I]** (with Dialogue) GIVEN a Victory that triggers story dialogue, THEN the Dialogue overlay opens only after `transition_finished(Overworld)`.
+- [x] **AC-24 [I]** (with Dialogue) GIVEN a Victory that triggers story dialogue, THEN the Dialogue overlay opens only after `transition_finished(Overworld)`.
 
 ---
 
@@ -61,6 +61,7 @@
 - `tests/integration/game_state/game_state_victory_dialogue_test.gd`
 - `tests/integration/game_state/fixtures/chapter_mode_with_story_dialogue.gd`
 - `tests/integration/game_state/fixtures/stub_dialogue_overlay.tscn`
+- `tests/integration/game_state/fixtures/chapter_mode_with_story_dialogue.tscn` (added: the scene the OVERWORLD row loads; it keeps the base double's child `Timer`)
 
 ---
 
@@ -84,7 +85,7 @@
 **Required evidence**:
 - Integration: `tests/integration/game_state/game_state_victory_dialogue_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30): `game_state_victory_dialogue_test.gd :: test_dialogue_after_transition_finished` PASSED; `tests/unit/game_state` + `tests/integration/game_state` 192/192, 0 orphans.
 
 ---
 
@@ -92,3 +93,16 @@
 
 - Depends on: `production/epics/game-state-scene-flow/story-015-victory-waits-for-results.md`, `production/epics/game-state-scene-flow/story-027-dialogue-closes-before-transition.md`, `production/epics/game-state-scene-flow/story-030-defeat-prompt-focus-and-cancel.md` (production overlay push), `production/epics/game-state-scene-flow/story-034-battle-mode-wraps-battle-core.md`, `production/epics/game-state-scene-flow/story-035-game-root-main-scene.md`
 - Unlocks: None (the Dialogue epic will reuse the harness)
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30
+**Criteria**: 1/1 (AC-24, automated integration test)
+**Seam only**: no Dialogue system exists, so no production code changed. The machine already enforces the rule: `open_overlay` returns `REJECTED_BUSY` while `phase != IDLE`, and `on_thawed` runs inside `mode_entered`, before `transition_finished`. The test proves it end to end with the real `GameStateMachine`, the production `ModeHostSceneLoader` with an `OverlayHost` (story 030 push), the real `battle_mode.tscn`, and a Victory won through `BattleCore` and confirmed with CONFIRM (`report_results_done`).
+**Deviations**:
+- No `ChapterMode` class exists, so `ChapterModeWithStoryDialogue` extends the `StubOverworldMode` double instead. It keeps the pinned behaviour: `super.on_thawed()`, then an attempt that returns REJECTED_BUSY, then a one-shot retry on `transition_finished(OVERWORLD)` that returns OK.
+- Added `chapter_mode_with_story_dialogue.tscn`, because the loader needs a scene path.
+- `stub_dialogue_overlay.tscn` reuses the `StubOverlay` script.
+**Left for the Dialogue epic**: the real requester (ChapterFlow or a Dialogue service) must use the same retry-on-`transition_finished` pattern, and can reuse this harness.
