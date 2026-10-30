@@ -288,6 +288,9 @@ func see_m() -> float:
 ## The chapter step list `validate_maps` checks (ADR-0012 §8, interim data;
 ## story 074).
 @export var chapter_steps_path: String = "res://data/chapters/chapter_paris_steps.tres"
+## The interim story-flag registry (GDD rule 18; story 055), read by the
+## reference pass (story 078).
+@export var flag_registry_path: String = "res://data/chapters/chapter_paris_flags.tres"
 ## Timed text (GDD UI Requirements "Timed text"): every name card, payoff
 ## card and bark holds `text_hold(text) = max(name_card_s, text_hold_base_s
 ## + words * text_hold_per_word_s)`. Tuning Knobs: 2.0 s (1.5-3.0), 1.0 s

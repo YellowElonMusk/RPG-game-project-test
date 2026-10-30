@@ -141,7 +141,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 075 | [Town, dungeon, story-encounter and boss placement match the map-structure rules](story-075-town-dungeon-story-encounter-and-boss-placement.md) | Logic | Complete | ADR-0012 |
 | 076 | [Retained walk-in screenshot — the Permit Counter is on screen from the pre-dungeon camp](story-076-permit-counter-telegraph-screenshot.md) | Visual/Feel | Complete | ADR-0012 |
 | 077 | [No spawn point or patrol segment crowds a safe zone or a return marker](story-077-patrol-and-spawn-safe-zone-clearance.md) | Logic | Complete | ADR-0012 |
-| 078 | [Every encounter, symbol, flag, payoff, remark, decree-gag and item reference resolves](story-078-overworld-reference-integrity-check.md) | Logic | Ready | ADR-0012 |
+| 078 | [Every encounter, symbol, flag, payoff, remark, decree-gag and item reference resolves](story-078-overworld-reference-integrity-check.md) | Logic | Complete | ADR-0012 |
 | 079 | [Shipped scenes contain no physics nodes and no live collision on GridMap or TileMapLayer](story-079-no-physics-nodes-in-shipped-maps.md) | Logic | Complete | ADR-0012 |
 | 080 | [Every EntryPoint sits clear of every MapExit rectangle, facing into the map](story-080-entry-point-exit-clearance.md) | Logic | Complete | ADR-0012 |
 | 081 | [A MapExit re-fires only after the leader leaves and re-enters its rectangle](story-081-map-exit-reentry-requires-leaving-the-rectangle.md) | Logic | Complete | ADR-0012 |

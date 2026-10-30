@@ -61,6 +61,10 @@ static func validate_catalog(catalog: ContentCatalogService, cfg: OverworldConfi
 	else:
 		errors.append_array(validate_steps(steps, records))
 		errors.append_array(validate_last_act(steps, records, maps, cfg))
+	var registry: StoryFlagRegistry = null
+	if ResourceLoader.exists(cfg.flag_registry_path):
+		registry = ResourceLoader.load(cfg.flag_registry_path) as StoryFlagRegistry
+	errors.append_array(check_references(maps, catalog, registry))
 	for rec: Resource in catalog.all_records(&"map"):
 		var rec_map: OverworldMap = maps.get(String(rec.get("id"))) as OverworldMap
 		if rec_map != null and rec is MapData:
@@ -277,3 +281,96 @@ static func _cells_in(r: Rect2, grid: WalkGrid) -> Array[Vector2i]:
 		for x in range(floori(r.position.x / grid.cell_m), ceili(r.end.x / grid.cell_m)):
 			out.append(Vector2i(x, y))
 	return out
+
+
+## Story 078 (AC-30d): every reference a map's markers and their encounter
+## records make resolves, with one named error per broken reference:
+## symbol `encounter_id`s (records) and symbol IDs (unique per map); gag
+## `liberate_symbol` and `decree_first_sight` (symbols on the map),
+## `liberation_flag` (registry), `decree_stage` (a registered flag in the
+## map record's `stage_table` raises to it); checkpoint
+## `requirement_item_id` (item records), `requirement_flag` (registry),
+## `linked_encounter_id` (records); and each placed encounter's
+## `victory_payoff` (a known type; `open` names a checkpoint on the map,
+## `item` an item record, `clue` a facet). `catalog` is duck-typed
+## (`get_record(type, id)`). No marker has a `recruit_remark` field yet.
+static func check_references(maps: Dictionary, catalog: Object,
+		registry: StoryFlagRegistry) -> PackedStringArray:
+	var errors := PackedStringArray()
+	for map_id: String in maps:
+		var map: OverworldMap = maps[map_id]
+		var map_rec: MapData = catalog.call(&"get_record", &"map", map_id) as MapData
+		var symbols: Dictionary = {}
+		var placed: Dictionary = {}
+		for sym: EncounterSymbol in map.symbol_markers():
+			var sid: String = sym.symbol_id if not sym.symbol_id.is_empty() else sym.encounter_id
+			if symbols.has(sid):
+				errors.append("%s: symbol '%s' is not unique" % [map_id, sid])
+			symbols[sid] = true
+			if catalog.call(&"get_record", &"encounter", sym.encounter_id) == null:
+				errors.append("%s: symbol '%s' encounter_id '%s' does not resolve" % [map_id, sid, sym.encounter_id])
+			else:
+				placed[sym.encounter_id] = true
+		var checkpoints: Dictionary = {}
+		for cp: CheckpointMarker in map.checkpoints():
+			checkpoints[String(cp.marker_id)] = true
+			if not cp.requirement_item_id.is_empty() \
+					and catalog.call(&"get_record", &"item", cp.requirement_item_id) == null:
+				errors.append("%s: checkpoint '%s' requirement_item_id '%s' does not resolve"
+						% [map_id, cp.marker_id, cp.requirement_item_id])
+			if not cp.requirement_flag.is_empty() and not _registered(registry, cp.requirement_flag):
+				errors.append("%s: checkpoint '%s' requirement_flag '%s' is not registered"
+						% [map_id, cp.marker_id, cp.requirement_flag])
+			if not cp.linked_encounter_id.is_empty() \
+					and catalog.call(&"get_record", &"encounter", cp.linked_encounter_id) == null:
+				errors.append("%s: checkpoint '%s' linked_encounter_id '%s' does not resolve"
+						% [map_id, cp.marker_id, cp.linked_encounter_id])
+		for gag: GagInteractable in map.gags():
+			if not gag.liberate_symbol.is_empty() and not symbols.has(gag.liberate_symbol):
+				errors.append("%s: gag '%s' liberate_symbol '%s' is no symbol on the map"
+						% [map_id, gag.marker_id, gag.liberate_symbol])
+			if not gag.liberation_flag.is_empty() and not _registered(registry, gag.liberation_flag):
+				errors.append("%s: gag '%s' liberation_flag '%s' is not registered"
+						% [map_id, gag.marker_id, gag.liberation_flag])
+			if not gag.decree_first_sight.is_empty() and not symbols.has(gag.decree_first_sight):
+				errors.append("%s: decree gag '%s' decree_first_sight '%s' is no symbol on the map"
+						% [map_id, gag.marker_id, gag.decree_first_sight])
+			if gag.decree_stage > 0 and not _raised_by_registered_flag(map_rec, gag.decree_stage, registry):
+				errors.append("%s: decree gag '%s' decree_stage %d has no registered raising flag"
+						% [map_id, gag.marker_id, gag.decree_stage])
+		for enc_id: String in placed:
+			var rec: EncounterData = catalog.call(&"get_record", &"encounter", enc_id) as EncounterData
+			var p: Dictionary = rec.victory_payoff
+			if p.is_empty():
+				continue
+			var type: String = String(p.get("type", ""))
+			match type:
+				"none":
+					pass
+				"clue":
+					if String(p.get("facet", "")).is_empty():
+						errors.append("%s: %s victory_payoff clue names no facet" % [map_id, enc_id])
+				"open":
+					if not checkpoints.has(String(p.get("checkpoint", ""))):
+						errors.append("%s: %s victory_payoff opens '%s', no checkpoint on the map"
+								% [map_id, enc_id, p.get("checkpoint", "")])
+				"item":
+					if catalog.call(&"get_record", &"item", String(p.get("item_id", ""))) == null:
+						errors.append("%s: %s victory_payoff item_id '%s' does not resolve"
+								% [map_id, enc_id, p.get("item_id", "")])
+				_:
+					errors.append("%s: %s victory_payoff type '%s' is unknown" % [map_id, enc_id, type])
+	return errors
+
+
+static func _registered(registry: StoryFlagRegistry, flag: String) -> bool:
+	return registry != null and registry.has_flag(flag)
+
+
+static func _raised_by_registered_flag(rec: MapData, stage: int, registry: StoryFlagRegistry) -> bool:
+	if rec == null:
+		return false
+	for flag: String in rec.stage_table:
+		if rec.stage_table[flag] >= stage and _registered(registry, flag):
+			return true
+	return false

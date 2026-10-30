@@ -1,7 +1,7 @@
 # Story 078: Every encounter, symbol, flag, payoff, remark, decree-gag and item reference resolves
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-30d [D] (references)** Every `enc_`, `symbol_id`, `liberation_flag`, `victory_payoff`, `recruit_remark`, decree-gag and item reference resolves.
+- [x] **AC-30d [D] (references)** Every `enc_`, `symbol_id`, `liberation_flag`, `victory_payoff`, `recruit_remark`, decree-gag and item reference resolves.
 
 ---
 
@@ -58,7 +58,7 @@
 
 - `tools/ci/validate_maps.gd`
 - `data/maps/*`, `data/encounters/*`
-- `tests/unit/overworld/data/overworld_reference_integrity_test.gd`
+- `tests/unit/overworld/overworld_references_test.gd`
 
 ---
 
@@ -72,9 +72,9 @@
 
 **Story Type**: Logic (Data validation)
 **Required evidence**:
-- `tests/unit/overworld/data/overworld_reference_integrity_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
+- `tests/unit/overworld/overworld_references_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -82,3 +82,13 @@
 
 - Depends on: None
 - Unlocks: `production/epics/overworld-exploration-encounters/story-079-no-physics-nodes-in-shipped-maps.md`
+
+## Completion Notes (2026-10-30)
+
+- `MapValidator.check_references()` runs in `validate_maps` (CI) with the rule-18 registry (`OverworldConfig.flag_registry_path`). It gives one named error per broken reference:
+  - Symbols: `encounter_id`, and symbol IDs unique per map.
+  - Gags: `liberate_symbol`, `liberation_flag`, `decree_first_sight`, and `decree_stage` (a registered flag in the map's `stage_table` must raise to it).
+  - Checkpoints: `requirement_item_id`, `requirement_flag`, `linked_encounter_id`.
+  - Each placed encounter's `victory_payoff`: known type; `open` names a checkpoint on the map; `item` names an item record; `clue` names a facet.
+- `recruit_remark`: no marker has the field yet (squad recruitment is undesigned), so there is nothing to resolve. Add it to this pass when it lands.
+- Mutation checked: dropping the `liberate_symbol` check fails a test here.
