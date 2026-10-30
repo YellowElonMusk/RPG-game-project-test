@@ -75,6 +75,10 @@ static func run(catalog: ContentCatalogService, data_root: String = "res://data"
 	# ADR-0004 only offers per-record-type validators.
 	# Step 3 (ADR-0003 §6): the bindings record validator, before load_all().
 	catalog.register_record_validator(&"bindings", InputBindingsValidator.validate)
+	# ADR-0005 §9 sprite-set validators (stories 018, 062, 066), run on the
+	# character/enemy records that name each set.
+	PresentationValidators.register_sprite_set_validators(catalog,
+			PresentationValidators.load_sprite_sets(), PresentationValidators.load_config())
 	catalog.load_all(data_root)
 	return result
 

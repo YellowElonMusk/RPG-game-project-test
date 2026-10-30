@@ -79,7 +79,7 @@ ADR-0005's Migration Plan sets the order: the windowed spike (Step 1, verificati
 | 015 | [A battle replay plays beats in log order, impacting, holding and ending on the controller's own clocks](story-015-battle-replay-plays-beats-in-order.md) | Integration | Ready | ADR-0006 |
 | 016 | [The replay never mutates BattleCore, and the HUD always shows each combatant's live values](story-016-replay-never-mutates-battlecore.md) | Logic | Ready | ADR-0006 |
 | 017 | [Each shipped move resolves to its documented pose, reactions, numbers and punch shape](story-017-move-outcome-shapes-match-the-table.md) | Logic | Ready | ADR-0006 |
-| 018 | [Missing required animations fail Boot; missing optional ones fall back with one warning](story-018-boot-validation-of-sprite-set-animations.md) | Logic | Ready | ADR-0005 |
+| 018 | [Missing required animations fail Boot; missing optional ones fall back with one warning](story-018-boot-validation-of-sprite-set-animations.md) | Logic | Done | ADR-0005 |
 | 019 | [The squad's rim and outline colors stay constant, and no non-boss light matches a faction color](story-019-squad-rim-and-outline-stay-constant.md) | Logic | Ready | ADR-0005 |
 | 020 | [Only the set light casts shadows; every actor gets exactly one blob shadow](story-020-one-blob-shadow-per-actor-set-light-only-caster.md) | Logic | Ready | ADR-0005 |
 | 021 | [Screen Shake and Reduce Motion settings zero or halve the hit-punch offset](story-021-screen-shake-and-reduce-motion-scale-the-punch.md) | Logic | Ready | ADR-0005 |

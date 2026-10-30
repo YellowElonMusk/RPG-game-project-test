@@ -1,12 +1,12 @@
 # Story 018: Missing required animations fail Boot; missing optional ones fall back with one warning
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30
 
 ## Context
 
@@ -75,7 +75,7 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/boot_validation_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created — 16 tests passing (suite 1673/1673)
 
 ---
 
