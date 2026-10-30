@@ -24,3 +24,15 @@ Known placeholder limits accepted with this sign-off: the near south walls
 can hide the party (the GDD cut-away rule is unbuilt), and prompts, barks and
 the camp card are interim labels until stories 015/108/130 and the Camp &
 Party Management system replace them.
+
+## Sign-off: story 087 patrol walk-ins (2026-10-30)
+
+**Signed off by:** the user, acting as art director ("sign off 087"), 2026-10-30.
+
+| Story | Claim | Evidence |
+|---|---|---|
+| 087 (AC-39 VF) | Every symbol's patrol is on screen, unoccluded, from every approach before the leader can be noticed: 46 approaches across the segment and dungeon, all 100% visible, none clipped | `story-087-patrol-visibility/report.md` and its 46 PNGs, captured at the 12 m camera (story 099) after the level-design pass (stories 086/119/103) |
+
+Noted with this sign-off: the dungeon north-west Clerk sits near the top
+edge of the frame on its 270° approach (`..._hall_north_west__s6.png`),
+visible and accepted.

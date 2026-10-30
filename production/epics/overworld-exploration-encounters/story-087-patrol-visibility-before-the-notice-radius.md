@@ -1,7 +1,7 @@
 # Story 087: Every symbol's patrol is on screen from every approach, before the leader can be noticed
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: In Review (2026-10-30): built and passing; awaiting art-director sign-off on the walk-in captures
+> **Status**: Complete (2026-10-30): signed off by the art director (the user)
 > **Layer**: Feature
 > **Type**: Visual/Feel
 > **Estimate**: L
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-32 [VF] (R12, visibility)** The level-review tool and the capture-ID tags (both Tooling owed) list, for each symbol on each shipped map at each reachable stage, its approaches: walk-grid entries into the `see_m` disc, deduplicated by 45° sector. For each approach the symbol is **frozen at the patrol point nearest the approach** and the leader is placed at `see_m + 0.1 m` from it. The capture shows the symbol unoccluded: at least 50% of its sprite mask visible in the capture-ID pass. A retained screenshot per approach, plus the art-director sign-off. This AC covers set occluders only, since AC-39 proves the camera geometry.
+- [x] **AC-32 [VF] (R12, visibility)** The level-review tool and the capture-ID tags (both Tooling owed) list, for each symbol on each shipped map at each reachable stage, its approaches: walk-grid entries into the `see_m` disc, deduplicated by 45° sector. For each approach the symbol is **frozen at the patrol point nearest the approach** and the leader is placed at `see_m + 0.1 m` from it. The capture shows the symbol unoccluded: at least 50% of its sprite mask visible in the capture-ID pass. A retained screenshot per approach, plus the art-director sign-off. This AC covers set occluders only, since AC-39 proves the camera geometry.
 
 ---
 
@@ -75,7 +75,7 @@
 - A retained screenshot per symbol per approach per reachable stage, in `production/qa/evidence/`, plus art-director sign-off in `production/qa/evidence/signoff-overworld.md`. Gate level: BLOCKING.
 - **NOT ASSESSED** until stories 134 and 135 ship (Tooling owed).
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and signed off
 
 ---
 
@@ -90,5 +90,5 @@
 - Shipped maps: 23 approaches, all 100% visible, none clipped by the frame (`production/qa/evidence/story-087-patrol-visibility/report.md`). The gate was watched failing (0%, exit 1) with the segment east Clerk moved behind the row-12 wall block.
 - The first capture run showed the dungeon first-room Clerk cut off by the camera clamp at the east wall (framing, AC-39, not an occluder); it moved from x 21.5 to 20.5. The report now flags any mask touching the frame edge.
 - 2026-10-30: recaptured at the new 12.0 m camera height (story 099, OQ-1): 24 approaches, all 100% visible, none clipped. I opened a sample myself (segment east s0, dungeon first room s4, hall s7): the Clerk is unoccluded in each, and the first-room one sits near the right edge but inside the frame.
-- **Open:** art-director sign-off on the captures, to be added to `signoff-overworld.md`.
+- Art-director sign-off recorded in `production/qa/evidence/signoff-overworld.md` (2026-10-30).
 - 2026-10-30 (level-design pass, stories 086/119/103): recaptured after the segment's west Clerk moved and the dungeon gained four Clerks. 46 approaches, 0 failures. The new dungeon north-west Clerk is near the frame's top edge on its 270° approach; please look at that capture when signing off.
