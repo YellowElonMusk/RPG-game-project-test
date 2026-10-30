@@ -91,13 +91,12 @@ func bind_profiles(resolver: Callable) -> void:
 	_resolver = resolver
 
 
-## Resolves `id` through the bound resolver and applies it (the owning mode's
-## call, never the Director's -- ADR-0005 §3 "one door"). `clock` and the
-## blend itself belong to Story 009/026; this story applies the profile's
-## final values immediately.
-## TODO(sprite-camera-presentation): tween/clock-driven blending over
-## `blend_time` lands in Story 009 (lighting_blend) and Story 026 (the exact
-## formula) -- accepted here so the call shape matches ADR-0005 §3 now.
+## Resolves `id` through the bound resolver and blends to it over
+## `blend_time` (the owning mode's call, never the Director's -- ADR-0005 §3
+## "one door"). With a `clock` (`clock.call() -> float`, seconds), the blend
+## runs from that clock and no tween (the boss takeover, ADR-0006); without
+## one it runs on a tween on this node, which freezes under the Menu with
+## everything else in the mode (stories 009/026).
 func request_profile(id: StringName, blend_time: float, clock: Callable = Callable()) -> void:
 	if not _resolver.is_valid():
 		push_error("DioramaStage: request_profile() called before bind_profiles()")
@@ -106,13 +105,117 @@ func request_profile(id: StringName, blend_time: float, clock: Callable = Callab
 	if profile == null:
 		push_error("DioramaStage: unknown lighting profile '%s'" % id)
 		return
-	apply_profile(profile, blend_time)
+	_start_blend(profile, blend_time, clock)
 
 
-## Applies `profile`'s light and rim values to the rig (the Director's call
-## only -- ADR-0005 §3). Cull masks, shadow casters and the set light's angle
-## are never touched here (`_configure_light_rig()`'s job).
-func apply_profile(profile: LightingProfile, _blend_time: float) -> void:
+## Applies `profile` over `blend_time` (the Director's call only, on mode
+## entry with `blend_time = 0`, which gives `p = 1` on the first frame --
+## ADR-0005 §3). Cull masks, shadow casters and the set light's angle are
+## never touched here (`_configure_light_rig()`'s job).
+func apply_profile(profile: LightingProfile, blend_time: float) -> void:
+	_start_blend(profile, blend_time, Callable())
+
+
+## The blended values currently on the stage (every `LightingProfile`
+## parameter, `lighting_blend`'s `L`); null before the first profile.
+var current_values: LightingProfile
+## Emitted on the frame a blend reaches `p = 1`.
+signal blend_completed
+
+var _blend_from: LightingProfile
+var _blend_to: LightingProfile
+var _blend_time: float = 0.0
+var _blend_clock: Callable
+var _blend_clock_start: float = 0.0
+var _blend_tween: Tween
+var _blend_p: float = 1.0
+
+
+## `lighting_blend`'s `p` (GDD Formulas): `blend_time <= 0` gives 1 (mode
+## entry, never NaN); otherwise `smoothstep(0, 1, clamp(t / blend_time, 0, 1))`.
+static func blend_progress(t_blend: float, blend_time: float) -> float:
+	if blend_time <= 0.0:
+		return 1.0
+	return smoothstep(0.0, 1.0, clampf(t_blend / blend_time, 0.0, 1.0))
+
+
+## `lighting_blend`'s `L` (GDD Formulas): every continuous parameter is
+## `lerp(L_from, L_to, p)`, colors in linear space; every discrete parameter
+## (the on/off flags) switches to `L_to` when `p >= 0.5`. `p >= 1` returns
+## an exact copy of `to`.
+static func lighting_blend(from: LightingProfile, to: LightingProfile, p: float) -> LightingProfile:
+	if p >= 1.0:
+		return to.duplicate() as LightingProfile
+	var out := LightingProfile.new()
+	for prop: Dictionary in out.get_property_list():
+		if (int(prop["usage"]) & PROPERTY_USAGE_SCRIPT_VARIABLE) == 0:
+			continue
+		var key: StringName = StringName(prop["name"])
+		var a: Variant = from.get(key)
+		var b: Variant = to.get(key)
+		match typeof(a):
+			TYPE_FLOAT:
+				out.set(key, lerpf(a, b, p))
+			TYPE_VECTOR3:
+				out.set(key, (a as Vector3).lerp(b, p))
+			TYPE_COLOR:
+				out.set(key, (a as Color).srgb_to_linear().lerp(
+						(b as Color).srgb_to_linear(), p).linear_to_srgb())
+			_:
+				out.set(key, b if p >= 0.5 else a)
+	return out
+
+
+## Whether a blend is still running (`p < 1`).
+func is_blending() -> bool:
+	return _blend_p < 1.0
+
+
+## The current blend's `p`.
+func blend_p() -> float:
+	return _blend_p
+
+
+## Re-evaluates a clock-driven blend from its clock (called every frame by
+## `_process`; public so tests can drive frames). A no-op otherwise.
+func refresh_clock_blend() -> void:
+	if _blend_clock.is_valid() and is_blending():
+		_set_blend_t(float(_blend_clock.call()) - _blend_clock_start)
+
+
+func _process(_delta: float) -> void:
+	refresh_clock_blend()
+
+
+## Starts a blend from the values on stage now (`L_from` is captured, so a
+## blend requested mid-blend starts from the current values, never the old
+## target) toward `profile`.
+func _start_blend(profile: LightingProfile, blend_time: float, clock: Callable) -> void:
+	if _blend_tween != null:
+		_blend_tween.kill()
+		_blend_tween = null
+	_blend_from = current_values if current_values != null else profile
+	_blend_to = profile
+	_blend_time = blend_time
+	_blend_clock = clock
+	_blend_clock_start = float(clock.call()) if clock.is_valid() else 0.0
+	_blend_p = 0.0
+	_set_blend_t(0.0)
+	if is_blending() and not clock.is_valid():
+		_blend_tween = create_tween()
+		_blend_tween.tween_method(_set_blend_t, 0.0, blend_time, blend_time)
+
+
+func _set_blend_t(t_blend: float) -> void:
+	_blend_p = blend_progress(t_blend, _blend_time)
+	current_values = lighting_blend(_blend_from, _blend_to, _blend_p)
+	_apply_values(current_values)
+	if _blend_p >= 1.0:
+		_blend_clock = Callable()
+		blend_completed.emit()
+
+
+func _apply_values(profile: LightingProfile) -> void:
 	if key_light != null:
 		key_light.light_color = profile.key_color
 		key_light.light_energy = profile.key_energy

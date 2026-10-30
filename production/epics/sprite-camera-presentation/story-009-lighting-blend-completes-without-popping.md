@@ -1,12 +1,12 @@
 # Story 009: A lighting blend reaches p=1 exactly on its last frame and never pops
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -78,7 +78,7 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/lighting_blend_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -86,3 +86,13 @@
 
 - Depends on: `production/epics/sprite-camera-presentation/story-008-mode-entry-applies-lighting-before-reveal.md`
 - Unlocks: `production/epics/sprite-camera-presentation/story-026-lighting-blend-formula-is-exact.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30. `DioramaStage` now blends: `request_profile()`/`apply_profile()` capture the current values as `L_from`; with a `clock`, `refresh_clock_blend()` (called from `_process`) runs the blend from `clock.call()` and no tween is created; without one, a `tween_method` tween on the stage drives `t_blend`. `blend_time = 0` applies `p = 1` immediately (no tween, no NaN). `blend_completed` fires on the `p = 1` frame. Tests drive both paths frame by frame (`Tween.custom_step`): frame 26 `p < 1 - 1e-4`, frame 27 `p = 1` and complete, every parameter within 1e-4 of `lerp(L_from, L_to, p)`.
+
+**Deviations**: none. `current_values` (the blended `LightingProfile`) is public so the Director and tests can read every parameter; only lights and rim are pushed to nodes so far, as before.
+
+**Files**: `src/presentation/diorama_stage.gd`, `tests/unit/presentation/lighting_blend_test.gd`.

@@ -1,9 +1,8 @@
-## Minimal stub: only the fields `SpriteProjection`/`CharacterSprite` read
-## for Story 004 (AC-2). ADR-0005 §5 defines the full `PresentationConfig`
-## (profile table, sprite-set table, every GDD Tuning Knob, load
-## validation) -- that full resource and its `data/config/presentation_config.tres`
-## are a later story's scope; widen this file in place there rather than
-## duplicating it.
+## Presentation data (ADR-0005 §5): the texel scale, the follow camera and
+## the GDD Tuning Knobs, plus the GDD's full load-rule list (`validate()`,
+## story 061). The profile and sprite-set tables and
+## `data/config/presentation_config.tres` are later stories' scope; widen
+## this file in place there rather than duplicating it.
 class_name PresentationConfig
 extends Resource
 
@@ -43,3 +42,200 @@ extends Resource
 ## blur bound subtracts `H_max * sin(pitch)`). Placeholder until the sprite
 ## sets are authored.
 @export var overworld_card_height_max_m: float = 2.0
+
+## The replay knobs (GDD `replay_time`, ADR-0006 §9; story 061). Ranges are
+## the GDD's Tuning Knobs safe ranges; they are chained so every in-range
+## combination passes `validate()`'s range-guaranteed rules.
+@export_group("Battle Replay")
+## Wind-up speed once latched (`ff_mult`).
+@export_range(2.0, 2.5, 0.01) var ff_mult: float = 2.0
+## Wind-up speed with Faster battle animations On (`battle_speed_mult`).
+@export_range(1.25, 1.75, 0.01) var battle_speed_mult: float = 1.5
+## How long a plain reaction frame is held clean, in seconds (`reaction_hold`).
+@export_range(0.20, 0.30, 0.01) var reaction_hold: float = 0.25
+## The shortest knockout hold, in seconds (`ko_hold`).
+@export_range(0.40, 0.60, 0.01) var ko_hold: float = 0.50
+## The shortest a beat may play after speed-up, in seconds (`beat_min`).
+@export_range(0.40, 0.50, 0.01) var beat_min: float = 0.40
+## Hit-punch duration, in seconds (`D`).
+@export_range(0.08, 0.12, 0.01) var punch_duration: float = 0.10
+
+## The lighting beats (GDD Tuning Knobs, "Lighting beats").
+@export_group("Lighting Beats")
+## The first-encounter boss takeover blend, in seconds (`blend_boss`).
+@export_range(0.60, 1.00, 0.01) var blend_boss: float = 0.90
+## The boss intro pose hold after the takeover blend, in seconds (`boss_hold`).
+@export_range(0.60, 1.20, 0.01) var boss_hold: float = 0.90
+## The Retry settle on the boss's intro pose, in seconds (`boss_retry_hold`).
+@export_range(0.20, 0.40, 0.01) var boss_retry_hold: float = 0.30
+## The Victory blend, in seconds (`blend_victory`).
+@export_range(0.25, 0.35, 0.01) var blend_victory: float = 0.30
+## The Defeat blend, in seconds (`blend_defeat`).
+@export_range(0.25, 0.35, 0.01) var blend_defeat: float = 0.30
+## How long the fanfare poses are seen, in seconds (`victory_hold`).
+@export_range(0.35, 0.60, 0.01) var victory_hold: float = 0.40
+## How long the curtain-call poses are seen, in seconds (`defeat_hold`).
+@export_range(0.35, 0.60, 0.01) var defeat_hold: float = 0.40
+## How long the Victory light takes to settle after the burst, in seconds.
+@export_range(0.30, 0.50, 0.01) var victory_settle: float = 0.40
+
+## Set brightness levels (GDD `set_brightness_and_blur`).
+@export_group("Set Brightness")
+## Battle set brightness relative to native (`set_brightness_battle`).
+@export_range(0.60, 0.75, 0.01) var set_brightness_battle: float = 0.70
+## Boss takeover set brightness (`set_brightness_boss`).
+@export_range(0.75, 0.85, 0.01) var set_brightness_boss: float = 0.85
+## Set brightness at the Victory burst's peak (`set_brightness_victory`).
+@export_range(0.90, 0.95, 0.01) var set_brightness_victory: float = 0.90
+## Set brightness the Victory light settles at (`set_brightness_victory_settle`).
+@export_range(0.75, 0.85, 0.01) var set_brightness_victory_settle: float = 0.85
+## Set brightness outside the Defeat spotlight (`set_brightness_defeat`).
+@export_range(0.30, 0.50, 0.01) var set_brightness_defeat: float = 0.40
+## Set light energy over flooded fill energy in a boss takeover; must exceed
+## every non-boss preset's set:fill ratio (checked, not range-guaranteed).
+@export_range(4.0, 6.0, 0.1) var set_key_fill_ratio_boss: float = 4.0
+
+## Photosensitivity safety (GDD `flash_gate`).
+@export_group("Flash Safety")
+## Most flashes in any one-second window (`flash_rate_max`); never above 3.
+@export_range(1.0, 3.0, 0.5) var flash_rate_max: float = 3.0
+## General-transition luminance threshold. A constant: anything but
+## `FLASH_LUMA_DELTA` fails load validation.
+@export var flash_luma_delta: float = 0.10
+## Smallest counted area of a 10-degree window. A constant: anything but
+## `FLASH_AREA_MIN` fails load validation.
+@export var flash_area_min: float = 0.25
+
+
+## The required value of `flash_luma_delta` (GDD `flash_gate`).
+const FLASH_LUMA_DELTA: float = 0.10
+## The required value of `flash_area_min` (GDD `flash_gate`).
+const FLASH_AREA_MIN: float = 0.25
+## The largest `flash_rate_max` WCAG allows.
+const FLASH_RATE_CEILING: float = 3.0
+## Tolerance every load rule allows in its passing direction (GDD
+## `replay_time`, "Load-time validation").
+const RULE_EPSILON: float = 1e-6
+
+## Load rule names (GDD Formulas `replay_time`, "Load-time validation").
+## Every content error `validate()` returns starts with one of these.
+const RULE_PRESS_HELPS := "battle_speed_mult <= ff_mult - 0.25"
+## See `RULE_PRESS_HELPS`.
+const RULE_DEBUG_WINDUP := "reaction_hold <= beat_min - 0.10"
+## See `RULE_PRESS_HELPS`.
+const RULE_REACTION_KO := "reaction_hold <= ko_hold"
+## See `RULE_PRESS_HELPS`.
+const RULE_PUNCH := "D < reaction_hold"
+## See `RULE_PRESS_HELPS`.
+const RULE_DT_MAX := "dt_max < beat_min"
+## See `RULE_PRESS_HELPS`.
+const RULE_RETRY_HOLD := "boss_retry_hold <= blend_boss + boss_hold"
+## See `RULE_PRESS_HELPS`.
+const RULE_VICTORY_HOLD := "blend_victory <= victory_hold"
+## See `RULE_PRESS_HELPS`.
+const RULE_DEFEAT_HOLD := "blend_defeat <= defeat_hold"
+## See `RULE_PRESS_HELPS`.
+const RULE_BATTLE_BOSS := "set_brightness_battle <= set_brightness_boss"
+## See `RULE_PRESS_HELPS`.
+const RULE_VICTORY_SETTLE := "set_brightness_victory_settle <= set_brightness_victory"
+## See `RULE_PRESS_HELPS`.
+const RULE_VICTORY_BURST := "set_brightness_victory >= set_brightness_boss + 0.05"
+## See `RULE_PRESS_HELPS`.
+const RULE_FLASH_SEQUENCES := "capped variants and reserved sequences within flash_rate_max"
+## See `RULE_PRESS_HELPS`.
+const RULE_KEY_FILL := "set_key_fill_ratio_boss > every non-boss preset's set key:fill ratio"
+## See `RULE_PRESS_HELPS`.
+const RULE_FLASH_CONSTANTS := "flash_rate_max <= 3, flash_luma_delta = 0.10, flash_area_min = 0.25"
+## See `RULE_PRESS_HELPS`.
+const RULE_HORIZON := "pitch - F_v_eff(4:3)/2 >= horizon_margin"
+
+
+## Runs the GDD's full load-rule list (story 061, ADR-0005 §5/§9) and returns
+## one content error per broken rule, each starting with the rule's name
+## (`RULE_*`); empty means the config passes. Every comparison allows
+## `RULE_EPSILON` in its passing direction, so a config exactly on a
+## boundary passes; the key:fill rule alone is strict ("at or below" fails).
+##
+## The data the ranges can't guarantee is injected:
+## - `non_boss_profiles`: every non-boss `LightingProfile`, for the key:fill rule;
+## - `reserved_sequences`: each scripted reserved flash sequence as its
+##   alternating transition offsets at 1x, in seconds; checked at 1x,
+##   `battle_speed_mult` and `ff_mult`;
+## - `capped_variants`: each capped variant's declared frames as
+##   `{"general": bool, "red": bool, "area": float}`.
+## TODO(sprite-camera-presentation): `ContentBootstrap` (ADR-0004/0005 §9)
+## registers this as a boot validator once it exists; FlashGate's source
+## declarations (§12) replace the plain sequence/variant inputs.
+func validate(non_boss_profiles: Array[LightingProfile] = [],
+		reserved_sequences: Array[PackedFloat64Array] = [],
+		capped_variants: Array[Dictionary] = []) -> PackedStringArray:
+	var errors := PackedStringArray()
+	_check(errors, battle_speed_mult <= ff_mult - 0.25 + RULE_EPSILON, RULE_PRESS_HELPS)
+	_check(errors, reaction_hold <= beat_min - 0.10 + RULE_EPSILON, RULE_DEBUG_WINDUP)
+	_check(errors, reaction_hold <= ko_hold + RULE_EPSILON, RULE_REACTION_KO)
+	_check(errors, punch_duration <= reaction_hold + RULE_EPSILON, RULE_PUNCH)
+	_check(errors, follow_camera_dt_max <= beat_min + RULE_EPSILON, RULE_DT_MAX)
+	_check(errors, boss_retry_hold <= blend_boss + boss_hold + RULE_EPSILON, RULE_RETRY_HOLD)
+	_check(errors, blend_victory <= victory_hold + RULE_EPSILON, RULE_VICTORY_HOLD)
+	_check(errors, blend_defeat <= defeat_hold + RULE_EPSILON, RULE_DEFEAT_HOLD)
+	_check(errors, set_brightness_battle <= set_brightness_boss + RULE_EPSILON, RULE_BATTLE_BOSS)
+	_check(errors, set_brightness_victory_settle <= set_brightness_victory + RULE_EPSILON,
+			RULE_VICTORY_SETTLE)
+	_check(errors, set_brightness_victory >= set_brightness_boss + 0.05 - RULE_EPSILON,
+			RULE_VICTORY_BURST)
+	_check(errors, _flash_sequences_pass(reserved_sequences, capped_variants), RULE_FLASH_SEQUENCES)
+	var key_fill_ok := true
+	for profile: LightingProfile in non_boss_profiles:
+		if profile.fill_energy <= 0.0 \
+				or set_key_fill_ratio_boss <= profile.set_energy / profile.fill_energy:
+			key_fill_ok = false
+	_check(errors, key_fill_ok, RULE_KEY_FILL)
+	_check(errors, flash_rate_max <= FLASH_RATE_CEILING + RULE_EPSILON
+			and absf(flash_luma_delta - FLASH_LUMA_DELTA) <= RULE_EPSILON
+			and absf(flash_area_min - FLASH_AREA_MIN) <= RULE_EPSILON, RULE_FLASH_CONSTANTS)
+	var f_v_eff: float = FollowCamera.effective_vertical_fov_degrees(
+			follow_camera_fov_degrees, 4.0 / 3.0)
+	_check(errors, follow_camera_pitch_degrees - f_v_eff * 0.5
+			>= follow_camera_horizon_margin_degrees - RULE_EPSILON, RULE_HORIZON)
+	return errors
+
+
+func _check(errors: PackedStringArray, ok: bool, rule: String) -> void:
+	if not ok:
+		errors.append("%s -- PresentationConfig load rule failed" % rule)
+
+
+## Capped variants: no general and no red transition, unless below
+## `flash_area_min`. Reserved sequences: at most `flash_rate_max` flashes in
+## any closed one-second window, at 1x, `battle_speed_mult` and `ff_mult`
+## (GDD `flash_gate`).
+func _flash_sequences_pass(reserved_sequences: Array[PackedFloat64Array],
+		capped_variants: Array[Dictionary]) -> bool:
+	for variant: Dictionary in capped_variants:
+		var flashing: bool = bool(variant.get("general", false)) or bool(variant.get("red", false))
+		if flashing and float(variant.get("area", 1.0)) >= flash_area_min - RULE_EPSILON:
+			return false
+	for offsets: PackedFloat64Array in reserved_sequences:
+		for speed: float in [1.0, battle_speed_mult, ff_mult]:
+			if max_flashes_in_window(offsets, speed) > flash_rate_max + RULE_EPSILON:
+				return false
+	return true
+
+
+## The most flashes landing in any closed one-second window when `offsets`
+## (alternating transitions, seconds at 1x) play at `speed` (GDD
+## `flash_gate`: N alternating transitions are N-1 flashes, so the first
+## transition is never one).
+static func max_flashes_in_window(offsets: PackedFloat64Array, speed: float) -> int:
+	var lands: Array[float] = []
+	for o: float in offsets:
+		lands.append(o / speed)
+	lands.sort()
+	var best: int = 0
+	for i: int in range(1, lands.size()):
+		var count: int = 0
+		for j: int in range(i, lands.size()):
+			if lands[j] <= lands[i] + 1.0 + RULE_EPSILON:
+				count += 1
+		best = maxi(best, count)
+	return best

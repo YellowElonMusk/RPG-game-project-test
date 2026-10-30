@@ -1,12 +1,12 @@
 # Story 026: lighting_blend reaches p=0.5 at half its duration and never jumps by more than one frame-step
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -78,7 +78,7 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/lighting_blend_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -86,3 +86,13 @@
 
 - Depends on: `production/epics/sprite-camera-presentation/story-009-lighting-blend-completes-without-popping.md`
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30. `DioramaStage.blend_progress(t, blend_time)` (static, pure) and `DioramaStage.lighting_blend(from, to, p)` implement the GDD formula: smoothstep `p`, `blend_time <= 0` returns 1; floats and Vector3 lerp, colors lerp in linear space (`srgb_to_linear`), bool flags switch at `p >= 0.5`, `p >= 1` returns an exact copy of the target. Tests: `p = 0.5` at half duration for the config's blend lengths and a non-default config; a mid-blend re-request starts from the captured values, and each frame's change stays within the largest single-frame `p` step times the span; with a 26.5-frame blend, discrete flags are old on frame 13 and new on frame 14.
+
+**Deviations**: none.
+
+**Files**: `src/presentation/diorama_stage.gd`, `tests/unit/presentation/lighting_blend_test.gd`.

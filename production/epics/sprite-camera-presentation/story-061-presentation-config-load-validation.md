@@ -1,12 +1,12 @@
 # Story 061: PresentationConfig's load rules are validated at boot
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/sprite-camera-presentation.md`, scoped to this story:*
 
-- [ ] **AC-56 [L]** (P-06) (config validation) Fixture configs, each breaking one load rule by a clear margin (at least 0.01), end boot in a content error naming that rule:
+- [x] **AC-56 [L]** (P-06) (config validation) Fixture configs, each breaking one load rule by a clear margin (at least 0.01), end boot in a content error naming that rule:
   - `battle_speed_mult > ff_mult − 0.25`;
   - `reaction_hold > beat_min − 0.10`;
   - `reaction_hold > ko_hold`;
@@ -92,7 +92,7 @@ Each of the fourteen rules gets its own fixture `PresentationConfig` that breaks
 **Required evidence**:
 - `tests/unit/presentation/presentation_config_validation_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (5 test cases)
 
 ---
 
@@ -100,3 +100,17 @@ Each of the fourteen rules gets its own fixture `PresentationConfig` that breaks
 
 - Depends on: None
 - Unlocks: None
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30. `PresentationConfig` gains every replay, lighting-beat, set-brightness and flash-safety knob (`@export_range` = GDD safe ranges) and `validate(non_boss_profiles, reserved_sequences, capped_variants) -> PackedStringArray`, one error per broken rule, each starting with its `RULE_*` name. Tests: 5 cases (19 break fixtures and 15 boundary fixtures, each run on the default and the all-max config; every corner of each chained knob group; all-min/all-max), all passing.
+
+**Deviations**:
+- Fixtures are factory functions in the test, not `.tres` files under `data/presentation/presentation_config_fixtures/` (the coding standard allows either).
+- `ContentBootstrap` does not exist yet, so `validate()` is not yet registered as a boot validator (`TODO(sprite-camera-presentation)`); flash sequences and capped variants are plain injected inputs until FlashGate's source declarations (§12) exist.
+- The 1e-6 tolerance applies to `D < reaction_hold` and `dt_max < beat_min` too, so equality passes ("a config exactly on each boundary passes"); key:fill alone is strict, because the AC says "at or below" fails.
+- `dt_max` is the existing `follow_camera_dt_max` (the GDD shares it); `D` is `punch_duration`.
+
+**Files**: `src/presentation/presentation_config.gd`, `tests/unit/presentation/presentation_config_validation_test.gd`.
