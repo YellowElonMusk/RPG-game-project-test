@@ -1,12 +1,12 @@
 # Story 008: A solo party still records a trail, and a mid-visit recruit joins at the first slot
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30
 
 ## Context
 
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-5b [L] (R2)** GIVEN a party of one, THEN there are no followers but the trail is still recorded. A recruit added mid-visit appears at `s_1`.
+- [x] **AC-5b [L] (R2)** GIVEN a party of one, THEN there are no followers but the trail is still recorded. A recruit added mid-visit appears at `s_1`.
 
 ---
 
@@ -81,7 +81,7 @@ follower-lookup step, not the recording step, that has nothing to read when
 **Required evidence**:
 - `tests/unit/overworld/follower_trail_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30, single-file run)
 
 ---
 
@@ -89,3 +89,11 @@ follower-lookup step, not the recording step, that has nothing to read when
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-006-follower-trail-spacing-formula.md`; Squad Roster (named dependency, no epic yet)
 - Unlocks: None
+
+## Completion Notes (2026-10-30)
+
+FollowerTrail.step() gains record_followers (buffer sized for max(n_followers, record_followers)); OverworldMode.step_followers() records for config.max_followers, so a party of one still records and a recruit appears at s_1 on the path already walked. Added get_trail_buffer_length(). Deviation: with n_f = 0 the buffer is N_buf(max_followers), not N_buf(0) = 2; the formula buffer of 2 points could not place a recruit at s_1, which the GDD Edge Case requires.
+
+**Test Evidence**: tests/unit/overworld/follower_trail_test.gd (4 new tests, file 16/16 passing), default and non-default config.
+
+**Files**: src/overworld/follower_trail.gd, src/overworld/overworld_mode.gd, tests/unit/overworld/follower_trail_test.gd

@@ -1,12 +1,12 @@
 # Story 009: A follower's facing flips only after moving into the new direction, and copies the leader when idle
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30
 
 ## Context
 
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-5c [L] (`follower_trail`)** A follower's facing flips only after it has moved at least `trail_sample_m` in the new direction. When idle, followers copy the leader's facing.
+- [x] **AC-5c [L] (`follower_trail`)** A follower's facing flips only after it has moved at least `trail_sample_m` in the new direction. When idle, followers copy the leader's facing.
 
 ---
 
@@ -80,7 +80,7 @@ different scale and mechanism (arc-length lookahead, not angular dead zone).
 **Required evidence**:
 - `tests/unit/overworld/follower_trail_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30, single-file run)
 
 ---
 
@@ -88,3 +88,11 @@ different scale and mechanism (arc-length lookahead, not angular dead zone).
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-006-follower-trail-spacing-formula.md`
 - Unlocks: None
+
+## Completion Notes (2026-10-30)
+
+No prior test covered facing; implemented. FollowerTrail.facings(): while the leader moves, follower i looks toward the trail point at s_i - trail_sample_m; a new direction is committed only after the follower travels trail_sample_m (projected on that direction) since it diverged from the committed facing; a frame where the leader does not move copies the leader facing (passed in step()). OverworldMode.get_follower_facings() exposes it. Interpretation: facing is a Vector2 (no quantised sprite facings), so the hysteresis is distance-based on the raw direction. OverworldView does not yet consume follower facings (presentation follow-up).
+
+**Test Evidence**: tests/unit/overworld/follower_trail_test.gd (3 new tests, default and non-default config), 16/16 passing.
+
+**Files**: src/overworld/follower_trail.gd, src/overworld/overworld_mode.gd, tests/unit/overworld/follower_trail_test.gd

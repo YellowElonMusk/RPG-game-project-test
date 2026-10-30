@@ -1,12 +1,12 @@
 # Story 018: At runtime, a non-zero zone_rate logs an error and no zone roll ever fires
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30
 
 ## Context
 
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-8c [L] (R4)** At runtime a fixture map with `zone_rate = 0.1` logs an error, and the zone-roll spy records zero rolls over `ceil(60 / dt_max)` frames.
+- [x] **AC-8c [L] (R4)** At runtime a fixture map with `zone_rate = 0.1` logs an error, and the zone-roll spy records zero rolls over `ceil(60 / dt_max)` frames.
 
 ---
 
@@ -79,7 +79,7 @@ has already run against this exact fixture.
 **Required evidence**:
 - `tests/unit/overworld/data/zone_runtime_suppression_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30, single-file run)
 
 ---
 
@@ -87,3 +87,11 @@ has already run against this exact fixture.
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-017-zone-rate-zero-on-every-mvp-map.md`
 - Unlocks: None
+
+## Completion Notes (2026-10-30)
+
+OverworldMode reads the map record zone_rate on the map-entry commit (_resolve_zone_rate): a value > 0 appends one entry to zone_errors, push_errors once, and the visit runs at zone_rate 0. step_frame calls _step_zone(), which makes no roll at rate 0; zone_rolls is the spy. The zone encounter itself stays a TODO(ow-epic).
+
+**Test Evidence**: tests/unit/overworld/data/zone_runtime_suppression_test.gd, 3/3 passing (ceil(60/dt_max) frames at dt_max and dt_max/2).
+
+**Files**: src/overworld/overworld_mode.gd, tests/unit/overworld/data/zone_runtime_suppression_test.gd

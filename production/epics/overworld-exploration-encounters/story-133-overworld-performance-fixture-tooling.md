@@ -1,12 +1,12 @@
 # Story 133: Build the perf_overworld fixture, debug flags and the step_symbols() performance monitor
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Integration
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-30
 
 ## Context
 

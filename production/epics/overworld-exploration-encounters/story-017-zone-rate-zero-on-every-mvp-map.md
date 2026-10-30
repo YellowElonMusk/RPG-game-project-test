@@ -1,12 +1,12 @@
 # Story 017: Every MVP map record ships with zone_rate = 0, enforced in CI
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30
 
 ## Context
 
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-8 [D] (R4)** Every MVP `map_` record has `zone_rate = 0`. A fixture with `zone_rate = 0.1` fails CI, naming the record.
+- [x] **AC-8 [D] (R4)** Every MVP `map_` record has `zone_rate = 0`. A fixture with `zone_rate = 0.1` fails CI, naming the record.
 
 ---
 
@@ -79,7 +79,7 @@ no zone encounter can happen." `zone_rate`'s own Tuning Knobs row confirms:
 **Required evidence**:
 - `tests/unit/overworld/data/zone_rate_validation_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30, single-file run)
 
 ---
 
@@ -87,3 +87,11 @@ no zone encounter can happen." `zone_rate`'s own Tuning Knobs row confirms:
 
 - Depends on: None
 - Unlocks: `production/epics/overworld-exploration-encounters/story-018-zone-roll-suppressed-at-runtime.md`, `production/epics/overworld-exploration-encounters/story-019-faction-patrol-archetype-id-resolves.md`
+
+## Completion Notes (2026-10-30)
+
+MapValidator.check_zone_rates() names every map_ record with zone_rate != 0; validate_catalog() runs it, so tools/ci/validate_maps.gd fails on it (no change needed to the CI script itself). All 4 shipped map records are 0.
+
+**Test Evidence**: tests/unit/overworld/data/zone_rate_validation_test.gd, 2/2 passing.
+
+**Files**: src/overworld/map_validator.gd, tests/unit/overworld/data/zone_rate_validation_test.gd

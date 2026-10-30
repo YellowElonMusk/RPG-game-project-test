@@ -234,3 +234,113 @@ func _make_moving_mode(cfg: OverworldConfig) -> OverworldMode:
 	source.move_vector = Vector2.DOWN
 	machine.bind_action_source(source)
 	return mode
+
+
+# -- Story 008 (AC-5b): a party of one, and a mid-visit recruit -------------
+
+func test_party_of_one_has_no_followers_but_records_the_trail() -> void:
+	var cfg := OverworldConfig.new()
+	var trail := FollowerTrail.new()
+	trail.reset(Vector2.ZERO)
+	var out: Array[Vector2] = trail.step(Vector2.RIGHT * cfg.trail_sample_m * 3.0, 0, cfg,
+			Vector2.RIGHT, cfg.max_followers)
+	assert_array(out).is_empty()
+	assert_int(trail.buffer_length()).is_equal(3)
+
+
+func test_mid_visit_recruit_appears_at_s1() -> void:
+	_assert_recruit_at_s1(OverworldConfig.new())
+
+
+func test_mid_visit_recruit_appears_at_s1_with_custom_config() -> void:
+	var cfg := OverworldConfig.new()
+	cfg.follower_spacing_m = 0.8
+	cfg.trail_sample_m = 0.1
+	_assert_recruit_at_s1(cfg)
+
+
+func test_overworld_mode_solo_party_records_and_recruit_joins_at_s1() -> void:
+	var cfg := OverworldConfig.new()
+	var mode: OverworldMode = auto_free(OverworldMode.new())
+	mode.config = cfg
+	mode.set_leader_position(Vector2.ZERO)
+	var step_m: float = cfg.trail_sample_m / 3.0
+	var x: float = 0.0
+	while x < cfg.follower_spacing_m * 3.0:
+		x += step_m
+		mode.set(&"_leader_pos", Vector2(x, 0.0))
+		mode.step_followers(0)
+	assert_array(mode.get_follower_positions()).is_empty()
+	assert_int(mode.get_trail_buffer_length()).is_greater(0)
+	mode.step_followers(1)
+	var pos: Vector2 = mode.get_follower_positions()[0]
+	assert_vector(pos).is_equal_approx(Vector2(x - cfg.follower_spacing_m, 0.0), Vector2(1e-4, 1e-4))
+
+
+func _assert_recruit_at_s1(cfg: OverworldConfig) -> void:
+	var trail := FollowerTrail.new()
+	trail.reset(Vector2.ZERO)
+	var x: float = 0.0
+	var step_m: float = cfg.trail_sample_m / 3.0
+	while x < cfg.follower_spacing_m * 4.0:
+		x += step_m
+		assert_array(trail.step(Vector2(x, 0.0), 0, cfg, Vector2.RIGHT, cfg.max_followers)).is_empty()
+	var out: Array[Vector2] = trail.step(Vector2(x, 0.0), 1, cfg, Vector2.RIGHT, cfg.max_followers)
+	assert_int(out.size()).is_equal(1)
+	assert_vector(out[0]).is_equal_approx(Vector2(x - cfg.follower_spacing_m, 0.0), Vector2(1e-4, 1e-4))
+
+
+# -- Story 009 (AC-5c): follower facing hysteresis and idle copy -------------
+
+func test_follower_facing_holds_until_it_travels_trail_sample_m() -> void:
+	_assert_facing_hysteresis(OverworldConfig.new())
+
+
+func test_follower_facing_hysteresis_with_custom_config() -> void:
+	var cfg := OverworldConfig.new()
+	cfg.follower_spacing_m = 0.8
+	cfg.trail_sample_m = 0.1
+	_assert_facing_hysteresis(cfg)
+
+
+func test_idle_followers_copy_the_leader_facing() -> void:
+	var cfg := OverworldConfig.new()
+	var trail := FollowerTrail.new()
+	trail.reset(Vector2.ZERO)
+	var x: float = 0.0
+	while x < cfg.follower_spacing_m * 4.0:
+		x += 0.01
+		trail.step(Vector2(x, 0.0), _N_FOLLOWERS, cfg, Vector2.RIGHT)
+	for f: Vector2 in trail.facings():
+		assert_vector(f).is_equal_approx(Vector2.RIGHT, Vector2(1e-4, 1e-4))
+	trail.step(Vector2(x, 0.0), _N_FOLLOWERS, cfg, Vector2.UP)
+	assert_int(trail.facings().size()).is_equal(_N_FOLLOWERS)
+	for f: Vector2 in trail.facings():
+		assert_vector(f).is_equal(Vector2.UP)
+
+
+## Leader walks right, turns a 90-degree corner and walks down. Follower 1's
+## lookahead (`s_1 - trail_sample_m`) passes the corner once the leader is
+## `spacing - sample` down; until the follower itself has travelled
+## `trail_sample_m` after that its facing stays RIGHT. Far down the leg it
+## faces DOWN.
+func _assert_facing_hysteresis(cfg: OverworldConfig) -> void:
+	var trail := FollowerTrail.new()
+	var step_m: float = 0.01
+	trail.reset(Vector2.ZERO)
+	var corner := Vector2(cfg.follower_spacing_m * 4.0, 0.0)
+	var x: float = 0.0
+	while x < corner.x - 1e-6:
+		x = minf(x + step_m, corner.x)
+		trail.step(Vector2(x, 0.0), 1, cfg, Vector2.RIGHT)
+	assert_vector(trail.facings()[0]).is_equal_approx(Vector2.RIGHT, Vector2(1e-4, 1e-4))
+	var hold_until: float = cfg.follower_spacing_m - cfg.trail_sample_m * 0.5
+	var y: float = 0.0
+	while y < hold_until - 1e-6:
+		y = minf(y + step_m, hold_until)
+		trail.step(corner + Vector2(0.0, y), 1, cfg, Vector2.DOWN)
+		assert_vector(trail.facings()[0]).is_equal_approx(Vector2.RIGHT, Vector2(1e-4, 1e-4))
+	while y < cfg.follower_spacing_m * 3.0:
+		y += step_m
+		trail.step(corner + Vector2(0.0, y), 1, cfg, Vector2.DOWN)
+	assert_vector(trail.facings()[0]).is_equal_approx(Vector2.DOWN, Vector2(1e-4, 1e-4))

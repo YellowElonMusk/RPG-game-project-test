@@ -88,8 +88,46 @@ static func validate_catalog(catalog: ContentCatalogService, cfg: OverworldConfi
 			errors.append_array(validate_legs(rec as MapData, rec_map))
 			errors.append_array(BypassSearch.check(rec as MapData, rec_map, cfg))
 			errors.append_array(BypassSearch.check_pressure(rec as MapData, rec_map, cfg))
+	errors.append_array(check_zone_rates(records.values()))
+	errors.append_array(check_patrol_archetypes(records.values(), catalog, cfg))
 	for map: OverworldMap in maps.values():
 		map.free()
+	return errors
+
+
+## Story 017, AC-8 (GDD rule 4): every MVP `map_` record has `zone_rate`
+## 0. One error per offending record, naming it.
+static func check_zone_rates(map_records: Array) -> PackedStringArray:
+	var errors := PackedStringArray()
+	for rec: Variant in map_records:
+		var map_rec: MapData = rec as MapData
+		if map_rec != null and map_rec.zone_rate != 0.0:
+			errors.append("%s: zone_rate is %s; every MVP map must be 0 (symbols only)" \
+					% [map_rec.id, map_rec.zone_rate])
+	return errors
+
+
+## Story 019, AC-8b (GDD rule 4; ADR-0012 §3): every `faction_` record a
+## shipped map uses (`MapData.faction_id`) exists and names a
+## `patrol_archetype_id` in `cfg.patrol_archetype_ids`. Errors name the map
+## or faction record and the dangling ID. `catalog` needs `get_record()`.
+static func check_patrol_archetypes(map_records: Array, catalog: Object,
+		cfg: OverworldConfig) -> PackedStringArray:
+	var errors := PackedStringArray()
+	var seen: Dictionary = {}
+	for rec: Variant in map_records:
+		var map_rec: MapData = rec as MapData
+		if map_rec == null or map_rec.faction_id.is_empty() or seen.has(map_rec.faction_id):
+			continue
+		seen[map_rec.faction_id] = true
+		var faction: FactionData = catalog.call(&"get_record", &"faction", map_rec.faction_id) as FactionData
+		if faction == null:
+			errors.append("%s: faction_id '%s' resolves to no faction record" % [map_rec.id, map_rec.faction_id])
+		elif faction.patrol_archetype_id.is_empty():
+			errors.append("%s: no patrol_archetype_id (used by %s)" % [faction.id, map_rec.id])
+		elif not cfg.patrol_archetype_ids.has(faction.patrol_archetype_id):
+			errors.append("%s: patrol_archetype_id '%s' does not resolve" \
+					% [faction.id, faction.patrol_archetype_id])
 	return errors
 
 

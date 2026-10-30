@@ -318,6 +318,7 @@ func _commit_map_entry() -> void:
 	_relocate_off_blockers()
 	_refresh_gags()
 	_place_symbols(_map)
+	_resolve_zone_rate()
 
 
 ## Commits a pending map entry once the swap has succeeded. A node no longer
@@ -438,6 +439,7 @@ func step_frame(ow_dt: float, input_vec: Vector2) -> void:
 	if step_timer.is_valid():
 		step_timer.call(Time.get_ticks_usec() - step_t0)
 	_check_contact(leader_from, symbol_from)
+	_step_zone(ow_dt)
 	_mirror_world_state()
 
 
@@ -895,8 +897,29 @@ func get_follower_positions() -> Array[Vector2]:
 ## 008/010) to supply `n_followers` automatically, so the caller (today, a
 ## test; later, whichever system holds the roster) passes it explicitly and
 ## calls this once per frame alongside `_process()`.
+##
+## Story 008 (AC-5b): the trail always records for `config.max_followers`,
+## so with `n_followers = 0` (a party of one) it still grows, and a recruit
+## who joins mid-visit (a later call with a larger `n_followers`) appears at
+## `s_1` on the path already walked. Story 009 (AC-5c): facings via
+## `get_follower_facings()`.
 func step_followers(n_followers: int) -> void:
-	set_follower_positions(_follower_trail.step(_leader_pos, n_followers, config))
+	set_follower_positions(_follower_trail.step(
+			_leader_pos, n_followers, config, _leader_facing, config.max_followers))
+
+
+## Each follower's facing after the last `step_followers()`, nearest first
+## (story 009, AC-5c; GDD Formulas, `follower_trail`): toward the trail
+## point `trail_sample_m` ahead, flipped only after `trail_sample_m` of
+## travel in the new direction, and the leader's facing while idle.
+func get_follower_facings() -> Array[Vector2]:
+	return _follower_trail.facings()
+
+
+## The follower trail's recorded-point count (story 008: a party of one
+## still records).
+func get_trail_buffer_length() -> int:
+	return _follower_trail.buffer_length()
 
 
 # -- Checkpoints (GDD rule 10; stories 070-072) ------------------------------
@@ -1863,6 +1886,41 @@ func _liberate_for(symbol_id: String) -> void:
 ## The mode's own seeded RNG, the only source of overworld randomness
 ## (ADR-0012 Guidelines); never `randi()`/`randf()`. Tests set `rng.seed`.
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+
+
+# -- Zone encounters (GDD rule 4, Edge Cases; ADR-0012 §9; story 018) -------
+
+## The zone rate in force this visit. Always 0 in MVP: a `map_` record with
+## `zone_rate > 0` is treated as 0 and logged (GDD Edge Cases).
+var zone_rate: float = 0.0
+## One entry per map entry whose record carried a non-zero `zone_rate`.
+var zone_errors: Array[String] = []
+## Zone rolls made (the AC-8c spy). Stays 0 while `zone_rate` is 0.
+var zone_rolls: int = 0
+
+
+## Story 018 (AC-8c): reads the map record's `zone_rate` on the map-entry
+## commit. MVP is symbols only, so a value > 0 logs one error and the visit
+## runs at rate 0 (no roll is ever made).
+func _resolve_zone_rate() -> void:
+	zone_rate = 0.0
+	if encounter_catalog == null or _map == null:
+		return
+	var rec: MapData = encounter_catalog.call(&"get_record", &"map", _map.map_id) as MapData
+	if rec == null or rec.zone_rate <= 0.0:
+		return
+	var msg: String = "OverworldMode: %s has zone_rate %s > 0; MVP treats it as 0" % [rec.id, rec.zone_rate]
+	zone_errors.append(msg)
+	push_error(msg)
+
+
+## The zone mechanism's per-frame hook (kept in code per ADR-0012 §9). At
+## `zone_rate` 0 no roll is made (GDD rule 4).
+## TODO(ow-epic): the zone encounter itself (post-MVP; no story yet).
+func _step_zone(_ow_dt: float) -> void:
+	if zone_rate <= 0.0:
+		return
+	zone_rolls += 1
 ## Liberation reactions per marker id: one entry per reacting civilian,
 ## `true` = grumble beat, `false` = a small pleased beat.
 ## TODO(overworld-view): the view plays these beats once civilian sprites exist.

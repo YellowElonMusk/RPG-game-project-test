@@ -1,12 +1,12 @@
 # Story 005: Followers never collide, trigger exits or trigger interactions
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: In Progress (2026-10-29): structural only: AC-3 re-check owed against the real symbols, exits and interactables that now exist
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29 (implemented, awaiting /story-done)
+> **Last Updated**: 2026-10-30
 
 ## Context
 
@@ -111,7 +111,7 @@ position must produce zero effect.
 **Required evidence**:
 - `tests/unit/overworld/follower_no_collision_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [x] Created and passing (3/3)
+**Status**: [x] Created and passing (5/5, 2026-10-30)
 
 ---
 
@@ -119,3 +119,11 @@ position must produce zero effect.
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-004-wall-slide-and-corner-assist.md`
 - Unlocks: `production/epics/overworld-exploration-encounters/story-006-follower-trail-spacing-formula.md`, `production/epics/overworld-exploration-encounters/story-010-followers-not-saved-rebuilt-from-roster.md`
+
+## Completion Notes (2026-10-30)
+
+AC-3 re-checked against the real segment map: a patrolling EncounterSymbol, the real MapExit and a GagInteractable sit on follower positions with the leader clear of each; one step_frame makes no battle request (RequestSpyMachine), no map_exit_requested, and probe() is null. A control test proves the same gag and symbol fire for the leader. No production change was needed.
+
+**Test Evidence**: tests/unit/overworld/follower_no_collision_test.gd, 5/5 passing.
+
+**Files**: tests/unit/overworld/follower_no_collision_test.gd

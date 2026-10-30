@@ -350,3 +350,8 @@ func text_hold(text: String) -> float:
 @export var no_contact: bool = false
 @export var no_giveup: bool = false
 @export var notice_cache_off: bool = false
+## Story 019 (AC-8b; ADR-0012 §3 `FactionData.patrol_archetype_id`): the
+## patrol archetype presets that exist. A `faction_` record a shipped map
+## uses must name one of these. No `patrol_` record type exists yet, so this
+## list is the registry the ID resolves against.
+@export var patrol_archetype_ids: Array[String] = ["patrol_compliance_clerk"]

@@ -42,6 +42,19 @@ var _carry_m: float = 0.0
 ## `step()`) -- guards against resampling from a stale `_prev_pos`.
 var _initialized: bool = false
 
+## Each follower's committed facing, nearest follower first (story 009; GDD
+## Formulas, `follower_trail`: "A follower faces from `pos_i` toward the
+## trail point at `s_i - trail_sample_m`, with a flip hysteresis of
+## `trail_sample_m`").
+var _facings: Array[Vector2] = []
+
+## Per follower: arc length travelled since its lookahead direction first
+## differed from its committed facing (the hysteresis accumulator).
+var _pending_m: Array[float] = []
+
+## Per follower: its position as of the last `step()`, to measure travel.
+var _last_positions: Array[Vector2] = []
+
 
 ## Clears the trail and anchors it at `leader_pos`, with no recorded
 ## history. Story 007's map-entry/teleport/redirect/thaw reset is this call
@@ -54,6 +67,8 @@ func reset(leader_pos: Vector2) -> void:
 	_prev_pos = leader_pos
 	_carry_m = 0.0
 	_initialized = true
+	_last_positions = []
+	_pending_m = []
 
 
 ## Map-entry snap (story 007's rule, GDD rule 2 + Edge Cases; story 138):
@@ -94,18 +109,78 @@ func snap(leader_pos: Vector2, facing: Vector2, n_followers: int,
 ## returns the same positions as the previous call -- GDD AC-4's "every
 ## follower stops on the same frame" falls out of this directly, with no
 ## separate stop handling.
-func step(leader_pos: Vector2, n_followers: int, cfg: OverworldConfig) -> Array[Vector2]:
+##
+## Story 008 (AC-5b, GDD Edge Cases "a party of one"): recording never
+## depends on `n_followers`. `record_followers` (default: `n_followers`)
+## sizes the buffer instead, so a caller that records for the largest party
+## (`OverworldMode` passes `max_followers`) lets a recruit who joins
+## mid-visit appear at `s_1` on the trail already walked.
+##
+## Story 009 (AC-5c): `leader_facing` is what idle followers copy; see
+## `facings()`.
+func step(leader_pos: Vector2, n_followers: int, cfg: OverworldConfig,
+		leader_facing: Vector2 = Vector2.DOWN, record_followers: int = -1) -> Array[Vector2]:
 	if not _initialized:
 		reset(leader_pos)
+	var leader_moved: bool = not leader_pos.is_equal_approx(_prev_pos)
 	_append_samples(_prev_pos, leader_pos, cfg.trail_sample_m)
 	_prev_pos = leader_pos
-	_trim(_buffer_capacity(n_followers, cfg))
+	_trim(_buffer_capacity(maxi(n_followers, record_followers), cfg))
 
 	var result: Array[Vector2] = []
 	for i in range(n_followers):
 		var target_m: float = float(i + 1) * cfg.follower_spacing_m
 		result.append(_position_at_arc_length(leader_pos, target_m))
+	_update_facings(leader_pos, result, leader_facing, leader_moved, cfg)
 	return result
+
+
+## Each follower's displayed facing after the last `step()`, nearest
+## follower first (story 009, AC-5c). While the leader moves, follower `i`
+## faces from `pos_i` toward the trail point at `s_i - trail_sample_m`, but a
+## new direction is committed only once the follower has travelled at least
+## `trail_sample_m` along it; a wiggle shorter than that never flips it. On
+## a frame the leader does not move, every follower copies the leader's
+## facing.
+func facings() -> Array[Vector2]:
+	return _facings.duplicate()
+
+
+## The story 009 facing rule, run once per `step()` over `positions`.
+func _update_facings(leader_pos: Vector2, positions: Array[Vector2], leader_facing: Vector2,
+		leader_moved: bool, cfg: OverworldConfig) -> void:
+	var n: int = positions.size()
+	var idle_facing: Vector2 = Vector2.DOWN
+	if not leader_facing.is_zero_approx():
+		idle_facing = leader_facing.normalized()
+	while _facings.size() < n:
+		_facings.append(idle_facing)
+	_facings.resize(n)
+	while _pending_m.size() < n:
+		_pending_m.append(0.0)
+	_pending_m.resize(n)
+	for i in range(n):
+		if not leader_moved:
+			_facings[i] = idle_facing
+			_pending_m[i] = 0.0
+			continue
+		var s_i: float = float(i + 1) * cfg.follower_spacing_m
+		var ahead: Vector2 = _position_at_arc_length(leader_pos, maxf(0.0, s_i - cfg.trail_sample_m))
+		var dir: Vector2 = ahead - positions[i]
+		if dir.is_zero_approx():
+			continue
+		dir = dir.normalized()
+		if dir.is_equal_approx(_facings[i]):
+			_pending_m[i] = 0.0
+			continue
+		var travelled: float = 0.0
+		if i < _last_positions.size():
+			travelled = maxf(0.0, (positions[i] - _last_positions[i]).dot(dir))
+		_pending_m[i] += travelled
+		if _pending_m[i] >= cfg.trail_sample_m - _EPSILON:
+			_facings[i] = dir
+			_pending_m[i] = 0.0
+	_last_positions = positions.duplicate()
 
 
 ## The trail buffer's current length, for the formula's `N_buf` acceptance

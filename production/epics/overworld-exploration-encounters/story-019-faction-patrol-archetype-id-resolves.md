@@ -1,12 +1,12 @@
 # Story 019: Every faction record used by a shipped map names a resolving patrol_archetype_id
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30
 
 ## Context
 
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-8b [D] (R4)** Every `faction_` record used by a shipped map names a `patrol_archetype_id` that resolves.
+- [x] **AC-8b [D] (R4)** Every `faction_` record used by a shipped map names a `patrol_archetype_id` that resolves.
 
 ---
 
@@ -79,7 +79,7 @@ worked example: the Compliance Clerk.
 **Required evidence**:
 - `tests/unit/overworld/data/patrol_archetype_resolution_test.gd` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (2026-10-30, single-file run)
 
 ---
 
@@ -87,3 +87,11 @@ worked example: the Compliance Clerk.
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-017-zone-rate-zero-on-every-mvp-map.md`
 - Unlocks: None
+
+## Completion Notes (2026-10-30)
+
+MapValidator.check_patrol_archetypes(): every faction_id a shipped map record uses must resolve to a faction record whose patrol_archetype_id is non-empty and in OverworldConfig.patrol_archetype_ids; errors name the faction and the dangling ID (or the map, for an unknown faction). Run from validate_catalog(). Deviation: no patrol_ record type exists, so the ID resolves against a new OverworldConfig registry (default [patrol_compliance_clerk]) rather than the content catalog.
+
+**Test Evidence**: tests/unit/overworld/data/patrol_archetype_resolution_test.gd, 5/5 passing.
+
+**Files**: src/overworld/map_validator.gd, src/overworld/overworld_config.gd, tests/unit/overworld/data/patrol_archetype_resolution_test.gd

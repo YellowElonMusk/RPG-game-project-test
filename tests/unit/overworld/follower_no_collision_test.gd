@@ -114,3 +114,44 @@ func _make_moving_mode(cfg: OverworldConfig) -> OverworldMode:
 	source.move_vector = Vector2.DOWN
 	machine.bind_action_source(source)
 	return mode
+
+
+# -- AC-3 re-check against the real symbols, exits and interactables --------
+
+## A real patrolling symbol, the segment's real MapExit and a gag marker all
+## sit on follower positions, with the leader clear of each: no battle
+## request, no exit request, and `probe()` finds nothing.
+func test_real_symbol_exit_and_gag_on_followers_fire_nothing() -> void:
+	var gag_at: Vector2 = ProbeFixture.OPEN_SPOT + Vector2(-4.0, 0.0)
+	var spy := RequestSpyMachine.new()
+	var mode: OverworldMode = auto_free(ProbeFixture.make_mode([ProbeFixture.gag(gag_at)], spy))
+	mode.grace_active = false
+	ProbeFixture.stand(mode, ProbeFixture.OPEN_SPOT, Vector2.UP)
+	var symbol_at: Vector2 = mode.get_encounter_sources()[0].brain.position
+	var exit_at: Vector2 = mode.get_map().map_exits()[0].trigger_rect.get_center()
+	var leader: Vector2 = mode.get_leader_position()
+	var clear_m: float = mode.config.body_radius * 4.0
+	for p: Vector2 in [symbol_at, exit_at, gag_at]:
+		assert_float(leader.distance_to(p)).is_greater(clear_m)
+	var exits: Array[StringName] = []
+	mode.map_exit_requested.connect(func(id: StringName) -> void: exits.append(id))
+	var on_followers: Array[Vector2] = [symbol_at, exit_at, gag_at]
+	mode.set_follower_positions(on_followers)
+	mode.step_frame(_DT, Vector2.ZERO)
+	assert_array(spy.targets).is_empty()
+	assert_array(exits).is_empty()
+	assert_object(mode.probe()).is_null()
+
+
+## Control (non-vacuous): the same gag and symbol do fire for the leader.
+func test_same_triggers_fire_for_the_leader() -> void:
+	var gag_at: Vector2 = ProbeFixture.OPEN_SPOT + Vector2(-4.0, 0.0)
+	var gag: GagInteractable = ProbeFixture.gag(gag_at)
+	var spy := RequestSpyMachine.new()
+	var mode: OverworldMode = auto_free(ProbeFixture.make_mode([gag], spy))
+	ProbeFixture.stand(mode, gag_at + Vector2(0.0, 1.0), Vector2.UP)
+	assert_object(mode.probe()).is_same(gag)
+	mode.grace_active = false
+	mode.set_leader_position(mode.get_encounter_sources()[0].brain.position)
+	mode.step_frame(_DT, Vector2.ZERO)
+	assert_array(spy.targets).is_not_empty()
