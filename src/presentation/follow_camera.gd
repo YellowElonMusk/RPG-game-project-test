@@ -79,6 +79,35 @@ var cam_ground: Vector2 = Vector2.ZERO
 func _ready() -> void:
 	keep_aspect = Camera3D.KEEP_HEIGHT
 	projection = Camera3D.PROJECTION_PERSPECTIVE
+	var viewport: Viewport = get_viewport()
+	if viewport != null and not viewport.size_changed.is_connected(_on_viewport_resized):
+		viewport.size_changed.connect(_on_viewport_resized)
+
+
+## The narrowest supported aspect (GDD Edge Cases: `chase_visibility` is
+## checked at 4:3, 16:9 and 21:9; narrower is unsupported).
+const MIN_SUPPORTED_ASPECT: float = 4.0 / 3.0
+## Narrow-aspect warnings logged (story 132: one per resize event into an
+## unsupported aspect, never one per frame).
+var narrow_aspect_warnings: int = 0
+
+
+func _on_viewport_resized() -> void:
+	var size: Vector2 = get_viewport().get_visible_rect().size
+	if size.y > 0.0:
+		note_resize(size.x / size.y)
+
+
+## Story 132 (GDD Edge Cases "window resized"): a resize to an aspect
+## narrower than 4:3 logs exactly one warning; the game keeps running (the
+## footprint is recomputed every frame from the current aspect anyway).
+## Returns whether a warning was logged.
+func note_resize(aspect: float) -> bool:
+	if aspect >= MIN_SUPPORTED_ASPECT - 1e-4:
+		return false
+	narrow_aspect_warnings += 1
+	push_warning("FollowCamera: aspect %.3f is narrower than 4:3 and unsupported; chase_visibility is not guaranteed" % aspect)
+	return true
 
 
 ## Builds a camera from `PresentationConfig`'s `follow_camera_*` fields and

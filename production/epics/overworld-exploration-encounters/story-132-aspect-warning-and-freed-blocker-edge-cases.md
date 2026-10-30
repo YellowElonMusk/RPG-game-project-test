@@ -1,7 +1,7 @@
 # Story 132: A narrow aspect logs one warning; a freed blocker invalidates stale paths
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-55 [L] (Edge Cases)** GIVEN a window aspect narrower than 4:3, THEN exactly one warning is logged and the game runs. GIVEN a blocker freed while a symbol's path ran round it, THEN the stored path and notice cache are invalidated, and the symbol's next repath in its stagger turn crosses the freed cells.
+- [x] **AC-55 [L] (Edge Cases)** GIVEN a window aspect narrower than 4:3, THEN exactly one warning is logged and the game runs. GIVEN a blocker freed while a symbol's path ran round it, THEN the stored path and notice cache are invalidated, and the symbol's next repath in its stagger turn crosses the freed cells.
 
 ---
 
@@ -64,7 +64,7 @@ checks scope against it.*
 
 - `src/overworld/walk_grid.gd` (`set_blocked` cache/path invalidation on free)
 - `src/overworld/symbol_brain.gd` (stagger-turn repath after invalidation, never out of turn)
-- `tests/unit/overworld/edge_cases_test.gd` (aspect warning count; freed-blocker repath timing)
+- `tests/unit/overworld/aspect_warning_and_freed_blocker_test.gd` (aspect warning count; freed-blocker repath timing)
 
 ---
 
@@ -77,9 +77,9 @@ checks scope against it.*
 ## Test Evidence
 
 **Story Type**: Logic
-**Required evidence**: `tests/unit/overworld/edge_cases_test.gd` — must exist and pass.
+**Required evidence**: `tests/unit/overworld/aspect_warning_and_freed_blocker_test.gd` — must exist and pass.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -87,3 +87,9 @@ checks scope against it.*
 
 - Depends on: `story-029-bounded-notice-search-cap.md` (AC-9k, bounded notice search / query budget), `production/epics/sprite-camera-presentation/story-023-follow-camera-matches-the-formula.md` (follow camera, `chase_visibility`)
 - Unlocks: None
+
+## Completion Notes (2026-10-30)
+
+- New: `FollowCamera.note_resize(aspect)`, connected to the viewport's `size_changed`. Each resize to an aspect under 4:3 logs exactly one warning, counted in `narrow_aspect_warnings`, never one per frame. The camera keeps stepping.
+- Freed blocker: already built. `set_blocked` bumps the grid revision, which marks the stored route and the notice cache stale at once. The repath still waits for the symbol's `repath_s` turn, then routes through the freed cells.
+- Mutation checked: repathing out of turn on a revision change fails a test here.
