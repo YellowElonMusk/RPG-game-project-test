@@ -1,7 +1,7 @@
 # Story 098: `OverworldConfig.validate()` rejects exactly the knob combination that breaks its invariant
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: L
@@ -30,7 +30,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-38 [L] (invariants)** The default config passes. One fixture per invariant I1–I13 and I15–I18 breaks only that invariant, and its error names that ID (for I15, `symbol_chase_m` 3.5 with `notice_path_cap_m` 4.5; for I16, `notice_path_cap_m` 5 with `symbol_giveup_m` 6; for I17, `turn_pause_s` 0.5; for I18, `beacon_h_m` 3.0 with `wall_h_max` 3.0). For example: `f_chase` 0.9 (I1), `encounter_grace_s` 0.5 (I3), `symbol_giveup_m` 5 with `symbol_chase_m` 3.5 (I4), `flee_grace_s` 2 with `walk_speed` 3.0 and `symbol_giveup_m` 8 (I5), and `dt_max` 0.3 with `walk_speed` 4.0 (I11).
+- [x] **AC-38 [L] (invariants)** The default config passes. One fixture per invariant I1–I13 and I15–I18 breaks only that invariant, and its error names that ID (for I15, `symbol_chase_m` 3.5 with `notice_path_cap_m` 4.5; for I16, `notice_path_cap_m` 5 with `symbol_giveup_m` 6; for I17, `turn_pause_s` 0.5; for I18, `beacon_h_m` 3.0 with `wall_h_max` 3.0). For example: `f_chase` 0.9 (I1), `encounter_grace_s` 0.5 (I3), `symbol_giveup_m` 5 with `symbol_chase_m` 3.5 (I4), `flee_grace_s` 2 with `walk_speed` 3.0 and `symbol_giveup_m` 8 (I5), and `dt_max` 0.3 with `walk_speed` 4.0 (I11).
 
 ---
 
@@ -57,7 +57,7 @@
 ## Files
 
 - `src/overworld/overworld_config.gd`
-- `tests/unit/overworld/overworld_config_invariants_test.gd`
+- `tests/unit/overworld/config_invariants_test.gd`
 
 ---
 
@@ -71,9 +71,9 @@
 
 **Story Type**: Logic
 **Required evidence**:
-- `tests/unit/overworld/overworld_config_invariants_test.gd` — must exist and pass. Gate level: BLOCKING.
+- `tests/unit/overworld/config_invariants_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -81,3 +81,15 @@
 
 - Depends on: None within this epic (exercises `OverworldConfig` directly)
 - Unlocks: `production/epics/overworld-exploration-encounters/story-099-chase-visibility-validates-at-every-aspect.md`, `production/epics/overworld-exploration-encounters/story-100-swept-contact-at-every-approach-angle.md`
+
+## Completion Notes (2026-10-30)
+
+- `OverworldConfig.validate(dt_max, stage_records)` checks I1–I13 and I15–I18. Each failure starts with its ID and names the knobs.
+- New knobs, at the GDD defaults: `t_react`, `escape_max_s`, `cell_m`, `beacon_h_m`, `wall_h_max`, and the overworld/dungeon `D_min`/`D_max`. Also new: `t_escape(d0)`, and `DT_MAX_DEFAULT` standing in for Presentation's `dt_max`.
+- I13 runs over the `occupation_stage` records (a kind missing at the higher stage counts as 0).
+- `validate_maps` (CI) now runs it against the catalog's stage records.
+- Test: `tests/unit/overworld/config_invariants_test.gd`. The invariants share knobs, and the GDD's own example values (I4 and I15) also break neighbours (I12, I15–I17). So the test has two parts:
+  - One hand-worked narrow fixture per ID, which must produce exactly one error with that ID.
+  - The GDD examples, each of which must name its ID.
+- Not done: the boot-time call. GameRoot does not build an `OverworldConfig` from data yet.
+- Mutations checked: I1's bound loosened, I16 losing its walk term, I13 disabled, and I8's strict `<` made `<=` each fail a test here.

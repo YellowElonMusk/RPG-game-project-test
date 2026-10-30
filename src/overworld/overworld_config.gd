@@ -129,14 +129,114 @@ func v_chase() -> float:
 	return f_chase * walk_speed
 
 
-## Invariants I1-I18 (GDD Formulas, "Load-time invariants"). Returns one
-## message per failed invariant, naming its ID -- empty when every checked
-## invariant holds. Every invariant that reads `walk_speed` also reads a
-## field this stub does not declare yet (I11 needs `dt_max`, which is
-## Presentation's; I3 needs `v_chase`; etc.), so this returns `[]` until a
-## later story adds those fields and their checks.
-func validate() -> PackedStringArray:
-	return PackedStringArray()
+## Player reaction time assumed by the grace check, in seconds (GDD Tuning
+## Knobs `t_react`, 0.4 s, range 0.3-0.6; I3, I17).
+@export var t_react: float = 0.4
+## Longest allowed worst-case escape, in seconds (`escape_max_s`, 10 s,
+## range 8-12; I2).
+@export var escape_max_s: float = 10.0
+## Walk-grid cell size, in metres (`cell_m`, fixed 1.0 in MVP; I8, I11).
+@export var cell_m: float = 1.0
+## Beacon banner height, in metres (`beacon_h_m`, 3.5 m, range 3.0-4.5; I18).
+@export var beacon_h_m: float = 3.5
+## Tallest set wall, in metres (`wall_h_max`, 2.5 m, range 2.0-3.0; I18).
+@export var wall_h_max: float = 2.5
+## Symbol density bands, cells per symbol (`D_min` / `D_max`; I10): the
+## overworld 150 / 250 (range 120-300), the dungeon 80 / 120 (range 60-150).
+@export var d_min_overworld: int = 150
+@export var d_max_overworld: int = 250
+@export var d_min_dungeon: int = 80
+@export var d_max_dungeon: int = 120
+
+## `dt_max` is Presentation's knob; this default (the GDD's) stands in until
+## `presentation_settings` is injected (see `OverworldMode`).
+const DT_MAX_DEFAULT: float = 0.10
+
+
+## `t_escape(d0) = max(0, symbol_giveup_m - d0) / (walk_speed - v_chase) +
+## giveup_s` (GDD Formulas, `symbol_speeds`): open-ground time from a chase
+## starting `d0` metres away until the symbol gives up. INF when the chase
+## is as fast as the leader.
+func t_escape(d0: float) -> float:
+	var gap: float = walk_speed - v_chase()
+	if gap <= 0.0:
+		return INF
+	return maxf(0.0, symbol_giveup_m - d0) / gap + giveup_s
+
+
+## Invariants I1-I13 and I15-I18 (GDD Formulas, "Load-time invariants";
+## story 098). Returns one message per failed invariant, each starting with
+## its ID and naming the knobs involved; empty when all hold. `dt_max` is
+## Presentation's (I11). `stage_records` are the `occupation_stage`
+## records whose caps I13 checks per faction. I14 (`chase_visibility`)
+## needs the camera and is `ChaseVisibility`'s (story 099).
+func validate(dt_max: float = DT_MAX_DEFAULT, stage_records: Array = []) -> PackedStringArray:
+	var out := PackedStringArray()
+	if not (f_patrol < f_chase and f_chase <= 0.85):
+		out.append("I1: f_patrol (%.2f) < f_chase (%.2f) <= 0.85 fails" % [f_patrol, f_chase])
+	if not (t_escape(2.0 * body_radius) <= escape_max_s):
+		out.append("I2: t_escape(2*body_radius) %.2f s > escape_max_s %.2f (walk_speed, f_chase, symbol_giveup_m, giveup_s)"
+				% [t_escape(2.0 * body_radius), escape_max_s])
+	if not ((encounter_grace_s - t_react) * (walk_speed - v_chase()) >= 2.0 * body_radius):
+		out.append("I3: (encounter_grace_s - t_react) * (walk_speed - v_chase) < 2*body_radius")
+	if not (symbol_giveup_m >= symbol_chase_m + 2.0):
+		out.append("I4: symbol_giveup_m (%.2f) < symbol_chase_m + 2 (%.2f)" % [symbol_giveup_m, symbol_chase_m + 2.0])
+	if not (flee_grace_s * walk_speed >= symbol_giveup_m):
+		out.append("I5: flee_grace_s * walk_speed (%.2f) < symbol_giveup_m (%.2f)" % [flee_grace_s * walk_speed, symbol_giveup_m])
+	if not (flee_grace_s >= encounter_grace_s):
+		out.append("I6: flee_grace_s (%.2f) < encounter_grace_s (%.2f)" % [flee_grace_s, encounter_grace_s])
+	if not (safe_radius_m > symbol_chase_m + 2.0 * body_radius):
+		out.append("I7: safe_radius_m (%.2f) <= symbol_chase_m + 2*body_radius" % safe_radius_m)
+	if not (body_radius < cell_m / 2.0):
+		out.append("I8: body_radius (%.2f) >= cell_m / 2" % body_radius)
+	if not (corner_assist_m <= body_radius + 0.1):
+		out.append("I9: corner_assist_m (%.2f) > body_radius + 0.1" % corner_assist_m)
+	if not (d_min_overworld <= d_max_overworld and d_min_dungeon <= d_max_dungeon):
+		out.append("I10: D_min > D_max (overworld %d/%d, dungeon %d/%d)"
+				% [d_min_overworld, d_max_overworld, d_min_dungeon, d_max_dungeon])
+	if not (walk_speed * dt_max < cell_m):
+		out.append("I11: walk_speed * dt_max (%.3f) >= cell_m (%.2f)" % [walk_speed * dt_max, cell_m])
+	if not (0.5 * symbol_chase_m <= symbol_notice_rear_m and symbol_notice_rear_m <= symbol_chase_m):
+		out.append("I12: symbol_notice_rear_m (%.2f) outside [0.5*symbol_chase_m, symbol_chase_m]" % symbol_notice_rear_m)
+	var cap_errors: PackedStringArray = _cap_monotonic(stage_records)
+	if not cap_errors.is_empty():
+		out.append("I13: caps fall as the stage rises: " + ", ".join(cap_errors))
+	if not (notice_path_cap_m >= symbol_chase_m * sqrt(2.0)):
+		out.append("I15: notice_path_cap_m (%.2f) < symbol_chase_m * sqrt(2) (%.2f)"
+				% [notice_path_cap_m, symbol_chase_m * sqrt(2.0)])
+	if not (notice_path_cap_m + walk_speed * notice_delay_s <= symbol_giveup_m - 0.5):
+		out.append("I16: notice_path_cap_m + walk_speed * notice_delay_s (%.2f) > symbol_giveup_m - 0.5"
+				% (notice_path_cap_m + walk_speed * notice_delay_s))
+	if not (turn_pause_s >= t_react + (symbol_chase_m - symbol_notice_rear_m) / walk_speed):
+		out.append("I17: turn_pause_s (%.2f) < t_react + (symbol_chase_m - symbol_notice_rear_m) / walk_speed" % turn_pause_s)
+	if not (beacon_h_m >= wall_h_max + 0.5):
+		out.append("I18: beacon_h_m (%.2f) < wall_h_max + 0.5" % beacon_h_m)
+	return out
+
+
+## I13: per faction, every kind's cap at stage s+1 is at least its cap at s
+## (a kind missing from the higher stage counts as 0).
+static func _cap_monotonic(stage_records: Array) -> PackedStringArray:
+	var out := PackedStringArray()
+	var by_faction: Dictionary = {}
+	for r: Variant in stage_records:
+		var o: OccupationStageData = r as OccupationStageData
+		if o == null:
+			continue
+		if not by_faction.has(o.faction_id):
+			by_faction[o.faction_id] = {}
+		(by_faction[o.faction_id] as Dictionary)[o.stage] = o
+	for faction: String in by_faction:
+		var stages: Dictionary = by_faction[faction]
+		for s: int in [1, 2]:
+			if not stages.has(s) or not stages.has(s + 1):
+				continue
+			var lo: OccupationStageData = stages[s]
+			var hi: OccupationStageData = stages[s + 1]
+			for kind: String in lo.clutter_caps:
+				if int(hi.clutter_caps.get(kind, 0)) < lo.clutter_caps[kind]:
+					out.append("%s %s stage %d->%d" % [faction, kind, s, s + 1])
+	return out
 
 ## Minimum extra gap, in metres, between an EntryPoint and every MapExit
 ## rectangle beyond `body_radius` (GDD Tuning Knobs `entry_clearance_m`,

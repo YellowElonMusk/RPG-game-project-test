@@ -44,7 +44,10 @@ func _initialize() -> void:
 		quit(1)
 		return
 
-	var errors: PackedStringArray = MapValidator.validate_catalog(catalog, OverworldConfig.new())
+	var cfg := OverworldConfig.new()
+	var errors: PackedStringArray = MapValidator.validate_catalog(catalog, cfg)
+	# Story 098: the config invariants I1-I13, I15-I18 (I13 over the stage records).
+	errors.append_array(cfg.validate(OverworldConfig.DT_MAX_DEFAULT, catalog.all_records(&"occupation_stage")))
 	for err: String in errors:
 		printerr("validate_maps: ", err)
 	print("validate_maps: %d map(s), %d error(s)" % [catalog.all_records(&"map").size(), errors.size()])
