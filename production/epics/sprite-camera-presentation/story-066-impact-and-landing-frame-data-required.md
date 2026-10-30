@@ -1,12 +1,12 @@
 # Story 066: Impact and landing frame data is required at boot
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-30
 
 ## Context
 
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/sprite-camera-presentation.md`, scoped to this story:*
 
-- [ ] **AC-61 [L]** (P-06) (impact and landing data) Each of these ends boot in a content error naming the set and animation:
+- [x] **AC-61 [L]** (P-06) (impact and landing data) Each of these ends boot in a content error naming the set and animation:
   - an `attack` or `defend` with no `impact_frame`, or one equal to its frame count;
   - a `knockout` with no `land_frame`, or one equal to its frame count;
   - a boss whose `intro` lasts longer than `boss_hold` at 1×;
@@ -80,7 +80,7 @@ Four independent validator rules, each with its own fixture sprite set: a missin
 **Required evidence**:
 - `tests/unit/presentation/impact_landing_validation_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created — passing (suite 1690/1690)
 
 ---
 
