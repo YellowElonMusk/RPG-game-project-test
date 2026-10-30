@@ -85,7 +85,7 @@ Also compute the overworld segment's reachable-stage set from the ChapterFlow st
 
 **Story Type**: Logic (Data validation)
 **Required evidence**:
-- `tests/unit/overworld/data/paris_map_stage_and_registry_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
+- `tests/unit/overworld/paris_stage_registry_rules_test.gd` (was planned as `tests/unit/overworld/data/paris_map_stage_and_registry_test.gd`) — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
 
 **Status**: [x] Created and passing
 
