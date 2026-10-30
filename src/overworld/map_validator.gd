@@ -65,6 +65,7 @@ static func validate_catalog(catalog: ContentCatalogService, cfg: OverworldConfi
 	if ResourceLoader.exists(cfg.flag_registry_path):
 		registry = ResourceLoader.load(cfg.flag_registry_path) as StoryFlagRegistry
 	errors.append_array(check_references(maps, catalog, registry))
+	errors.append_array(CheckpointRules.check(maps, records, steps, catalog, cfg))
 	for rec: Resource in catalog.all_records(&"map"):
 		var rec_map: OverworldMap = maps.get(String(rec.get("id"))) as OverworldMap
 		if rec_map != null and rec is MapData:

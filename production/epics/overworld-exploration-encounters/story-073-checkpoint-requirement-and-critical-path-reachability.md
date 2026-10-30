@@ -1,7 +1,7 @@
 # Story 073: Every checkpoint has exactly one resolving requirement, reachable fight-free on the critical path
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: L
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-29 [D] (R10, rule 0)** Every checkpoint has exactly one requirement (an item or a flag), never XP, level or currency, and every requirement names an `obtained_at` source that resolves. On every critical-path leg, at every reachable stage, a fixed-point search over the leg's cells succeeds when it opens a checkpoint only after reaching that checkpoint's fight-free source earlier on the leg; `victory_payoff` sources never count. No critical-path checkpoint has the `encounter` outcome except the region's story encounter. Every return marker is a safe-zone source (with `return_safe_radius_m`), so it lies in a `SAFE` cell, and no return marker lies inside a MapExit rectangle. Here "the leg's cells" are the cells reachable from the leg's start, and a chapter-step flag source counts as reached when it is set on or before the leg's step.
+- [x] **AC-29 [D] (R10, rule 0)** Every checkpoint has exactly one requirement (an item or a flag), never XP, level or currency, and every requirement names an `obtained_at` source that resolves. On every critical-path leg, at every reachable stage, a fixed-point search over the leg's cells succeeds when it opens a checkpoint only after reaching that checkpoint's fight-free source earlier on the leg; `victory_payoff` sources never count. No critical-path checkpoint has the `encounter` outcome except the region's story encounter. Every return marker is a safe-zone source (with `return_safe_radius_m`), so it lies in a `SAFE` cell, and no return marker lies inside a MapExit rectangle. Here "the leg's cells" are the cells reachable from the leg's start, and a chapter-step flag source counts as reached when it is set on or before the leg's step.
 
 ---
 
@@ -60,7 +60,7 @@
 
 - `tools/ci/validate_maps.gd`
 - `data/maps/*`
-- `tests/unit/overworld/data/checkpoint_requirement_and_reachability_test.gd`
+- `tests/unit/overworld/checkpoint_requirement_rules_test.gd`
 
 ---
 
@@ -74,9 +74,9 @@
 
 **Story Type**: Logic (Data validation)
 **Required evidence**:
-- `tests/unit/overworld/data/checkpoint_requirement_and_reachability_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
+- `tests/unit/overworld/checkpoint_requirement_rules_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -84,3 +84,15 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-070-checkpoint-opens-on-met-requirement.md`, `story-071-checkpoint-redirect-and-queue-failure.md`, `story-072-checkpoint-encounter-outcome.md`
 - Unlocks: `production/epics/overworld-exploration-encounters/story-074-map-exit-and-critical-path-reference-integrity.md`
+
+## Completion Notes (2026-10-30)
+
+- `CheckpointRules.check()` runs in `validate_maps` (CI). Each error names the map and the checkpoint or leg.
+- Rules:
+  - Exactly one requirement (item or flag).
+  - `obtained_at` resolves to a `change` gag or NPC marker, a chapter-step ID, or an encounter record.
+  - Per-leg fixed-point search: a closed checkpoint opens once its fight-free source is within `interact_reach_m` of a reached cell, or its step is on or before the leg's step. A Victory never counts. Every clutter blocker counts as standing, which over-covers every stage.
+  - A critical-path checkpoint is one whose closing alone cuts the leg. None may have the `encounter` outcome.
+  - Return markers sit in a walkable SAFE cell, outside every MapExit.
+- Interpretation, flagged: the region's story encounter's own checkpoint (the Permit Boom, opened by the Counter's Victory per rule 13a) opens in the search once the Counter is reached. That fight is the chapter's one required fight; without the exception the shipped dungeon's boss leg could never pass. The mutation removing it fails the shipped-data test.
+- Content: the Permit Boom's `obtained_at` is the Counter's encounter (it resolves). No other shipped checkpoint exists. The GDD's gated boss-chamber exit (`form_27b_stamped` from the stamp kiosk) is not authored yet.
