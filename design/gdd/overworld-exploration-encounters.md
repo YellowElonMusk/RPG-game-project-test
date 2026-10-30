@@ -906,6 +906,7 @@ All knobs live in `OverworldConfig` (project config) or in the records, never as
 | entry_clearance_m | 1.0 m | 0.5–2.0 | OverworldConfig (level review) | A held `move` bounces the leader back out | Wasted space at every entry | — |
 | story_sight_m | 12 m | 8–16 | OverworldConfig (level review) | The story encounter is not in view from its camp | The camp sits far from the fight | — |
 | beacon_h_m | 3.5 m | 3.0–4.5 (and ≥ `wall_h_max` + 0.5) | OverworldConfig (level review) | The banner is hidden by the camera pitch | Banners crowd the skyline | I18 |
+| junction_cover_m | 1.5 m | 1.0–2.0 (≥ `cell_m`) | OverworldConfig (level review) | Only a node on the exact branch cell passes; a one-cell-off placement fails CI | A node a corridor away "covers" a choice point the player cannot see from it (breaks AC-45e); a leg's last beacon may stand off its end | — (the rule 19 junction check, AC-45f) |
 | wall_h_max | 2.5 m | 2.0–3.0 | OverworldConfig (level review) | Interiors read as low | Walls hide patrols inside `see_m` | I14 (level review), I18 |
 | D_min / D_max, overworld | 150 / 250 | 120–300 | OverworldConfig | Too crowded; bypass lanes vanish | An empty segment | I10 |
 | D_min / D_max, dungeon | 80 / 120 | 60–150 | OverworldConfig | Too crowded | No dread | I10 |
