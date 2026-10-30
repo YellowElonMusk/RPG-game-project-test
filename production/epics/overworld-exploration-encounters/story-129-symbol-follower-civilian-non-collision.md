@@ -1,7 +1,7 @@
 # Story 129: Symbols, followers and civilians never block or push each other; a touched symbol resumes from its contact point
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: S
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-57 [L] (R5, misc.)** Two symbols, a follower and a civilian occupying the same point never block or push one another. A symbol touched during Patrol stores its patrol position at contact as its resume point and resumes from it after a Fled battle.
+- [x] **AC-57 [L] (R5, misc.)** Two symbols, a follower and a civilian occupying the same point never block or push one another. A symbol touched during Patrol stores its patrol position at contact as its resume point and resumes from it after a Fled battle.
 
 ---
 
@@ -63,7 +63,7 @@ planned ones; `/dev-story` replaces the list with the files it changed; `/story-
 checks scope against it.*
 
 - `src/overworld/symbol_brain.gd` (resume-point storage on Patrol contact; no collision resolution against other actors)
-- `tests/unit/overworld/symbol_no_collision_test.gd`
+- `tests/unit/overworld/symbol_non_collision_and_resume_test.gd`
 - `tests/unit/overworld/patrol_resume_point_test.gd`
 
 ---
@@ -77,9 +77,9 @@ checks scope against it.*
 ## Test Evidence
 
 **Story Type**: Logic
-**Required evidence**: `tests/unit/overworld/symbol_no_collision_test.gd` and `tests/unit/overworld/patrol_resume_point_test.gd` — must exist and pass.
+**Required evidence**: `tests/unit/overworld/symbol_non_collision_and_resume_test.gd` and `tests/unit/overworld/patrol_resume_point_test.gd` — must exist and pass.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -87,3 +87,10 @@ checks scope against it.*
 
 - Depends on: `story-020-patrol-loop-and-pingpong-traversal.md` (AC-9a, Patrol sub-state), `story-033-returning-to-resume-point.md` (AC-10c, Returning sub-state)
 - Unlocks: None
+
+## Completion Notes (2026-10-30)
+
+- Behaviour already existed (symbols move only on the walk grid; NPCs and followers never mark it; `on_contact()` stores the resume point). This story adds the evidence test.
+- Two crossing patrols, run together, match each running alone on every frame, and they do overlap. An NPC (the civilian stand-in until civilians exist) and stacked followers leave the cell walkable and symbol-legal.
+- A symbol touched mid-patrol, then Fled and pushed away, walks back to its contact point and resumes with the same next waypoint and direction.
+- Mutation checked: not storing the resume point on contact fails a test here.
