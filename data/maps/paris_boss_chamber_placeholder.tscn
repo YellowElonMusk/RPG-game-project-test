@@ -4,6 +4,8 @@
 [ext_resource type="Script" path="res://src/overworld/map_exit.gd" id="2_5fse4"]
 [ext_resource type="Script" path="res://src/overworld/entry_point.gd" id="3_3ccck"]
 [ext_resource type="Script" path="res://src/overworld/encounter_symbol.gd" id="4_eefd3"]
+[ext_resource type="Script" path="res://src/overworld/waypoint_beacon.gd" id="s110_bc"]
+[ext_resource type="Script" path="res://src/overworld/junction_node.gd" id="s110_jn"]
 
 [sub_resource type="Image" id="Image_ysq3s"]
 data = {
@@ -62,3 +64,11 @@ encounter_id = "enc_paris_supervisor"
 symbol_id = "sym_paris_supervisor"
 patrol_path = PackedVector2Array(6.5, 3.5)
 is_static = true
+
+
+[node name="BeaconBossFight" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 0, 3.5)
+script = ExtResource("s110_bc")
+marker_id = &"bc_boss_fight_end"
+leg_id = "boss_fight"
+order = 1

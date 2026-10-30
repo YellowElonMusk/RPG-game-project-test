@@ -7,6 +7,8 @@
 [ext_resource type="Script" path="res://src/overworld/markers/interactable_checkpoint.gd" id="5_egvnj"]
 [ext_resource type="Script" path="res://src/overworld/encounter_symbol.gd" id="6_3pjg8"]
 [ext_resource type="Script" path="res://src/overworld/markers/interactable_gag.gd" id="7_ygfgb"]
+[ext_resource type="Script" path="res://src/overworld/waypoint_beacon.gd" id="s110_bc"]
+[ext_resource type="Script" path="res://src/overworld/junction_node.gd" id="s110_jn"]
 
 [sub_resource type="Image" id="Image_ysq3s"]
 data = {
@@ -193,3 +195,30 @@ script = ExtResource("7_ygfgb")
 marker_id = &"tell_hall_poster"
 text = "A rolled-up poster sticks out of the Clerk's in-tray."
 payoff_tell = "sym_dungeon_clerks_hall"
+
+
+[node name="BeaconDungeonToCounter" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.5, 0, 23.5)
+script = ExtResource("s110_bc")
+marker_id = &"bc_dungeon_to_counter_end"
+leg_id = "dungeon_to_counter"
+order = 1
+
+[node name="JunctionCounterFork" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.5, 0, 25.5)
+script = ExtResource("s110_jn")
+marker_id = &"jn_dungeon_counter_fork"
+leg_id = "dungeon_to_boss"
+
+[node name="JunctionBeyondBoom" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.5, 0, 20.5)
+script = ExtResource("s110_jn")
+marker_id = &"jn_dungeon_beyond_boom"
+leg_id = "dungeon_to_boss"
+
+[node name="BeaconDungeonToBoss" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 0, 1.5)
+script = ExtResource("s110_bc")
+marker_id = &"bc_dungeon_to_boss_end"
+leg_id = "dungeon_to_boss"
+order = 1

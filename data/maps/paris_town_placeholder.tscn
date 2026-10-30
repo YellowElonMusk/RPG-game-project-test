@@ -6,6 +6,8 @@
 [ext_resource type="Script" path="res://src/overworld/camp_spot.gd" id="5_campc"]
 [ext_resource type="Script" path="res://src/overworld/npc_spawn.gd" id="6_npc"]
 [ext_resource type="Script" path="res://src/overworld/markers/interactable_gag.gd" id="7_gag"]
+[ext_resource type="Script" path="res://src/overworld/waypoint_beacon.gd" id="s110_bc"]
+[ext_resource type="Script" path="res://src/overworld/junction_node.gd" id="s110_jn"]
 
 [sub_resource type="Image" id="Image_smdwn"]
 data = {
@@ -103,3 +105,18 @@ speaker = "Café owner, sweeping torn posters"
 line = "You liberated the street. Lovely. Who is liberating my broom?"
 liberated_role = "grumbler"
 ribs_squad = true
+
+
+[node name="BeaconTownOut" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 0, 5)
+script = ExtResource("s110_bc")
+marker_id = &"bc_town_out_end"
+leg_id = "town_out"
+order = 1
+
+[node name="BeaconTownHome" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.5, 0, 6.5)
+script = ExtResource("s110_bc")
+marker_id = &"bc_town_home_end"
+leg_id = "town_home"
+order = 1

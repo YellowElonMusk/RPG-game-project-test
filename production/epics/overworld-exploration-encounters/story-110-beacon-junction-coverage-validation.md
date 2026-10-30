@@ -6,7 +6,7 @@
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: — (not yet implemented)
+> **Last Updated**: 2026-10-30 (implemented, awaiting /story-done)
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-45f [D] (R19, junction coverage)** Every leg's junction nodes include its start EntryPoint, one node per room it crosses, and every critical-path cell where the walk grid branches toward a different required or optional end. Every leg ends in a beacon, and I18 holds.
+- [x] **AC-45f [D] (R19, junction coverage)** Every leg's junction nodes include its start EntryPoint, one node per room it crosses, and every critical-path cell where the walk grid branches toward a different required or optional end. Every leg ends in a beacon, and I18 holds.
 
 ---
 
@@ -66,8 +66,14 @@ Rule 19's "Junctions" clause is the authoring contract this story enforces: a le
 planned ones; `/dev-story` replaces the list with the files it changed; `/story-done`
 checks scope against it.*
 
-- `tools/ci/validate_maps.gd` (junction coverage check)
-- `data/maps/` (per-map junction node authoring, read not written by this check)
+- `src/overworld/beacon_junctions.gd` (new: coverage + leg-end beacon check)
+- `src/overworld/junction_node.gd` (new marker: `marker_id`, `leg_id`)
+- `src/overworld/waypoint_beacon.gd` (new marker: `marker_id`, `leg_id`, `order`)
+- `src/overworld/overworld_map.gd` (`junction_nodes(leg_id)`, `beacons(leg_id)`; both in `marker_ids()`)
+- `src/overworld/overworld_config.gd` (`junction_cover_m` 1.5 m)
+- `src/overworld/map_validator.gd` (`validate_catalog()` runs `BeaconJunctions.check`)
+- `tools/ci/validate_maps.gd` (doc only; the check runs through `validate_catalog()`)
+- `data/maps/paris_{town,segment,dungeon,boss_chamber}_placeholder.tscn` (one end beacon per leg; two dungeon junction nodes)
 - `tests/unit/overworld/data/beacon_junction_coverage_test.gd`
 
 ---
@@ -83,7 +89,7 @@ checks scope against it.*
 **Story Type**: Logic
 **Required evidence**: `tests/unit/overworld/data/beacon_junction_coverage_test.gd` — must exist and pass.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing (10/10; full suite 1180/1180, 2026-10-30)
 
 ---
 
@@ -91,3 +97,16 @@ checks scope against it.*
 
 - Depends on: `story-074-map-exit-and-critical-path-reference-integrity.md` (map leg / critical-path record validation, AC-30a)
 - Unlocks: `production/epics/overworld-exploration-encounters/story-109-beacon-chain-walkin-capture.md`, `production/epics/overworld-exploration-encounters/story-112-leg-beacon-chain-and-objective-line.md`, `production/epics/overworld-exploration-encounters/story-135-level-review-walkin-tool.md`
+
+---
+
+## Completion Notes
+
+**Completed**: 2026-10-30 (awaiting /story-done)
+
+- Junction nodes and beacons are scene markers (`JunctionNode`, `WaypointBeacon`), not record fields, so `map_` records gain nothing and carry no paths (ADR-0012 §9). A leg's start EntryPoint is its implicit first junction node.
+- Reachable configurations come from the step list: accumulated `flags_on_enter` per step naming the leg, plus `region_liberation_flag` from `last_act_from` on (same convention as `validate_last_act`). They give the stage (`OccupationStage.compute`) and which flag-closed exits are taped (blocked, and no longer an end).
+- Rooms = walk-grid components with every checkpoint closed. Branch cell toward each other end = the deepest `L_crit` path cell that also lies on a shortest route to that end.
+- Shipped authoring: one end beacon per leg (7); dungeon `dungeon_to_boss` needed two junction nodes (counter fork, beyond the boom). Other legs branch only at their EntryPoint.
+- **Deviations**: new knob `OverworldConfig.junction_cover_m` (1.5 m; not yet in the GDD Tuning Knobs table, for game-designer). `L_bypass` paths are not yet checked (TODO; bypass lanes are single-configuration in `BypassSearch`).
+- For story 112: `OverworldMap.beacons(leg_id)` returns the chain sorted by `WaypointBeacon.order`; the last is on the leg end.

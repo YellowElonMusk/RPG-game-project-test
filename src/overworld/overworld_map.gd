@@ -120,6 +120,29 @@ func checkpoints() -> Array[CheckpointMarker]:
 	return out
 
 
+## The map's `JunctionNode` markers in child order (story 110). `leg_id`
+## empty = every leg's.
+func junction_nodes(leg_id: String = "") -> Array[JunctionNode]:
+	var out: Array[JunctionNode] = []
+	for child: Node in get_children():
+		if child is JunctionNode and (leg_id.is_empty() or (child as JunctionNode).leg_id == leg_id):
+			out.append(child as JunctionNode)
+	return out
+
+
+## The map's `WaypointBeacon` markers (story 110). With `leg_id`, that leg's
+## chain sorted by `order`; empty = every beacon in child order. Story 112
+## lights `beacons(<current leg>)`.
+func beacons(leg_id: String = "") -> Array[WaypointBeacon]:
+	var out: Array[WaypointBeacon] = []
+	for child: Node in get_children():
+		if child is WaypointBeacon and (leg_id.is_empty() or (child as WaypointBeacon).leg_id == leg_id):
+			out.append(child as WaypointBeacon)
+	if not leg_id.is_empty():
+		out.sort_custom(func(a: WaypointBeacon, b: WaypointBeacon) -> bool: return a.order < b.order)
+	return out
+
+
 ## The CheckpointMarker with `marker_id`, or null.
 func find_checkpoint(marker_id: StringName) -> CheckpointMarker:
 	for cp: CheckpointMarker in checkpoints():
@@ -185,6 +208,10 @@ func marker_ids() -> Array[StringName]:
 		out.append(npc.marker_id)
 	for gag: GagInteractable in gags():
 		out.append(gag.marker_id)
+	for jn: JunctionNode in junction_nodes():
+		out.append(jn.marker_id)
+	for bc: WaypointBeacon in beacons():
+		out.append(bc.marker_id)
 	return out
 
 

@@ -141,6 +141,11 @@ func v_chase() -> float:
 @export var beacon_h_m: float = 3.5
 ## Tallest set wall, in metres (`wall_h_max`, 2.5 m, range 2.0-3.0; I18).
 @export var wall_h_max: float = 2.5
+## Junction coverage radius, in metres (story 110, GDD rule 19 "Junctions";
+## implementation knob, not yet in the GDD Tuning Knobs): a junction node
+## covers a branch cell, and a leg's last beacon stands on its end, when its
+## cell centre lies within this distance of that cell's centre.
+@export var junction_cover_m: float = 1.5
 ## Symbol density bands, cells per symbol (`D_min` / `D_max`; I10): the
 ## overworld 150 / 250 (range 120-300), the dungeon 80 / 120 (range 60-150).
 @export var d_min_overworld: int = 150

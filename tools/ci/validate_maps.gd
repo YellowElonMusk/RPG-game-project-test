@@ -5,7 +5,9 @@ extends SceneTree
 ## `MapValidator.validate_catalog()` over every `map_` record and its scene:
 ## scene and `map_id` match, unique marker IDs, exit targets, and every
 ## EntryPoint at least `body_radius + entry_clearance_m` outside every
-## MapExit rectangle, facing into the map (AC-30f).
+## MapExit rectangle, facing into the map (AC-30f); and (story 110, AC-45f)
+## every leg's junction-node coverage and leg-end beacon (`BeaconJunctions`;
+## I18 via `OverworldConfig.validate()` below).
 ##
 ## Usage, from the project root, after `godot --headless --path . --import`:
 ##

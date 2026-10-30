@@ -7,6 +7,8 @@
 [ext_resource type="Script" path="res://src/overworld/npc_spawn.gd" id="5_npc"]
 [ext_resource type="Script" path="res://src/overworld/markers/interactable_gag.gd" id="6_gag"]
 [ext_resource type="Script" path="res://src/overworld/markers/interactable_checkpoint.gd" id="7_kglc8"]
+[ext_resource type="Script" path="res://src/overworld/waypoint_beacon.gd" id="s110_bc"]
+[ext_resource type="Script" path="res://src/overworld/junction_node.gd" id="s110_jn"]
 
 [sub_resource type="Image" id="Image_kglc8"]
 data = {
@@ -147,7 +149,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 0, 13.5)
 script = ExtResource("6_gag")
 marker_id = &"gag_archive_courtyard"
 response = 1
-text = "You tip over a filing cabinet. Forty years of permits to apply for permits slide out."
+text = "You tip over a filing cabinet. Forty kilos of permits to apply for permits slide out."
 recruit_remark = "remark_paris_archive_courtyard"
 
 [node name="TellWestPoster" type="Marker3D" parent="." unique_id=2016551996]
@@ -156,3 +158,18 @@ script = ExtResource("6_gag")
 marker_id = &"tell_west_poster"
 text = "A rolled-up poster sticks out of the Clerk's in-tray."
 payoff_tell = "enc_paris_clerks_west"
+
+
+[node name="BeaconSegmentToDungeon" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 0, 1.5)
+script = ExtResource("s110_bc")
+marker_id = &"bc_segment_to_dungeon_end"
+leg_id = "segment_to_dungeon"
+order = 1
+
+[node name="BeaconSegmentHome" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 8)
+script = ExtResource("s110_bc")
+marker_id = &"bc_segment_home_end"
+leg_id = "segment_home"
+order = 1
