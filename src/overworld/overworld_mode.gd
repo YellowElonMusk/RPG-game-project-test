@@ -99,6 +99,8 @@ var _grace_left: float = 0.0
 ## Exploring is suspended while any of these hold (story 048; GDD States).
 var _overlays_open: int = 0
 var _transitioning: bool = false
+## A map change (Overworld -> Overworld) is running (GDD States MapChanging).
+var _map_changing: bool = false
 var _camp_prompt_open: bool = false
 ## Runs on the same frame as the open line's `overlay_closed` (`say()`).
 var _after_line: Callable = Callable()
@@ -512,6 +514,39 @@ func get_state() -> State:
 	return _state
 
 
+## Every row of the GDD States and Transitions table (story 097), plus the
+## café's chapter-end prompt, kept distinct from CampPrompt (rule 13).
+## EncounterStarting is transient inside `start_encounter()`: it resolves
+## to FROZEN (accepted) or EXPLORING (rejected) before it returns.
+enum TableState {
+	EXPLORING, INTERACTING, REDIRECTING, CAMP_PROMPT, CHAPTER_END_PROMPT,
+	ENCOUNTER_STARTING, FROZEN, MAP_CHANGING, PAUSED,
+}
+
+
+## The GDD table row this mode is in now, derived from its own state, the
+## top overlay and the running transition. The Menu wins over everything
+## below it (Paused), then battle, redirect and map change, then a
+## Dialogue, then the prompts.
+func table_state() -> TableState:
+	var top: int = -1
+	if _machine != null and not _machine.overlay_stack.is_empty():
+		top = _machine.overlay_stack.back()
+	if top == GameStateMachine.OverlayKind.MENU:
+		return TableState.PAUSED
+	if _state == State.FROZEN:
+		return TableState.FROZEN
+	if _state == State.REDIRECTING:
+		return TableState.REDIRECTING
+	if _map_changing:
+		return TableState.MAP_CHANGING
+	if top == GameStateMachine.OverlayKind.DIALOGUE:
+		return TableState.INTERACTING
+	if _camp_prompt_open:
+		return TableState.CHAPTER_END_PROMPT if camp_prompt_is_chapter_end else TableState.CAMP_PROMPT
+	return TableState.EXPLORING
+
+
 ## ADR-0012 §5 `start_encounter(enc_id, source)`: builds the descriptor from
 ## the `encounter` record, builds the `BattleEntryPayload`, remembers
 ## `pending_source` and calls `machine.request_transition(Mode.BATTLE, ...)`.
@@ -715,8 +750,9 @@ func _resolve_victory(source: EncounterSource) -> void:
 	_queue_walk_home(rec)
 
 
-func _on_transition_started(_from: GameStateMachine.Mode, _to: GameStateMachine.Mode) -> void:
+func _on_transition_started(from: GameStateMachine.Mode, to: GameStateMachine.Mode) -> void:
 	_transitioning = true
+	_map_changing = from == GameStateMachine.Mode.OVERWORLD and to == GameStateMachine.Mode.OVERWORLD
 
 
 func _on_overlay_opened(_kind: GameStateMachine.OverlayKind) -> void:
@@ -739,6 +775,7 @@ func _on_overlay_closed(kind: GameStateMachine.OverlayKind) -> void:
 ## Fires after a battle thaw, any map load and a redirect alike.
 func _on_transition_finished(to: GameStateMachine.Mode) -> void:
 	_transitioning = false
+	_map_changing = false
 	if to != GameStateMachine.Mode.OVERWORLD:
 		return
 	_state = State.EXPLORING

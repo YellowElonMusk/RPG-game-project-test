@@ -1,7 +1,7 @@
 # Story 097: Every row of the Overworld state table enters and exits correctly
 
 > **Epic**: Overworld Exploration & Encounters
-> **Status**: Ready
+> **Status**: Complete (2026-10-30)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: L
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/overworld-exploration-encounters.md`, scoped to this story:*
 
-- [ ] **AC-37 [L] (States and Transitions)** Parametrized over every row of the table: each entry produces its state, and each listed exit produces its target. A rejected encounter returns to Exploring. A failed map load restores the old map.
+- [x] **AC-37 [L] (States and Transitions)** Parametrized over every row of the table: each entry produces its state, and each listed exit produces its target. A rejected encounter returns to Exploring. A failed map load restores the old map.
 
 ---
 
@@ -59,7 +59,7 @@
 ## Files
 
 - `src/overworld/overworld_mode.gd`
-- `tests/unit/overworld/overworld_state_table_test.gd`
+- `tests/unit/overworld/state_table_transitions_test.gd`
 
 ---
 
@@ -73,9 +73,9 @@
 
 **Story Type**: Logic
 **Required evidence**:
-- `tests/unit/overworld/overworld_state_table_test.gd` — must exist and pass. Gate level: BLOCKING.
+- `tests/unit/overworld/state_table_transitions_test.gd` — must exist and pass. Gate level: BLOCKING.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing
 
 ---
 
@@ -83,3 +83,13 @@
 
 - Depends on: `production/epics/overworld-exploration-encounters/story-091-permit-counter-static-behavior.md`, `production/epics/overworld-exploration-encounters/story-096-continue-resets-symbols-to-patrol-origin.md`, `production/epics/game-state-scene-flow/story-012-failed-swap-rolls-back.md`
 - Unlocks: None further in this epic
+
+## Completion Notes (2026-10-30)
+
+- Test: `tests/unit/overworld/state_table_transitions_test.gd`.
+- `OverworldMode.table_state()` derives the GDD row from the mode's own state, the top overlay and the running transition: Exploring, Interacting, Redirecting, CampPrompt, ChapterEndPrompt (kept distinct), Frozen, MapChanging, Paused. Map change is tracked by an Overworld → Overworld `transition_started`.
+- EncounterStarting is transient inside `start_encounter()`, so the test asserts its two exits: accepted → Frozen, rejected → Exploring with contact pending.
+- The failed map load (a missing scene) is driven through a real GameRoot: the same instance comes back in Exploring.
+- Deviation, flagged: a `change` gag shows its line once (story 016) before it counts as changed. The table says it "stays in Exploring", but here it passes through Interacting until the line closes. That holds until a change has its own animation.
+- Not asserted: Retreat/Quit discarding the instance, which is Game State's (covered by its own tests).
+- Mutations checked: Menu not Paused, map change untracked, chapter-end shown as CampPrompt, and Redirecting not reported each fail a test here.

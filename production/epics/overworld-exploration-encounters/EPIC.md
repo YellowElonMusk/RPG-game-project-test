@@ -160,7 +160,7 @@ It depends on Game State (Done), Input (`get_move_vector()`), Content Data, and 
 | 094 | [A reload moves the leader off a position a new blocker has covered](story-094-load-relocates-off-a-blocked-saved-position.md) | Logic | Ready | ADR-0012 |
 | 095 | [Save and load round-trip the camp, interactables, payoffs, liberation and story-flag state](story-095-save-round-trips-camp-interactables-and-flags.md) | Logic | Complete | ADR-0012 |
 | 096 | [A Continue made mid-chase starts every symbol in Patrol at its origin](story-096-continue-resets-symbols-to-patrol-origin.md) | Integration | Complete | ADR-0012 |
-| 097 | [Every row of the Overworld state table enters and exits correctly](story-097-state-table-transitions.md) | Logic | Ready | ADR-0012 |
+| 097 | [Every row of the Overworld state table enters and exits correctly](story-097-state-table-transitions.md) | Logic | Complete | ADR-0012 |
 | 098 | [`OverworldConfig.validate()` rejects exactly the knob combination that breaks its invariant](story-098-config-invariants-i1-i18.md) | Logic | Ready | ADR-0012 |
 | 099 | [`chase_visibility` (I14) passes the shipped camera at 4:3, 16:9 and 21:9, including the tilt-shift blur bounds](story-099-chase-visibility-validates-at-every-aspect.md) | Logic | Ready | ADR-0012 |
 | 100 | [Swept contact fires at every approach angle and lateral offset, and never lets a frame skip through a wall](story-100-swept-contact-at-every-approach-angle.md) | Logic | Ready | ADR-0012 |
