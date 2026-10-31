@@ -1,7 +1,7 @@
 # Story 020: Only the set light casts shadows; every actor gets exactly one blob shadow
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done (4867af4)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S
@@ -72,7 +72,7 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/blob_shadow_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] `tests/unit/presentation/blob_shadow_test.gd` -- 5/5 passing; full suite 1753/1753
 
 ---
 
