@@ -25,6 +25,7 @@ func after_test() -> void:
 	for loader: ModeHostSceneLoader in _loaders:
 		loader.free_frozen_overworld()
 	_loaders.clear()
+	GameStateFixtures.dispose_tracked()
 
 
 func test_first_entry_menu_opens_only_after_reveal() -> void:
@@ -194,6 +195,7 @@ func _build_env() -> Dictionary:
 			loader, presenter, cfg, catalog, quit_spy.as_callable(), game_log)
 	machine_box[0] = machine
 	loader.set_machine(machine)
+	GameStateFixtures.track(machine)
 	machine.mode_entered.connect(loader.on_mode_entered)
 	machine.bind_action_source(SyntheticActionSource.new())
 	machine.tick(0.0)

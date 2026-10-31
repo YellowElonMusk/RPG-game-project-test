@@ -197,7 +197,10 @@ func test_ending_replay_clears_latch_before_battle_ended_after_replay() -> void:
 	kit.battle.battle_ended.emit(true)
 	kit.controller.request_latch()
 	var latched_at_end: Array = [true]
+	# Through a WeakRef: capturing the kit, which holds this controller, in a
+	# closure the controller holds is a RefCounted cycle that never frees.
+	var controller_ref: WeakRef = weakref(kit.controller)
 	kit.controller.battle_ended_after_replay.connect(func(_w: bool) -> void:
-		latched_at_end[0] = kit.controller.is_latched())
+		latched_at_end[0] = (controller_ref.get_ref() as BattleReplayController).is_latched())
 	kit.run_until_idle()
 	assert_bool(latched_at_end[0]).is_false()

@@ -9,6 +9,11 @@
 ## -- no new cases invented.
 extends GdUnitTestSuite
 
+
+## Breaks each test's machine/loader RefCounted cycle (they leaked otherwise).
+func after_test() -> void:
+	GameStateFixtures.dispose_tracked()
+
 const _FIXTURES_DIR: String = "res://tests/integration/game_state/fixtures/"
 const _BATTLE_MODE_SCENE: String = "res://src/battle/battle_mode.tscn"
 
@@ -50,6 +55,7 @@ func test_dialogue_after_transition_finished() -> void:
 			GameStateFixtures.make_ready_catalog(), QuitSpy.new(recorder).as_callable(), game_log)
 	machine_box[0] = machine
 	loader.set_machine(machine)
+	GameStateFixtures.track(machine)
 	machine.mode_entered.connect(loader.on_mode_entered)
 	recorder.attach(machine)
 	var source := SyntheticActionSource.new()

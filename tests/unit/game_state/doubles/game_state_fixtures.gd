@@ -3,6 +3,25 @@
 ## from the `TransitionConfig` fixture here, never literals.
 class_name GameStateFixtures extends RefCounted
 
+## Machines a test registered with `track()`; `dispose_tracked()` (call it
+## from `after_test()`) breaks their RefCounted cycles so they do not leak.
+## Only suites that dispose may track: anything left here is freed during
+## engine teardown, after the singletons it touches, and crashes the exit.
+static var _tracked: Array[GameStateMachine] = []
+
+
+## Registers `machine` for `dispose_tracked()` and returns it.
+static func track(machine: GameStateMachine) -> GameStateMachine:
+	_tracked.append(machine)
+	return machine
+
+
+## Disposes every tracked machine (`GameStateMachine.dispose()`).
+static func dispose_tracked() -> void:
+	for machine: GameStateMachine in _tracked:
+		machine.dispose()
+	_tracked.clear()
+
 
 static func make_transition_config() -> TransitionConfig:
 	var cfg := TransitionConfig.new()

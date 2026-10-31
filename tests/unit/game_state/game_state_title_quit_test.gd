@@ -9,6 +9,11 @@
 ## -- no new cases invented.
 extends GdUnitTestSuite
 
+
+## Breaks each test's machine/loader RefCounted cycle (they leaked otherwise).
+func after_test() -> void:
+	GameStateFixtures.dispose_tracked()
+
 const _TITLE_SCENE: String = "res://src/game_state/modes/title_mode.tscn"
 
 
@@ -172,6 +177,7 @@ func _build_title_env(recorder: SequenceRecorder) -> Dictionary:
 			loader, presenter, cfg, catalog, quit_spy.as_callable(), game_log)
 	machine_box[0] = machine
 	loader.set_machine(machine)
+	GameStateFixtures.track(machine)
 	recorder.attach(machine)
 
 	var source := SyntheticActionSource.new()

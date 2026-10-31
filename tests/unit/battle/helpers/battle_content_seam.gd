@@ -176,7 +176,17 @@ static func resolved_log(battle: BattleCore) -> Array:
 ## Example (literal move): [code]var rule := BattleContentSeam.scripted_rule([{"move": Move.make_defend(), "target_index": 0}])[/code]
 static func scripted_rule(script: Array) -> FactionRule:
 	ensure_catalog()
-	return _ScriptedEnemyRule.new(script)
+	# Move IDs are resolved here, not inside the inner class: an inner class
+	# naming its outer script (`BattleContentSeam.move()`) is a script
+	# dependency cycle Godot never unloads, and it kept this script -- and the
+	# gdUnit4 classes it references -- alive at the exit of every test run.
+	var resolved: Array = []
+	for entry: Dictionary in script:
+		var e: Dictionary = entry.duplicate()
+		if not e.has("move"):
+			e["move"] = move(e["move_id"])
+		resolved.append(e)
+	return _ScriptedEnemyRule.new(resolved)
 
 
 # Fails the calling test: logs to the engine console and reports a gdUnit4
@@ -214,6 +224,6 @@ class _ScriptedEnemyRule extends FactionRule:
 			return []
 		var entry: Dictionary = _script[_cursor]
 		_cursor += 1
-		var scripted_move: Move = entry["move"] if entry.has("move") else BattleContentSeam.move(entry["move_id"])
+		var scripted_move: Move = entry["move"]
 		var target: Combatant = living_squad[entry["target_index"]]
 		return [{"move": scripted_move, "target": target}]

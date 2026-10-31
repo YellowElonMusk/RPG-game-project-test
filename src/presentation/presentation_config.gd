@@ -232,7 +232,7 @@ func validate(non_boss_profiles: Array[LightingProfile] = [],
 	_check(errors, flash_rate_max <= FLASH_RATE_CEILING + RULE_EPSILON
 			and absf(flash_luma_delta - FLASH_LUMA_DELTA) <= RULE_EPSILON
 			and absf(flash_area_min - FLASH_AREA_MIN) <= RULE_EPSILON, RULE_FLASH_CONSTANTS)
-	var f_v_eff: float = FollowCamera.effective_vertical_fov_degrees(
+	var f_v_eff: float = FovMath.effective_vertical_fov_degrees(
 			follow_camera_fov_degrees, 4.0 / 3.0)
 	_check(errors, follow_camera_pitch_degrees - f_v_eff * 0.5
 			>= follow_camera_horizon_margin_degrees - RULE_EPSILON, RULE_HORIZON)

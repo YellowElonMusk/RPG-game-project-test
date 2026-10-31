@@ -8,6 +8,11 @@
 extends GdUnitTestSuite
 
 
+## Breaks each test's machine/loader RefCounted cycle (they leaked otherwise).
+func after_test() -> void:
+	GameStateFixtures.dispose_tracked()
+
+
 ## The real roster factories read the shipped catalog (content-migration story
 ## 024), so boot it once for this suite (the machine itself uses a stub).
 func before() -> void:
@@ -176,6 +181,7 @@ func _build_env() -> Dictionary:
 			loader, presenter, cfg, catalog, quit_spy.as_callable(), game_log)
 	machine_box[0] = machine
 	loader.set_machine(machine)
+	GameStateFixtures.track(machine)
 	machine.mode_entered.connect(loader.on_mode_entered)
 
 	var source := SyntheticActionSource.new()

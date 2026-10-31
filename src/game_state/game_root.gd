@@ -239,7 +239,7 @@ func _exit_tree() -> void:
 ## or all of them leak at exit.
 func _release_machine() -> void:
 	if _machine != null:
-		_machine.bind_action_source(null)
+		_machine.dispose()
 	if _loader != null:
 		_loader.set_machine(null)
 	_machine_box[0] = null

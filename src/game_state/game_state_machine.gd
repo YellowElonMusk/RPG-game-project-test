@@ -821,6 +821,30 @@ func _close_defeat_prompt() -> void:
 		overlay_closed.emit(OverlayKind.DEFEAT_PROMPT)
 
 
+## Drops every reference this machine holds and every connection to its
+## signals, so the RefCounted cycles it sits in (its loader, which points
+## back through `set_machine()` or a setup closure; a listener closure that
+## captures the machine) can be freed. Call once, when its owner goes away
+## (`GameRoot._exit_tree()`); the machine is unusable afterwards.
+func dispose() -> void:
+	if _action_source != null and is_instance_valid(_action_source):
+		_unbind_action_source()
+	_action_source = null
+	for sig: Dictionary in get_signal_list():
+		for conn: Dictionary in get_signal_connection_list(sig["name"]):
+			disconnect(sig["name"], conn["callable"])
+	_loader = null
+	_presenter = null
+	_flash_gate = null
+	_quit_hook = Callable()
+	_mark_unsaved = Callable()
+	_in_mode_fade_callback = Callable()
+	_pending_payload = null
+	_battle_snapshot = null
+	_current_descriptor = null
+	_frozen_overworld = null
+
+
 func _unbind_action_source() -> void:
 	for signal_name: StringName in [&"action_pressed", &"action_released", &"focus_lost", &"device_lost"]:
 		var callable: Callable = _callable_for_source_signal(signal_name)

@@ -61,7 +61,7 @@ static func punch_lens_shift(punch_px: Vector2i, p_h_near: float, viewport_heigh
 
 ## `f_px = H / (2 * tan(F_v_eff / 2))`, the vertical focal length in pixels.
 static func f_px(battle_fov_degrees: float, aspect: float, viewport_height: int) -> float:
-	var f_v_eff: float = FollowCamera.effective_vertical_fov_degrees(battle_fov_degrees, aspect)
+	var f_v_eff: float = FovMath.effective_vertical_fov_degrees(battle_fov_degrees, aspect)
 	return float(viewport_height) / (2.0 * tan(deg_to_rad(f_v_eff) * 0.5))
 
 

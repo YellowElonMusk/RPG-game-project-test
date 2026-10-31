@@ -12,6 +12,11 @@
 ## `step_frame()` so no wall-clock frame advances a timer between snapshots.
 extends GdUnitTestSuite
 
+
+## Breaks each test's machine/loader RefCounted cycle (they leaked otherwise).
+func after_test() -> void:
+	GameStateFixtures.dispose_tracked()
+
 const _SCENE: String = "res://tests/integration/overworld/fixtures/thaw_overworld_mode.tscn"
 const _BATTLE_SCENE: String = "res://tests/unit/game_state/fixtures/stub_battle_mode.tscn"
 const _MAP: String = "map_fixture_street"
@@ -76,6 +81,7 @@ func _run(outcome: GameStateMachine.BattleResult) -> void:
 			GameStateFixtures.make_ready_catalog(), QuitSpy.new(recorder).as_callable(),
 			SpyGameStateLog.new())
 	machine_box[0] = machine
+	GameStateFixtures.track(machine)
 	machine.mode_entered.connect(loader.on_mode_entered)
 	machine.tick(0.0)
 	machine.tick(cfg.t_out[&"fade"])

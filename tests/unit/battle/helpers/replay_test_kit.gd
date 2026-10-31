@@ -43,14 +43,17 @@ func _init(p_config: PresentationConfig, p_default_windup: float = 0.3) -> void:
 	controller = BattleReplayController.new(battle, _windup, _ko_landing, config)
 	for sig: String in ["replay_started", "replay_finished", "replay_cancelled", "display_resynced"]:
 		controller.connect(sig, _record.bind(sig, null))
-	controller.beat_started.connect(func(p: BeatPlan) -> void: _record("beat_started", p))
-	controller.beat_impact.connect(func(p: BeatPlan) -> void: _record("beat_impact", p))
-	controller.beat_finished.connect(func(p: BeatPlan) -> void: _record("beat_finished", p))
-	controller.hold_started.connect(func(_k: int, _b: Combatant) -> void: _record("hold_started", null))
-	controller.hold_finished.connect(func(_k: int) -> void: _record("hold_finished", null))
-	controller.turn_started_after_replay.connect(func(_c: Combatant) -> void: _record("turn", null))
-	controller.battle_ended_after_replay.connect(func(_w: bool) -> void: _record("end", null))
-	controller.latch_changed.connect(func(on: bool) -> void: _record("latch_on" if on else "latch_off", null))
+	# Bound methods, not lambdas: a lambda using this kit's members holds the
+	# kit strongly, and the controller holds the lambda -- a RefCounted cycle
+	# that leaked every kit, controller and BattleCore.
+	controller.beat_started.connect(_record_plan.bind("beat_started"))
+	controller.beat_impact.connect(_record_plan.bind("beat_impact"))
+	controller.beat_finished.connect(_record_plan.bind("beat_finished"))
+	controller.hold_started.connect(_record.bind("hold_started", null).unbind(2))
+	controller.hold_finished.connect(_record.bind("hold_finished", null).unbind(1))
+	controller.turn_started_after_replay.connect(_record.bind("turn", null).unbind(1))
+	controller.battle_ended_after_replay.connect(_record.bind("end", null).unbind(1))
+	controller.latch_changed.connect(_record_latch)
 
 
 func _windup(plan: BeatPlan) -> float:
@@ -63,6 +66,14 @@ func _ko_landing(c: Combatant) -> float:
 
 func _record(event_name: String, plan: BeatPlan) -> void:
 	events.append({"event": event_name, "plan": plan, "frame": frame})
+
+
+func _record_plan(plan: BeatPlan, event_name: String) -> void:
+	_record(event_name, plan)
+
+
+func _record_latch(on: bool) -> void:
+	_record("latch_on" if on else "latch_off", null)
 
 
 ## Applies `dmg` to `target` and emits an ATTACK outcome for it.

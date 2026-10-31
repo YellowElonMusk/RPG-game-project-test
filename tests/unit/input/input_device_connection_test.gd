@@ -51,7 +51,10 @@ func test_every_release_precedes_device_lost_and_stick_is_zeroed() -> void:
 	resolver.feed_event(InputTestSupport.pad_axis(0, JOY_AXIS_LEFT_X, 1.0))
 	assert_vector(resolver.get_move_vector()).is_not_equal(Vector2.ZERO)
 	var seen: Array = [null]
-	resolver.device_lost.connect(func() -> void: seen[0] = resolver.get_move_vector())
+	# Through a WeakRef: a lambda capturing the resolver, connected to the
+	# resolver's own signal, is a RefCounted cycle that never frees.
+	var resolver_ref: WeakRef = weakref(resolver)
+	resolver.device_lost.connect(func() -> void: seen[0] = resolver_ref.get_ref().get_move_vector())
 	var mark: int = rec.mark()
 	resolver.on_joy_connection(0, false, "")
 	var entries: Array = rec.discrete_since(mark)

@@ -158,11 +158,11 @@ static func from_config(config: PresentationConfig) -> FollowCamera:
 
 ## `F_v_eff` (GDD `follow_camera`): the vertical field of view actually
 ## shown. Fixed at `fov_degrees` at 16:9 and wider; below 16:9 the camera
-## keeps the 16:9 horizontal view, so the vertical view grows. Shared by the
-## battle camera's framing formula (ADR-0005 §6) -- both read this function.
+## keeps the 16:9 horizontal view, so the vertical view grows. The formula
+## lives in `FovMath` (shared with the battle camera and the config's load
+## rules without a script dependency cycle).
 static func effective_vertical_fov_degrees(p_fov_degrees: float, aspect: float) -> float:
-	var widen: float = maxf(1.0, (16.0 / 9.0) / aspect)
-	return rad_to_deg(2.0 * atan(tan(deg_to_rad(p_fov_degrees) * 0.5) * widen))
+	return FovMath.effective_vertical_fov_degrees(p_fov_degrees, aspect)
 
 
 ## `F_h` (GDD `follow_camera`): the horizontal field of view at `aspect`,

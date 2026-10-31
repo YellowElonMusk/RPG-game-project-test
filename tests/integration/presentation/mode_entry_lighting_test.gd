@@ -8,6 +8,11 @@
 ## themselves are `SceneLoader`'s concern, already covered elsewhere.
 extends GdUnitTestSuite
 
+
+## Breaks each test's machine/loader RefCounted cycle (they leaked otherwise).
+func after_test() -> void:
+	GameStateFixtures.dispose_tracked()
+
 const _PROFILES_DIR: String = "res://data/presentation/profiles"
 const _EPSILON: float = 1e-4
 
@@ -55,7 +60,7 @@ func _assert_rig_matches(stage: DioramaStage, profile: LightingProfile, context:
 
 func test_mode_entry_applies_entry_profile_before_reveal() -> void:
 	var fixture: Dictionary = GameStateFixtures.make_machine_in_overworld()
-	var machine: GameStateMachine = fixture["machine"]
+	var machine: GameStateMachine = GameStateFixtures.track(fixture["machine"])
 	var cfg: TransitionConfig = fixture["config"]
 
 	var stage: DioramaStage = _build_stage(&"battle")
