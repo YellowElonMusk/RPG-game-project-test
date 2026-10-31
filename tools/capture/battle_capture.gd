@@ -67,6 +67,13 @@ func _run() -> void:
 	stage.apply_profile(_resolve_profile(stage.profile_id), 0.0)
 	# Stands in for the GameStateMachine swap finishing (no machine here).
 	mode._on_transition_finished(GameStateMachine.Mode.BATTLE)
+	if String(args.get("takeover", "0")) == "1":
+		# Story 049: a boss takeover on its own clock -- one shot mid-blend
+		# (the boss on intro frame 0 as the light floods), then shots through
+		# the intro hold, each tagged with t_hold.
+		await _capture_takeover(mode, out_dir, enc_id)
+		quit(0)
+		return
 	for i: int in 90:
 		await process_frame
 	mode.settle_replay()
@@ -107,6 +114,29 @@ func _run() -> void:
 		guard += 1
 	await _save(out_dir.path_join("%s_beat_end.png" % enc_id))
 	quit(0)
+
+
+## Saves `<enc>_takeover_<t_hold ms>.png` at `t_hold` = 0.45, 1.0, 1.4 and
+## 1.75 s of the takeover (mid-blend, then through the intro hold).
+func _capture_takeover(mode: BattleMode, out_dir: String, enc_id: String) -> void:
+	DirAccess.make_dir_recursive_absolute(out_dir)
+	var wait: int = 0
+	while not mode.replay.is_holding() and wait < 120:
+		await process_frame
+		wait += 1
+	for target: float in [0.45, 1.0, 1.4, 1.75]:
+		var guard: int = 0
+		while mode.replay.is_holding() and mode.replay.get_hold_time() < target and guard < 600:
+			await process_frame
+			guard += 1
+		if not mode.replay.is_holding():
+			printerr("battle_capture: the takeover ended before t_hold %.2f" % target)
+			return
+		mode.set_process(false)
+		print("battle_capture: t_hold %.3f blend_p %.3f" % [mode.replay.get_hold_time(),
+				(mode.get_node(^"%DioramaStage") as DioramaStage).blend_p()])
+		await _save(out_dir.path_join("%s_takeover_%04d.png" % [enc_id, int(mode.replay.get_hold_time() * 1000.0)]))
+		mode.set_process(true)
 
 
 func _resolve_profile(id: StringName) -> LightingProfile:

@@ -1,0 +1,4 @@
+Reviewed-Content-Hash: src/battle/battle_view.gd ea565749b4a201bc630422f8ec0b4592d8137463
+Reviewed-Content-Hash: src/battle/battle_replay_controller.gd 7d42ad8631fd99355d5247d2d1dda02702c00c23
+Reviewed-Content-Hash: tools/capture/battle_capture.gd 89c3cbde264d2860d46056f3beae0d4d522e7011
+Reviewed-Content-Hash: tests/integration/battle/boss_takeover_clock_test.gd 23474dfc2496255e6e2670f6b7e1cfb2bc457849

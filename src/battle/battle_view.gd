@@ -221,6 +221,9 @@ func _show(c: Combatant, plan: BeatPlan) -> void:
 	var move_name: String = ""
 	var seconds: float = _mode_time
 	var hold_last: bool = false
+	if _replay != null and _replay.is_holding() and c == _replay.get_boss_combatant():
+		_show_intro(c, facing)
+		return
 	if plan != null and (plan.actor == c or plan.reactions.has(c)):
 		seconds = _replay.get_windup_progress() + _replay.get_post_impact_time()
 	if plan != null and plan.actor == c:
@@ -251,6 +254,25 @@ func _show(c: Combatant, plan: BeatPlan) -> void:
 		frame = anim.land_frame if anim.land_frame >= 0 else anim.frame_count() - 1
 	_sprites[c].show_frame(SpriteSetData.clip_id(anim.animation_id, anim.move_name), anim.facing,
 			r.mirrored, anim.no_mirror, frame)
+
+
+## The boss during a takeover HOLD (GDD rule 6; ADR-0006 §5; story 049):
+## its `intro` frame comes from the takeover's own clock, never a timer of
+## its own -- on first encounter at `t_hold - blend_boss` (frame 0 while the
+## light blends, then the intro plays in the new light and holds its last
+## frame), so a sped-up takeover plays the intro faster rather than cutting
+## it; on the Retry settle it holds the intro's last frame throughout.
+func _show_intro(c: Combatant, facing: StringName) -> void:
+	var r: SpriteSetData.Resolution = _sets[c].resolve(SpriteSetData.INTRO, facing, "",
+			func(_m: String) -> void: pass)
+	if r.animation == null:
+		return
+	var anim: SpriteAnimationData = r.animation
+	var frame: int = anim.frame_count() - 1
+	if _replay.get_hold_kind() == BattleReplayController.HoldKind.TAKEOVER_FULL:
+		frame = frame_at(anim, maxf(0.0, _replay.get_hold_time() - _config.blend_boss))
+	_sprites[c].show_frame(SpriteSetData.clip_id(anim.animation_id, anim.move_name), anim.facing,
+			r.mirrored, anim.no_mirror, maxi(frame, 0))
 
 
 ## The frame `seconds` into `anim` at 1x: looping for `idle`, else held on

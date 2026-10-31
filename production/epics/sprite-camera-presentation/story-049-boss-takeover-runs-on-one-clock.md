@@ -1,7 +1,7 @@
 # Story 049: the boss takeover starts on reveal, runs on one clock, and holds the battle
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done (2026-10-31) -- `tests/integration/battle/boss_takeover_clock_test.gd` 8/8; full suite 1898/1898 exit 0; windowed takeover shots in `production/qa/evidence/story-049-boss-takeover-runs-on-one-clock/`
 > **Layer**: Core
 > **Type**: Integration
 > **Estimate**: M
@@ -78,7 +78,7 @@
 **Required evidence**:
 - Integration: `tests/integration/battle/boss_takeover_clock_test.gd` OR playtest doc
 
-**Status**: [ ] Not yet created
+**Status**: [x] `tests/integration/battle/boss_takeover_clock_test.gd` created and passing (8/8, 2026-10-31); live observation: `production/qa/evidence/story-049-boss-takeover-runs-on-one-clock/` (t_hold 0.45 mid-blend p 0.508 on intro frame 0; 1.0, 1.4, 1.75 s through the intro)
 
 ---
 

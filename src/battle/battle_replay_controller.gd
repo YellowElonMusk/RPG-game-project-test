@@ -242,6 +242,18 @@ func get_hold_time() -> float:
 	return 0.0
 
 
+## True while a HOLD entry (a boss takeover) is in progress.
+func is_holding() -> bool:
+	return not _current.is_empty() and _current["kind"] == _Kind.HOLD
+
+
+## The kind of the HOLD in progress; meaningful only while `is_holding()`.
+func get_hold_kind() -> HoldKind:
+	if is_holding():
+		return _current["hold_kind"]
+	return HoldKind.TAKEOVER_FULL
+
+
 ## The fight's boss, or null.
 func get_boss_combatant() -> Combatant:
 	return _boss
