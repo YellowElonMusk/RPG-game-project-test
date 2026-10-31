@@ -1,7 +1,7 @@
 # Story 060: The flash analyser checks composited frames against flash_rate_max
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: In Review -- analyser built and unit-tested (18/18); AC-55b measured: PASS with Reduce Flashing Off, FAIL with Reduce Flashing On (ungated command-menu panel; InterimFadePresenter ignores `capped`). See `production/qa/evidence/composite-flash-sequences-evidence.md`
 > **Layer**: Core
 > **Type**: Visual/Feel
 > **Estimate**: M
@@ -77,7 +77,7 @@ This builds the flash analyser tool itself (P-13), a sibling to the capture tool
 - A retained capture-tool/analyser output in `production/qa/evidence/composite-flash-sequences/`
 - Sign-off in `production/qa/evidence/composite-flash-sequences-evidence.md`
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created -- `production/qa/evidence/composite-flash-sequences/` + `composite-flash-sequences-evidence.md` (sign-off owed)
 
 ---
 

@@ -1,0 +1,1944 @@
+{
+  "tool": "tools/capture/flash_sequence_capture.gd + tools/capture/flash_analyser.gd",
+  "ac": "AC-55b",
+  "procedure": "P-13",
+  "size": [
+    1280,
+    720
+  ],
+  "fps": 60,
+  "analysis_h": 90,
+  "flash_rate_max": 3.0,
+  "flash_luma_delta": 0.1,
+  "flash_area_min": 0.25,
+  "engine": "4.7.2-stable (official)",
+  "adapter": "NVIDIA GeForce RTX 4080 SUPER",
+  "all_sequences_pass": false,
+  "negative_control_fails": true,
+  "runs": [
+    {
+      "sequence": "boss_takeover",
+      "encounter": "enc_paris_supervisor",
+      "reduce_flashing": false,
+      "gate": true,
+      "frames": 190,
+      "seconds": 3.16666666666667,
+      "decision_s": 0.6,
+      "latches_engaged": 0,
+      "mode_time_s": 3.16666666666666,
+      "gate_requests": [
+        {
+          "source": "battle_wipe",
+          "clock": "real",
+          "frame": 0,
+          "capped": false
+        }
+      ],
+      "gate_booked_max_per_window": 1,
+      "boss_flood_spans": [
+        [
+          21,
+          128
+        ]
+      ],
+      "general_max_per_window": 1,
+      "red_max_per_window": 0,
+      "flashes_outside_flood": [
+        129
+      ],
+      "reduce_flashing_only_flood": true,
+      "analysis": {
+        "frames": 190,
+        "fps": 60,
+        "analysis_size": [
+          160,
+          90
+        ],
+        "window_px": [
+          40,
+          30
+        ],
+        "luma_delta": 0.1,
+        "area_min": 0.25,
+        "rate_max": 3.0,
+        "coincidence_frames": 3,
+        "events": [
+          {
+            "frame": 10,
+            "t_s": 0.166666666666667,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.282
+          },
+          {
+            "frame": 129,
+            "t_s": 2.15,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.318
+          }
+        ],
+        "general_flash_frames": [
+          129
+        ],
+        "red_flash_frames": [],
+        "general_worst_window": {
+          "start_frame": 129,
+          "count": 1
+        },
+        "red_worst_window": {
+          "start_frame": -1,
+          "count": 0
+        },
+        "mean_luma_min": 0.0186492968350649,
+        "mean_luma_max": 0.207551822066307,
+        "pass": true
+      },
+      "notes": [],
+      "pass": true
+    },
+    {
+      "sequence": "boss_takeover",
+      "encounter": "enc_paris_supervisor",
+      "reduce_flashing": true,
+      "gate": true,
+      "frames": 190,
+      "seconds": 3.16666666666667,
+      "decision_s": 0.6,
+      "latches_engaged": 0,
+      "mode_time_s": 3.16666666666666,
+      "gate_requests": [
+        {
+          "source": "battle_wipe",
+          "clock": "real",
+          "frame": 0,
+          "capped": true
+        }
+      ],
+      "gate_booked_max_per_window": 0,
+      "boss_flood_spans": [
+        [
+          21,
+          128
+        ]
+      ],
+      "general_max_per_window": 1,
+      "red_max_per_window": 0,
+      "flashes_outside_flood": [
+        129
+      ],
+      "reduce_flashing_only_flood": false,
+      "analysis": {
+        "frames": 190,
+        "fps": 60,
+        "analysis_size": [
+          160,
+          90
+        ],
+        "window_px": [
+          40,
+          30
+        ],
+        "luma_delta": 0.1,
+        "area_min": 0.25,
+        "rate_max": 3.0,
+        "coincidence_frames": 3,
+        "events": [
+          {
+            "frame": 10,
+            "t_s": 0.166666666666667,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.282
+          },
+          {
+            "frame": 129,
+            "t_s": 2.15,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.318
+          }
+        ],
+        "general_flash_frames": [
+          129
+        ],
+        "red_flash_frames": [],
+        "general_worst_window": {
+          "start_frame": 129,
+          "count": 1
+        },
+        "red_worst_window": {
+          "start_frame": -1,
+          "count": 0
+        },
+        "mean_luma_min": 0.0186492968350649,
+        "mean_luma_max": 0.207551822066307,
+        "pass": true
+      },
+      "notes": [],
+      "pass": false
+    },
+    {
+      "sequence": "hits_1x",
+      "encounter": "enc_paris_clerks_hall",
+      "reduce_flashing": false,
+      "gate": true,
+      "frames": 343,
+      "seconds": 5.71666666666667,
+      "decision_s": 0.6,
+      "latches_engaged": 0,
+      "mode_time_s": 5.71666666666665,
+      "gate_requests": [
+        {
+          "source": "battle_wipe",
+          "clock": "real",
+          "frame": 0,
+          "capped": false
+        }
+      ],
+      "gate_booked_max_per_window": 2,
+      "boss_flood_spans": [],
+      "general_max_per_window": 3,
+      "red_max_per_window": 0,
+      "flashes_outside_flood": [
+        21,
+        57,
+        81,
+        118,
+        142,
+        179,
+        203,
+        240,
+        312
+      ],
+      "reduce_flashing_only_flood": true,
+      "analysis": {
+        "frames": 343,
+        "fps": 60,
+        "analysis_size": [
+          160,
+          90
+        ],
+        "window_px": [
+          40,
+          30
+        ],
+        "luma_delta": 0.1,
+        "area_min": 0.25,
+        "rate_max": 3.0,
+        "coincidence_frames": 3,
+        "events": [
+          {
+            "frame": 10,
+            "t_s": 0.166666666666667,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.294
+          },
+          {
+            "frame": 21,
+            "t_s": 0.35,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.318
+          },
+          {
+            "frame": 57,
+            "t_s": 0.95,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.325
+          },
+          {
+            "frame": 81,
+            "t_s": 1.35,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.345
+          },
+          {
+            "frame": 118,
+            "t_s": 1.96666666666667,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.317
+          },
+          {
+            "frame": 142,
+            "t_s": 2.36666666666667,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.336
+          },
+          {
+            "frame": 179,
+            "t_s": 2.98333333333333,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.319
+          },
+          {
+            "frame": 203,
+            "t_s": 3.38333333333333,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.34
+          },
+          {
+            "frame": 240,
+            "t_s": 4.0,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.324
+          },
+          {
+            "frame": 312,
+            "t_s": 5.2,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.347
+          }
+        ],
+        "general_flash_frames": [
+          21,
+          57,
+          81,
+          118,
+          142,
+          179,
+          203,
+          240,
+          312
+        ],
+        "red_flash_frames": [],
+        "general_worst_window": {
+          "start_frame": 21,
+          "count": 3
+        },
+        "red_worst_window": {
+          "start_frame": -1,
+          "count": 0
+        },
+        "mean_luma_min": 0.0186492968350649,
+        "mean_luma_max": 0.215188711881638,
+        "pass": true
+      },
+      "notes": [],
+      "pass": true
+    },
+    {
+      "sequence": "hits_1x",
+      "encounter": "enc_paris_clerks_hall",
+      "reduce_flashing": true,
+      "gate": true,
+      "frames": 343,
+      "seconds": 5.71666666666667,
+      "decision_s": 0.6,
+      "latches_engaged": 0,
+      "mode_time_s": 5.71666666666665,
+      "gate_requests": [
+        {
+          "source": "battle_wipe",
+          "clock": "real",
+          "frame": 0,
+          "capped": true
+        }
+      ],
+      "gate_booked_max_per_window": 0,
+      "boss_flood_spans": [],
+      "general_max_per_window": 3,
+      "red_max_per_window": 0,
+      "flashes_outside_flood": [
+        21,
+        57,
+        81,
+        118,
+        142,
+        179,
+        203,
+        240,
+        312
+      ],
+      "reduce_flashing_only_flood": false,
+      "analysis": {
+        "frames": 343,
+        "fps": 60,
+        "analysis_size": [
+          160,
+          90
+        ],
+        "window_px": [
+          40,
+          30
+        ],
+        "luma_delta": 0.1,
+        "area_min": 0.25,
+        "rate_max": 3.0,
+        "coincidence_frames": 3,
+        "events": [
+          {
+            "frame": 10,
+            "t_s": 0.166666666666667,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.294
+          },
+          {
+            "frame": 21,
+            "t_s": 0.35,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.318
+          },
+          {
+            "frame": 57,
+            "t_s": 0.95,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.325
+          },
+          {
+            "frame": 81,
+            "t_s": 1.35,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.345
+          },
+          {
+            "frame": 118,
+            "t_s": 1.96666666666667,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.317
+          },
+          {
+            "frame": 142,
+            "t_s": 2.36666666666667,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.336
+          },
+          {
+            "frame": 179,
+            "t_s": 2.98333333333333,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.319
+          },
+          {
+            "frame": 203,
+            "t_s": 3.38333333333333,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.34
+          },
+          {
+            "frame": 240,
+            "t_s": 4.0,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.324
+          },
+          {
+            "frame": 312,
+            "t_s": 5.2,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.333
+          }
+        ],
+        "general_flash_frames": [
+          21,
+          57,
+          81,
+          118,
+          142,
+          179,
+          203,
+          240,
+          312
+        ],
+        "red_flash_frames": [],
+        "general_worst_window": {
+          "start_frame": 21,
+          "count": 3
+        },
+        "red_worst_window": {
+          "start_frame": -1,
+          "count": 0
+        },
+        "mean_luma_min": 0.0186492968350649,
+        "mean_luma_max": 0.215061858296394,
+        "pass": true
+      },
+      "notes": [],
+      "pass": false
+    },
+    {
+      "sequence": "hits_latched",
+      "encounter": "enc_paris_clerks_hall",
+      "reduce_flashing": false,
+      "gate": true,
+      "frames": 343,
+      "seconds": 5.71666666666667,
+      "decision_s": 0.6,
+      "latches_engaged": 4,
+      "mode_time_s": 5.71666666666665,
+      "gate_requests": [
+        {
+          "source": "battle_wipe",
+          "clock": "real",
+          "frame": 0,
+          "capped": false
+        }
+      ],
+      "gate_booked_max_per_window": 2,
+      "boss_flood_spans": [],
+      "general_max_per_window": 3,
+      "red_max_per_window": 0,
+      "flashes_outside_flood": [
+        21,
+        57,
+        81,
+        118,
+        142,
+        179,
+        203,
+        240,
+        312
+      ],
+      "reduce_flashing_only_flood": true,
+      "analysis": {
+        "frames": 343,
+        "fps": 60,
+        "analysis_size": [
+          160,
+          90
+        ],
+        "window_px": [
+          40,
+          30
+        ],
+        "luma_delta": 0.1,
+        "area_min": 0.25,
+        "rate_max": 3.0,
+        "coincidence_frames": 3,
+        "events": [
+          {
+            "frame": 10,
+            "t_s": 0.166666666666667,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.294
+          },
+          {
+            "frame": 21,
+            "t_s": 0.35,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.318
+          },
+          {
+            "frame": 57,
+            "t_s": 0.95,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.325
+          },
+          {
+            "frame": 81,
+            "t_s": 1.35,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.345
+          },
+          {
+            "frame": 118,
+            "t_s": 1.96666666666667,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.317
+          },
+          {
+            "frame": 142,
+            "t_s": 2.36666666666667,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.336
+          },
+          {
+            "frame": 179,
+            "t_s": 2.98333333333333,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.319
+          },
+          {
+            "frame": 203,
+            "t_s": 3.38333333333333,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.34
+          },
+          {
+            "frame": 240,
+            "t_s": 4.0,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.324
+          },
+          {
+            "frame": 312,
+            "t_s": 5.2,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.333
+          }
+        ],
+        "general_flash_frames": [
+          21,
+          57,
+          81,
+          118,
+          142,
+          179,
+          203,
+          240,
+          312
+        ],
+        "red_flash_frames": [],
+        "general_worst_window": {
+          "start_frame": 21,
+          "count": 3
+        },
+        "red_worst_window": {
+          "start_frame": -1,
+          "count": 0
+        },
+        "mean_luma_min": 0.0186492968350649,
+        "mean_luma_max": 0.215086206793785,
+        "pass": true
+      },
+      "notes": [],
+      "pass": true
+    },
+    {
+      "sequence": "hits_latched",
+      "encounter": "enc_paris_clerks_hall",
+      "reduce_flashing": true,
+      "gate": true,
+      "frames": 343,
+      "seconds": 5.71666666666667,
+      "decision_s": 0.6,
+      "latches_engaged": 4,
+      "mode_time_s": 5.71666666666665,
+      "gate_requests": [
+        {
+          "source": "battle_wipe",
+          "clock": "real",
+          "frame": 0,
+          "capped": true
+        }
+      ],
+      "gate_booked_max_per_window": 0,
+      "boss_flood_spans": [],
+      "general_max_per_window": 3,
+      "red_max_per_window": 0,
+      "flashes_outside_flood": [
+        21,
+        57,
+        81,
+        118,
+        142,
+        179,
+        203,
+        240,
+        312
+      ],
+      "reduce_flashing_only_flood": false,
+      "analysis": {
+        "frames": 343,
+        "fps": 60,
+        "analysis_size": [
+          160,
+          90
+        ],
+        "window_px": [
+          40,
+          30
+        ],
+        "luma_delta": 0.1,
+        "area_min": 0.25,
+        "rate_max": 3.0,
+        "coincidence_frames": 3,
+        "events": [
+          {
+            "frame": 10,
+            "t_s": 0.166666666666667,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.294
+          },
+          {
+            "frame": 21,
+            "t_s": 0.35,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.318
+          },
+          {
+            "frame": 57,
+            "t_s": 0.95,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.325
+          },
+          {
+            "frame": 81,
+            "t_s": 1.35,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.345
+          },
+          {
+            "frame": 118,
+            "t_s": 1.96666666666667,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.317
+          },
+          {
+            "frame": 142,
+            "t_s": 2.36666666666667,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.336
+          },
+          {
+            "frame": 179,
+            "t_s": 2.98333333333333,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.319
+          },
+          {
+            "frame": 203,
+            "t_s": 3.38333333333333,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.34
+          },
+          {
+            "frame": 240,
+            "t_s": 4.0,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.324
+          },
+          {
+            "frame": 312,
+            "t_s": 5.2,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.333
+          }
+        ],
+        "general_flash_frames": [
+          21,
+          57,
+          81,
+          118,
+          142,
+          179,
+          203,
+          240,
+          312
+        ],
+        "red_flash_frames": [],
+        "general_worst_window": {
+          "start_frame": 21,
+          "count": 3
+        },
+        "red_worst_window": {
+          "start_frame": -1,
+          "count": 0
+        },
+        "mean_luma_min": 0.0186492968350649,
+        "mean_luma_max": 0.215086206793785,
+        "pass": true
+      },
+      "notes": [],
+      "pass": false
+    },
+    {
+      "sequence": "victory",
+      "encounter": "enc_paris_clerks_hall",
+      "reduce_flashing": false,
+      "gate": true,
+      "frames": 147,
+      "seconds": 2.45,
+      "decision_s": 0.6,
+      "latches_engaged": 0,
+      "mode_time_s": 2.45,
+      "gate_requests": [
+        {
+          "source": "battle_wipe",
+          "clock": "real",
+          "frame": 0,
+          "capped": false
+        }
+      ],
+      "gate_booked_max_per_window": 2,
+      "boss_flood_spans": [],
+      "general_max_per_window": 2,
+      "red_max_per_window": 0,
+      "flashes_outside_flood": [
+        21,
+        57
+      ],
+      "reduce_flashing_only_flood": true,
+      "analysis": {
+        "frames": 147,
+        "fps": 60,
+        "analysis_size": [
+          160,
+          90
+        ],
+        "window_px": [
+          40,
+          30
+        ],
+        "luma_delta": 0.1,
+        "area_min": 0.25,
+        "rate_max": 3.0,
+        "coincidence_frames": 3,
+        "events": [
+          {
+            "frame": 10,
+            "t_s": 0.166666666666667,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.294
+          },
+          {
+            "frame": 21,
+            "t_s": 0.35,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.318
+          },
+          {
+            "frame": 57,
+            "t_s": 0.95,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.325
+          }
+        ],
+        "general_flash_frames": [
+          21,
+          57
+        ],
+        "red_flash_frames": [],
+        "general_worst_window": {
+          "start_frame": 21,
+          "count": 2
+        },
+        "red_worst_window": {
+          "start_frame": -1,
+          "count": 0
+        },
+        "mean_luma_min": 0.0186492968350649,
+        "mean_luma_max": 0.214566379785538,
+        "pass": true
+      },
+      "notes": [
+        "results screen not built (UI Framework): the run ends on the Victory hold; no confetti or victory burst source is wired yet"
+      ],
+      "pass": true
+    },
+    {
+      "sequence": "victory",
+      "encounter": "enc_paris_clerks_hall",
+      "reduce_flashing": true,
+      "gate": true,
+      "frames": 147,
+      "seconds": 2.45,
+      "decision_s": 0.6,
+      "latches_engaged": 0,
+      "mode_time_s": 2.45,
+      "gate_requests": [
+        {
+          "source": "battle_wipe",
+          "clock": "real",
+          "frame": 0,
+          "capped": true
+        }
+      ],
+      "gate_booked_max_per_window": 0,
+      "boss_flood_spans": [],
+      "general_max_per_window": 2,
+      "red_max_per_window": 0,
+      "flashes_outside_flood": [
+        21,
+        57
+      ],
+      "reduce_flashing_only_flood": false,
+      "analysis": {
+        "frames": 147,
+        "fps": 60,
+        "analysis_size": [
+          160,
+          90
+        ],
+        "window_px": [
+          40,
+          30
+        ],
+        "luma_delta": 0.1,
+        "area_min": 0.25,
+        "rate_max": 3.0,
+        "coincidence_frames": 3,
+        "events": [
+          {
+            "frame": 10,
+            "t_s": 0.166666666666667,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.294
+          },
+          {
+            "frame": 21,
+            "t_s": 0.35,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.318
+          },
+          {
+            "frame": 57,
+            "t_s": 0.95,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.325
+          }
+        ],
+        "general_flash_frames": [
+          21,
+          57
+        ],
+        "red_flash_frames": [],
+        "general_worst_window": {
+          "start_frame": 21,
+          "count": 2
+        },
+        "red_worst_window": {
+          "start_frame": -1,
+          "count": 0
+        },
+        "mean_luma_min": 0.0186492968350649,
+        "mean_luma_max": 0.214417308568954,
+        "pass": true
+      },
+      "notes": [
+        "results screen not built (UI Framework): the run ends on the Victory hold; no confetti or victory burst source is wired yet"
+      ],
+      "pass": false
+    },
+    {
+      "sequence": "defeat_retry",
+      "encounter": "enc_paris_clerks_hall",
+      "reduce_flashing": false,
+      "gate": true,
+      "frames": 243,
+      "seconds": 4.05,
+      "decision_s": 0.6,
+      "latches_engaged": 0,
+      "mode_time_s": 4.04999999999999,
+      "gate_requests": [
+        {
+          "source": "battle_wipe",
+          "clock": "real",
+          "frame": 0,
+          "capped": false
+        },
+        {
+          "source": "retry_flash",
+          "clock": "real",
+          "frame": 135,
+          "capped": false
+        }
+      ],
+      "gate_booked_max_per_window": 2,
+      "boss_flood_spans": [],
+      "general_max_per_window": 3,
+      "red_max_per_window": 0,
+      "flashes_outside_flood": [
+        21,
+        81,
+        81,
+        146,
+        153
+      ],
+      "reduce_flashing_only_flood": true,
+      "analysis": {
+        "frames": 243,
+        "fps": 60,
+        "analysis_size": [
+          160,
+          90
+        ],
+        "window_px": [
+          40,
+          30
+        ],
+        "luma_delta": 0.1,
+        "area_min": 0.25,
+        "rate_max": 3.0,
+        "coincidence_frames": 3,
+        "events": [
+          {
+            "frame": 10,
+            "t_s": 0.166666666666667,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.294
+          },
+          {
+            "frame": 21,
+            "t_s": 0.35,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.318
+          },
+          {
+            "frame": 81,
+            "t_s": 1.35,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.337
+          },
+          {
+            "frame": 81,
+            "t_s": 1.35,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.258
+          },
+          {
+            "frame": 135,
+            "t_s": 2.25,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.648
+          },
+          {
+            "frame": 146,
+            "t_s": 2.43333333333333,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.294
+          },
+          {
+            "frame": 153,
+            "t_s": 2.55,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.318
+          }
+        ],
+        "general_flash_frames": [
+          21,
+          81,
+          81,
+          146,
+          153
+        ],
+        "red_flash_frames": [],
+        "general_worst_window": {
+          "start_frame": 21,
+          "count": 3
+        },
+        "red_worst_window": {
+          "start_frame": -1,
+          "count": 0
+        },
+        "mean_luma_min": 0.0186492968350649,
+        "mean_luma_max": 0.218617141246796,
+        "pass": true
+      },
+      "notes": [
+        "Defeat card stamp not built (UI Framework); retry flash reproduced with InterimFadePresenter; no machine, so restore_start_snapshot takes the uncapped (instant) light path even when the gate caps the flash"
+      ],
+      "pass": true
+    },
+    {
+      "sequence": "defeat_retry",
+      "encounter": "enc_paris_clerks_hall",
+      "reduce_flashing": true,
+      "gate": true,
+      "frames": 243,
+      "seconds": 4.05,
+      "decision_s": 0.6,
+      "latches_engaged": 0,
+      "mode_time_s": 4.04999999999999,
+      "gate_requests": [
+        {
+          "source": "battle_wipe",
+          "clock": "real",
+          "frame": 0,
+          "capped": true
+        },
+        {
+          "source": "retry_flash",
+          "clock": "real",
+          "frame": 135,
+          "capped": true
+        }
+      ],
+      "gate_booked_max_per_window": 0,
+      "boss_flood_spans": [],
+      "general_max_per_window": 3,
+      "red_max_per_window": 0,
+      "flashes_outside_flood": [
+        21,
+        81,
+        81,
+        146,
+        153
+      ],
+      "reduce_flashing_only_flood": false,
+      "analysis": {
+        "frames": 243,
+        "fps": 60,
+        "analysis_size": [
+          160,
+          90
+        ],
+        "window_px": [
+          40,
+          30
+        ],
+        "luma_delta": 0.1,
+        "area_min": 0.25,
+        "rate_max": 3.0,
+        "coincidence_frames": 3,
+        "events": [
+          {
+            "frame": 10,
+            "t_s": 0.166666666666667,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.294
+          },
+          {
+            "frame": 21,
+            "t_s": 0.35,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.318
+          },
+          {
+            "frame": 81,
+            "t_s": 1.35,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.337
+          },
+          {
+            "frame": 81,
+            "t_s": 1.35,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.258
+          },
+          {
+            "frame": 135,
+            "t_s": 2.25,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.648
+          },
+          {
+            "frame": 146,
+            "t_s": 2.43333333333333,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.294
+          },
+          {
+            "frame": 153,
+            "t_s": 2.55,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.318
+          }
+        ],
+        "general_flash_frames": [
+          21,
+          81,
+          81,
+          146,
+          153
+        ],
+        "red_flash_frames": [],
+        "general_worst_window": {
+          "start_frame": 21,
+          "count": 3
+        },
+        "red_worst_window": {
+          "start_frame": -1,
+          "count": 0
+        },
+        "mean_luma_min": 0.0186492968350649,
+        "mean_luma_max": 0.218617141246796,
+        "pass": true
+      },
+      "notes": [
+        "Defeat card stamp not built (UI Framework); retry flash reproduced with InterimFadePresenter; no machine, so restore_start_snapshot takes the uncapped (instant) light path even when the gate caps the flash"
+      ],
+      "pass": false
+    },
+    {
+      "sequence": "menu_during_replay",
+      "encounter": "enc_paris_clerks_hall",
+      "reduce_flashing": false,
+      "gate": true,
+      "frames": 172,
+      "seconds": 2.86666666666667,
+      "decision_s": 0.6,
+      "latches_engaged": 0,
+      "mode_time_s": 1.86666666666666,
+      "gate_requests": [
+        {
+          "source": "battle_wipe",
+          "clock": "real",
+          "frame": 0,
+          "capped": false
+        }
+      ],
+      "gate_booked_max_per_window": 1,
+      "boss_flood_spans": [],
+      "general_max_per_window": 2,
+      "red_max_per_window": 0,
+      "flashes_outside_flood": [
+        21,
+        57,
+        141
+      ],
+      "reduce_flashing_only_flood": true,
+      "analysis": {
+        "frames": 172,
+        "fps": 60,
+        "analysis_size": [
+          160,
+          90
+        ],
+        "window_px": [
+          40,
+          30
+        ],
+        "luma_delta": 0.1,
+        "area_min": 0.25,
+        "rate_max": 3.0,
+        "coincidence_frames": 3,
+        "events": [
+          {
+            "frame": 10,
+            "t_s": 0.166666666666667,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.294
+          },
+          {
+            "frame": 21,
+            "t_s": 0.35,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.318
+          },
+          {
+            "frame": 57,
+            "t_s": 0.95,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.325
+          },
+          {
+            "frame": 141,
+            "t_s": 2.35,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.345
+          }
+        ],
+        "general_flash_frames": [
+          21,
+          57,
+          141
+        ],
+        "red_flash_frames": [],
+        "general_worst_window": {
+          "start_frame": 21,
+          "count": 2
+        },
+        "red_worst_window": {
+          "start_frame": -1,
+          "count": 0
+        },
+        "mean_luma_min": 0.0186492968350649,
+        "mean_luma_max": 0.214566379785538,
+        "pass": true
+      },
+      "notes": [
+        "Menu = ModeHost disabled + ambient pause for 1 s mid-wind-up; the Menu backdrop panel is not built"
+      ],
+      "pass": true
+    },
+    {
+      "sequence": "menu_during_replay",
+      "encounter": "enc_paris_clerks_hall",
+      "reduce_flashing": true,
+      "gate": true,
+      "frames": 172,
+      "seconds": 2.86666666666667,
+      "decision_s": 0.6,
+      "latches_engaged": 0,
+      "mode_time_s": 1.86666666666666,
+      "gate_requests": [
+        {
+          "source": "battle_wipe",
+          "clock": "real",
+          "frame": 0,
+          "capped": true
+        }
+      ],
+      "gate_booked_max_per_window": 0,
+      "boss_flood_spans": [],
+      "general_max_per_window": 2,
+      "red_max_per_window": 0,
+      "flashes_outside_flood": [
+        21,
+        57,
+        141
+      ],
+      "reduce_flashing_only_flood": false,
+      "analysis": {
+        "frames": 172,
+        "fps": 60,
+        "analysis_size": [
+          160,
+          90
+        ],
+        "window_px": [
+          40,
+          30
+        ],
+        "luma_delta": 0.1,
+        "area_min": 0.25,
+        "rate_max": 3.0,
+        "coincidence_frames": 3,
+        "events": [
+          {
+            "frame": 10,
+            "t_s": 0.166666666666667,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.294
+          },
+          {
+            "frame": 21,
+            "t_s": 0.35,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.318
+          },
+          {
+            "frame": 57,
+            "t_s": 0.95,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.325
+          },
+          {
+            "frame": 141,
+            "t_s": 2.35,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.345
+          }
+        ],
+        "general_flash_frames": [
+          21,
+          57,
+          141
+        ],
+        "red_flash_frames": [],
+        "general_worst_window": {
+          "start_frame": 21,
+          "count": 2
+        },
+        "red_worst_window": {
+          "start_frame": -1,
+          "count": 0
+        },
+        "mean_luma_min": 0.0186492968350649,
+        "mean_luma_max": 0.214417308568954,
+        "pass": true
+      },
+      "notes": [
+        "Menu = ModeHost disabled + ambient pause for 1 s mid-wind-up; the Menu backdrop panel is not built"
+      ],
+      "pass": false
+    },
+    {
+      "sequence": "neg_strobe",
+      "encounter": "enc_paris_clerks_hall",
+      "reduce_flashing": false,
+      "gate": true,
+      "frames": 171,
+      "seconds": 2.85,
+      "decision_s": 0.6,
+      "latches_engaged": 0,
+      "mode_time_s": 2.84999999999999,
+      "gate_requests": [
+        {
+          "source": "battle_wipe",
+          "clock": "real",
+          "frame": 0,
+          "capped": false
+        }
+      ],
+      "gate_booked_max_per_window": 1,
+      "boss_flood_spans": [],
+      "general_max_per_window": 11,
+      "red_max_per_window": 0,
+      "flashes_outside_flood": [
+        27,
+        33,
+        39,
+        45,
+        51,
+        57,
+        63,
+        69,
+        75,
+        81,
+        87,
+        93,
+        99,
+        105,
+        111,
+        117,
+        123,
+        129,
+        135,
+        141
+      ],
+      "reduce_flashing_only_flood": true,
+      "analysis": {
+        "frames": 171,
+        "fps": 60,
+        "analysis_size": [
+          160,
+          90
+        ],
+        "window_px": [
+          40,
+          30
+        ],
+        "luma_delta": 0.1,
+        "area_min": 0.25,
+        "rate_max": 3.0,
+        "coincidence_frames": 3,
+        "events": [
+          {
+            "frame": 10,
+            "t_s": 0.166666666666667,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.294
+          },
+          {
+            "frame": 21,
+            "t_s": 0.35,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.967
+          },
+          {
+            "frame": 27,
+            "t_s": 0.45,
+            "kind": "general",
+            "rising": false,
+            "coverage": 1.0
+          },
+          {
+            "frame": 33,
+            "t_s": 0.55,
+            "kind": "general",
+            "rising": true,
+            "coverage": 1.0
+          },
+          {
+            "frame": 39,
+            "t_s": 0.65,
+            "kind": "general",
+            "rising": false,
+            "coverage": 1.0
+          },
+          {
+            "frame": 45,
+            "t_s": 0.75,
+            "kind": "general",
+            "rising": true,
+            "coverage": 1.0
+          },
+          {
+            "frame": 51,
+            "t_s": 0.85,
+            "kind": "general",
+            "rising": false,
+            "coverage": 1.0
+          },
+          {
+            "frame": 57,
+            "t_s": 0.95,
+            "kind": "general",
+            "rising": true,
+            "coverage": 1.0
+          },
+          {
+            "frame": 63,
+            "t_s": 1.05,
+            "kind": "general",
+            "rising": false,
+            "coverage": 1.0
+          },
+          {
+            "frame": 69,
+            "t_s": 1.15,
+            "kind": "general",
+            "rising": true,
+            "coverage": 1.0
+          },
+          {
+            "frame": 75,
+            "t_s": 1.25,
+            "kind": "general",
+            "rising": false,
+            "coverage": 1.0
+          },
+          {
+            "frame": 81,
+            "t_s": 1.35,
+            "kind": "general",
+            "rising": true,
+            "coverage": 1.0
+          },
+          {
+            "frame": 87,
+            "t_s": 1.45,
+            "kind": "general",
+            "rising": false,
+            "coverage": 1.0
+          },
+          {
+            "frame": 93,
+            "t_s": 1.55,
+            "kind": "general",
+            "rising": true,
+            "coverage": 1.0
+          },
+          {
+            "frame": 99,
+            "t_s": 1.65,
+            "kind": "general",
+            "rising": false,
+            "coverage": 1.0
+          },
+          {
+            "frame": 105,
+            "t_s": 1.75,
+            "kind": "general",
+            "rising": true,
+            "coverage": 1.0
+          },
+          {
+            "frame": 111,
+            "t_s": 1.85,
+            "kind": "general",
+            "rising": false,
+            "coverage": 1.0
+          },
+          {
+            "frame": 117,
+            "t_s": 1.95,
+            "kind": "general",
+            "rising": true,
+            "coverage": 1.0
+          },
+          {
+            "frame": 123,
+            "t_s": 2.05,
+            "kind": "general",
+            "rising": false,
+            "coverage": 1.0
+          },
+          {
+            "frame": 129,
+            "t_s": 2.15,
+            "kind": "general",
+            "rising": true,
+            "coverage": 1.0
+          },
+          {
+            "frame": 135,
+            "t_s": 2.25,
+            "kind": "general",
+            "rising": false,
+            "coverage": 1.0
+          },
+          {
+            "frame": 141,
+            "t_s": 2.35,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.988
+          }
+        ],
+        "general_flash_frames": [
+          27,
+          33,
+          39,
+          45,
+          51,
+          57,
+          63,
+          69,
+          75,
+          81,
+          87,
+          93,
+          99,
+          105,
+          111,
+          117,
+          123,
+          129,
+          135,
+          141
+        ],
+        "red_flash_frames": [],
+        "general_worst_window": {
+          "start_frame": 27,
+          "count": 11
+        },
+        "red_worst_window": {
+          "start_frame": -1,
+          "count": 0
+        },
+        "mean_luma_min": 0.0,
+        "mean_luma_max": 1.0,
+        "pass": false
+      },
+      "notes": [],
+      "pass": false
+    },
+    {
+      "sequence": "obs_gate_bypassed",
+      "encounter": "enc_paris_clerks_hall",
+      "reduce_flashing": false,
+      "gate": false,
+      "frames": 343,
+      "seconds": 5.71666666666667,
+      "decision_s": 0.6,
+      "latches_engaged": 4,
+      "mode_time_s": 5.71666666666665,
+      "gate_requests": [
+        {
+          "source": "battle_wipe",
+          "clock": "real",
+          "frame": 0,
+          "capped": false
+        }
+      ],
+      "gate_booked_max_per_window": 1,
+      "boss_flood_spans": [],
+      "general_max_per_window": 3,
+      "red_max_per_window": 0,
+      "flashes_outside_flood": [
+        21,
+        57,
+        81,
+        118,
+        142,
+        179,
+        203,
+        240,
+        312
+      ],
+      "reduce_flashing_only_flood": true,
+      "analysis": {
+        "frames": 343,
+        "fps": 60,
+        "analysis_size": [
+          160,
+          90
+        ],
+        "window_px": [
+          40,
+          30
+        ],
+        "luma_delta": 0.1,
+        "area_min": 0.25,
+        "rate_max": 3.0,
+        "coincidence_frames": 3,
+        "events": [
+          {
+            "frame": 10,
+            "t_s": 0.166666666666667,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.294
+          },
+          {
+            "frame": 21,
+            "t_s": 0.35,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.318
+          },
+          {
+            "frame": 57,
+            "t_s": 0.95,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.325
+          },
+          {
+            "frame": 81,
+            "t_s": 1.35,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.345
+          },
+          {
+            "frame": 118,
+            "t_s": 1.96666666666667,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.317
+          },
+          {
+            "frame": 142,
+            "t_s": 2.36666666666667,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.336
+          },
+          {
+            "frame": 179,
+            "t_s": 2.98333333333333,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.319
+          },
+          {
+            "frame": 203,
+            "t_s": 3.38333333333333,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.34
+          },
+          {
+            "frame": 240,
+            "t_s": 4.0,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.324
+          },
+          {
+            "frame": 312,
+            "t_s": 5.2,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.333
+          }
+        ],
+        "general_flash_frames": [
+          21,
+          57,
+          81,
+          118,
+          142,
+          179,
+          203,
+          240,
+          312
+        ],
+        "red_flash_frames": [],
+        "general_worst_window": {
+          "start_frame": 21,
+          "count": 3
+        },
+        "red_worst_window": {
+          "start_frame": -1,
+          "count": 0
+        },
+        "mean_luma_min": 0.0186492968350649,
+        "mean_luma_max": 0.215099886059761,
+        "pass": true
+      },
+      "notes": [],
+      "pass": true
+    },
+    {
+      "sequence": "obs_fast_menu",
+      "encounter": "enc_paris_clerks_hall",
+      "reduce_flashing": false,
+      "gate": true,
+      "frames": 259,
+      "seconds": 4.31666666666667,
+      "decision_s": 0.25,
+      "latches_engaged": 0,
+      "mode_time_s": 4.31666666666666,
+      "gate_requests": [
+        {
+          "source": "battle_wipe",
+          "clock": "real",
+          "frame": 0,
+          "capped": false
+        }
+      ],
+      "gate_booked_max_per_window": 2,
+      "boss_flood_spans": [],
+      "general_max_per_window": 4,
+      "red_max_per_window": 0,
+      "flashes_outside_flood": [
+        21,
+        36,
+        60,
+        76,
+        100,
+        116,
+        140,
+        156,
+        228
+      ],
+      "reduce_flashing_only_flood": true,
+      "analysis": {
+        "frames": 259,
+        "fps": 60,
+        "analysis_size": [
+          160,
+          90
+        ],
+        "window_px": [
+          40,
+          30
+        ],
+        "luma_delta": 0.1,
+        "area_min": 0.25,
+        "rate_max": 3.0,
+        "coincidence_frames": 3,
+        "events": [
+          {
+            "frame": 10,
+            "t_s": 0.166666666666667,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.294
+          },
+          {
+            "frame": 21,
+            "t_s": 0.35,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.318
+          },
+          {
+            "frame": 36,
+            "t_s": 0.6,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.325
+          },
+          {
+            "frame": 60,
+            "t_s": 1.0,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.345
+          },
+          {
+            "frame": 76,
+            "t_s": 1.26666666666667,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.32
+          },
+          {
+            "frame": 100,
+            "t_s": 1.66666666666667,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.336
+          },
+          {
+            "frame": 116,
+            "t_s": 1.93333333333333,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.319
+          },
+          {
+            "frame": 140,
+            "t_s": 2.33333333333333,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.34
+          },
+          {
+            "frame": 156,
+            "t_s": 2.6,
+            "kind": "general",
+            "rising": true,
+            "coverage": 0.322
+          },
+          {
+            "frame": 228,
+            "t_s": 3.8,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.333
+          }
+        ],
+        "general_flash_frames": [
+          21,
+          36,
+          60,
+          76,
+          100,
+          116,
+          140,
+          156,
+          228
+        ],
+        "red_flash_frames": [],
+        "general_worst_window": {
+          "start_frame": 21,
+          "count": 4
+        },
+        "red_worst_window": {
+          "start_frame": -1,
+          "count": 0
+        },
+        "mean_luma_min": 0.0186492968350649,
+        "mean_luma_max": 0.215134903788567,
+        "pass": false
+      },
+      "notes": [],
+      "pass": false
+    }
+  ]
+}
