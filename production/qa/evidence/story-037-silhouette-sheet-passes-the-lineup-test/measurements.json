@@ -1,0 +1,1156 @@
+{
+  "ac": "AC-33",
+  "characters": {
+    "sprite_baguette_thrower": {
+      "battle_height": {
+        "pass": true,
+        "probes": [
+          {
+            "closest_other": "sprite_michelin_chef",
+            "closest_other_iou": 0.645,
+            "correct": true,
+            "lineup": [
+              "sprite_baguette_thrower",
+              "sprite_michelin_chef",
+              "sprite_karen",
+              "sprite_florida_man",
+              "sprite_middle_manager",
+              "sprite_clerk"
+            ],
+            "picked": "sprite_baguette_thrower",
+            "self_iou": 1.0
+          },
+          {
+            "closest_other": "sprite_michelin_chef",
+            "closest_other_iou": 0.558,
+            "correct": true,
+            "lineup": [
+              "sprite_baguette_thrower",
+              "sprite_michelin_chef",
+              "sprite_karen",
+              "sprite_middle_manager",
+              "sprite_florida_man",
+              "sprite_clerk"
+            ],
+            "picked": "sprite_baguette_thrower",
+            "self_iou": 0.668
+          },
+          {
+            "closest_other": "sprite_michelin_chef",
+            "closest_other_iou": 0.558,
+            "correct": true,
+            "lineup": [
+              "sprite_baguette_thrower",
+              "sprite_michelin_chef",
+              "sprite_karen",
+              "sprite_middle_manager",
+              "sprite_florida_man",
+              "sprite_clerk"
+            ],
+            "picked": "sprite_baguette_thrower",
+            "self_iou": 0.668
+          }
+        ],
+        "votes": 3
+      },
+      "battle_height_px": "(192, 192)",
+      "facing": "back",
+      "mirrored": [],
+      "missing": [],
+      "role": "squad",
+      "shown": [
+        "idle f0",
+        "victory f0",
+        "victory f2"
+      ],
+      "thumb_32": {
+        "pass": true,
+        "probes": [
+          {
+            "closest_other": "sprite_michelin_chef",
+            "closest_other_iou": 0.619,
+            "correct": true,
+            "lineup": [
+              "sprite_baguette_thrower",
+              "sprite_michelin_chef",
+              "sprite_karen",
+              "sprite_middle_manager",
+              "sprite_florida_man",
+              "sprite_ceo"
+            ],
+            "picked": "sprite_baguette_thrower",
+            "self_iou": 1.0
+          },
+          {
+            "closest_other": "sprite_michelin_chef",
+            "closest_other_iou": 0.569,
+            "correct": true,
+            "lineup": [
+              "sprite_baguette_thrower",
+              "sprite_michelin_chef",
+              "sprite_karen",
+              "sprite_ceo",
+              "sprite_middle_manager",
+              "sprite_florida_man"
+            ],
+            "picked": "sprite_baguette_thrower",
+            "self_iou": 0.715
+          },
+          {
+            "closest_other": "sprite_michelin_chef",
+            "closest_other_iou": 0.569,
+            "correct": true,
+            "lineup": [
+              "sprite_baguette_thrower",
+              "sprite_michelin_chef",
+              "sprite_karen",
+              "sprite_ceo",
+              "sprite_middle_manager",
+              "sprite_florida_man"
+            ],
+            "picked": "sprite_baguette_thrower",
+            "self_iou": 0.715
+          }
+        ],
+        "votes": 3
+      }
+    },
+    "sprite_ceo": {
+      "battle_height": {
+        "pass": true,
+        "probes": [
+          {
+            "closest_other": "sprite_supervisor",
+            "closest_other_iou": 0.306,
+            "correct": true,
+            "lineup": [
+              "sprite_ceo",
+              "sprite_supervisor",
+              "sprite_security_drone",
+              "sprite_clerk",
+              "sprite_middle_manager",
+              "sprite_michelin_chef"
+            ],
+            "picked": "sprite_ceo",
+            "self_iou": 1.0
+          },
+          {
+            "closest_other": "sprite_security_drone",
+            "closest_other_iou": 0.296,
+            "correct": true,
+            "lineup": [
+              "sprite_ceo",
+              "sprite_security_drone",
+              "sprite_supervisor",
+              "sprite_michelin_chef",
+              "sprite_karen",
+              "sprite_middle_manager"
+            ],
+            "picked": "sprite_ceo",
+            "self_iou": 0.322
+          },
+          {
+            "closest_other": "sprite_supervisor",
+            "closest_other_iou": 0.338,
+            "correct": true,
+            "lineup": [
+              "sprite_ceo",
+              "sprite_supervisor",
+              "sprite_security_drone",
+              "sprite_clerk",
+              "sprite_middle_manager",
+              "sprite_baguette_thrower"
+            ],
+            "picked": "sprite_ceo",
+            "self_iou": 0.382
+          }
+        ],
+        "votes": 3
+      },
+      "battle_height_px": "(384, 384)",
+      "facing": "front",
+      "mirrored": [],
+      "missing": [],
+      "role": "enemy",
+      "shown": [
+        "idle f0",
+        "attack f0",
+        "attack f2"
+      ],
+      "thumb_32": {
+        "pass": true,
+        "probes": [
+          {
+            "closest_other": "sprite_middle_manager",
+            "closest_other_iou": 0.523,
+            "correct": true,
+            "lineup": [
+              "sprite_ceo",
+              "sprite_middle_manager",
+              "sprite_baguette_thrower",
+              "sprite_clerk",
+              "sprite_michelin_chef",
+              "sprite_security_drone"
+            ],
+            "picked": "sprite_ceo",
+            "self_iou": 1.0
+          },
+          {
+            "closest_other": "sprite_florida_man",
+            "closest_other_iou": 0.454,
+            "correct": false,
+            "lineup": [
+              "sprite_ceo",
+              "sprite_florida_man",
+              "sprite_karen",
+              "sprite_michelin_chef",
+              "sprite_middle_manager",
+              "sprite_baguette_thrower"
+            ],
+            "picked": "sprite_florida_man",
+            "self_iou": 0.354
+          },
+          {
+            "closest_other": "sprite_middle_manager",
+            "closest_other_iou": 0.383,
+            "correct": true,
+            "lineup": [
+              "sprite_ceo",
+              "sprite_middle_manager",
+              "sprite_security_drone",
+              "sprite_supervisor",
+              "sprite_baguette_thrower",
+              "sprite_clerk"
+            ],
+            "picked": "sprite_ceo",
+            "self_iou": 0.43
+          }
+        ],
+        "votes": 2
+      }
+    },
+    "sprite_clerk": {
+      "battle_height": {
+        "pass": true,
+        "probes": [
+          {
+            "closest_other": "sprite_middle_manager",
+            "closest_other_iou": 0.522,
+            "correct": true,
+            "lineup": [
+              "sprite_clerk",
+              "sprite_middle_manager",
+              "sprite_security_drone",
+              "sprite_michelin_chef",
+              "sprite_baguette_thrower",
+              "sprite_karen"
+            ],
+            "picked": "sprite_clerk",
+            "self_iou": 1.0
+          },
+          {
+            "closest_other": "sprite_middle_manager",
+            "closest_other_iou": 0.534,
+            "correct": false,
+            "lineup": [
+              "sprite_clerk",
+              "sprite_middle_manager",
+              "sprite_michelin_chef",
+              "sprite_baguette_thrower",
+              "sprite_karen",
+              "sprite_florida_man"
+            ],
+            "picked": "sprite_middle_manager",
+            "self_iou": 0.521
+          },
+          {
+            "closest_other": "sprite_middle_manager",
+            "closest_other_iou": 0.508,
+            "correct": true,
+            "lineup": [
+              "sprite_clerk",
+              "sprite_middle_manager",
+              "sprite_security_drone",
+              "sprite_florida_man",
+              "sprite_michelin_chef",
+              "sprite_baguette_thrower"
+            ],
+            "picked": "sprite_clerk",
+            "self_iou": 0.612
+          }
+        ],
+        "votes": 2
+      },
+      "battle_height_px": "(192, 192)",
+      "facing": "front",
+      "mirrored": [],
+      "missing": [],
+      "role": "enemy",
+      "shown": [
+        "idle f0",
+        "attack f0",
+        "attack f2"
+      ],
+      "thumb_32": {
+        "pass": true,
+        "probes": [
+          {
+            "closest_other": "sprite_middle_manager",
+            "closest_other_iou": 0.522,
+            "correct": true,
+            "lineup": [
+              "sprite_clerk",
+              "sprite_middle_manager",
+              "sprite_security_drone",
+              "sprite_supervisor",
+              "sprite_ceo",
+              "sprite_michelin_chef"
+            ],
+            "picked": "sprite_clerk",
+            "self_iou": 1.0
+          },
+          {
+            "closest_other": "sprite_middle_manager",
+            "closest_other_iou": 0.518,
+            "correct": false,
+            "lineup": [
+              "sprite_clerk",
+              "sprite_middle_manager",
+              "sprite_michelin_chef",
+              "sprite_baguette_thrower",
+              "sprite_florida_man",
+              "sprite_ceo"
+            ],
+            "picked": "sprite_middle_manager",
+            "self_iou": 0.505
+          },
+          {
+            "closest_other": "sprite_middle_manager",
+            "closest_other_iou": 0.488,
+            "correct": true,
+            "lineup": [
+              "sprite_clerk",
+              "sprite_middle_manager",
+              "sprite_supervisor",
+              "sprite_security_drone",
+              "sprite_ceo",
+              "sprite_florida_man"
+            ],
+            "picked": "sprite_clerk",
+            "self_iou": 0.721
+          }
+        ],
+        "votes": 2
+      }
+    },
+    "sprite_florida_man": {
+      "battle_height": {
+        "pass": true,
+        "probes": [
+          {
+            "closest_other": "sprite_michelin_chef",
+            "closest_other_iou": 0.523,
+            "correct": true,
+            "lineup": [
+              "sprite_florida_man",
+              "sprite_michelin_chef",
+              "sprite_baguette_thrower",
+              "sprite_karen",
+              "sprite_middle_manager",
+              "sprite_clerk"
+            ],
+            "picked": "sprite_florida_man",
+            "self_iou": 1.0
+          },
+          {
+            "closest_other": "sprite_middle_manager",
+            "closest_other_iou": 0.288,
+            "correct": true,
+            "lineup": [
+              "sprite_florida_man",
+              "sprite_middle_manager",
+              "sprite_michelin_chef",
+              "sprite_baguette_thrower",
+              "sprite_clerk",
+              "sprite_karen"
+            ],
+            "picked": "sprite_florida_man",
+            "self_iou": 0.326
+          },
+          {
+            "closest_other": "sprite_middle_manager",
+            "closest_other_iou": 0.288,
+            "correct": true,
+            "lineup": [
+              "sprite_florida_man",
+              "sprite_middle_manager",
+              "sprite_michelin_chef",
+              "sprite_baguette_thrower",
+              "sprite_clerk",
+              "sprite_karen"
+            ],
+            "picked": "sprite_florida_man",
+            "self_iou": 0.326
+          }
+        ],
+        "votes": 3
+      },
+      "battle_height_px": "(192, 192)",
+      "facing": "back",
+      "mirrored": [],
+      "missing": [],
+      "role": "squad",
+      "shown": [
+        "idle f0",
+        "victory f0",
+        "victory f2"
+      ],
+      "thumb_32": {
+        "pass": true,
+        "probes": [
+          {
+            "closest_other": "sprite_michelin_chef",
+            "closest_other_iou": 0.478,
+            "correct": true,
+            "lineup": [
+              "sprite_florida_man",
+              "sprite_michelin_chef",
+              "sprite_baguette_thrower",
+              "sprite_karen",
+              "sprite_middle_manager",
+              "sprite_clerk"
+            ],
+            "picked": "sprite_florida_man",
+            "self_iou": 1.0
+          },
+          {
+            "closest_other": "sprite_clerk",
+            "closest_other_iou": 0.346,
+            "correct": true,
+            "lineup": [
+              "sprite_florida_man",
+              "sprite_clerk",
+              "sprite_security_drone",
+              "sprite_supervisor",
+              "sprite_baguette_thrower",
+              "sprite_ceo"
+            ],
+            "picked": "sprite_florida_man",
+            "self_iou": 0.372
+          },
+          {
+            "closest_other": "sprite_clerk",
+            "closest_other_iou": 0.346,
+            "correct": true,
+            "lineup": [
+              "sprite_florida_man",
+              "sprite_clerk",
+              "sprite_security_drone",
+              "sprite_supervisor",
+              "sprite_baguette_thrower",
+              "sprite_ceo"
+            ],
+            "picked": "sprite_florida_man",
+            "self_iou": 0.372
+          }
+        ],
+        "votes": 3
+      }
+    },
+    "sprite_karen": {
+      "battle_height": {
+        "pass": true,
+        "probes": [
+          {
+            "closest_other": "sprite_michelin_chef",
+            "closest_other_iou": 0.509,
+            "correct": true,
+            "lineup": [
+              "sprite_karen",
+              "sprite_michelin_chef",
+              "sprite_baguette_thrower",
+              "sprite_florida_man",
+              "sprite_middle_manager",
+              "sprite_security_drone"
+            ],
+            "picked": "sprite_karen",
+            "self_iou": 1.0
+          },
+          {
+            "closest_other": "sprite_baguette_thrower",
+            "closest_other_iou": 0.594,
+            "correct": true,
+            "lineup": [
+              "sprite_karen",
+              "sprite_baguette_thrower",
+              "sprite_michelin_chef",
+              "sprite_florida_man",
+              "sprite_middle_manager",
+              "sprite_clerk"
+            ],
+            "picked": "sprite_karen",
+            "self_iou": 0.619
+          },
+          {
+            "closest_other": "sprite_baguette_thrower",
+            "closest_other_iou": 0.594,
+            "correct": true,
+            "lineup": [
+              "sprite_karen",
+              "sprite_baguette_thrower",
+              "sprite_michelin_chef",
+              "sprite_florida_man",
+              "sprite_middle_manager",
+              "sprite_clerk"
+            ],
+            "picked": "sprite_karen",
+            "self_iou": 0.619
+          }
+        ],
+        "votes": 3
+      },
+      "battle_height_px": "(192, 192)",
+      "facing": "back",
+      "mirrored": [],
+      "missing": [],
+      "role": "squad",
+      "shown": [
+        "idle f0",
+        "victory f0",
+        "victory f2"
+      ],
+      "thumb_32": {
+        "pass": true,
+        "probes": [
+          {
+            "closest_other": "sprite_michelin_chef",
+            "closest_other_iou": 0.516,
+            "correct": true,
+            "lineup": [
+              "sprite_karen",
+              "sprite_michelin_chef",
+              "sprite_baguette_thrower",
+              "sprite_florida_man",
+              "sprite_middle_manager",
+              "sprite_security_drone"
+            ],
+            "picked": "sprite_karen",
+            "self_iou": 1.0
+          },
+          {
+            "closest_other": "sprite_baguette_thrower",
+            "closest_other_iou": 0.608,
+            "correct": true,
+            "lineup": [
+              "sprite_karen",
+              "sprite_baguette_thrower",
+              "sprite_michelin_chef",
+              "sprite_florida_man",
+              "sprite_middle_manager",
+              "sprite_ceo"
+            ],
+            "picked": "sprite_karen",
+            "self_iou": 0.64
+          },
+          {
+            "closest_other": "sprite_baguette_thrower",
+            "closest_other_iou": 0.608,
+            "correct": true,
+            "lineup": [
+              "sprite_karen",
+              "sprite_baguette_thrower",
+              "sprite_michelin_chef",
+              "sprite_florida_man",
+              "sprite_middle_manager",
+              "sprite_ceo"
+            ],
+            "picked": "sprite_karen",
+            "self_iou": 0.64
+          }
+        ],
+        "votes": 3
+      }
+    },
+    "sprite_michelin_chef": {
+      "battle_height": {
+        "pass": true,
+        "probes": [
+          {
+            "closest_other": "sprite_baguette_thrower",
+            "closest_other_iou": 0.645,
+            "correct": true,
+            "lineup": [
+              "sprite_michelin_chef",
+              "sprite_baguette_thrower",
+              "sprite_florida_man",
+              "sprite_karen",
+              "sprite_middle_manager",
+              "sprite_clerk"
+            ],
+            "picked": "sprite_michelin_chef",
+            "self_iou": 1.0
+          },
+          {
+            "closest_other": "sprite_karen",
+            "closest_other_iou": 0.556,
+            "correct": true,
+            "lineup": [
+              "sprite_michelin_chef",
+              "sprite_karen",
+              "sprite_baguette_thrower",
+              "sprite_florida_man",
+              "sprite_middle_manager",
+              "sprite_clerk"
+            ],
+            "picked": "sprite_michelin_chef",
+            "self_iou": 0.602
+          },
+          {
+            "closest_other": "sprite_karen",
+            "closest_other_iou": 0.556,
+            "correct": true,
+            "lineup": [
+              "sprite_michelin_chef",
+              "sprite_karen",
+              "sprite_baguette_thrower",
+              "sprite_florida_man",
+              "sprite_middle_manager",
+              "sprite_clerk"
+            ],
+            "picked": "sprite_michelin_chef",
+            "self_iou": 0.602
+          }
+        ],
+        "votes": 3
+      },
+      "battle_height_px": "(192, 192)",
+      "facing": "back",
+      "mirrored": [],
+      "missing": [],
+      "role": "squad",
+      "shown": [
+        "idle f0",
+        "victory f0",
+        "victory f2"
+      ],
+      "thumb_32": {
+        "pass": true,
+        "probes": [
+          {
+            "closest_other": "sprite_baguette_thrower",
+            "closest_other_iou": 0.619,
+            "correct": true,
+            "lineup": [
+              "sprite_michelin_chef",
+              "sprite_baguette_thrower",
+              "sprite_karen",
+              "sprite_florida_man",
+              "sprite_middle_manager",
+              "sprite_clerk"
+            ],
+            "picked": "sprite_michelin_chef",
+            "self_iou": 1.0
+          },
+          {
+            "closest_other": "sprite_baguette_thrower",
+            "closest_other_iou": 0.586,
+            "correct": true,
+            "lineup": [
+              "sprite_michelin_chef",
+              "sprite_baguette_thrower",
+              "sprite_karen",
+              "sprite_florida_man",
+              "sprite_middle_manager",
+              "sprite_ceo"
+            ],
+            "picked": "sprite_michelin_chef",
+            "self_iou": 0.605
+          },
+          {
+            "closest_other": "sprite_baguette_thrower",
+            "closest_other_iou": 0.586,
+            "correct": true,
+            "lineup": [
+              "sprite_michelin_chef",
+              "sprite_baguette_thrower",
+              "sprite_karen",
+              "sprite_florida_man",
+              "sprite_middle_manager",
+              "sprite_ceo"
+            ],
+            "picked": "sprite_michelin_chef",
+            "self_iou": 0.605
+          }
+        ],
+        "votes": 3
+      }
+    },
+    "sprite_middle_manager": {
+      "battle_height": {
+        "pass": true,
+        "probes": [
+          {
+            "closest_other": "sprite_clerk",
+            "closest_other_iou": 0.522,
+            "correct": true,
+            "lineup": [
+              "sprite_middle_manager",
+              "sprite_clerk",
+              "sprite_baguette_thrower",
+              "sprite_michelin_chef",
+              "sprite_security_drone",
+              "sprite_florida_man"
+            ],
+            "picked": "sprite_middle_manager",
+            "self_iou": 1.0
+          },
+          {
+            "closest_other": "sprite_baguette_thrower",
+            "closest_other_iou": 0.481,
+            "correct": true,
+            "lineup": [
+              "sprite_middle_manager",
+              "sprite_baguette_thrower",
+              "sprite_clerk",
+              "sprite_michelin_chef",
+              "sprite_security_drone",
+              "sprite_karen"
+            ],
+            "picked": "sprite_middle_manager",
+            "self_iou": 0.532
+          },
+          {
+            "closest_other": "sprite_security_drone",
+            "closest_other_iou": 0.404,
+            "correct": false,
+            "lineup": [
+              "sprite_middle_manager",
+              "sprite_security_drone",
+              "sprite_michelin_chef",
+              "sprite_florida_man",
+              "sprite_baguette_thrower",
+              "sprite_clerk"
+            ],
+            "picked": "sprite_security_drone",
+            "self_iou": 0.401
+          }
+        ],
+        "votes": 2
+      },
+      "battle_height_px": "(192, 192)",
+      "facing": "front",
+      "mirrored": [],
+      "missing": [],
+      "role": "enemy",
+      "shown": [
+        "idle f0",
+        "attack f0",
+        "attack f2"
+      ],
+      "thumb_32": {
+        "pass": true,
+        "probes": [
+          {
+            "closest_other": "sprite_ceo",
+            "closest_other_iou": 0.523,
+            "correct": true,
+            "lineup": [
+              "sprite_middle_manager",
+              "sprite_ceo",
+              "sprite_clerk",
+              "sprite_supervisor",
+              "sprite_michelin_chef",
+              "sprite_baguette_thrower"
+            ],
+            "picked": "sprite_middle_manager",
+            "self_iou": 1.0
+          },
+          {
+            "closest_other": "sprite_ceo",
+            "closest_other_iou": 0.508,
+            "correct": true,
+            "lineup": [
+              "sprite_middle_manager",
+              "sprite_ceo",
+              "sprite_baguette_thrower",
+              "sprite_clerk",
+              "sprite_michelin_chef",
+              "sprite_security_drone"
+            ],
+            "picked": "sprite_middle_manager",
+            "self_iou": 0.563
+          },
+          {
+            "closest_other": "sprite_security_drone",
+            "closest_other_iou": 0.461,
+            "correct": false,
+            "lineup": [
+              "sprite_middle_manager",
+              "sprite_security_drone",
+              "sprite_michelin_chef",
+              "sprite_supervisor",
+              "sprite_baguette_thrower",
+              "sprite_florida_man"
+            ],
+            "picked": "sprite_security_drone",
+            "self_iou": 0.401
+          }
+        ],
+        "votes": 2
+      }
+    },
+    "sprite_security_drone": {
+      "battle_height": {
+        "pass": true,
+        "probes": [
+          {
+            "closest_other": "sprite_middle_manager",
+            "closest_other_iou": 0.406,
+            "correct": true,
+            "lineup": [
+              "sprite_security_drone",
+              "sprite_middle_manager",
+              "sprite_clerk",
+              "sprite_karen",
+              "sprite_michelin_chef",
+              "sprite_baguette_thrower"
+            ],
+            "picked": "sprite_security_drone",
+            "self_iou": 1.0
+          },
+          {
+            "closest_other": "sprite_middle_manager",
+            "closest_other_iou": 0.422,
+            "correct": true,
+            "lineup": [
+              "sprite_security_drone",
+              "sprite_middle_manager",
+              "sprite_clerk",
+              "sprite_baguette_thrower",
+              "sprite_florida_man",
+              "sprite_michelin_chef"
+            ],
+            "picked": "sprite_security_drone",
+            "self_iou": 0.565
+          },
+          {
+            "closest_other": "sprite_middle_manager",
+            "closest_other_iou": 0.465,
+            "correct": true,
+            "lineup": [
+              "sprite_security_drone",
+              "sprite_middle_manager",
+              "sprite_clerk",
+              "sprite_karen",
+              "sprite_michelin_chef",
+              "sprite_baguette_thrower"
+            ],
+            "picked": "sprite_security_drone",
+            "self_iou": 0.531
+          }
+        ],
+        "votes": 3
+      },
+      "battle_height_px": "(192, 192)",
+      "facing": "front",
+      "mirrored": [],
+      "missing": [],
+      "role": "enemy",
+      "shown": [
+        "idle f0",
+        "attack f0",
+        "attack f2"
+      ],
+      "thumb_32": {
+        "pass": true,
+        "probes": [
+          {
+            "closest_other": "sprite_supervisor",
+            "closest_other_iou": 0.513,
+            "correct": true,
+            "lineup": [
+              "sprite_security_drone",
+              "sprite_supervisor",
+              "sprite_clerk",
+              "sprite_middle_manager",
+              "sprite_ceo",
+              "sprite_karen"
+            ],
+            "picked": "sprite_security_drone",
+            "self_iou": 1.0
+          },
+          {
+            "closest_other": "sprite_supervisor",
+            "closest_other_iou": 0.47,
+            "correct": true,
+            "lineup": [
+              "sprite_security_drone",
+              "sprite_supervisor",
+              "sprite_middle_manager",
+              "sprite_ceo",
+              "sprite_clerk",
+              "sprite_baguette_thrower"
+            ],
+            "picked": "sprite_security_drone",
+            "self_iou": 0.587
+          },
+          {
+            "closest_other": "sprite_supervisor",
+            "closest_other_iou": 0.473,
+            "correct": true,
+            "lineup": [
+              "sprite_security_drone",
+              "sprite_supervisor",
+              "sprite_middle_manager",
+              "sprite_clerk",
+              "sprite_ceo",
+              "sprite_michelin_chef"
+            ],
+            "picked": "sprite_security_drone",
+            "self_iou": 0.573
+          }
+        ],
+        "votes": 3
+      }
+    },
+    "sprite_supervisor": {
+      "battle_height": {
+        "pass": true,
+        "probes": [
+          {
+            "closest_other": "sprite_ceo",
+            "closest_other_iou": 0.306,
+            "correct": true,
+            "lineup": [
+              "sprite_supervisor",
+              "sprite_ceo",
+              "sprite_security_drone",
+              "sprite_clerk",
+              "sprite_middle_manager",
+              "sprite_michelin_chef"
+            ],
+            "picked": "sprite_supervisor",
+            "self_iou": 1.0
+          },
+          {
+            "closest_other": "sprite_ceo",
+            "closest_other_iou": 0.382,
+            "correct": true,
+            "lineup": [
+              "sprite_supervisor",
+              "sprite_ceo",
+              "sprite_security_drone",
+              "sprite_clerk",
+              "sprite_middle_manager",
+              "sprite_michelin_chef"
+            ],
+            "picked": "sprite_supervisor",
+            "self_iou": 0.584
+          },
+          {
+            "closest_other": "sprite_ceo",
+            "closest_other_iou": 0.31,
+            "correct": true,
+            "lineup": [
+              "sprite_supervisor",
+              "sprite_ceo",
+              "sprite_security_drone",
+              "sprite_clerk",
+              "sprite_middle_manager",
+              "sprite_michelin_chef"
+            ],
+            "picked": "sprite_supervisor",
+            "self_iou": 0.353
+          }
+        ],
+        "votes": 3
+      },
+      "battle_height_px": "(384, 384)",
+      "facing": "front",
+      "mirrored": [],
+      "missing": [],
+      "role": "enemy",
+      "shown": [
+        "idle f0",
+        "attack f0",
+        "attack f2"
+      ],
+      "thumb_32": {
+        "pass": true,
+        "probes": [
+          {
+            "closest_other": "sprite_security_drone",
+            "closest_other_iou": 0.513,
+            "correct": true,
+            "lineup": [
+              "sprite_supervisor",
+              "sprite_security_drone",
+              "sprite_middle_manager",
+              "sprite_clerk",
+              "sprite_florida_man",
+              "sprite_ceo"
+            ],
+            "picked": "sprite_supervisor",
+            "self_iou": 1.0
+          },
+          {
+            "closest_other": "sprite_middle_manager",
+            "closest_other_iou": 0.47,
+            "correct": true,
+            "lineup": [
+              "sprite_supervisor",
+              "sprite_middle_manager",
+              "sprite_michelin_chef",
+              "sprite_florida_man",
+              "sprite_security_drone",
+              "sprite_ceo"
+            ],
+            "picked": "sprite_supervisor",
+            "self_iou": 0.472
+          },
+          {
+            "closest_other": "sprite_security_drone",
+            "closest_other_iou": 0.554,
+            "correct": false,
+            "lineup": [
+              "sprite_supervisor",
+              "sprite_security_drone",
+              "sprite_clerk",
+              "sprite_middle_manager",
+              "sprite_michelin_chef",
+              "sprite_ceo"
+            ],
+            "picked": "sprite_security_drone",
+            "self_iou": 0.452
+          }
+        ],
+        "votes": 2
+      }
+    }
+  },
+  "lineup_answer_key": {
+    "sprite_baguette_thrower": {
+      "answer": 1,
+      "order": [
+        "sprite_baguette_thrower",
+        "sprite_clerk",
+        "sprite_florida_man",
+        "sprite_karen",
+        "sprite_michelin_chef",
+        "sprite_middle_manager"
+      ]
+    },
+    "sprite_ceo": {
+      "answer": 1,
+      "order": [
+        "sprite_ceo",
+        "sprite_clerk",
+        "sprite_michelin_chef",
+        "sprite_middle_manager",
+        "sprite_security_drone",
+        "sprite_supervisor"
+      ]
+    },
+    "sprite_clerk": {
+      "answer": 2,
+      "order": [
+        "sprite_baguette_thrower",
+        "sprite_clerk",
+        "sprite_karen",
+        "sprite_michelin_chef",
+        "sprite_middle_manager",
+        "sprite_security_drone"
+      ]
+    },
+    "sprite_florida_man": {
+      "answer": 3,
+      "order": [
+        "sprite_baguette_thrower",
+        "sprite_clerk",
+        "sprite_florida_man",
+        "sprite_karen",
+        "sprite_michelin_chef",
+        "sprite_middle_manager"
+      ]
+    },
+    "sprite_karen": {
+      "answer": 3,
+      "order": [
+        "sprite_baguette_thrower",
+        "sprite_florida_man",
+        "sprite_karen",
+        "sprite_michelin_chef",
+        "sprite_middle_manager",
+        "sprite_security_drone"
+      ]
+    },
+    "sprite_michelin_chef": {
+      "answer": 5,
+      "order": [
+        "sprite_baguette_thrower",
+        "sprite_clerk",
+        "sprite_florida_man",
+        "sprite_karen",
+        "sprite_michelin_chef",
+        "sprite_middle_manager"
+      ]
+    },
+    "sprite_middle_manager": {
+      "answer": 5,
+      "order": [
+        "sprite_baguette_thrower",
+        "sprite_clerk",
+        "sprite_florida_man",
+        "sprite_michelin_chef",
+        "sprite_middle_manager",
+        "sprite_security_drone"
+      ]
+    },
+    "sprite_security_drone": {
+      "answer": 6,
+      "order": [
+        "sprite_baguette_thrower",
+        "sprite_clerk",
+        "sprite_karen",
+        "sprite_michelin_chef",
+        "sprite_middle_manager",
+        "sprite_security_drone"
+      ]
+    },
+    "sprite_supervisor": {
+      "answer": 6,
+      "order": [
+        "sprite_ceo",
+        "sprite_clerk",
+        "sprite_michelin_chef",
+        "sprite_middle_manager",
+        "sprite_security_drone",
+        "sprite_supervisor"
+      ]
+    }
+  },
+  "proxy": {
+    "lineup_size": 6,
+    "metric": "IoU, feet-aligned; tie = wrong pick",
+    "pass_votes": 2,
+    "probes": "idle last frame; second pose (victory / attack) frames 0 and n/2",
+    "reference": "idle frame 0",
+    "reviewers": 3,
+    "thumb_px": 32
+  },
+  "sheet_layout": "row 1 squad at battle height, row 2 enemies at battle height, row 3 every cell at 32 px (1:1), row 4 the same 32 px cells x4; characters in set-id order, cells per character as in `shown`",
+  "sheet_lines": 1080,
+  "story": "037",
+  "t": 3,
+  "tool": "tools/capture/silhouette_sheet_capture.gd",
+  "verdict": {
+    "battle_height": {
+      "failures": [],
+      "pass": true
+    },
+    "thumb_32": {
+      "failures": [],
+      "pass": true
+    }
+  }
+}

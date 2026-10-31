@@ -1,7 +1,7 @@
 # Story 037: every character's silhouette passes the 2-of-3 lineup test
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: In Review — sheet + lineup proxy green (2026-10-31); awaiting art-director AC-33 lineup verdict
 > **Layer**: Core
 > **Type**: Visual/Feel
 > **Estimate**: M
@@ -78,7 +78,7 @@
 **Required evidence**:
 - Visual/Feel: a retained screenshot in `production/qa/evidence/` + sign-off in `production/qa/evidence/story-037-silhouette-sheet-passes-the-lineup-test-evidence.md`
 
-**Status**: [ ] Not yet created
+**Status**: [x] Sheet created (`production/qa/evidence/story-037-silhouette-sheet-passes-the-lineup-test/`); [ ] art-director sign-off
 
 ---
 
