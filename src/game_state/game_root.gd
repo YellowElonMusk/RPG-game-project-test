@@ -58,6 +58,15 @@ var world_state: WorldState:
 	get:
 		return _world_state
 
+## Boot's pipeline warm-up (ADR-0005 §11) while it runs, else null.
+var _warmup: PipelineWarmup = null
+## The warm-up's report once it finished (stages, frames, seconds); empty
+## when it did not run (headless, FAILED catalog, skip flag).
+var warmup_report: Dictionary = {}
+## The warm-up's materials and shaders, held for the session (see
+## `PipelineWarmup.retained`).
+var _warmed_resources: Array[Resource] = []
+
 var _world_state: WorldState = null
 ## Every camp's return (story 089), read from the map scenes at boot.
 var _camp_directory: CampDirectory = null
@@ -177,7 +186,28 @@ func _ready() -> void:
 	# payload_commit slot carries the battle-result getter until then.
 
 	_validate_maps()
+	# ADR-0005 §11 (sprite-camera story 069): Boot's pipeline warm-up, in the
+	# main viewport behind its own cover, before Boot leaves for Title. The
+	# machine stays in BOOT (untick'd) until it finishes. Never headless.
+	if PipelineWarmup.wanted(DisplayServer.get_name(), catalog().state, OS.get_cmdline_user_args()):
+		_warmup = PipelineWarmup.new()
+		_warmup.name = "PipelineWarmup"
+		add_child(_warmup)
+		_warmup.finished.connect(_on_warmup_finished)
+		_warmup.run(catalog())
+		return
 	machine.tick(0.0)
+
+
+## Boot's warm-up is done: drop its stage and let Boot move on.
+func _on_warmup_finished() -> void:
+	warmup_report = _warmup.report
+	# The warmed shaders' pipelines live only while their materials do.
+	_warmed_resources = _warmup.retained
+	_warmup.queue_free()
+	_warmup = null
+	if _machine != null:
+		_machine.tick(0.0)
 
 
 ## Story 137 (AC-137a; ADR-0012 §4-5): the Overworld slot's injections --
@@ -217,7 +247,7 @@ func _validate_maps() -> void:
 
 
 func _process(delta: float) -> void:
-	if _machine != null:
+	if _machine != null and _warmup == null:
 		_machine.tick(delta)
 		# Playtime stops while the Menu is open (ADR-0009 §3).
 		if _save_service != null and not (GameStateMachine.OverlayKind.MENU in _machine.overlay_stack):
