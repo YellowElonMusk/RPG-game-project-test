@@ -93,12 +93,13 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 		_battle = null
 		return
 	# ADR-0006 §5 steps 4-6: the controller, the reveal gate and (boss
-	# fights) the takeover hold sit ahead of the first turn marker. No sprite
-	# animations exist yet, so both callables are empty: every beat takes
-	# the debug path (`beat_min`), which needs no animation data.
-	# TODO(sprite-camera): pass the real windup / ko_landing callables once
-	# battle sprites exist.
-	_replay = BattleReplayController.new(_battle, Callable(), Callable(), presentation_config)
+	# fights) the takeover hold sit ahead of the first turn marker.
+	# The wind-up and knockout landing come from each combatant's sprite set
+	# through the view (impact_frame / land_frame at 1x); a combatant with no
+	# set takes the debug path.
+	var view: BattleView = %BattleView
+	_replay = BattleReplayController.new(_battle, view.windup_seconds, view.ko_landing_seconds,
+			presentation_config)
 	_replay.enqueue_reveal_gate()
 	if entry.descriptor.is_boss:
 		_replay.enqueue_takeover(_find_boss(_battle.enemies),
@@ -188,14 +189,37 @@ func settle_replay() -> void:
 ## is pending (Implementation Notes); the command menu (Story 007) gets
 ## every other action while it is visible, and hides itself outside
 ## `SQUAD_TURN` (including while Victory's results confirm is pending).
+##
+## Before the menu, replay presses route through `ReplayInputRouter`
+## (ADR-0006 §6; story 065, GDD AC-60): while replaying, Confirm and
+## `fast_forward` latch and Cancel un-latches; while GATED (behind the wipe)
+## they are consumed and do nothing, so nothing latches, submits or carries
+## over. Only a `pressed` reaches the latch -- a key held from the command's
+## own Confirm sends none -- and its release is consumed too.
 func handle_action(action: StringName, pressed: bool) -> bool:
 	if _awaiting_results_done and pressed and action == InputActions.CONFIRM:
 		_awaiting_results_done = false
 		_machine.report_results_done()
 		return true
+	if _replay != null and _is_replay_press(action) and _replay_owns_input():
+		if pressed:
+			ReplayInputRouter.route(_replay, action, Callable())
+		return true
 	if _command_menu != null and _command_menu.handle_action(action, pressed):
 		return true
 	return false
+
+
+## Confirm, `fast_forward` and Cancel: the presses the replay owns.
+func _is_replay_press(action: StringName) -> bool:
+	return action == InputActions.CONFIRM or action == InputActions.FAST_FORWARD \
+			or action == InputActions.CANCEL
+
+
+## While replaying or GATED the replay owns those presses (ADR-0006 §6).
+## TODO(story 067): the end-of-fight hold consumes them too.
+func _replay_owns_input() -> bool:
+	return _replay.is_replaying() or _replay.get_state() == BattleReplayController.State.GATED
 
 
 ## Battle only (ADR-0002 Key Interfaces). `null` is itself a swap failure --

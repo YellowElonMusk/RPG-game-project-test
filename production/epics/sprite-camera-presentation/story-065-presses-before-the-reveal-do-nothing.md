@@ -1,7 +1,7 @@
 # Story 065: Presses before the reveal and at replay start are latched correctly
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done (pending commit)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
@@ -78,7 +78,7 @@ While the wipe covers the screen the controller is `GATED` (behind a `GATE` entr
 **Required evidence**:
 - `tests/unit/battle/replay_latch_timing_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing -- `tests/unit/battle/replay_latch_timing_test.gd` (3 tests); full suite 1849 cases, every suite green except the other agent's in-flight `character_sprite_ambient_test.gd` (story 011, uncommitted) (2026-10-31).
 
 ---
 
