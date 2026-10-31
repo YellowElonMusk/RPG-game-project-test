@@ -160,6 +160,18 @@ static func screen_bounds(box: AABB, cam: CameraState, viewport_size: Vector2i) 
 	return Rect2i(top_left, Vector2i(ceili(hi.x), ceili(hi.y)) - top_left)
 
 
+## Whether `box` lies wholly inside `cam`'s view at `viewport_size`: every
+## corner in front of the near plane and `screen_bounds()` enclosed by the
+## frame (story 041, AC-37: the faction shape's bounds in the battle
+## camera's view). The same projection every sprite quad uses.
+static func box_in_view(box: AABB, cam: CameraState, viewport_size: Vector2i) -> bool:
+	var view_from_world: Transform3D = cam.transform.affine_inverse()
+	for c: int in 8:
+		if -(view_from_world * box.get_endpoint(c)).z <= cam.near:
+			return false
+	return Rect2i(Vector2i.ZERO, viewport_size).encloses(screen_bounds(box, cam, viewport_size))
+
+
 ## Round half away from zero on both axes (GDD `texel_scale`), public so the
 ## pixel-snap tests share the exact rule.
 static func round_pixel(screen: Vector2) -> Vector2i:

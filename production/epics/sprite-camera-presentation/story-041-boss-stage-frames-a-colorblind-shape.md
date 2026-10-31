@@ -1,7 +1,7 @@
 # Story 041: every boss stage frames its faction's colorblind-safe shape in view
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Blocked on art (2026-10-31): check, tag convention and stage data slot built and tested; the shipped `battle_boss` stage has no faction shape for faction_bureaucratia or faction_megacorp, so AC-37 does not pass on shipped content yet
 > **Layer**: Core
 > **Type**: Integration
 > **Estimate**: S
@@ -77,7 +77,7 @@
 **Required evidence**:
 - Integration: `tests/integration/presentation/faction_shape_in_view_test.gd` OR playtest doc
 
-**Status**: [ ] Not yet created
+**Status**: [~] `tests/integration/presentation/faction_shape_in_view_test.gd` (7 cases, fixture shapes on the real battle scene) passes. Shipped content: `DioramaStage.faction_shape_errors()` on `battle_boss` reports "no node tagged faction_shape" for both boss factions (2026-10-31). Unblock: author one shape scene per faction (art bible: Bureaucratia rectangles/stamps, MegaCorp wedges/growth arrows) in `battle_boss.tres` `faction_shapes`, then add a shipped-stage case to this test
 
 ---
 

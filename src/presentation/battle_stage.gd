@@ -41,6 +41,13 @@ extends Resource
 ## `DioramaStage.OCCLUDER_TAG`. Empty when the set has none in front of the
 ## actors (the painted backdrop is a canvas layer, never an occluder).
 @export var occluders: Array[AABB] = []
+## A boss stage's faction set dressing (GDD rule 11, AC-37; story 041):
+## faction id -> the scene carrying that faction's shape (art bible:
+## Bureaucratia's rectangles and stamps, MegaCorp's wedges and growth
+## arrows), authored in stage space. `DioramaStage.place_faction_shape()`
+## instances it and tags it `DioramaStage.FACTION_SHAPE_TAG`. A boss stage
+## with no entry for a faction fails `DioramaStage.faction_shape_errors()`.
+@export var faction_shapes: Dictionary[String, PackedScene] = {}
 
 
 ## Slot `index`'s view depth `z`, stagger included (GDD `battle_framing`:

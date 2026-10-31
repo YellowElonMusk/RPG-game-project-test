@@ -99,6 +99,9 @@ func setup(battle: BattleCore, replay: BattleReplayController, descriptor: Encou
 	_battle_stage = load(STAGE_PATH % stage_id) as BattleStage
 	if backdrop != null:
 		backdrop.texture = load_backdrop(descriptor.faction_id, descriptor.is_boss)
+	if descriptor.is_boss and stage != null and _battle_stage != null:
+		# The boss stage's faction shape (GDD rule 11, AC-37; story 041).
+		stage.place_faction_shape(_battle_stage, descriptor.faction_id)
 	for i: int in battle.squad.size():
 		_spawn(battle.squad[i], i, catalog, sprite_sets)
 	var enemy_slots: Array[int] = enemy_slots_for(_battle_stage, battle.enemies.size())

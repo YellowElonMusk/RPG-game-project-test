@@ -29,6 +29,12 @@ const BLOB_DEPTH_RATIO: float = 2.0
 ## The `capture_id` tag (node metadata, ADR-0005 §14) of set geometry that
 ## may hide an actor (GDD `battle_framing`, "Visible share"; story 047).
 const OCCLUDER_TAG: StringName = &"occluder"
+## The `capture_id` tag of a boss stage's faction shape (GDD rule 11, AC-37;
+## story 041). The tag covers every `VisualInstance3D` under the tagged node,
+## as in the capture tool's ID pass; `META_FACTION_ID` names whose shape it is.
+const FACTION_SHAPE_TAG: StringName = &"faction_shape"
+## Node metadata naming the faction a `FACTION_SHAPE_TAG` node belongs to.
+const META_FACTION_ID: StringName = &"faction_id"
 
 ## This stage's entry profile id (ADR-0005 §3): the owning mode sets it
 ## before the stage enters the tree. Every battle stage enters on `battle`
@@ -205,13 +211,88 @@ func occluder_bounds() -> Array[AABB]:
 	for n: Node in find_children("*", "VisualInstance3D", true, false):
 		if not n.has_meta(&"capture_id") or StringName(String(n.get_meta(&"capture_id"))) != OCCLUDER_TAG:
 			continue
-		var xf := Transform3D.IDENTITY
-		var walk: Node = n
-		while walk != self and walk is Node3D:
-			xf = (walk as Node3D).transform * xf
-			walk = walk.get_parent()
-		out.append(xf * (n as VisualInstance3D).get_aabb())
+		out.append(_to_stage_space(n as Node3D) * (n as VisualInstance3D).get_aabb())
 	return out
+
+
+## Instances `battle_stage`'s faction shape for `faction_id` (GDD rule 11;
+## story 041) under this stage, in stage space, tagged `FACTION_SHAPE_TAG`
+## with `META_FACTION_ID` set, and returns it; null when the stage declares
+## none for that faction. Called by the Battle view on a boss fight's setup.
+func place_faction_shape(battle_stage: BattleStage, faction_id: String) -> Node3D:
+	var scene: PackedScene = battle_stage.faction_shapes.get(faction_id) as PackedScene
+	if scene == null:
+		return null
+	var shape := scene.instantiate() as Node3D
+	if shape == null:
+		error_sink.call("DioramaStage: faction shape for '%s' is not a Node3D scene" % faction_id)
+		return null
+	shape.set_meta(&"capture_id", String(FACTION_SHAPE_TAG))
+	shape.set_meta(META_FACTION_ID, faction_id)
+	add_child(shape)
+	return shape
+
+
+## The stage-space bounds of each node below this stage tagged
+## `FACTION_SHAPE_TAG` for `faction_id`: the merged bounds of every
+## `VisualInstance3D` at or under it (the tag covers its subtree, as in the
+## capture tool's ID pass). A tagged node with no geometry gives no bounds.
+func faction_shape_bounds(faction_id: String) -> Array[AABB]:
+	var out: Array[AABB] = []
+	for n: Node in find_children("*", "Node3D", true, false):
+		if String(n.get_meta(&"capture_id", "")) != String(FACTION_SHAPE_TAG) \
+				or String(n.get_meta(META_FACTION_ID, "")) != faction_id:
+			continue
+		var geometry: Array[Node] = n.find_children("*", "VisualInstance3D", true, false)
+		if n is VisualInstance3D:
+			geometry.append(n)
+		var merged := AABB()
+		var any: bool = false
+		for g: Node in geometry:
+			var box: AABB = _to_stage_space(g as Node3D) * (g as VisualInstance3D).get_aabb()
+			merged = merged.merge(box) if any else box
+			any = true
+		if any:
+			out.append(merged)
+	return out
+
+
+## AC-37's check for one boss fight: empty when `battle_stage` is not a boss
+## stage, or when at least one `faction_id` shape is placed under this stage
+## and its bounds lie inside the battle camera's view at every supported
+## window shape. The battle camera is fixed for the fight and the punch is
+## dropped through the takeover (story 013), so one check per window shape
+## covers every frame of the blend and hold. Each error names the faction.
+func faction_shape_errors(battle_stage: BattleStage, config: PresentationConfig,
+		faction_id: String) -> PackedStringArray:
+	var errors := PackedStringArray()
+	if not battle_stage.is_boss:
+		return errors
+	var bounds: Array[AABB] = faction_shape_bounds(faction_id)
+	if bounds.is_empty():
+		errors.append("faction shape -- stage '%s' has no node tagged %s for '%s'"
+				% [battle_stage.stage_id, FACTION_SHAPE_TAG, faction_id])
+		return errors
+	for vp: Vector2i in BattleFraming.SUPPORTED_VIEWPORTS:
+		var cam: SpriteProjection.CameraState = BattleFraming.camera_state(battle_stage, config, vp)
+		var in_view: bool = false
+		for box: AABB in bounds:
+			in_view = in_view or SpriteProjection.box_in_view(box, cam, vp)
+		if not in_view:
+			errors.append("faction shape -- stage '%s' shape for '%s' leaves the view at %dx%d"
+					% [battle_stage.stage_id, faction_id, vp.x, vp.y])
+	return errors
+
+
+## `node`'s transform relative to this stage, composed up the parents (works
+## outside the tree).
+func _to_stage_space(node: Node3D) -> Transform3D:
+	var xf := Transform3D.IDENTITY
+	var walk: Node = node
+	while walk != self and walk is Node3D:
+		xf = (walk as Node3D).transform * xf
+		walk = walk.get_parent()
+	return xf
 
 
 ## A new blob shadow for one actor (rule 12; story 020): a flat, unlit,
