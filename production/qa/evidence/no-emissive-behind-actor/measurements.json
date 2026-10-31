@@ -1,0 +1,141 @@
+{
+  "ac": "AC-48",
+  "blocked": {
+    "camp": "InterimCampMode is a 2D card: no Camp diorama, no campfire practical yet",
+    "title": "TitleMode is a 2D Control scene: no DioramaStage, no actors"
+  },
+  "controls": {
+    "control_actor_lighting": {
+      "actors": 5,
+      "bleed_pixels": 0,
+      "emissive_pixels": 0,
+      "emissive_sources": 0,
+      "exempt_names": [
+        "EmissiveControl"
+      ],
+      "exempt_sources": 1,
+      "expected": "PASS (exempt)",
+      "failures": [],
+      "fixture": "the behind quad under an OmniLight3D tagged actor_lighting",
+      "pass": true,
+      "silhouette_pixels": 39456,
+      "source_names": []
+    },
+    "control_behind": {
+      "actors": 5,
+      "bleed_pixels": 5079,
+      "emissive_pixels": 172640,
+      "emissive_sources": 1,
+      "exempt_names": [],
+      "exempt_sources": 0,
+      "expected": "FAIL",
+      "failures": [
+        "5079 emissive pixel(s) inside an actor's silhouette"
+      ],
+      "fixture": "emissive quad 1.5 m behind Squad2",
+      "pass": false,
+      "silhouette_pixels": 39456,
+      "source_names": [
+        "EmissiveControl"
+      ]
+    },
+    "control_beside": {
+      "actors": 5,
+      "bleed_pixels": 0,
+      "emissive_pixels": 30625,
+      "emissive_sources": 1,
+      "exempt_names": [],
+      "exempt_sources": 0,
+      "expected": "PASS with emissive pixels",
+      "failures": [],
+      "fixture": "emissive quad 0.5 m wide between Squad0 and Squad1, same depth",
+      "pass": true,
+      "silhouette_pixels": 39456,
+      "source_names": [
+        "EmissiveControl"
+      ]
+    }
+  },
+  "controls_behave": true,
+  "emissive_colour": "#8080ff",
+  "pass": true,
+  "size": [
+    1920,
+    1080
+  ],
+  "states": {
+    "battle": {
+      "actors": 5,
+      "bleed_pixels": 0,
+      "emissive_pixels": 0,
+      "emissive_sources": 0,
+      "exempt_names": [],
+      "exempt_sources": 0,
+      "failures": [],
+      "pass": true,
+      "silhouette_pixels": 39456,
+      "source_names": []
+    },
+    "boss_bureaucratia": {
+      "actors": 6,
+      "bleed_pixels": 0,
+      "emissive_pixels": 0,
+      "emissive_sources": 0,
+      "exempt_names": [],
+      "exempt_sources": 0,
+      "failures": [],
+      "pass": true,
+      "silhouette_pixels": 105642,
+      "source_names": []
+    },
+    "boss_megacorp": {
+      "actors": 6,
+      "bleed_pixels": 0,
+      "emissive_pixels": 0,
+      "emissive_sources": 0,
+      "exempt_names": [],
+      "exempt_sources": 0,
+      "failures": [],
+      "pass": true,
+      "silhouette_pixels": 71334,
+      "source_names": []
+    },
+    "defeat": {
+      "actors": 5,
+      "bleed_pixels": 0,
+      "emissive_pixels": 0,
+      "emissive_sources": 0,
+      "exempt_names": [],
+      "exempt_sources": 0,
+      "failures": [],
+      "pass": true,
+      "silhouette_pixels": 29889,
+      "source_names": []
+    },
+    "overworld": {
+      "actors": 4,
+      "bleed_pixels": 0,
+      "emissive_pixels": 0,
+      "emissive_sources": 0,
+      "exempt_names": [],
+      "exempt_sources": 0,
+      "failures": [],
+      "pass": true,
+      "silhouette_pixels": 6984,
+      "source_names": []
+    },
+    "victory_peak": {
+      "actors": 6,
+      "bleed_pixels": 0,
+      "emissive_pixels": 0,
+      "emissive_sources": 0,
+      "exempt_names": [],
+      "exempt_sources": 0,
+      "failures": [],
+      "pass": true,
+      "silhouette_pixels": 36876,
+      "source_names": []
+    }
+  },
+  "tool": "tools/capture/emissive_bleed_capture.gd"
+}

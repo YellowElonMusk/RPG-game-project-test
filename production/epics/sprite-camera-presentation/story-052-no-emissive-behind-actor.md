@@ -1,7 +1,7 @@
 # Story 052: No emissive source bleeds through an actor's silhouette
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Partial, blocked on Title/Camp 3D scenes (2026-10-31): AC-48 check built and PASS on the 6 capturable AC-32 states (battle, both boss takeovers, Victory peak, Defeat, Overworld) with the behind/beside/actor_lighting controls behaving; Title and Camp have no 3D scene to capture yet; lead sign-off pending
 > **Layer**: Core
 > **Type**: Visual/Feel
 > **Estimate**: S
@@ -76,7 +76,7 @@ This is a capture-measured negative check on top of AC-32's existing emissive ca
 - A retained screenshot/capture-tool output in `production/qa/evidence/no-emissive-behind-actor/`
 - Sign-off in `production/qa/evidence/no-emissive-behind-actor-evidence.md`
 
-**Status**: [ ] Not yet created
+**Status**: [~] `production/qa/evidence/no-emissive-behind-actor/` (tool `tools/capture/emissive_bleed_capture.gd`, exit 0: bleed 0 px in all 6 captured states; negative control (emissive quad behind Squad2) FAILS with 5079 bleed px; beside control PASSES with 30625 emissive px on screen; actor_lighting-tagged source exempt) + `production/qa/evidence/no-emissive-behind-actor-evidence.md` (lead sign-off pending); `tests/unit/presentation/emissive_bleed_check_test.gd` (16 cases) passes; full suite 1955/1955, exit 0 (2026-10-31). Open: Title and Camp captures once those modes have 3D scenes
 
 ---
 
