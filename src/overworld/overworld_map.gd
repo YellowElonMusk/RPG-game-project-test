@@ -232,9 +232,10 @@ static func ground_bounds(grid: WalkGrid) -> Rect2:
 
 
 ## Builds the placeholder set on `DioramaStage.LAYER_SET`: one floor plane
-## over the whole grid and one box per non-walkable cell. Idempotent: a
-## second call replaces the first set.
-func build_set(grid: WalkGrid) -> void:
+## (`fit_floor()`: the grid plus the camera's overhang) and one box per
+## non-walkable cell. Idempotent: a second call replaces the first set.
+## `presentation` is the follow camera's config; null = its defaults.
+func build_set(grid: WalkGrid, presentation: PresentationConfig = null) -> void:
 	var old: Node = get_node_or_null(^"PlaceholderSet")
 	if old != null:
 		remove_child(old)
@@ -243,16 +244,14 @@ func build_set(grid: WalkGrid) -> void:
 	set_root.name = "PlaceholderSet"
 	add_child(set_root)
 
-	var extent: Vector2 = Vector2(grid.size) * grid.cell_m
 	var floor_mesh := PlaneMesh.new()
-	floor_mesh.size = extent
 	floor_mesh.material = _flat_material(floor_color)
 	var floor_node := MeshInstance3D.new()
 	floor_node.name = "Floor"
 	floor_node.mesh = floor_mesh
 	floor_node.layers = DioramaStage.LAYER_SET
-	floor_node.position = Vector3(extent.x * 0.5, 0.0, extent.y * 0.5)
 	set_root.add_child(floor_node)
+	fit_floor(grid, presentation)
 
 	var wall_mesh := BoxMesh.new()
 	wall_mesh.size = Vector3(grid.cell_m, wall_height_m, grid.cell_m)
@@ -321,6 +320,32 @@ func build_set(grid: WalkGrid) -> void:
 	for gag: GagInteractable in gags():
 		_marker_box(set_root, "Gag_%s" % gag.marker_id, gag.ground_position(self),
 				Vector3(0.8, 1.0, 0.1), gag_color)
+
+
+## Sprite-camera story 039 (AC-35 coverage): sizes the set's floor to
+## `floor_rect()`, so wherever the map clamp puts the camera's focus, at
+## every supported aspect, the frame shows floor and never the clear colour
+## (a map smaller than the footprint centres the camera and is seen past
+## both edges). No-op before `build_set()`.
+func fit_floor(grid: WalkGrid, presentation: PresentationConfig = null) -> void:
+	var floor_node: MeshInstance3D = get_node_or_null(^"PlaceholderSet/Floor") as MeshInstance3D
+	if floor_node == null:
+		return
+	var cfg: PresentationConfig = presentation if presentation != null else PresentationConfig.new()
+	var rect: Rect2 = floor_rect(grid, cfg)
+	(floor_node.mesh as PlaneMesh).size = rect.size
+	var c: Vector2 = rect.get_center()
+	floor_node.position = Vector3(c.x, 0.0, c.y)
+
+
+## The ground rectangle the floor covers: the walk grid grown by
+## `FollowCamera.map_overflow()` for `presentation`'s camera plus one cell of
+## slack on every side.
+static func floor_rect(grid: WalkGrid, presentation: PresentationConfig) -> Rect2:
+	var bounds: Rect2 = ground_bounds(grid)
+	var pad: Vector2 = FollowCamera.map_overflow_for(presentation, bounds.size) \
+			+ Vector2(grid.cell_m, grid.cell_m)
+	return bounds.grow_individual(pad.x, pad.y, pad.x, pad.y)
 
 
 func _marker_box(parent: Node3D, node_name: String, at: Vector2, size: Vector3, color: Color) -> void:

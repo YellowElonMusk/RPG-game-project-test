@@ -21,7 +21,10 @@ actor's material by the capture (`measurements.json` → `sprite_path`). The §2
   synthetic renders, plus every shipped sprite set's idle frame drawn with the actor shader's own fragment rule at
   all five AC resolutions, with `T` from the shipped config.
 
-Run: `godot --path . -s res://tools/capture/texel_scale_capture.gd` (exit 1 today because of the Overworld finding below).
+Run: `godot --path . -s res://tools/capture/texel_scale_capture.gd`. **Re-run 2026-10-31 after both Overworld
+fixes (below): exit 0, `result: PASS`**: whole-pixel PASS at all 5 sizes, coverage PASS for Battle and
+Overworld at all 3 aspects, Overworld set-cut observation empty. The first run's Overworld findings are kept
+below as history.
 
 ## [C] Whole-pixel texels: PASS
 
@@ -47,13 +50,31 @@ the card shader's unlit variant instead (same `vertex()` projection and alpha cu
 zeroed) under the capture tool's flat linear environment. **Follow-up for story 002's owner:** the
 `unlit_albedo.png` that `PresentationCapture.capture()` writes shows actors black.
 
-## [C] Coverage: Battle PASS, Overworld FAIL (set content, not sprite code)
+## [C] Coverage: PASS (Overworld fixed 2026-10-31)
 
 | Scene | 16:9 1920×1080 | 21:9 2560×1080 | 4:3 1440×1080 |
 |---|---|---|---|
 | Battle `bureaucratia`: clear-class px / actors outside | 0 / 0 | 0 / 0 | 0 / 0 |
 | Battle `megacorp_boss` | 0 / 0 | 0 / 0 | 0 / 0 |
-| Overworld `map_paris_town_placeholder` (party of 4) | **261 120** / 0 | **358 136** / 0 | **632 160** / 0 |
+| Overworld `map_paris_town_placeholder` (party of 4), first run | **261 120** / 0 | **358 136** / 0 | **632 160** / 0 |
+| Overworld, after the floor fix | 0 / 0 | 0 / 0 | 0 / 0 |
+
+**Fix (2026-10-31).** `OverworldMap.build_set(grid, presentation)` now sizes the floor with `fit_floor()`. That
+is the walk grid grown by `FollowCamera.map_overflow()` plus one cell of slack per side. `map_overflow()` derives
+how far the follow camera can see past each map edge from the camera config (`follow_camera_height`,
+`_pitch_degrees`, `_fov_degrees`), so it is not a fixed number. On an axis the footprint does not fit, the
+clamp centres the focus, and the view then overhangs both edges by `(span − map extent) / 2`. That is evaluated
+at 4:3 and at `MAX_SUPPORTED_ASPECT` = 43:18 (3440×1440), which bound the whole supported range. The town
+(24×16 m) is shorter than the camera's 18.7 m depth span at 16:9 (27.1 m at 4:3), so it overhangs at every
+aspect. The boss chamber (14×14 m) overhangs too. `OverworldMode.presentation`'s setter refits the floor when the
+view assigns its own camera config. The follow camera's clamp (stories 031/044) was correct and is unchanged.
+Regression test: `tests/unit/overworld/overworld_map_floor_coverage_test.gd`, covering all 4 shipped maps × 4
+aspects × spawn, corners, centre and every EntryPoint, plus a taller/wider camera config. It was seen failing
+against the old builder first (town, 4:3: a 24×16 floor against a footprint from y −5.5 to 21.5).
+The extension uses the map's own `floor_color`, so open ground continues past the outer walls. Whether that
+apron should read differently (darker, dressed) is for the art director.
+
+First-run analysis (history):
 
 - Battle's sky is the backdrop canvas layer (`background_mode = BG_CANVAS`, layer −1), not a 3D sky card. For its
   ID pass the capture draws the backdrop flat in the `SKY` class colour, so a hole in the backdrop would still show
@@ -67,7 +88,20 @@ zeroed) under the capture tool's flat linear environment. **Follow-up for story 
   (floor and outer walls) beyond the walk grid by at least the camera footprint, or add the ADR-0005 §3 sky/ground
   card to the Overworld stage. I did not change the map builder.
 
-## Observation for the [VF] sign-off: feet cut 1 px into the Overworld floor
+## Feet cut 1 px into the Overworld floor: FIXED 2026-10-31
+
+**After the fix**, `set_cut_observation` is empty (`{}`) at 1920×1080, 2560×1080 and 1440×1080, with the
+same anchors that cut before (leader y 401.744 → 402, follower 2 309.671 → 310). The card plane now passes
+through the ground point under the **rounded** bottom edge: `SpriteProjection.card_plane_point()`, mirrored in
+`sprite_actor.gdshader`'s `_card_plane_point()`. ADR-0005 §2 has been amended, and story 073's AC-68 [L] wording
+follows. In battle the plane moves at most ½ px of ground: ≤ 0.012 m on the near row and ≤ 0.025 m on the far
+row at 720p. Same-row actors never overlap on screen, so draw order is unaffected, and the battle captures
+still PASS. Regression test: `tests/unit/presentation/sprite_projection_card_plane_test.gd`. Every 2× MSAA
+sample of the bottom row must sit in front of the floor, under the shipped Overworld camera and the level
+battle camera, for anchors that round up by ¼–½ px. It was seen failing with the old rule (card 1–4 mm behind
+the floor on the lower sample).
+
+First-run observation (history):
 
 Measured (`measurements.json` → `overworld.set_cut_observation`). At 1920×1080 and 2560×1080 the leader and
 follower 2 each have their whole bottom texel row (12 texels) partly covered by the floor: the bottom pixel row is
@@ -92,7 +126,11 @@ no sample above the bottom edge can fall under the floor.
   edges, no blended texel.
 - `battle_bureaucratia_1280x720_crop_near_Squad0_lit.png`: the near Baguette Thrower, lit, at T = 2.
 - `battle_megacorp_boss_2560x1080_id.png`: the 21:9 ID pass, all green SKY (backdrop) with every actor inside.
-- `overworld_1920x1080_lit.png` / `_id.png`: the Overworld coverage failure (blue / black band at the bottom).
+- `overworld_1920x1080_lit.png` / `_id.png`: first run, the coverage failure (blue / black band at the bottom).
+  **Re-captured 2026-10-31 after the fix and opened.** The town frame now shows floor below the south wall
+  where the blue band was. `overworld_1440x1080_id.png` (previously black bands top and bottom) is now
+  entirely set/actor/patch classes. In `overworld_2560x1080_lit.png` the floor continues past the west/east
+  walls and below the south wall, with no clear colour anywhere. The party column stands crisp at the town spawn.
 - One `_crop_near_*` and one `_crop_far_*` (unlit and lit) per size per battle scene; `_lit` / `_unlit` full
   frames per size.
 

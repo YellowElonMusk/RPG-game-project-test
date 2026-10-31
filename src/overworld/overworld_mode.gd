@@ -134,8 +134,13 @@ var _teach_armed: Dictionary = {}
 ## optional_teach NpcSpawns whose bark is due but waiting on the name card.
 var _teach_pending: Dictionary = {}
 ## The follow camera's settings, for the first-sight check (rule 13a); the
-## view assigns its own on start.
-var presentation: PresentationConfig = PresentationConfig.new()
+## view assigns its own on start. Assigning it refits the loaded map's floor
+## to that camera (sprite-camera story 039: `OverworldMap.fit_floor()`).
+var presentation: PresentationConfig = PresentationConfig.new():
+	set(value):
+		presentation = value
+		if is_instance_valid(_map) and _grid != null:
+			_map.fit_floor(_grid, presentation)
 
 ## The leader was placed outside walking (map entry, teleport, redirect,
 ## thaw): followers re-formed and the camera snaps (GDD rule 2, rule 10).
@@ -267,7 +272,7 @@ func load_map(map: OverworldMap, entry_marker_id: StringName = &"") -> void:
 	if map.get_parent() == null:
 		(map_parent if map_parent != null else self).add_child(map)
 	_grid = map.bake_walk_grid(config)
-	map.build_set(_grid)
+	map.build_set(_grid, presentation)
 	_setup_checkpoints(map)
 	# Story 134 (ADR-0005 §14): capture-ID tags on this map's cue nodes.
 	CaptureIdTags.tag_map(map, is_checkpoint_open)

@@ -91,6 +91,10 @@ func _ready() -> void:
 ## The narrowest supported aspect (GDD Edge Cases: `chase_visibility` is
 ## checked at 4:3, 16:9 and 21:9; narrower is unsupported).
 const MIN_SUPPORTED_ASPECT: float = 4.0 / 3.0
+## The widest aspect the set is built to cover (sprite-camera story 039):
+## 3440x1440 (43:18), the widest real "21:9" panel, so 2560x1080 (64:27)
+## and 21:9 itself are inside the range. Wider still is unsupported.
+const MAX_SUPPORTED_ASPECT: float = 43.0 / 18.0
 ## Narrow-aspect warnings logged (story 132: one per resize event into an
 ## unsupported aspect, never one per frame).
 var narrow_aspect_warnings: int = 0
@@ -245,6 +249,30 @@ static func clamp_to_footprint(cam: Vector2, footprint: Footprint, map_min: Vect
 	return Vector2(
 			clamp_or_centre(cam.x, map_min.x + footprint.w_far, map_max.x - footprint.w_far),
 			clamp_or_centre(cam.y, map_min.y + footprint.a_near, map_max.y - footprint.a_far))
+
+
+## Sprite-camera story 039: how far past each edge of a `map_size` map the
+## camera can see, per axis (`x` east/west, `y` north/south), over every
+## supported aspect. The map clamp keeps the footprint inside the map on an
+## axis it fits; on one it doesn't fit it centres the focus
+## (`clamp_or_centre`), so the footprint then overhangs both edges by the
+## same `(span - map extent) / 2`. `F_v_eff` is constant at and above 16:9
+## and `F_h` below it, so the spans peak at the range's two ends and those
+## two aspects bound the whole supported range. Zero on an axis that fits.
+static func map_overflow(p_height: float, p_pitch_degrees: float, p_fov_degrees: float,
+		map_size: Vector2) -> Vector2:
+	var out := Vector2.ZERO
+	for aspect: float in [MIN_SUPPORTED_ASPECT, MAX_SUPPORTED_ASPECT]:
+		var fp: Footprint = compute_footprint(p_height, p_pitch_degrees, p_fov_degrees, aspect)
+		out.x = maxf(out.x, (2.0 * fp.w_far - map_size.x) * 0.5)
+		out.y = maxf(out.y, (fp.a_near + fp.a_far - map_size.y) * 0.5)
+	return out
+
+
+## `map_overflow()` for `config`'s follow camera.
+static func map_overflow_for(config: PresentationConfig, map_size: Vector2) -> Vector2:
+	return map_overflow(config.follow_camera_height, config.follow_camera_pitch_degrees,
+			config.follow_camera_fov_degrees, map_size)
 
 
 ## `clamp_to_footprint()` for a focus and bounds in map ground coordinates

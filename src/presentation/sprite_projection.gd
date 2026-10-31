@@ -107,7 +107,10 @@ static func card_normal(cam: CameraState) -> Vector3:
 ## The view depth (positive distance along the camera's forward axis) at
 ## which the camera ray through `ndc` meets the upright card through
 ## `anchor_world` -- mirrors the shader's `vertex()` ray/plane intersection
-## (for tests, AC-68). `ndc.x`/`ndc.y` use the same [-1, 1] convention as
+## (for tests, AC-68). For a sprite, `anchor_world` is its
+## `card_plane_point()` (story 039), the point the shader's card passes
+## through; any point on the plane gives the same depth.
+## `ndc.x`/`ndc.y` use the same [-1, 1] convention as
 ## `cam.projection`'s own output. Valid only for a true pinhole projection
 ## (`PROJECTION_PERSPECTIVE` or `PROJECTION_FRUSTUM`): every camera ray
 ## passes through the view-space origin, which is what this relies on.
@@ -125,6 +128,32 @@ static func card_depth(ndc: Vector2, anchor_world: Vector3, cam: CameraState) ->
 	var hit_world: Vector3 = ray_origin + ray_dir * hit_t
 	var forward: Vector3 = -cam.transform.basis.z.normalized()
 	return (hit_world - ray_origin).dot(forward)
+
+
+## The point the sprite's upright card plane passes through (ADR-0005 §2;
+## sprite-camera story 039): where the camera ray through the middle of
+## `rect`'s ROUNDED bottom edge meets the ground plane at the foot anchor's
+## height (`y = anchor_world.y`), not the foot anchor itself. The card then
+## meets the ground exactly on the bottom pixel edge, so no depth sample
+## inside the rectangle (MSAA's included) lies below the foot line, where
+## the floor would be nearer than the card. Moves the card by at most half
+## a pixel of ground from the anchor. Falls back to `anchor_world` when that
+## ray never reaches the ground (at or above the horizon). The shader's
+## `vertex()` makes the same construction; pass this to `card_depth()`.
+static func card_plane_point(rect: Rect2i, anchor_world: Vector3, cam: CameraState,
+		viewport_size: Vector2i) -> Vector3:
+	var px := Vector2(float(rect.position.x) + float(rect.size.x) * 0.5, float(rect.end.y))
+	var ndc := Vector2(px.x / float(viewport_size.x) * 2.0 - 1.0,
+			1.0 - px.y / float(viewport_size.y) * 2.0)
+	var clip: Vector4 = cam.projection.inverse() * Vector4(ndc.x, ndc.y, 0.5, 1.0)
+	var dir: Vector3 = cam.transform.basis * (Vector3(clip.x, clip.y, clip.z) / clip.w)
+	var origin: Vector3 = cam.transform.origin
+	if dir.y > -1e-7:
+		return anchor_world
+	var t: float = (anchor_world.y - origin.y) / dir.y
+	if t <= 0.0:
+		return anchor_world
+	return origin + dir * t
 
 
 ## Projects `world_point` through `cam` to an unrounded screen position in

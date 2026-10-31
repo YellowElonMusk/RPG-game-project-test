@@ -691,9 +691,9 @@
                 2,
                 2
               ],
-              "inconsistent": 5289,
+              "inconsistent": 5285,
               "max_spread": 0.861425811153167,
-              "nonuniform": 212,
+              "nonuniform": 211,
               "opaque_texels": 7354,
               "outside": 0,
               "rendered_colours": 103,
@@ -707,9 +707,9 @@
                 2,
                 2
               ],
-              "inconsistent": 204,
+              "inconsistent": 203,
               "max_spread": 0.872978247236774,
-              "nonuniform": 34,
+              "nonuniform": 35,
               "opaque_texels": 1331,
               "outside": 0,
               "rendered_colours": 38,
@@ -723,9 +723,9 @@
                 2,
                 2
               ],
-              "inconsistent": 594,
+              "inconsistent": 600,
               "max_spread": 0.488801683050878,
-              "nonuniform": 26,
+              "nonuniform": 28,
               "opaque_texels": 1181,
               "outside": 0,
               "rendered_colours": 31,
@@ -739,7 +739,7 @@
                 2,
                 2
               ],
-              "inconsistent": 484,
+              "inconsistent": 483,
               "max_spread": 0.702717340242712,
               "nonuniform": 43,
               "opaque_texels": 1331,
@@ -755,9 +755,9 @@
                 2,
                 2
               ],
-              "inconsistent": 253,
+              "inconsistent": 251,
               "max_spread": 0.482689629964297,
-              "nonuniform": 23,
+              "nonuniform": 25,
               "opaque_texels": 746,
               "outside": 0,
               "rendered_colours": 26,
@@ -787,9 +787,9 @@
                 2,
                 2
               ],
-              "inconsistent": 273,
+              "inconsistent": 272,
               "max_spread": 0.551637870024464,
-              "nonuniform": 23,
+              "nonuniform": 24,
               "opaque_texels": 767,
               "outside": 0,
               "rendered_colours": 27,
@@ -805,7 +805,7 @@
               ],
               "inconsistent": 383,
               "max_spread": 0.864693888174592,
-              "nonuniform": 33,
+              "nonuniform": 32,
               "opaque_texels": 825,
               "outside": 0,
               "rendered_colours": 29,
@@ -962,9 +962,9 @@
                 2,
                 2
               ],
-              "inconsistent": 5272,
+              "inconsistent": 5267,
               "max_spread": 0.861425811153167,
-              "nonuniform": 195,
+              "nonuniform": 199,
               "opaque_texels": 7354,
               "outside": 0,
               "rendered_colours": 91,
@@ -994,7 +994,7 @@
                 2,
                 2
               ],
-              "inconsistent": 267,
+              "inconsistent": 268,
               "max_spread": 0.505534258017895,
               "nonuniform": 26,
               "opaque_texels": 1181,
@@ -1010,9 +1010,9 @@
                 2,
                 2
               ],
-              "inconsistent": 643,
+              "inconsistent": 645,
               "max_spread": 0.702717340242712,
-              "nonuniform": 42,
+              "nonuniform": 41,
               "opaque_texels": 1331,
               "outside": 0,
               "rendered_colours": 35,
@@ -1074,9 +1074,9 @@
                 2,
                 2
               ],
-              "inconsistent": 388,
+              "inconsistent": 389,
               "max_spread": 0.953257206523098,
-              "nonuniform": 26,
+              "nonuniform": 24,
               "opaque_texels": 825,
               "outside": 0,
               "rendered_colours": 26,
@@ -1233,9 +1233,9 @@
                 3,
                 3
               ],
-              "inconsistent": 5233,
+              "inconsistent": 5231,
               "max_spread": 0.861425811153167,
-              "nonuniform": 289,
+              "nonuniform": 292,
               "opaque_texels": 7354,
               "outside": 0,
               "rendered_colours": 103,
@@ -1249,9 +1249,9 @@
                 3,
                 3
               ],
-              "inconsistent": 195,
+              "inconsistent": 196,
               "max_spread": 0.872978247236774,
-              "nonuniform": 45,
+              "nonuniform": 44,
               "opaque_texels": 1331,
               "outside": 0,
               "rendered_colours": 38,
@@ -1281,7 +1281,7 @@
                 3,
                 3
               ],
-              "inconsistent": 494,
+              "inconsistent": 495,
               "max_spread": 0.702717340242712,
               "nonuniform": 52,
               "opaque_texels": 1331,
@@ -1329,9 +1329,9 @@
                 3,
                 3
               ],
-              "inconsistent": 269,
+              "inconsistent": 270,
               "max_spread": 0.551637870024464,
-              "nonuniform": 33,
+              "nonuniform": 32,
               "opaque_texels": 767,
               "outside": 0,
               "rendered_colours": 27,
@@ -1345,9 +1345,9 @@
                 3,
                 3
               ],
-              "inconsistent": 384,
+              "inconsistent": 385,
               "max_spread": 0.864693888174592,
-              "nonuniform": 39,
+              "nonuniform": 38,
               "opaque_texels": 825,
               "outside": 0,
               "rendered_colours": 29,
@@ -1504,12 +1504,12 @@
                 4,
                 4
               ],
-              "inconsistent": 5208,
+              "inconsistent": 5217,
               "max_spread": 0.861425811153167,
-              "nonuniform": 324,
+              "nonuniform": 322,
               "opaque_texels": 7354,
               "outside": 0,
-              "rendered_colours": 103,
+              "rendered_colours": 105,
               "source_colours": 23,
               "split": 0,
               "stray": 0
@@ -1522,7 +1522,7 @@
               ],
               "inconsistent": 180,
               "max_spread": 0.872978247236774,
-              "nonuniform": 52,
+              "nonuniform": 51,
               "opaque_texels": 1331,
               "outside": 0,
               "rendered_colours": 38,
@@ -1780,7 +1780,7 @@
               "nonuniform": 354,
               "opaque_texels": 7354,
               "outside": 0,
-              "rendered_colours": 104,
+              "rendered_colours": 103,
               "source_colours": 23,
               "split": 0,
               "stray": 0
@@ -1839,9 +1839,9 @@
                 6,
                 6
               ],
-              "inconsistent": 243,
+              "inconsistent": 242,
               "max_spread": 0.482689629964297,
-              "nonuniform": 41,
+              "nonuniform": 42,
               "opaque_texels": 746,
               "outside": 0,
               "rendered_colours": 26,
@@ -2650,7 +2650,7 @@
                 2,
                 2
               ],
-              "inconsistent": 652,
+              "inconsistent": 651,
               "max_spread": 0.697708322680516,
               "nonuniform": 29,
               "opaque_texels": 1704,
@@ -2684,7 +2684,7 @@
               ],
               "inconsistent": 446,
               "max_spread": 0.702717340242712,
-              "nonuniform": 40,
+              "nonuniform": 39,
               "opaque_texels": 1704,
               "outside": 0,
               "rendered_colours": 34,
@@ -2698,9 +2698,9 @@
                 2,
                 2
               ],
-              "inconsistent": 253,
+              "inconsistent": 251,
               "max_spread": 0.482689629964297,
-              "nonuniform": 23,
+              "nonuniform": 25,
               "opaque_texels": 746,
               "outside": 0,
               "rendered_colours": 26,
@@ -2730,9 +2730,9 @@
                 2,
                 2
               ],
-              "inconsistent": 273,
+              "inconsistent": 272,
               "max_spread": 0.551637870024464,
-              "nonuniform": 23,
+              "nonuniform": 24,
               "opaque_texels": 767,
               "outside": 0,
               "rendered_colours": 27,
@@ -2748,7 +2748,7 @@
               ],
               "inconsistent": 383,
               "max_spread": 0.864693888174592,
-              "nonuniform": 33,
+              "nonuniform": 32,
               "opaque_texels": 825,
               "outside": 0,
               "rendered_colours": 29,
@@ -2923,7 +2923,7 @@
               ],
               "inconsistent": 609,
               "max_spread": 0.977852401211781,
-              "nonuniform": 24,
+              "nonuniform": 27,
               "opaque_texels": 1704,
               "outside": 0,
               "rendered_colours": 34,
@@ -2985,9 +2985,9 @@
                 2,
                 2
               ],
-              "inconsistent": 388,
+              "inconsistent": 389,
               "max_spread": 0.953257206523098,
-              "nonuniform": 26,
+              "nonuniform": 24,
               "opaque_texels": 825,
               "outside": 0,
               "rendered_colours": 26,
@@ -3144,7 +3144,7 @@
                 3,
                 3
               ],
-              "inconsistent": 1919,
+              "inconsistent": 1917,
               "max_spread": 0.723978814088818,
               "nonuniform": 93,
               "opaque_texels": 3175,
@@ -3208,9 +3208,9 @@
                 3,
                 3
               ],
-              "inconsistent": 269,
+              "inconsistent": 270,
               "max_spread": 0.551637870024464,
-              "nonuniform": 33,
+              "nonuniform": 32,
               "opaque_texels": 767,
               "outside": 0,
               "rendered_colours": 27,
@@ -3224,9 +3224,9 @@
                 3,
                 3
               ],
-              "inconsistent": 384,
+              "inconsistent": 385,
               "max_spread": 0.864693888174592,
-              "nonuniform": 39,
+              "nonuniform": 38,
               "opaque_texels": 825,
               "outside": 0,
               "rendered_colours": 29,
@@ -3654,9 +3654,9 @@
                 6,
                 6
               ],
-              "inconsistent": 243,
+              "inconsistent": 242,
               "max_spread": 0.482689629964297,
-              "nonuniform": 41,
+              "nonuniform": 42,
               "opaque_texels": 746,
               "outside": 0,
               "rendered_colours": 26,
@@ -3848,8 +3848,7 @@
           "actor": 5332,
           "beacon": 3320,
           "camp_sign": 5850,
-          "none": 632160,
-          "set": 908243,
+          "set": 1540403,
           "unclassified": 295
         },
         "sprites": {
@@ -3959,21 +3958,18 @@
           }
         },
         "verdict": {
-          "failures": [
-            "632160 ID-pass pixel(s) are the clear class"
-          ],
-          "pass": false
+          "failures": [],
+          "pass": true
         }
       },
       "1920x1080": {
         "T": 3,
         "id_classes": {
-          "actor": 6984,
+          "actor": 7020,
           "beacon": 5458,
           "camp_sign": 13388,
-          "none": 261120,
-          "set": 1784481,
-          "unclassified": 2169
+          "set": 2047521,
+          "unclassified": 213
         },
         "sprites": {
           "near:follower_1": {
@@ -4010,7 +4006,7 @@
             "bleed": 0,
             "block": [
               3,
-              -1
+              3
             ],
             "inconsistent": 0,
             "max_spread": 0.0,
@@ -4025,7 +4021,7 @@
             ],
             "rendered_colours": -1,
             "source_colours": 0,
-            "split": 12,
+            "split": 0,
             "stray": 0
           },
           "near:follower_3": {
@@ -4062,7 +4058,7 @@
             "bleed": 0,
             "block": [
               3,
-              -1
+              3
             ],
             "inconsistent": 0,
             "max_spread": 0.0,
@@ -4077,26 +4073,23 @@
             ],
             "rendered_colours": -1,
             "source_colours": 0,
-            "split": 12,
+            "split": 0,
             "stray": 0
           }
         },
         "verdict": {
-          "failures": [
-            "261120 ID-pass pixel(s) are the clear class"
-          ],
-          "pass": false
+          "failures": [],
+          "pass": true
         }
       },
       "2560x1080": {
         "T": 3,
         "id_classes": {
-          "actor": 6995,
+          "actor": 7033,
           "beacon": 18128,
           "camp_sign": 13393,
-          "none": 358136,
-          "set": 2364945,
-          "unclassified": 3203
+          "set": 2725743,
+          "unclassified": 503
         },
         "sprites": {
           "near:follower_1": {
@@ -4133,7 +4126,7 @@
             "bleed": 0,
             "block": [
               3,
-              -1
+              3
             ],
             "inconsistent": 0,
             "max_spread": 0.0,
@@ -4148,7 +4141,7 @@
             ],
             "rendered_colours": -1,
             "source_colours": 0,
-            "split": 12,
+            "split": 0,
             "stray": 0
           },
           "near:follower_3": {
@@ -4185,7 +4178,7 @@
             "bleed": 0,
             "block": [
               3,
-              -1
+              3
             ],
             "inconsistent": 0,
             "max_spread": 0.0,
@@ -4200,30 +4193,22 @@
             ],
             "rendered_colours": -1,
             "source_colours": 0,
-            "split": 12,
+            "split": 0,
             "stray": 0
           }
         },
         "verdict": {
-          "failures": [
-            "358136 ID-pass pixel(s) are the clear class"
-          ],
-          "pass": false
+          "failures": [],
+          "pass": true
         }
       }
     },
     "map": "map_paris_town_placeholder",
-    "pass": false,
+    "pass": true,
     "set_cut_observation": {
       "1440x1080": {},
-      "1920x1080": {
-        "near:follower_2": 12,
-        "near:leader": 12
-      },
-      "2560x1080": {
-        "near:follower_2": 12,
-        "near:leader": 12
-      }
+      "1920x1080": {},
+      "2560x1080": {}
     },
     "sprite_path": "clip-space card (ADR-0005 §2, sprite_actor.gdshader)",
     "symbols_observation": {
@@ -4232,7 +4217,7 @@
       "2560x1080": {}
     }
   },
-  "result": "FAIL",
+  "result": "PASS",
   "tool": "tools/capture/texel_scale_capture.gd",
   "viewport_settings": {
     "mesh_lod_threshold": {

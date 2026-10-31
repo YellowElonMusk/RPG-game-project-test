@@ -1,12 +1,12 @@
 # Story 039: every sprite's texels are whole, uniform pixel blocks at every shipped resolution
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: In Progress (2026-10-31): whole-pixel texels and lit spread PASS at all 5 sizes and Battle coverage PASS at 16:9/21:9/4:3 (clip-space card shipped); Overworld coverage FAIL on set content (placeholder floor ends inside the camera frame at the town spawn), feet-into-floor MSAA observation recorded, art-director sign-off owed
+> **Status**: Done (2026-10-31): capture PASS (whole-pixel texels and lit spread at all 5 sizes; Battle and Overworld coverage at 16:9/21:9/4:3; Overworld floor extended per camera footprint; feet-into-floor MSAA cut fixed via the rounded-bottom-edge card plane, ADR-0005 §2 amended), art-director sign-off pending
 > **Layer**: Core
 > **Type**: Visual/Feel
 > **Estimate**: L
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-31
 
 ## Context
 
@@ -32,7 +32,7 @@
 
 *From GDD `design/gdd/sprite-camera-presentation.md`, scoped to this story:*
 
-- [ ] **AC-35 [C]+[VF]** (P-09, P-12, P-17) (Pending: capture tool) **[C] Coverage:** Battle and Overworld at 16:9 (1920×1080), 21:9 (2560×1080) and 4:3 (1440×1080). Every actor's silhouette lies fully inside the frame, and no pixel of the ID pass is the sentinel clear class. **[C] Whole-pixel texels:** the same Battle scene in the unlit-albedo mode at 1280×720, 1920×1080, 2560×1440 and 3840×2160, plus 1600×900, for every sprite, near and far, including those nearest the frame's corners: every texel covers exactly a `T × T` block of screen pixels on the expected grid; each block is one color, so no texel is blended or split; the near and far rows' blocks are the same size. **[C] Lit spread:** in the normal lit mode, each block's internal ΔE spread is at most 3. **[VF] Sign-off:** the art director confirms the texels look crisp at every size, the sprites don't read as leaning against or cutting into the set, and the constant-size rows read as near and far.
+- [x] **AC-35 [C]+[VF]** (P-09, P-12, P-17) ([C] PASS 2026-10-31; [VF] art-director sign-off pending) **[C] Coverage:** Battle and Overworld at 16:9 (1920×1080), 21:9 (2560×1080) and 4:3 (1440×1080). Every actor's silhouette lies fully inside the frame, and no pixel of the ID pass is the sentinel clear class. **[C] Whole-pixel texels:** the same Battle scene in the unlit-albedo mode at 1280×720, 1920×1080, 2560×1440 and 3840×2160, plus 1600×900, for every sprite, near and far, including those nearest the frame's corners: every texel covers exactly a `T × T` block of screen pixels on the expected grid; each block is one color, so no texel is blended or split; the near and far rows' blocks are the same size. **[C] Lit spread:** in the normal lit mode, each block's internal ΔE spread is at most 3. **[VF] Sign-off:** the art director confirms the texels look crisp at every size, the sprites don't read as leaning against or cutting into the set, and the constant-size rows read as near and far.
 
 ---
 
@@ -60,7 +60,11 @@
 
 ## Files
 
-- `src/presentation/sprite_projection.gd`
+- `src/presentation/sprite_projection.gd` (`card_plane_point()`, 2026-10-31)
+- `src/presentation/shaders/sprite_actor.gdshader` (card plane through the rounded bottom edge)
+- `src/presentation/follow_camera.gd` (`map_overflow()`, `MAX_SUPPORTED_ASPECT`)
+- `src/overworld/overworld_map.gd`, `src/overworld/overworld_mode.gd` (floor sized to the camera footprint)
+- `tests/unit/overworld/overworld_map_floor_coverage_test.gd`, `tests/unit/presentation/sprite_projection_card_plane_test.gd`
 - `tools/capture/presentation_capture.gd` (consumed, not authored)
 - `tests/integration/presentation/texel_scale_capture_test.gd`
 - `production/qa/evidence/story-039-texel-scale-holds-across-resolutions/`
@@ -80,7 +84,7 @@
 **Required evidence**:
 - Visual/Feel: a retained screenshot in `production/qa/evidence/` + sign-off in `production/qa/evidence/story-039-texel-scale-holds-across-resolutions-evidence.md`
 
-**Status**: [x] Created 2026-10-31: `production/qa/evidence/story-039-texel-scale-holds-across-resolutions-evidence.md` (capture: `tools/capture/texel_scale_capture.gd`, check: `tools/capture/texel_grid_check.gd`); sign-off pending
+**Status**: [x] Created 2026-10-31: `production/qa/evidence/story-039-texel-scale-holds-across-resolutions-evidence.md` (capture: `tools/capture/texel_scale_capture.gd`, check: `tools/capture/texel_grid_check.gd`); sign-off pending. Re-run 2026-10-31 after the Overworld floor + card-plane fixes: PASS (exit 0).
 
 ---
 

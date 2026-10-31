@@ -91,7 +91,7 @@ The systems index lists the top technical risk: "mixed pixel scales and `Sprite3
 - **Projection, from a pure function.** `SpriteProjection` (`src/presentation/sprite_projection.gd`, static and headless-testable) computes, per sprite per frame:
   - `T = max(1, floor(viewport_height / texel_base_lines))`, where `viewport_height` is `get_viewport().size.y` (window pixels; under ADR-0008's refit it is the full window height, and `T` is unaffected by the refit remainder while `f ≤ 6`);
   - the quad rectangle in whole screen pixels: `frame_w·T × frame_h·T`, bottom-centre at the foot anchor's projection rounded half away from zero to `(x_a, y_a)`, with `x_left = x_a − floor(frame_w·T / 2)` so an odd pixel width never starts on a half pixel (GDD `texel_scale`);
-  - the **upright card**: the vertical plane through the foot anchor whose normal is the camera's forward direction projected onto the ground.
+  - the **upright card**: the vertical plane whose normal is the camera's forward direction projected onto the ground. It passes through the ground point under the rectangle's **rounded** bottom edge (`card_plane_point()`), where the view ray through the bottom edge's middle meets the ground at the foot anchor's height. If that ray never reaches the ground, the plane falls back to the foot anchor itself. *(Amended 2026-10-31, sprite-camera story 039. The rule was "through the foot anchor". Under 2× MSAA, an anchor that rounds **up** by more than ¼ px then put the bottom row's lower sample below the foot line, where the floor is nearer, and the feet cut 1 px into the Overworld floor. The amended card meets the ground exactly on the bottom pixel edge and moves at most ½ px of ground from the anchor. That is ≤ 0.025 m in battle at 720p, half the 0.05 m slot stagger, and the battle rows never overlap on screen.)*
 
   `CharacterSprite` passes the rectangle, the viewport size, the anchor and the card normal as uniforms. AC-2 compares those uniforms with the function's output.
 - **Clip-space quad.** `vertex()` writes `POSITION` directly. For each corner, it takes the rectangle corner's NDC point, casts the view ray through it (`INV_PROJECTION_MATRIX`), intersects the ray with the upright card, and outputs `PROJECTION_MATRIX × (that view-space point)`.
@@ -300,7 +300,9 @@ static func texel_scale(viewport_height: int, base_lines: int) -> int
 static func screen_rect(anchor_world: Vector3, cam: CameraState, frame_size: Vector2i,
 		viewport_size: Vector2i, base_lines: int) -> Rect2i          # bottom-centre = rounded projection
 static func card_normal(cam: CameraState) -> Vector3                  # camera forward, projected to ground
-static func card_depth(ndc: Vector2, anchor_world: Vector3, cam: CameraState) -> float   # for tests (AC-68)
+static func card_plane_point(rect: Rect2i, anchor_world: Vector3, cam: CameraState,
+		viewport_size: Vector2i) -> Vector3                           # ground point under the rounded bottom edge (story 039)
+static func card_depth(ndc: Vector2, anchor_world: Vector3, cam: CameraState) -> float   # for tests (AC-68); pass card_plane_point()
 # CameraState: a value copy of the camera's transform, projection, size, near, keep_aspect, frustum_offset
 
 ## src/presentation/character_sprite.gd
@@ -643,3 +645,4 @@ No 3D presentation code exists; the battle HUD and demos are 2D `Control` scenes
 - 2026-10-22 — **Accepted** by the user, last in the order ADR-0002 → ADR-0004 → ADR-0003 → ADR-0006 → ADR-0005 (explicit instruction). No stories were Blocked on this ADR.
 - 2026-10-22 — `/architecture-review` (`architecture-review-2026-10-22c.md`), godot-specialist **E4**: the texel formula now names its source, `get_viewport().size.y` (full window height under ADR-0008's refit). Wording only; T is unchanged.
 - 2026-10-23 — ADR-0012 acceptance follow-up (with a godot-specialist DOF probe), amendment: §14 Overworld presentation added: profile IDs per faction × stage and interior, stage light rule and its Boot validation, sky card = profile sky fields, the interior `TravelLight` (always present, never toggled, fixed shadow flag), tilt-shift bounds mapped to `dof_blur_near_distance`/`dof_blur_far_distance` with view-space depth PROBED, per-cue capture-ID tags, no rebind on an in-mode fade. `LightingProfile` gains the near-DOF and travel-light fields
+- 2026-10-31 — Amendment (sprite-camera story 039, approved fix): §2's upright card now passes through the ground point under the rectangle's **rounded** bottom edge (`SpriteProjection.card_plane_point()`, mirrored in `sprite_actor.gdshader`'s `vertex()`), not the foot anchor. Under 2× MSAA, an anchor rounding up by more than ¼ px cut the feet 1 px into the Overworld floor (measured by the 039 capture). `card_depth()` is unchanged as a ray–plane function, and callers pass it the new plane point. Story 073's AC-68 [L] wording follows this change.
