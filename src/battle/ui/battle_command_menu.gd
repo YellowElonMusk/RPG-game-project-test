@@ -139,6 +139,8 @@ func _make_command_button(actor: Combatant, move: Move) -> Button:
 	button.text = "%s (MP %d)" % [move.display_name, move.mp_cost] if reason.is_empty() \
 			else "%s (MP %d) -- %s" % [move.display_name, move.mp_cost, reason]
 	button.tooltip_text = reason
+	# The menu is a narrow column beside the stage (BattleHud.COLUMN_WIDTH).
+	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	button.disabled = not reason.is_empty()
 	button.focus_mode = Control.FOCUS_ALL
 	button.pressed.connect(_on_move_chosen.bind(move))
@@ -182,6 +184,7 @@ func _show_target_pick(move: Move) -> void:
 	for target: Combatant in targets:
 		var button := Button.new()
 		button.text = target.display_name
+		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		button.focus_mode = Control.FOCUS_ALL
 		button.pressed.connect(_on_target_chosen.bind(move, target))
 		buttons.append(button)

@@ -12,6 +12,10 @@ which boots content for real (sprite-set validators included) before entering Ba
 | 04-boss-fight-attack-beat.png | Boss fight mid-beat: Supervisor `hit` |
 | 05/06-sprite-check-*.png | Every exported strip playing in-engine (`prototypes/sprite_check`) |
 
-Known gaps (flagged, not fixed here): enemies at depth 20 stand slightly above
-the painted road; squad legs sit behind the command menu while it is open; no
-blob shadows yet (story 020); no hit punch or VFX wired.
+Grounding fix (same day): the command menu moved into the left column under
+compact squad cards, freeing the painted ground band (y >= ~510 at 720p);
+squad now stands at depth 8.7 (feet ~y 660), enemies at 12.8 (feet ~y 540).
+
+Known gaps (flagged, not fixed here): no blob shadows yet (story 020); no hit
+punch or VFX wired; MegaCorp backdrop not captured (no shipped MegaCorp
+encounter) -- its road starts ~y 555, so enemies may sit at the curb.

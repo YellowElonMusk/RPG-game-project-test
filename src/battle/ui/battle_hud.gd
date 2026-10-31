@@ -130,7 +130,8 @@ func _build_static_ui() -> void:
 
 	_squad_column = VBoxContainer.new()
 	_squad_column.custom_minimum_size = Vector2(COLUMN_WIDTH, 0)
-	_squad_column.add_theme_constant_override("separation", 8)
+	# Compact: the command menu takes the rest of this column (y >= 420).
+	_squad_column.add_theme_constant_override("separation", 6)
 	main_row.add_child(_squad_column)
 
 	# The stage's middle stays clear; enemy cards sit at the right edge.
@@ -170,7 +171,7 @@ func _make_card(combatant: Combatant, show_mp: bool) -> PanelContainer:
 	var panel := PanelContainer.new()
 	var style := StyleBoxFlat.new()
 	style.bg_color = COLOR_PANEL
-	style.set_content_margin_all(10)
+	style.set_content_margin_all(6)
 	if combatant.is_enemy:
 		style.set_border_width_all(3)
 		style.border_color = _battle.faction_rule.get_identity_color()
@@ -182,7 +183,7 @@ func _make_card(combatant: Combatant, show_mp: bool) -> PanelContainer:
 
 	var name_label := Label.new()
 	name_label.text = combatant.display_name + ("   (BOSS)" if combatant.is_boss else "")
-	name_label.add_theme_font_size_override("font_size", 18)
+	name_label.add_theme_font_size_override("font_size", 16)
 	name_label.add_theme_color_override("font_color", COLOR_TEXT)
 	box.add_child(name_label)
 
@@ -190,7 +191,7 @@ func _make_card(combatant: Combatant, show_mp: bool) -> PanelContainer:
 	hp_bar.max_value = combatant.max_hp
 	hp_bar.value = combatant.hp
 	hp_bar.show_percentage = false
-	hp_bar.custom_minimum_size = Vector2(0, 14)
+	hp_bar.custom_minimum_size = Vector2(0, 10)
 	var hp_fill := StyleBoxFlat.new()
 	hp_fill.bg_color = _battle.faction_rule.get_identity_color() if combatant.is_enemy else COLOR_HEAL
 	hp_bar.add_theme_stylebox_override("fill", hp_fill)
@@ -202,7 +203,7 @@ func _make_card(combatant: Combatant, show_mp: bool) -> PanelContainer:
 		mp_bar.max_value = maxi(1, combatant.max_mp)
 		mp_bar.value = combatant.mp
 		mp_bar.show_percentage = false
-		mp_bar.custom_minimum_size = Vector2(0, 10)
+		mp_bar.custom_minimum_size = Vector2(0, 6)
 		var mp_fill := StyleBoxFlat.new()
 		mp_fill.bg_color = COLOR_MP
 		mp_bar.add_theme_stylebox_override("fill", mp_fill)
@@ -210,7 +211,7 @@ func _make_card(combatant: Combatant, show_mp: bool) -> PanelContainer:
 
 	var info_label := Label.new()
 	info_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	info_label.add_theme_font_size_override("font_size", 14)
+	info_label.add_theme_font_size_override("font_size", 13)
 	info_label.add_theme_color_override("font_color", COLOR_TEXT)
 	box.add_child(info_label)
 

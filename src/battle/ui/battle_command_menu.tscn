@@ -13,20 +13,21 @@ script = ExtResource("1_cmd")
 [node name="CommandPanel" type="PanelContainer" parent="."]
 unique_name_in_owner = true
 anchor_left = 0.0
-anchor_right = 1.0
+anchor_right = 0.0
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 16.0
-offset_right = -16.0
-offset_top = -200.0
+offset_right = 236.0
+offset_top = -300.0
 offset_bottom = -16.0
-grow_horizontal = 2
+grow_horizontal = 1
 grow_vertical = 0
 
 [node name="CommandVBox" type="VBoxContainer" parent="CommandPanel"]
 
 [node name="CommandTitle" type="Label" parent="CommandPanel/CommandVBox"]
 unique_name_in_owner = true
+autowrap_mode = 3
 text = "Command"
 
 [node name="CommandList" type="VBoxContainer" parent="CommandPanel/CommandVBox"]
@@ -36,20 +37,21 @@ unique_name_in_owner = true
 unique_name_in_owner = true
 visible = false
 anchor_left = 0.0
-anchor_right = 1.0
+anchor_right = 0.0
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 16.0
-offset_right = -16.0
-offset_top = -200.0
+offset_right = 236.0
+offset_top = -300.0
 offset_bottom = -16.0
-grow_horizontal = 2
+grow_horizontal = 1
 grow_vertical = 0
 
 [node name="TargetVBox" type="VBoxContainer" parent="TargetPanel"]
 
 [node name="TargetTitle" type="Label" parent="TargetPanel/TargetVBox"]
 unique_name_in_owner = true
+autowrap_mode = 3
 text = "Target"
 
 [node name="TargetList" type="VBoxContainer" parent="TargetPanel/TargetVBox"]
