@@ -36,4 +36,5 @@ overlay_scene_paths = {
 0: "res://src/game_state/overlays/interim_line_dialogue.tscn",
 2: "res://src/game_state/overlays/defeat_prompt.tscn"
 }
+capped_fade_peak_alpha = 0.035
 validate_enemy_ids_against_catalog = false

@@ -315,9 +315,9 @@ func _on_number_shown(combatant: Combatant, text: String) -> void:
 
 ## A beat's number was cleared (the next impact on it): remove its float.
 func _on_number_cleared(combatant: Combatant) -> void:
-	var label: Label = _number_labels.get(combatant) as Label
+	var label: Label = _live_label(combatant)
 	_number_labels.erase(combatant)
-	if label != null and is_instance_valid(label):
+	if label != null:
 		label.queue_free()
 
 
@@ -376,7 +376,16 @@ func _float_near(combatant: Combatant, text: String, color: Color) -> void:
 	tween.set_parallel(true)
 	tween.tween_property(label, "position:y", label.position.y - FLOAT_RISE_PX, FLOAT_RISE_DURATION_SEC)
 	tween.tween_property(label, "modulate:a", 0.0, FLOAT_FADE_DURATION_SEC).set_delay(FLOAT_FADE_DELAY_SEC)
-	tween.finished.connect(label.queue_free)
+	tween.finished.connect(_on_float_faded.bind(combatant, label))
+
+
+## A float finished fading: free it and drop it from `_number_labels` if it
+## is still `combatant`'s current label, so no freed label stays registered.
+func _on_float_faded(combatant: Combatant, label: Label) -> void:
+	if _number_labels.has(combatant) and _live_label(combatant) == label:
+		_number_labels.erase(combatant)
+	if is_instance_valid(label):
+		label.queue_free()
 
 
 ## Removes every floating number at once (ADR-0006 §8: a cancelled replay
@@ -395,10 +404,21 @@ func clear_numbers() -> void:
 func number_over(combatant: Combatant) -> String:
 	if _beat_numbers != null:
 		return _beat_numbers.number_over(combatant)
-	var label: Label = _number_labels.get(combatant) as Label
-	if label == null or not is_instance_valid(label) or label.is_queued_for_deletion():
+	var label: Label = _live_label(combatant)
+	if label == null or label.is_queued_for_deletion():
 		return ""
 	return label.text
+
+
+## `combatant`'s float label, or null when it has none or its fade tween has
+## already freed it. Checks validity on the raw Variant before any cast: an
+## `as Label` on a freed object is a script error (story 060 Finding 4, on
+## Retry's `clear_numbers()`).
+func _live_label(combatant: Combatant) -> Label:
+	var entry: Variant = _number_labels.get(combatant)
+	if entry == null or not is_instance_valid(entry):
+		return null
+	return entry as Label
 
 
 ## The HP and MP `combatant`'s card shows now: {"hp": int, "mp": int}, with

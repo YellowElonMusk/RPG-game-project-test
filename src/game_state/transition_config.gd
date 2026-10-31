@@ -18,6 +18,13 @@ class_name TransitionConfig extends Resource
 @export var mode_scene_paths: Dictionary = {}
 ## `GameStateMachine.OverlayKind` (int) -> overlay scene path. `String` only.
 @export var overlay_scene_paths: Dictionary = {}
+## Peak cover (0-1 alpha) of a transition's **capped** variant: what the
+## presenter plays when the flash gate refused the transition's flash, or
+## Reduce Flashing is On (ADR-0002 amendment; GDD sprite-camera-presentation
+## rule 13 "a soft swell rather than a flash"). Must keep the worst-case swing
+## (Ink Navy over pure white, sRGB blend) below each flashing source's declared
+## `FlashSourceDecl.capped_luma_swing` (0.08): 0.035 gives ~0.069.
+@export var capped_fade_peak_alpha: float = 0.035
 ## Interim flag (ADR-0002 §8): false until ADR-0001's enemy-record migration
 ## lands. Load-time validation against it is story 006.
 @export var validate_enemy_ids_against_catalog: bool = false

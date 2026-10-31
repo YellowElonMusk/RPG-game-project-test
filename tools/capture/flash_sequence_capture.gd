@@ -253,40 +253,43 @@ func _boot(enc_id: String, rf_on: bool, use_gate: bool) -> bool:
 	_layer = CanvasLayer.new()
 	_layer.layer = 100
 	root.add_child(_layer)
-	_fade = InterimFadePresenter.new(_layer)
+	_fade = InterimFadePresenter.new(_layer, _transitions)
 	return true
 
 
 ## The battle wipe's IN over a covered screen, then the reveal.
 func _reveal() -> void:
-	_fade.play_out(&"battle_wipe", 0.0)
-	_request(&"battle_wipe", FlashSourceDecl.CLOCK_REAL)
+	var capped: bool = _request(&"battle_wipe", FlashSourceDecl.CLOCK_REAL)
+	_fade.play_out(&"battle_wipe", 0.0, capped)
 	for i: int in COVERED_FRAMES:
 		await _step()
 	var t_in: float = float(_transitions.t_in.get(&"battle_wipe", 0.25))
-	_fade.play_in(&"battle_wipe", t_in)
+	_fade.play_in(&"battle_wipe", t_in, capped)
 	await _hold(roundi(t_in * FPS))
 	_mode._on_transition_finished(GameStateMachine.Mode.BATTLE)
 
 
 ## The retry flash (OUT, swap, IN), as Game State plays it.
 func _retry(snapshot: RefCounted) -> void:
-	_request(&"retry_flash", FlashSourceDecl.CLOCK_REAL)
+	var capped: bool = _request(&"retry_flash", FlashSourceDecl.CLOCK_REAL)
 	var t_out: float = float(_transitions.t_out.get(&"retry_flash", 0.15))
 	var t_in: float = float(_transitions.t_in.get(&"retry_flash", 0.15))
-	_fade.play_out(&"retry_flash", t_out)
+	_fade.play_out(&"retry_flash", t_out, capped)
 	await _hold(roundi(t_out * FPS))
 	_mode.restore_start_snapshot(snapshot)
-	_fade.play_in(&"retry_flash", t_in)
+	_fade.play_in(&"retry_flash", t_in, capped)
 	await _hold(roundi(t_in * FPS))
 	_mode._on_transition_finished(GameStateMachine.Mode.BATTLE)
 
 
-func _request(source: StringName, clock_kind: StringName) -> void:
+## Asks the gate at the start of OUT (as `GameStateMachine` does) and
+## returns `capped`, passed to both `play_out` and `play_in`.
+func _request(source: StringName, clock_kind: StringName) -> bool:
 	var at: int = _frame_no
 	var handle: int = _gate.request(source, func() -> float: return float(at) / FPS, 1.0)
 	_requests.append({"source": String(source), "clock": String(clock_kind), "frame": at,
 			"capped": handle == FlashGate.REFUSED})
+	return handle == FlashGate.REFUSED
 
 
 ## A squad Attack on the first target through the real command menu.
