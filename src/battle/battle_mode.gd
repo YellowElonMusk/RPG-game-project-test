@@ -114,6 +114,31 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 	_command_menu.setup(_battle, _replay)
 	if _machine != null:
 		_machine.transition_finished.connect(_on_transition_finished)
+		_machine.transition_started.connect(_on_transition_started)
+
+
+## ADR-0006 §5 "Retry" and "Exit" (story 040, GDD AC-36): every transition
+## that starts from Battle -- Retry's Battle -> Battle, Victory/Fled,
+## Retreat, Quit to Title -- discards the queued replay and stops the
+## end-of-fight hold at the start of OUT, so nothing plays behind the flash
+## or wipe and an outcome is never reported for a battle being left. The
+## punch ends on this frame too.
+func _on_transition_started(from: GameStateMachine.Mode, _to: GameStateMachine.Mode) -> void:
+	if from != GameStateMachine.Mode.BATTLE or _replay == null:
+		return
+	_replay.cancel_pending_replay()
+	_end_hold_left = -1.0
+	if _hit_punch != null:
+		_hit_punch.cancel()
+		_step_punch(0.0)
+
+
+## The Battle mode is never detached (ADR-0002 §4), so leaving the tree
+## means it is being freed: the controller lets go of `BattleCore` and its
+## callables (ADR-0006 §8).
+func _exit_tree() -> void:
+	if _replay != null:
+		_replay.dispose()
 
 
 ## The Defeat spotlight (story 053), or null before a Defeat.
@@ -206,9 +231,13 @@ func restore_start_snapshot(snapshot: RefCounted) -> void:
 	if _stage != null and _stage.has_profiles():
 		var capped: bool = _machine != null and _machine.is_transition_flash_capped()
 		_stage.request_profile(_fight_profile_id(), presentation_config.blend_defeat if capped else 0.0)
-	# TODO(battle-replay): (ADR-0006 §5 "Retry" steps 4-5): reveal gate / takeover hold.
-	# The controller is IDLE after the cancel, so this first turn marker is
-	# released at once and reopens the command menu (story 040 owns the rest).
+	# ADR-0006 §5 "Retry" steps 4-5: the retried fight's first turn waits
+	# behind a fresh reveal gate (opened by transition_finished(BATTLE) at the
+	# end of the retry flash) and, in a boss fight, the takeover settle.
+	_replay.enqueue_reveal_gate()
+	if _descriptor != null and _descriptor.is_boss:
+		_replay.enqueue_takeover(_replay.get_boss_combatant(),
+				BattleReplayController.HoldKind.TAKEOVER_SETTLE)
 	_battle.start_battle(false)
 	_replay.resync()
 	_hud.refresh()

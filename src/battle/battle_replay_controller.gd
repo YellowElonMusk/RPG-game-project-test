@@ -79,6 +79,10 @@ var _boss: Combatant
 var _displayed: Dictionary = {"displays": {}, "round": 0}
 ## Most recently recorded snapshot (the "previous snapshot" for plans).
 var _recorded: Dictionary = {"displays": {}, "round": 0}
+## How many times `cancel_pending_replay()` has been called (no-ops
+## included), read-only. A diagnostic for the call-order spy ADR-0006 Risks
+## asks for: Retry cancels twice, at `transition_started` and in SWAP.
+var cancel_calls: int = 0
 
 
 ## `windup(plan: BeatPlan) -> float`: 1x wind-up seconds, or -1.0 if the actor
@@ -268,6 +272,7 @@ func get_display_round() -> int:
 func cancel_pending_replay() -> void:
 	if _state == State.DISPOSED:
 		return
+	cancel_calls += 1
 	var discarded: bool = not _queue.is_empty() or not _current.is_empty()
 	_queue.clear()
 	_current = {}

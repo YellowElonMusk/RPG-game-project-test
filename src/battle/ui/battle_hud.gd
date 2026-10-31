@@ -85,6 +85,8 @@ func setup(battle: BattleCore, replay: BattleReplayController = null) -> void:
 		_replay.round_advanced_after_replay.connect(_on_round_advanced)
 		_replay.battle_ended_after_replay.connect(_on_battle_ended)
 		_replay.display_resynced.connect(refresh)
+		_replay.display_resynced.connect(clear_numbers)
+		_replay.replay_cancelled.connect(clear_numbers)
 	else:
 		_battle.turn_started.connect(_on_turn_started)
 		_battle.action_resolved.connect(_on_action_resolved)
@@ -352,6 +354,25 @@ func _float_near(combatant: Combatant, text: String, color: Color) -> void:
 	tween.tween_property(label, "position:y", label.position.y - FLOAT_RISE_PX, FLOAT_RISE_DURATION_SEC)
 	tween.tween_property(label, "modulate:a", 0.0, FLOAT_FADE_DURATION_SEC).set_delay(FLOAT_FADE_DELAY_SEC)
 	tween.finished.connect(label.queue_free)
+
+
+## Removes every floating number at once (ADR-0006 §8: a cancelled replay
+## or a Retry's `display_resynced` leaves no number on screen).
+func clear_numbers() -> void:
+	for child: Node in _overlay.get_children():
+		if child is Label:
+			child.queue_free()
+	_float_slots.clear()
+
+
+## How many floating numbers are on screen now (ones already fading out and
+## queued for deletion excluded).
+func number_count() -> int:
+	var n: int = 0
+	for child: Node in _overlay.get_children():
+		if child is Label and not child.is_queued_for_deletion():
+			n += 1
+	return n
 
 
 ## The values this HUD shows for `combatant`: the replay's displayed state

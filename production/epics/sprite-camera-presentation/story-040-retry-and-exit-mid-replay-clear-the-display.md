@@ -1,7 +1,7 @@
 # Story 040: a Retry, Retreat or Quit mid-replay discards cleanly and never leaves a stale frame
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done (pending commit)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
@@ -77,7 +77,7 @@
 **Required evidence**:
 - Logic: `tests/unit/battle/retry_and_exit_discard_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`, both later)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing -- `tests/unit/battle/retry_and_exit_discard_test.gd` (4 tests: Retry, Quit and Retreat mid-replay, Quit mid-hold); full suite 1845/1845, exit 0, 0 orphans (2026-10-31).
 
 ---
 
