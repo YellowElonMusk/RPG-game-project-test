@@ -174,6 +174,10 @@ extends Resource
 ## it and every preset's `shadow_color` (GDD AC-16).
 @export var faction_light_de_min: float = 10.0
 
+## How long after a guarded menu opens every menu action is refused, in
+## seconds (`input_guard`; GDD Tuning Knobs 0.10-0.20; ADR-0008 §6 `MenuGuard`).
+@export_range(0.10, 0.20, 0.01) var input_guard: float = 0.15
+
 ## Comfort settings and ambient set motion (GDD rule 13, `set_brightness_and_blur`;
 ## stories 028, 048, 068).
 @export_group("Comfort and Ambient")

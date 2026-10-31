@@ -1,7 +1,7 @@
 # Story 051: Rendering constraints are pinned at the project level
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done (2026-10-31)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
@@ -91,7 +91,7 @@ This story has two independent halves: a project-settings check (§10) and a sta
 - `tests/unit/presentation/rendering_constraints_test.gd` — must exist and pass
 - `tests/unit/presentation/world_shader_time_lint_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] `tests/unit/presentation/rendering_constraints_test.gd` (5 cases) and `tests/unit/presentation/world_shader_time_lint_test.gd` (7 cases) pass (2026-10-31). Lint: `src/presentation/world_shader_time_lint.gd`
 
 ---
 

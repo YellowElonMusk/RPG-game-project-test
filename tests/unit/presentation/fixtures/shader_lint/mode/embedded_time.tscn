@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3]
+
+[sub_resource type="Shader" id="Shader_lint"]
+code = "shader_type spatial;
+
+void fragment() {
+	ALBEDO = vec3(fract(TIME));
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_lint"]
+shader = SubResource("Shader_lint")
+
+[node name="EmbeddedTime" type="MeshInstance3D"]
+material_override = SubResource("ShaderMaterial_lint")

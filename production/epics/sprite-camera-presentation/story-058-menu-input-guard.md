@@ -1,7 +1,7 @@
 # Story 058: The menu input guard refuses presses for its full window
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done -- logic (2026-10-31); screen wiring pending
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: L
@@ -86,7 +86,7 @@
 **Required evidence**:
 - `tests/unit/ui/menu_guard_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] `tests/unit/ui/menu_guard_test.gd` (16 cases) passes (2026-10-31). `MenuGuard`, `UiFeedback`, `PointerFocusSync`, `MenuDefaultFocus` in `src/ui/`; `PresentationConfig.input_guard`. Not yet wired into the command menu, target selection, results screen (battle HUD) or the Defeat Prompt, and no `UiService` feeds the held mirror / pointer counter yet
 
 ---
 
