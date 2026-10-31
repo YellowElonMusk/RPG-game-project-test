@@ -11,6 +11,10 @@
 ## `knockout` landing frame, a defending one the `defend` brace, and the rest
 ## the `idle` loop on mode time.
 ##
+## Each combatant also gets one blob shadow (rule 12, story 020) kept the
+## same on-screen width as its sprite, and every HIT/KNOCKOUT reactor gets an
+## `impact_burst` at mid-body on the beat's impact.
+##
 ## Usage example:
 ## [codeblock]
 ## view.setup(core, replay, descriptor, presentation_config)
@@ -28,6 +32,11 @@ const STAGE_PATH := "res://data/presentation/stages/%s.tres"
 const DEFAULT_STAGE: StringName = &"battle_default"
 const BOSS_STAGE: StringName = &"battle_boss"
 const BACKDROP_PATH := "res://assets/backgrounds/bg_battle_%s%s.png"
+## The impact burst strip (SpriteForge GE, asset list §5) and its playback.
+const IMPACT_BURST_PATH := "res://assets/vfx/impact_burst.png"
+const IMPACT_BURST_FPS: float = 16.0
+## Bursts sit this far in front of their target so they draw over it (m).
+const VFX_DEPTH_BIAS: float = 0.05
 
 ## The mode's diorama stage; its `camera` becomes the battle camera.
 @export var stage: DioramaStage
@@ -45,6 +54,10 @@ var _sprites: Dictionary[Combatant, CharacterSprite] = {}
 var _sets: Dictionary[Combatant, SpriteSetData] = {}
 var _mode_time: float = 0.0
 var _camera_configured: bool = false
+var _shadows: Dictionary[Combatant, MeshInstance3D] = {}
+var _burst_set: SpriteSetData
+## Live bursts: sprite -> seconds played.
+var _bursts: Dictionary[CharacterSprite, float] = {}
 
 
 ## Builds the sprites and backdrop for `battle`. Call once, from
@@ -56,6 +69,9 @@ func setup(battle: BattleCore, replay: BattleReplayController, descriptor: Encou
 		sprite_sets: Dictionary[StringName, SpriteSetData] = {}) -> void:
 	_config = config
 	_replay = replay
+	_burst_set = _make_burst_set()
+	if _replay != null:
+		_replay.beat_impact.connect(_on_beat_impact)
 	if catalog == null:
 		catalog = BattleCatalog.shipped()
 	if sprite_sets.is_empty():
@@ -110,6 +126,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_mode_time += delta
 	present()
+	_step_bursts(delta)
 
 
 ## One presentation frame: every sprite's frame for the current replay state.
@@ -118,6 +135,8 @@ func present() -> void:
 	var plan: BeatPlan = _replay.get_current_plan() if _replay != null else null
 	for c: Combatant in _sprites:
 		_show(c, plan)
+		_place_shadow(c)
+	_follow_punch()
 
 
 func _show(c: Combatant, plan: BeatPlan) -> void:
@@ -194,6 +213,12 @@ func _spawn(c: Combatant, slot: int, catalog: ContentCatalogService,
 	sprite.setup(sprite_set.build_sprite_frames(), _config)
 	_sprites[c] = sprite
 	_sets[c] = sprite_set
+	if stage != null:
+		var blob: MeshInstance3D = stage.make_blob_shadow()
+		blob.name = "%sShadow" % sprite.name
+		stage.add_child(blob)
+		_shadows[c] = blob
+		_place_shadow(c)
 	_show(c, null)
 
 
@@ -209,3 +234,112 @@ func _try_configure_camera() -> void:
 		return
 	stage.configure_battle_camera(_battle_stage, _config, get_viewport().size)
 	_camera_configured = true
+
+
+## Metres per screen pixel at view depth `z` under the level battle camera
+## (`z / f_px`), at the current window; 0 before the camera is configured.
+func _metres_per_px(z: float) -> float:
+	if _config == null or not is_inside_tree():
+		return 0.0
+	var vp: Vector2i = get_viewport().size
+	if vp.y <= 0:
+		return 0.0
+	var f: float = BattleFraming.f_px(_config.battle_fov_degrees, float(vp.x) / float(vp.y), vp.y)
+	return z / f if f > 0.0 else 0.0
+
+
+## Screen pixels per texel (`T`, ADR-0005 §2) at the current window.
+func _texel_px() -> int:
+	if _config == null or not is_inside_tree():
+		return 1
+	return maxi(1, get_viewport().size.y / _config.texel_base_lines)
+
+
+func _place_shadow(c: Combatant) -> void:
+	var blob: MeshInstance3D = _shadows.get(c) as MeshInstance3D
+	if blob == null:
+		return
+	var sprite: CharacterSprite = _sprites[c]
+	var width_m: float = float(_config.shadow_width_texels * _texel_px()) * _metres_per_px(-sprite.position.z)
+	blob.visible = width_m > 0.0
+	if blob.visible:
+		stage.place_blob_shadow(blob, sprite.position, width_m, _config.shadow_offset)
+
+
+## Starts an impact burst on every reactor the beat hits (rule 9's impact).
+## TODO(flash-gate): route through FlashGate (`vfx_impact_burst`, gated
+## class) once GameRoot wires it; until then it always plays uncapped.
+func _on_beat_impact(plan: BeatPlan) -> void:
+	if _burst_set == null:
+		return
+	for c: Combatant in plan.reactions:
+		if plan.reactions[c] in [BeatPlan.Reaction.HIT, BeatPlan.Reaction.KNOCKOUT] and _sprites.has(c):
+			_spawn_burst(c)
+
+
+func _spawn_burst(target: Combatant) -> void:
+	var target_sprite: CharacterSprite = _sprites[target]
+	var burst := CharacterSprite.new()
+	burst.name = "Burst%d" % _bursts.size()
+	var mat := ShaderMaterial.new()
+	mat.shader = sprite_shader
+	burst.material_override = mat
+	burst.layers = DioramaStage.LAYER_ACTORS
+	burst.card_camera = stage.camera if stage != null else null
+	# Centre the 32-texel burst on the target's frame: lift its foot anchor
+	# by (frame height - burst height) / 2 texels, in metres at that depth.
+	var anim: SpriteAnimationData = _sets[target].find(&"idle", ENEMY_FACING if target.is_enemy else SQUAD_FACING)
+	var frame_h: int = anim.frame_region(0).size.y if anim != null else 64
+	var burst_h: int = _burst_set.animations[0].frame_region(0).size.y
+	var z: float = -target_sprite.position.z - VFX_DEPTH_BIAS
+	var lift_m: float = float((frame_h - burst_h) / 2 * _texel_px()) * _metres_per_px(z)
+	burst.position = Vector3(target_sprite.position.x, lift_m, -z)
+	if actor_root != null:
+		actor_root.add_child(burst)
+	burst.setup(_burst_set.build_sprite_frames(), _config)
+	burst.show_frame(&"vfx", ENEMY_FACING, false, false, 0)
+	_bursts[burst] = 0.0
+
+
+func _step_bursts(delta: float) -> void:
+	for burst: CharacterSprite in _bursts.keys():
+		var t: float = _bursts[burst] + delta
+		var anim: SpriteAnimationData = _burst_set.animations[0]
+		if t >= anim.duration_seconds():
+			_bursts.erase(burst)
+			burst.queue_free()
+			continue
+		_bursts[burst] = t
+		burst.show_frame(&"vfx", ENEMY_FACING, false, false, frame_at(anim, t))
+
+
+## The impact burst as a one-animation set (`vfx_front`), or null when the
+## strip is not shipped.
+static func _make_burst_set() -> SpriteSetData:
+	if not ResourceLoader.exists(IMPACT_BURST_PATH):
+		return null
+	var strip: Texture2D = load(IMPACT_BURST_PATH)
+	var anim := SpriteAnimationData.new()
+	anim.animation_id = &"vfx"
+	anim.facing = ENEMY_FACING
+	anim.fps = IMPACT_BURST_FPS
+	var frames := PackedFloat32Array()
+	frames.resize(strip.get_width() / strip.get_height())
+	frames.fill(1.0)
+	anim.frame_durations = frames
+	anim.strip = strip
+	var s := SpriteSetData.new()
+	s.set_id = &"vfx_impact_burst"
+	s.animations.append(anim)
+	return s
+
+
+## Rule 8: the punch moves the whole view by the same whole pixels. The 3D
+## view moves by lens shift; the backdrop is a canvas layer, so its layer
+## takes the same offset (oversized in the scene so no edge shows).
+func _follow_punch() -> void:
+	if backdrop == null or stage == null:
+		return
+	var layer := backdrop.get_parent() as CanvasLayer
+	if layer != null:
+		layer.offset = Vector2(stage.punch_offset_px())

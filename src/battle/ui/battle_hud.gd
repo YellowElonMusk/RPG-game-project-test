@@ -24,6 +24,8 @@ extends Control
 const KNOCKED_OUT_MODULATE: Color = Color(0.45, 0.45, 0.45)
 ## Vertical gap between stacked floating numbers so two in flight don't overlap.
 const FLOAT_STAGGER_PX: float = 26.0
+## Gap between a card and its floating number, in px.
+const FLOAT_CARD_GAP_PX: float = 8.0
 const FLOAT_RISE_PX: float = 50.0
 const FLOAT_RISE_DURATION_SEC: float = 0.9
 const FLOAT_FADE_DELAY_SEC: float = 0.5
@@ -339,7 +341,11 @@ func _float_near(combatant: Combatant, text: String, color: Color) -> void:
 
 	var slot: int = _float_slots.get(combatant, 0)
 	_float_slots[combatant] = (slot + 1) % 3
-	label.position = panel.global_position + Vector2(panel.size.x * 0.5 - 40, 6 + slot * FLOAT_STAGGER_PX)
+	# Beside the card on the stage side, never over its name: left of an
+	# enemy card (right column), right of a squad card (left column).
+	var x: float = -label.get_minimum_size().x - FLOAT_CARD_GAP_PX if combatant.is_enemy \
+			else panel.size.x + FLOAT_CARD_GAP_PX
+	label.position = panel.global_position + Vector2(x, 6 + slot * FLOAT_STAGGER_PX)
 
 	var tween := create_tween()
 	tween.set_parallel(true)

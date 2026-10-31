@@ -88,6 +88,13 @@ extends Resource
 ## Hit-punch peak shift for a big beat (a knockout, or a hit by the
 ## encounter's boss), in screen px at 1080p (`A_beat` big).
 @export_range(6.0, 8.0, 0.5) var punch_amplitude_big: float = 7.0
+## The blob shadow's width, in texels of the actor's frame (rule 12; the
+## "foot width" `shadow_offset` is a fraction of). Screen-constant like the
+## sprite, so it is converted to metres per actor depth.
+@export_range(16, 64, 1) var shadow_width_texels: int = 30
+## How far the blob sits along the set light's ground direction, as a
+## fraction of its width (`shadow_offset`; GDD Tuning Knobs: 0-0.5).
+@export_range(0.0, 0.5, 0.01) var shadow_offset: float = 0.20
 
 ## The lighting beats (GDD Tuning Knobs, "Lighting beats").
 @export_group("Lighting Beats")

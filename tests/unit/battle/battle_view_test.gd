@@ -59,3 +59,16 @@ func test_backdrop_follows_faction_and_boss_flag() -> void:
 	assert_str(normal.resource_path).ends_with("bg_battle_bureaucratia.png")
 	assert_str(boss.resource_path).ends_with("bg_battle_megacorp_boss.png")
 	assert_object(BattleView.load_backdrop("faction_nobody", false)).is_null()
+
+
+func test_backdrop_layer_follows_the_punch_offset() -> void:
+	# Arrange: the shipped scene's view, stage and backdrop.
+	var mode: Node = auto_free((load("res://src/battle/battle_mode.tscn") as PackedScene).instantiate())
+	var view: BattleView = mode.get_node("%BattleView")
+	var stage: DioramaStage = mode.get_node("%DioramaStage")
+	stage._punch_px = Vector2i(0, -5)
+	# Act
+	view.present()
+	# Assert: the canvas backdrop moves by the same whole pixels as the 3D view.
+	var layer := view.backdrop.get_parent() as CanvasLayer
+	assert_vector(layer.offset).is_equal(Vector2(0, -5))

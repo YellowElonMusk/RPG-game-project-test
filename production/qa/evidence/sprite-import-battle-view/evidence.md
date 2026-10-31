@@ -16,6 +16,11 @@ Grounding fix (same day): the command menu moved into the left column under
 compact squad cards, freeing the painted ground band (y >= ~510 at 720p);
 squad now stands at depth 8.7 (feet ~y 660), enemies at 12.8 (feet ~y 540).
 
-Known gaps (flagged, not fixed here): no blob shadows yet (story 020); no hit
-punch or VFX wired; MegaCorp backdrop not captured (no shipped MegaCorp
-encounter) -- its road starts ~y 555, so enemies may sit at the curb.
+Shadows, punch and impact VFX (same day): 02 and 04 are the impact frame --
+impact_burst at the target's mid-body, target in its hit frame, damage number
+beside the card; every actor has a blob shadow (story 020). The hit-punch
+is too short (0.1 s, 2-5 px) to judge in a still; its wiring and the
+backdrop following it are unit-tested.
+
+Known gaps: impact_burst is not routed through FlashGate yet (not wired in
+GameRoot); no MegaCorp encounter to capture.

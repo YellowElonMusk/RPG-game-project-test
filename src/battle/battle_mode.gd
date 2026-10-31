@@ -54,6 +54,10 @@ var _replay: BattleReplayController = null
 ## Seconds left in the end-of-fight hold; negative when no hold is running.
 var _end_hold_left: float = -1.0
 var _end_won: bool = false
+## The hit-punch (GDD rule 8; ADR-0005 §6): started on each beat's impact,
+## advanced on mode time, written to the stage's lens shift every frame.
+var _hit_punch: HitPunch = null
+var _stage: DioramaStage = null
 
 
 ## Not `@onready`: `ModeHostSceneLoader` calls `setup()` before `add_child()`
@@ -62,6 +66,7 @@ var _end_won: bool = false
 func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 	_machine = machine
 	_hud = %BattleHud
+	_stage = %DioramaStage
 	_command_menu = %BattleCommandMenu
 	var entry: BattleEntryPayload = payload as BattleEntryPayload
 	if entry == null or entry.descriptor == null:
@@ -91,6 +96,8 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 		_replay.enqueue_takeover(_find_boss(_battle.enemies),
 				BattleReplayController.HoldKind.TAKEOVER_FULL)
 	_replay.battle_ended_after_replay.connect(_on_battle_ended_after_replay)
+	_hit_punch = HitPunch.new(presentation_config)
+	_replay.beat_impact.connect(_on_beat_impact)
 	_battle.start_battle(false)
 	_replay.resync()
 	%BattleView.setup(_battle, _replay, entry.descriptor, presentation_config)
@@ -110,6 +117,7 @@ func _process(delta: float) -> void:
 func step_replay(delta: float) -> void:
 	if _replay != null:
 		_replay.advance(delta)
+	_step_punch(delta)
 	if _end_hold_left < 0.0:
 		return
 	_end_hold_left -= delta
@@ -168,6 +176,9 @@ func restore_start_snapshot(snapshot: RefCounted) -> void:
 		return
 	# ADR-0006 §5 "Retry" step 1.
 	_replay.cancel_pending_replay()
+	if _hit_punch != null:
+		_hit_punch.cancel()
+		_step_punch(0.0)
 	_end_hold_left = -1.0
 	_awaiting_results_done = false
 	start.restore_into(_party)
@@ -181,6 +192,22 @@ func restore_start_snapshot(snapshot: RefCounted) -> void:
 	_battle.start_battle(false)
 	_replay.resync()
 	_hud.refresh()
+
+
+## Rule 8: one punch per beat, on its impact. The view shifts toward the
+## side that was hit -- up into the enemy line when the squad lands a blow,
+## down into the squad when an enemy does.
+func _on_beat_impact(plan: BeatPlan) -> void:
+	var dir: Vector2 = Vector2.DOWN if plan.actor.is_enemy else Vector2.UP
+	plan.start_punch(_hit_punch, _replay.get_boss_combatant(), dir)
+
+
+func _step_punch(delta: float) -> void:
+	if _hit_punch == null or _stage == null:
+		return
+	# Offset first: a punch started this frame shows at t = 0 (rule 8).
+	_stage.set_punch_offset_px(_hit_punch.current_offset_px(_stage.battle_viewport_height()))
+	_hit_punch.advance(delta)
 
 
 func _has_exactly_one_boss(enemies: Array[Combatant]) -> bool:

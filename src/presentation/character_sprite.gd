@@ -38,6 +38,8 @@ func setup(frames: SpriteFrames, config: PresentationConfig) -> void:
 	_material = ShaderMaterial.new()
 	_material.shader = existing_shader
 	material_override = _material
+	# Rule 12: actors cast no light shadows; their blob is their only shadow.
+	cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	scale = Vector3.ONE
 	rotation = Vector3.ZERO
 	stop()

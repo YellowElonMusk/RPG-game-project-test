@@ -6,8 +6,8 @@ extends SceneTree
 ##   godot --path . -s res://tools/capture/battle_capture.gd -- --encounter=enc_paris_supervisor --out=<dir>
 ##
 ## `--encounter` defaults to `enc_paris_clerks_hall`. Writes `<encounter>.png`
-## after the reveal (idle), then `<encounter>_attack.png` mid-way through the
-## squad's first Attack beat.
+## after the reveal (idle), then `<encounter>_attack_<n>.png`, one every ~4
+## frames through the squad's first Attack beat (wind-up, impact, reaction).
 
 const SIZE := Vector2i(1280, 720)
 
@@ -63,10 +63,13 @@ func _run() -> void:
 	mode.handle_action(InputActions.CONFIRM, false)
 	mode.handle_action(InputActions.CONFIRM, true)
 	mode.handle_action(InputActions.CONFIRM, false)
-	for i: int in 4:
-		await process_frame
-	if mode.is_presenting():
-		await _save(out_dir.path_join("%s_attack.png" % enc_id))
+	# A short sequence through the beat (wind-up, impact burst, reaction).
+	for shot: int in 8:
+		if not mode.is_presenting():
+			break
+		await _save(out_dir.path_join("%s_attack_%d.png" % [enc_id, shot]))
+		for i: int in 4:
+			await process_frame
 	quit(0)
 
 

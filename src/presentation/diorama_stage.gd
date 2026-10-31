@@ -23,6 +23,9 @@ const LAYER_ACTORS := 2
 ## member at a time -- ADR-0002 keeps exactly one mode in the tree.
 ## `PresentationDirector` is the only reader, and only on `mode_entered`.
 const GROUP: StringName = &"active_diorama_stage"
+## A blob shadow's ground depth as a multiple of its width (see
+## `place_blob_shadow()`).
+const BLOB_DEPTH_RATIO: float = 2.0
 
 ## This stage's entry profile id (ADR-0005 §3): the owning mode sets it
 ## before the stage enters the tree. Every battle stage enters on `battle`
@@ -148,6 +151,72 @@ func punch_offset_px() -> Vector2i:
 ## pixels (`H_screen` for `HitPunch.current_offset_px`); 0 before configure.
 func battle_viewport_height() -> int:
 	return _battle_viewport.y
+
+
+## A new blob shadow for one actor (rule 12; story 020): a flat, unlit,
+## chunky pixel ellipse on the ground plane, on `SET`, casting nothing.
+## Add it under the stage and keep it placed with `place_blob_shadow()`.
+func make_blob_shadow() -> MeshInstance3D:
+	var mat := StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	mat.albedo_texture = _blob_texture()
+	mat.albedo_color = _shadow_color()
+	var plane := PlaneMesh.new()
+	plane.size = Vector2.ONE
+	var blob := MeshInstance3D.new()
+	blob.mesh = plane
+	blob.material_override = mat
+	blob.layers = LAYER_SET
+	blob.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	return blob
+
+
+## Places `blob` under `foot_anchor` (stage space, on the ground), `width_m`
+## wide and `BLOB_DEPTH_RATIO` times as deep (the level battle camera sees
+## the ground at a grazing angle, so a round blob would read as a line), offset by `offset_frac * width_m` along the set
+## light's ground-projected direction, in the current profile's
+## `shadow_color` (AC-17).
+func place_blob_shadow(blob: MeshInstance3D, foot_anchor: Vector3, width_m: float,
+		offset_frac: float) -> void:
+	blob.position = Vector3(foot_anchor.x, 0.0, foot_anchor.z) \
+			+ set_light_ground_direction() * offset_frac * width_m
+	blob.scale = Vector3(width_m, 1.0, width_m * BLOB_DEPTH_RATIO)
+	(blob.material_override as StandardMaterial3D).albedo_color = _shadow_color()
+
+
+## The set light's travel direction projected onto the ground (unit, y 0):
+## the way the diorama's own shadows fall. `Vector3.ZERO` without a set
+## light or for a light pointing straight down.
+func set_light_ground_direction() -> Vector3:
+	if set_light == null:
+		return Vector3.ZERO
+	var d: Vector3 = -set_light.global_transform.basis.z if set_light.is_inside_tree() \
+			else -set_light.transform.basis.z
+	d.y = 0.0
+	return d.normalized() if d.length() > 0.0001 else Vector3.ZERO
+
+
+func _shadow_color() -> Color:
+	return current_values.shadow_color if current_values != null else LightingProfile.new().shadow_color
+
+
+static var _blob_tex: Texture2D
+
+
+## A 16x8 hard-edged ellipse (white; the material tints it): chunky texels,
+## no soft falloff (GDD rule 12, "toy block" style).
+static func _blob_texture() -> Texture2D:
+	if _blob_tex == null:
+		var img := Image.create(16, 8, false, Image.FORMAT_RGBA8)
+		for y: int in 8:
+			for x: int in 16:
+				var nx: float = (x + 0.5 - 8.0) / 8.0
+				var ny: float = (y + 0.5 - 4.0) / 4.0
+				img.set_pixel(x, y, Color(1, 1, 1, 1) if nx * nx + ny * ny <= 1.0 else Color(1, 1, 1, 0))
+		_blob_tex = ImageTexture.create_from_image(img)
+	return _blob_tex
 
 
 func _apply_lens_shift() -> void:
