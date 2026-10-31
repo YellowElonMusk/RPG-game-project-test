@@ -1,12 +1,12 @@
 # Story 057: The UI layer is never tinted by the world's tonemapper
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done (2026-10-31): capture PASS, lead sign-off pending
 > **Layer**: Core
 > **Type**: Visual/Feel
 > **Estimate**: S
 > **Manifest Version**: 2026-10-23
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-10-31
 
 ## Context
 
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/sprite-camera-presentation.md`, scoped to this story:*
 
-- [ ] **AC-53 [C]** (P-09) (UI never tinted; Pending: capture tool) For Battle, each faction's boss takeover, Defeat and the Victory peak, the final presented frame (HUD, a command menu, the Defeat card and damage numbers at full opacity) matches the UI layer rendered alone within ΔE 1 on every pixel where the UI is opaque. A fixture build that routes the UI through the world's tonemapper fails, as a negative control.
+- [x] **AC-53 [C]** (P-09) (UI never tinted; Pending: capture tool) For Battle, each faction's boss takeover, Defeat and the Victory peak, the final presented frame (HUD, a command menu, the Defeat card and damage numbers at full opacity) matches the UI layer rendered alone within ΔE 1 on every pixel where the UI is opaque. A fixture build that routes the UI through the world's tonemapper fails, as a negative control.
 
 ---
 
@@ -75,7 +75,7 @@ This story runs the capture tool's UI-alone pass (§13) against the composited f
 - A retained capture-tool output in `production/qa/evidence/ui-never-tinted/`
 - Sign-off in `production/qa/evidence/ui-never-tinted-evidence.md`
 
-**Status**: [ ] Not yet created
+**Status**: [x] `production/qa/evidence/ui-never-tinted/` (tool `tools/capture/ui_tint_capture.gd`, exit 0: six scenes, shipped and AgX-world max ΔE 0.16-0.85 over the opaque UI; the UI-through-world-tonemapper negative control fails in every scene, max ΔE 11.6-14.9; world sensitivity control responds) + `production/qa/evidence/ui-never-tinted-evidence.md` (lead sign-off pending); `tests/unit/presentation/ui_tint_check_test.gd` (10 cases) passes; full suite 1922/1922, exit 0 (2026-10-31)
 
 ---
 

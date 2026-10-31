@@ -1,0 +1,378 @@
+{
+  "ac": "AC-53",
+  "limit": {
+    "max_delta_e": 1.0,
+    "opaque": "UI alone over black == over white within 1/255 per channel",
+    "over": "every opaque UI pixel"
+  },
+  "negative_control_discriminates": true,
+  "pass": true,
+  "scenes": {
+    "battle_menu": {
+      "opaque_ui_pixels": 179194,
+      "profile": "battle",
+      "profile_on_stage_blend_p": 1.0,
+      "sensitivity_control": {
+        "fixture": "world pixels, shipped vs AgX",
+        "min_mean": 1.0,
+        "responds": true,
+        "stats": {
+          "max": 14.4408016204834,
+          "mean": 4.71564198226392,
+          "p95": 12.0222520828247,
+          "pixels": 1894406
+        }
+      },
+      "shipped": {
+        "environment": {
+          "background_canvas_max_layer": -1,
+          "tonemap_mode": 0
+        },
+        "failures": [],
+        "pass": true,
+        "stats": {
+          "max": 0.593249201774597,
+          "mean": 0.0000658778110278209,
+          "p95": 0.0,
+          "pixels": 179194
+        }
+      },
+      "ui_through_world": {
+        "failing_pixels": 179011,
+        "failures": [
+          "max ΔE 12.86 > 1.0 (mean 4.98, p95 10.28 over 179194 px)"
+        ],
+        "fixture": "AgX world, background_canvas_max_layer = 10",
+        "pass": false,
+        "stats": {
+          "max": 12.8594741821289,
+          "mean": 4.98256852164962,
+          "p95": 10.2810039520264,
+          "pixels": 179194
+        }
+      },
+      "world_agx": {
+        "environment": {
+          "agx_contrast": 1.0,
+          "agx_white": 6.0,
+          "exposure": 1.0,
+          "tonemap_mode": "AGX"
+        },
+        "failures": [],
+        "pass": true,
+        "stats": {
+          "max": 0.593249201774597,
+          "mean": 0.0000658151083012937,
+          "p95": 0.0,
+          "pixels": 179194
+        }
+      }
+    },
+    "battle_numbers": {
+      "opaque_ui_pixels": 179383,
+      "profile": "battle",
+      "profile_on_stage_blend_p": 1.0,
+      "sensitivity_control": {
+        "fixture": "world pixels, shipped vs AgX",
+        "min_mean": 1.0,
+        "responds": true,
+        "stats": {
+          "max": 14.4408016204834,
+          "mean": 4.71350613066296,
+          "p95": 12.0222520828247,
+          "pixels": 1894217
+        }
+      },
+      "shipped": {
+        "environment": {
+          "background_canvas_max_layer": -1,
+          "tonemap_mode": 0
+        },
+        "failures": [],
+        "pass": true,
+        "stats": {
+          "max": 0.593249201774597,
+          "mean": 0.0000717877215425698,
+          "p95": 0.0,
+          "pixels": 179383
+        }
+      },
+      "ui_through_world": {
+        "failing_pixels": 179098,
+        "failures": [
+          "max ΔE 12.86 > 1.0 (mean 4.97, p95 10.28 over 179383 px)"
+        ],
+        "fixture": "AgX world, background_canvas_max_layer = 10",
+        "pass": false,
+        "stats": {
+          "max": 12.8594741821289,
+          "mean": 4.96559358038428,
+          "p95": 10.2810039520264,
+          "pixels": 179383
+        }
+      },
+      "world_agx": {
+        "environment": {
+          "agx_contrast": 1.0,
+          "agx_white": 6.0,
+          "exposure": 1.0,
+          "tonemap_mode": "AGX"
+        },
+        "failures": [],
+        "pass": true,
+        "stats": {
+          "max": 0.593249201774597,
+          "mean": 0.0000717250848803592,
+          "p95": 0.0,
+          "pixels": 179383
+        }
+      }
+    },
+    "boss_bureaucratia": {
+      "opaque_ui_pixels": 194814,
+      "profile": "boss_bureaucratia",
+      "profile_on_stage_blend_p": 1.0,
+      "sensitivity_control": {
+        "fixture": "world pixels, shipped vs AgX",
+        "min_mean": 1.0,
+        "responds": true,
+        "stats": {
+          "max": 14.2379388809204,
+          "mean": 4.28137092596989,
+          "p95": 11.6852235794067,
+          "pixels": 1878786
+        }
+      },
+      "shipped": {
+        "environment": {
+          "background_canvas_max_layer": -1,
+          "tonemap_mode": 0
+        },
+        "failures": [],
+        "pass": true,
+        "stats": {
+          "max": 0.593249201774597,
+          "mean": 0.0000605957912127431,
+          "p95": 0.0,
+          "pixels": 194814
+        }
+      },
+      "ui_through_world": {
+        "failing_pixels": 194508,
+        "failures": [
+          "max ΔE 12.61 > 1.0 (mean 4.31, p95 9.99 over 194814 px)"
+        ],
+        "fixture": "AgX world, background_canvas_max_layer = 10",
+        "pass": false,
+        "stats": {
+          "max": 12.6105890274048,
+          "mean": 4.31200971074896,
+          "p95": 9.98813056945801,
+          "pixels": 194814
+        }
+      },
+      "world_agx": {
+        "environment": {
+          "agx_contrast": 1.05,
+          "agx_white": 6.0,
+          "exposure": 1.0,
+          "tonemap_mode": "AGX"
+        },
+        "failures": [],
+        "pass": true,
+        "stats": {
+          "max": 0.593249201774597,
+          "mean": 0.0000605381159307957,
+          "p95": 0.0,
+          "pixels": 194814
+        }
+      }
+    },
+    "boss_megacorp": {
+      "opaque_ui_pixels": 195054,
+      "profile": "boss_megacorp",
+      "profile_on_stage_blend_p": 1.0,
+      "sensitivity_control": {
+        "fixture": "world pixels, shipped vs AgX",
+        "min_mean": 1.0,
+        "responds": true,
+        "stats": {
+          "max": 12.589732170105,
+          "mean": 4.68764043941662,
+          "p95": 10.8189010620117,
+          "pixels": 1878546
+        }
+      },
+      "shipped": {
+        "environment": {
+          "background_canvas_max_layer": -1,
+          "tonemap_mode": 0
+        },
+        "failures": [],
+        "pass": true,
+        "stats": {
+          "max": 0.849863350391388,
+          "mean": 0.000118550326885378,
+          "p95": 0.0,
+          "pixels": 195054
+        }
+      },
+      "ui_through_world": {
+        "failing_pixels": 194746,
+        "failures": [
+          "max ΔE 12.61 > 1.0 (mean 5.54, p95 9.99 over 195054 px)"
+        ],
+        "fixture": "AgX world, background_canvas_max_layer = 10",
+        "pass": false,
+        "stats": {
+          "max": 12.6105890274048,
+          "mean": 5.5414330654513,
+          "p95": 9.98813056945801,
+          "pixels": 195054
+        }
+      },
+      "world_agx": {
+        "environment": {
+          "agx_contrast": 1.05,
+          "agx_white": 6.0,
+          "exposure": 1.0,
+          "tonemap_mode": "AGX"
+        },
+        "failures": [],
+        "pass": true,
+        "stats": {
+          "max": 0.849863350391388,
+          "mean": 0.000104080775525255,
+          "p95": 0.0,
+          "pixels": 195054
+        }
+      }
+    },
+    "defeat": {
+      "opaque_ui_pixels": 179498,
+      "profile": "defeat",
+      "profile_on_stage_blend_p": 1.0,
+      "sensitivity_control": {
+        "fixture": "world pixels, shipped vs AgX",
+        "min_mean": 1.0,
+        "responds": true,
+        "stats": {
+          "max": 16.1563892364502,
+          "mean": 6.2836512084359,
+          "p95": 13.8125514984131,
+          "pixels": 1894102
+        }
+      },
+      "shipped": {
+        "environment": {
+          "background_canvas_max_layer": -1,
+          "tonemap_mode": 0
+        },
+        "failures": [],
+        "pass": true,
+        "stats": {
+          "max": 0.452113211154938,
+          "mean": 0.0000228724662216967,
+          "p95": 0.0,
+          "pixels": 179498
+        }
+      },
+      "ui_through_world": {
+        "failing_pixels": 178735,
+        "failures": [
+          "max ΔE 14.89 > 1.0 (mean 5.06, p95 7.29 over 179498 px)"
+        ],
+        "fixture": "AgX world, background_canvas_max_layer = 10",
+        "pass": false,
+        "stats": {
+          "max": 14.8906183242798,
+          "mean": 5.06315712037086,
+          "p95": 7.28996753692627,
+          "pixels": 179498
+        }
+      },
+      "world_agx": {
+        "environment": {
+          "agx_contrast": 0.9,
+          "agx_white": 5.5,
+          "exposure": 0.9,
+          "tonemap_mode": "AGX"
+        },
+        "failures": [],
+        "pass": true,
+        "stats": {
+          "max": 0.400703340768814,
+          "mean": 0.0000214404204499854,
+          "p95": 0.0,
+          "pixels": 179498
+        }
+      }
+    },
+    "victory_peak": {
+      "opaque_ui_pixels": 177888,
+      "profile": "victory",
+      "profile_on_stage_blend_p": 1.0,
+      "sensitivity_control": {
+        "fixture": "world pixels, shipped vs AgX",
+        "min_mean": 1.0,
+        "responds": true,
+        "stats": {
+          "max": 13.6619253158569,
+          "mean": 4.29654990257606,
+          "p95": 11.0745401382446,
+          "pixels": 1895712
+        }
+      },
+      "shipped": {
+        "environment": {
+          "background_canvas_max_layer": -1,
+          "tonemap_mode": 0
+        },
+        "failures": [],
+        "pass": true,
+        "stats": {
+          "max": 0.157124444842339,
+          "mean": 0.00000176655474053718,
+          "p95": 0.0,
+          "pixels": 177888
+        }
+      },
+      "ui_through_world": {
+        "failing_pixels": 164295,
+        "failures": [
+          "max ΔE 11.63 > 1.0 (mean 4.22, p95 9.17 over 177888 px)"
+        ],
+        "fixture": "AgX world, background_canvas_max_layer = 10",
+        "pass": false,
+        "stats": {
+          "max": 11.6258277893066,
+          "mean": 4.21989602643524,
+          "p95": 9.16697025299072,
+          "pixels": 177888
+        }
+      },
+      "world_agx": {
+        "environment": {
+          "agx_contrast": 1.05,
+          "agx_white": 6.5,
+          "exposure": 1.1,
+          "tonemap_mode": "AGX"
+        },
+        "failures": [],
+        "pass": true,
+        "stats": {
+          "max": 0.157124444842339,
+          "mean": 0.00000176655474053718,
+          "p95": 0.0,
+          "pixels": 177888
+        }
+      }
+    }
+  },
+  "sensitivity_control_responds": true,
+  "size": [
+    1920,
+    1080
+  ],
+  "tool": "tools/capture/ui_tint_capture.gd"
+}
