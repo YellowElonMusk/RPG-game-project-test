@@ -19,6 +19,13 @@ class_name BattleMode extends GameMode
 ## live in `PresentationConfig` itself.
 var presentation_config: PresentationConfig = PresentationConfig.new()
 
+## The player's presentation settings view (ADR-0009 §7), injected through
+## `pre_setup` before `setup()`; null uses the defaults (every comfort
+## setting Off). The replay's speed settings follow its `changed` signal and
+## apply from the next `advance()` (ADR-0006 §6; story 056), and the
+## hit-punch reads Screen Shake and Reduce Motion from it.
+var presentation_settings: PresentationSettings = null
+
 ## The fight's replay controller (ADR-0006), read-only. `null` when entry
 ## failed to build.
 var replay: BattleReplayController:
@@ -105,7 +112,10 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 		_replay.enqueue_takeover(_find_boss(_battle.enemies),
 				BattleReplayController.HoldKind.TAKEOVER_FULL)
 	_replay.battle_ended_after_replay.connect(_on_battle_ended_after_replay)
-	_hit_punch = HitPunch.new(presentation_config)
+	_hit_punch = HitPunch.new(presentation_config, presentation_settings)
+	if presentation_settings != null:
+		_apply_speed_settings()
+		presentation_settings.changed.connect(_apply_speed_settings)
 	_replay.beat_impact.connect(_on_beat_impact)
 	_battle.start_battle(false)
 	_replay.resync()
@@ -140,6 +150,15 @@ func _on_transition_started(from: GameStateMachine.Mode, _to: GameStateMachine.M
 func _exit_tree() -> void:
 	if _replay != null:
 		_replay.dispose()
+
+
+## Pushes Faster battle animations and Speed up boss entrances to the
+## replay; it records them and applies them from the next `advance()`, so a
+## change made under the Menu shows on the first frame after it closes.
+func _apply_speed_settings() -> void:
+	if _replay != null and presentation_settings != null:
+		_replay.set_speed_settings(presentation_settings.faster_battle_animations,
+				presentation_settings.speed_up_boss_entrances)
 
 
 ## The Defeat spotlight (story 053), or null before a Defeat.

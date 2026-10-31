@@ -36,9 +36,17 @@ var reduce_blur: bool = false:
 			changed.emit()
 
 ## Faster battle animations (ADR-0006's `set_speed_settings`).
-var faster_battle_animations: bool = false
+var faster_battle_animations: bool = false:
+	set(value):
+		if value != faster_battle_animations:
+			faster_battle_animations = value
+			changed.emit()
 ## Speed up boss entrances (ADR-0006's `set_speed_settings`).
-var speed_up_boss_entrances: bool = false
+var speed_up_boss_entrances: bool = false:
+	set(value):
+		if value != speed_up_boss_entrances:
+			speed_up_boss_entrances = value
+			changed.emit()
 
 
 ## A view with the given comfort values (the other fields at defaults).

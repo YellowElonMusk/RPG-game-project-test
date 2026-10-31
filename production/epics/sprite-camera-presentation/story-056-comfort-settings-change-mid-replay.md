@@ -1,7 +1,7 @@
 # Story 056: Comfort settings changed mid-replay apply from the next frame
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done (pending commit)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
@@ -75,7 +75,7 @@ The controller never polls settings itself; the Battle mode's `PresentationSetti
 **Required evidence**:
 - `tests/integration/presentation/settings_mid_replay_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing -- `tests/integration/presentation/settings_mid_replay_test.gd` (2 tests); full suite 1861/1861, exit 0, 0 orphans (run with `-i boss_profile_exists_test`: the other agent's in-progress test-first suite does not parse yet) (2026-10-31).
 
 ---
 
