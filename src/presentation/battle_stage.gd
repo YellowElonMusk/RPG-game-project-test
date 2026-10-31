@@ -34,6 +34,13 @@ extends Resource
 ## Each slot's authored ground position: `x` is the lateral offset (m, +x
 ## right), `y` the base view depth (m) before the stagger.
 @export var slots: Array[Vector2] = []
+## The stage-space bounds of every piece of set geometry tagged as an
+## occluder (a pillar, a counter; GDD `battle_framing`, "Visible share";
+## story 047). Same space as `slot_anchor()`: the ground is `y = 0`, the
+## camera looks down -Z. Each must enclose the scene's matching node tagged
+## `DioramaStage.OCCLUDER_TAG`. Empty when the set has none in front of the
+## actors (the painted backdrop is a canvas layer, never an occluder).
+@export var occluders: Array[AABB] = []
 
 
 ## Slot `index`'s view depth `z`, stagger included (GDD `battle_framing`:

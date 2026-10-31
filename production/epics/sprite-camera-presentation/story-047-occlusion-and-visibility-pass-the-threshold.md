@@ -1,7 +1,7 @@
 # Story 047: every battle stage keeps every actor slot visible above the occlusion threshold
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done (2026-10-31): [L] PASS, [VF] captures retained, art-director sign-off pending
 > **Layer**: Core
 > **Type**: Visual/Feel
 > **Estimate**: M
@@ -79,7 +79,7 @@
 **Required evidence**:
 - Visual/Feel: a retained screenshot in `production/qa/evidence/` + sign-off in `production/qa/evidence/story-047-occlusion-and-visibility-pass-the-threshold-evidence.md`
 
-**Status**: [ ] Not yet created
+**Status**: [x] `production/qa/evidence/story-047-occlusion-and-visibility-pass-the-threshold/` (battle_default_all_slots.png, battle_boss_all_slots.png) + `production/qa/evidence/story-047-occlusion-and-visibility-pass-the-threshold-evidence.md` (art-director sign-off pending); `tests/unit/presentation/visible_share_test.gd` (9 cases) passes; full suite 1922/1922, exit 0 (2026-10-31)
 
 ---
 

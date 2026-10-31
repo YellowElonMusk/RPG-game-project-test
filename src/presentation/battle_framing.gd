@@ -100,12 +100,21 @@ static func rect_in_frame(rect: Rect2i, viewport_size: Vector2i) -> bool:
 	return Rect2i(Vector2i.ZERO, viewport_size).encloses(rect)
 
 
-## Each slot's `visible_share` at `viewport_size`: the share of its quad not
-## covered by the quad of any slot with a smaller view depth (GDD
-## `battle_framing`, "Visible share"; rectangles make it conservative).
+## Each slot's `visible_share` at `viewport_size`, every slot filled: the
+## share of its quad not covered by the quad of any slot with a smaller view
+## depth, nor by the projected bounds (`SpriteProjection.screen_bounds`) of
+## any `stage.occluders` box whose nearest face is nearer than the slot (GDD
+## `battle_framing`, "Visible share"; stories 022, 047). Rectangles make it
+## conservative.
 static func visible_shares(stage: BattleStage, config: PresentationConfig,
 		viewport_size: Vector2i = DEFAULT_VIEWPORT) -> PackedFloat64Array:
 	var rects: Array[Rect2i] = slot_rects(stage, config, viewport_size)
+	var cam: SpriteProjection.CameraState = camera_state(stage, config, viewport_size)
+	var occluder_rects: Array[Rect2i] = []
+	var occluder_depths: Array[float] = []
+	for box: AABB in stage.occluders:
+		occluder_rects.append(SpriteProjection.screen_bounds(box, cam, viewport_size))
+		occluder_depths.append(-box.end.z)
 	var shares := PackedFloat64Array()
 	for i: int in rects.size():
 		var clipped: Array[Rect2i] = []
@@ -113,6 +122,9 @@ static func visible_shares(stage: BattleStage, config: PresentationConfig,
 			if j != i and stage.slot_depth(j) < stage.slot_depth(i) \
 					and rects[i].intersects(rects[j]):
 				clipped.append(rects[i].intersection(rects[j]))
+		for k: int in occluder_rects.size():
+			if occluder_depths[k] < stage.slot_depth(i) and rects[i].intersects(occluder_rects[k]):
+				clipped.append(rects[i].intersection(occluder_rects[k]))
 		var area: int = rects[i].get_area()
 		if area <= 0:
 			shares.append(0.0)

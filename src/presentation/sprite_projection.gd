@@ -139,6 +139,27 @@ static func project_to_screen(world_point: Vector3, cam: CameraState,
 			(1.0 - (ndc.y * 0.5 + 0.5)) * float(viewport_size.y))
 
 
+## The whole-pixel screen rectangle enclosing `box`'s projection through
+## `cam` (GDD `battle_framing`, "the projected bounds of set geometry tagged
+## as an occluder"; story 047): the 8 corners' bounds, floored at the
+## top-left and ceiled at the bottom-right, so it never under-covers. A box
+## reaching the near plane or behind the camera returns the whole frame
+## (conservative: it may hide anything).
+static func screen_bounds(box: AABB, cam: CameraState, viewport_size: Vector2i) -> Rect2i:
+	var view_from_world: Transform3D = cam.transform.affine_inverse()
+	var lo := Vector2(INF, INF)
+	var hi := Vector2(-INF, -INF)
+	for c: int in 8:
+		var corner: Vector3 = box.get_endpoint(c)
+		if -(view_from_world * corner).z <= cam.near:
+			return Rect2i(Vector2i.ZERO, viewport_size)
+		var p: Vector2 = project_to_screen(corner, cam, viewport_size)
+		lo = Vector2(minf(lo.x, p.x), minf(lo.y, p.y))
+		hi = Vector2(maxf(hi.x, p.x), maxf(hi.y, p.y))
+	var top_left := Vector2i(floori(lo.x), floori(lo.y))
+	return Rect2i(top_left, Vector2i(ceili(hi.x), ceili(hi.y)) - top_left)
+
+
 ## Round half away from zero on both axes (GDD `texel_scale`), public so the
 ## pixel-snap tests share the exact rule.
 static func round_pixel(screen: Vector2) -> Vector2i:

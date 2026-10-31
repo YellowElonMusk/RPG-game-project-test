@@ -26,6 +26,9 @@ const GROUP: StringName = &"active_diorama_stage"
 ## A blob shadow's ground depth as a multiple of its width (see
 ## `place_blob_shadow()`).
 const BLOB_DEPTH_RATIO: float = 2.0
+## The `capture_id` tag (node metadata, ADR-0005 §14) of set geometry that
+## may hide an actor (GDD `battle_framing`, "Visible share"; story 047).
+const OCCLUDER_TAG: StringName = &"occluder"
 
 ## This stage's entry profile id (ADR-0005 §3): the owning mode sets it
 ## before the stage enters the tree. Every battle stage enters on `battle`
@@ -190,6 +193,25 @@ func punch_offset_px() -> Vector2i:
 ## pixels (`H_screen` for `HitPunch.current_offset_px`); 0 before configure.
 func battle_viewport_height() -> int:
 	return _battle_viewport.y
+
+
+## The stage-space bounds of every `VisualInstance3D` below this stage whose
+## `capture_id` metadata is `OCCLUDER_TAG` (story 047): the set geometry
+## that can hide an actor, to cross-check against `BattleStage.occluders`.
+## Blob shadows are never tagged, so they never count (ADR-0005 §2). Works
+## outside the tree: transforms are composed up to this node.
+func occluder_bounds() -> Array[AABB]:
+	var out: Array[AABB] = []
+	for n: Node in find_children("*", "VisualInstance3D", true, false):
+		if not n.has_meta(&"capture_id") or StringName(String(n.get_meta(&"capture_id"))) != OCCLUDER_TAG:
+			continue
+		var xf := Transform3D.IDENTITY
+		var walk: Node = n
+		while walk != self and walk is Node3D:
+			xf = (walk as Node3D).transform * xf
+			walk = walk.get_parent()
+		out.append(xf * (n as VisualInstance3D).get_aabb())
+	return out
 
 
 ## A new blob shadow for one actor (rule 12; story 020): a flat, unlit,
