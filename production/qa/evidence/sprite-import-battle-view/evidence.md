@@ -29,3 +29,7 @@ impact burst asks it first and plays a muted capped variant on refusal
 07/08 are ad-hoc MegaCorp fights (`--faction --enemies --boss`): grounded on
 the street, CEO burst on impact. The command panel now starts at y 464 so a
 two-line faction banner no longer pushes the last squad card under it.
+
+Drone hurt fix (same day): frame 1 of `security_drone_hurt.png` (a generated
+in-between that grew legs) replaced by a copy of frame 0, the approved
+legless recoil (candidate 004). 09 shows the drone through a hit.
