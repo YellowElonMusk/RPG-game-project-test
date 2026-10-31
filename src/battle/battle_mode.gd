@@ -72,6 +72,8 @@ var _spotlight: DefeatSpotlight = null
 ## Mode-time seconds since the end-of-fight hold started (its light's clock).
 var _end_hold_time: float = 0.0
 var _descriptor: EncounterDescriptor = null
+## Mode-time seconds since `setup()`, advanced by `step_replay()`.
+var _mode_time: float = 0.0
 
 
 ## Not `@onready`: `ModeHostSceneLoader` calls `setup()` before `add_child()`
@@ -117,6 +119,11 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 		_apply_speed_settings()
 		presentation_settings.changed.connect(_apply_speed_settings)
 	_replay.beat_impact.connect(_on_beat_impact)
+	_replay.hold_started.connect(_on_hold_started)
+	_replay.hold_finished.connect(_on_hold_finished)
+	if _stage != null:
+		# Story 013 (AC-11): a punch requested during a boss takeover is dropped.
+		_hit_punch.takeover_active = _stage.is_takeover_active
 	_battle.start_battle(false)
 	_replay.resync()
 	%BattleView.flash_gate = flash_gate
@@ -142,6 +149,42 @@ func _on_transition_started(from: GameStateMachine.Mode, _to: GameStateMachine.M
 	if _hit_punch != null:
 		_hit_punch.cancel()
 		_step_punch(0.0)
+	_stop_takeover_light()
+
+
+## A takeover HOLD starts (ADR-0006 §5 step 11; story 030): the stage
+## reports a takeover for its whole length (story 013), and on first
+## encounter the Battle mode requests `boss_<faction>` over `blend_boss`,
+## blended on the hold's own clock so it follows the takeover's speed and
+## freezes with it. The settle (Retry) already has its light from SWAP.
+func _on_hold_started(kind: BattleReplayController.HoldKind, _boss: Combatant) -> void:
+	if _stage == null:
+		return
+	_stage.takeover_hold_active = true
+	if kind == BattleReplayController.HoldKind.TAKEOVER_FULL and _stage.has_profiles():
+		_stage.request_profile(_fight_profile_id(), presentation_config.blend_boss, _replay.get_hold_time)
+
+
+func _on_hold_finished(_kind: BattleReplayController.HoldKind) -> void:
+	if _stage != null:
+		_stage.takeover_hold_active = false
+
+
+## An exit or Retry mid-takeover (story 030): the hold flag drops and a
+## running clock-driven boss blend is stopped where it is (its clock, the
+## cancelled hold, would otherwise read 0 and pull the light back). The next
+## mode's entry profile, or Retry's own light, replaces it.
+func _stop_takeover_light() -> void:
+	if _stage == null:
+		return
+	_stage.takeover_hold_active = false
+	if _stage.is_takeover_active() and _stage.current_values != null:
+		_stage.apply_profile(_stage.current_values.duplicate() as LightingProfile, 0.0)
+
+
+## Mode-time seconds since `setup()` (the capped Retry blend's clock).
+func _mode_clock() -> float:
+	return _mode_time
 
 
 ## The Battle mode is never detached (ADR-0002 §4), so leaving the tree
@@ -174,8 +217,11 @@ func _process(delta: float) -> void:
 ## One mode-time step: advances the replay, then the end-of-fight hold.
 ## Public so tests and capture tools can drive the clock explicitly.
 func step_replay(delta: float) -> void:
+	_mode_time += delta
 	if _replay != null:
 		_replay.advance(delta)
+	if _stage != null:
+		_stage.refresh_clock_blend()
 	_step_punch(delta)
 	if _end_hold_left < 0.0:
 		return
@@ -273,10 +319,15 @@ func restore_start_snapshot(snapshot: RefCounted) -> void:
 	BattleCore.clear_transients(_party)
 	# ADR-0006 §5 "Retry" step 3: the fight's light back over the Defeat
 	# light, hidden behind an uncapped retry flash (blend 0) or blended over
-	# blend_defeat when the flash plays capped. (Story 030 owns its tests.)
+	# blend_defeat when the flash plays capped (story 030). The capped blend
+	# runs on mode time, so it is one smooth blend that freezes with the mode.
+	_stop_takeover_light()
 	if _stage != null and _stage.has_profiles():
 		var capped: bool = _machine != null and _machine.is_transition_flash_capped()
-		_stage.request_profile(_fight_profile_id(), presentation_config.blend_defeat if capped else 0.0)
+		if capped:
+			_stage.request_profile(_fight_profile_id(), presentation_config.blend_defeat, _mode_clock)
+		else:
+			_stage.request_profile(_fight_profile_id(), 0.0)
 	# ADR-0006 §5 "Retry" steps 4-5: the retried fight's first turn waits
 	# behind a fresh reveal gate (opened by transition_finished(BATTLE) at the
 	# end of the retry flash) and, in a boss fight, the takeover settle.

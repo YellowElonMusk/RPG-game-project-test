@@ -1,7 +1,7 @@
 # Story 056: Comfort settings changed mid-replay apply from the next frame
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Done (pending commit)
+> **Status**: Done
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M

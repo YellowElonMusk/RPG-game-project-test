@@ -30,6 +30,9 @@ var stage: DioramaStage
 var frame: int = 0
 ## Every profile id the stage resolved, in order (a spy on the stage's door).
 var profile_requests: Array[StringName] = []
+## Per request: {"id", "frame", "phase" (machine), "replay_state",
+## "squad_hp"} at the moment the stage resolved it (a call-order spy).
+var profile_log: Array[Dictionary] = []
 ## Every recorded controller event: {"event": String, "frame": int}.
 var events: Array[Dictionary] = []
 
@@ -39,9 +42,9 @@ var events: Array[Dictionary] = []
 ## (`reveal()` finishes the swap and opens the gate). `settings` is injected
 ## as the mode's `presentation_settings` before `setup()`.
 static func create(host: Node, party: Array[Combatant], is_boss: bool = false,
-		settings: PresentationSettings = null) -> BattleModeHarness:
+		settings: PresentationSettings = null, flash_gate: FlashGatePort = null) -> BattleModeHarness:
 	var h := BattleModeHarness.new()
-	var env: Dictionary = GameStateFixtures.make_machine_in_overworld()
+	var env: Dictionary = GameStateFixtures.make_machine_in_overworld(null, flash_gate)
 	h.machine = env["machine"]
 	h.loader = env["loader"]
 	h.game_log = env["log"]
@@ -69,6 +72,7 @@ static func create(host: Node, party: Array[Combatant], is_boss: bool = false,
 	h.stage.bind_profiles(h._resolve)
 	h.stage.apply_profile(h._resolve(&"battle"), 0.0)
 	h.profile_requests.clear()
+	h.profile_log.clear()
 	h._connect_recorders()
 	h.loader.current_mode_node_value = h.mode
 	h.machine.request_transition(GameStateMachine.Mode.BATTLE, payload)
@@ -136,6 +140,13 @@ func event_names_since(from: int) -> Array[String]:
 
 func _resolve(id: StringName) -> LightingProfile:
 	profile_requests.append(id)
+	var hp: Array[int] = []
+	if mode != null and mode.battle != null:
+		for c: Combatant in mode.battle.squad:
+			hp.append(c.hp)
+	profile_log.append({"id": id, "frame": frame, "phase": machine.phase if machine != null else -1,
+			"replay_state": mode.replay.get_state() if mode != null and mode.replay != null else -1,
+			"squad_hp": hp})
 	return load(PROFILES_DIR.path_join("%s.tres" % id)) as LightingProfile
 
 

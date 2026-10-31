@@ -1,7 +1,7 @@
 # Story 030: a Retry or a cancelled first-encounter takeover lands on the right light, never a pop
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
@@ -79,7 +79,7 @@
 **Required evidence**:
 - Logic: `tests/integration/presentation/retry_boss_light_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`, both later)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing -- `tests/integration/presentation/retry_boss_light_test.gd` (4 tests, story 013 hooks included); full suite 1873/1873, exit 0, 0 orphans (2026-10-31).
 
 ---
 

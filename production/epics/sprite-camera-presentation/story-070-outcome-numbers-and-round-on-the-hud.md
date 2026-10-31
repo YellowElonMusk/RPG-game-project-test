@@ -1,7 +1,7 @@
 # Story 070: Outcome numbers and the round number release on the right frame
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Done (pending commit)
+> **Status**: Done
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
