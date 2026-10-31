@@ -1,7 +1,7 @@
 # Story 053: The Defeat spotlight centres on the party's formation
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done (pending commit)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
@@ -76,7 +76,7 @@ The Defeat profile's spotlight is a `KeyLight`/rim configuration aimed at the pa
 **Required evidence**:
 - `tests/unit/presentation/defeat_spotlight_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing -- `tests/unit/presentation/defeat_spotlight_test.gd` (4 tests); full suite 1794/1794, exit 0, 0 orphans (2026-10-31). Evidence: `production/qa/evidence/story-053-defeat-spotlight/enc_paris_clerks_hall_defeat.png`
 
 ---
 

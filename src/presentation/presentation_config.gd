@@ -114,6 +114,22 @@ extends Resource
 @export_range(0.35, 0.60, 0.01) var defeat_hold: float = 0.40
 ## How long the Victory light takes to settle after the burst, in seconds.
 @export_range(0.30, 0.50, 0.01) var victory_settle: float = 0.40
+## The Defeat spotlight (GDD "Defeat", AC-49; story 053): one soft, wide,
+## neutral (~5000 K, never cold blue) overhead light pooled on the party
+## row's formation centre. It lights the set only, so actors keep their
+## Battle key and rim.
+@export var defeat_spotlight_color: Color = Color(1.0, 0.96, 0.9)
+## The spotlight's height above the formation centre, in metres.
+@export var defeat_spotlight_height: float = 5.0
+## The spotlight's cone half-angle, in degrees (wide: the pool covers a
+## four-member row).
+@export var defeat_spotlight_angle_degrees: float = 24.0
+## The spotlight's energy once the Defeat blend completes.
+@export var defeat_spotlight_energy: float = 4.0
+## The visible light pool on the ground: its width and depth (m) and its
+## additive strength once the Defeat blend completes (0-1).
+@export var defeat_spotlight_pool_size: Vector2 = Vector2(4.4, 3.0)
+@export var defeat_spotlight_pool_strength: float = 0.45
 
 ## Set brightness levels (GDD `set_brightness_and_blur`).
 @export_group("Set Brightness")
@@ -142,11 +158,51 @@ extends Resource
 ## `FLASH_AREA_MIN` fails load validation.
 @export var flash_area_min: float = 0.25
 
+## The squad's fixed look (GDD rules 1 and 11, AC-16; story 019). Every
+## shipped `LightingProfile`'s `rim_color` equals `squad_rim_color` in every
+## state, boss takeovers included; only the rim's strength may vary by state.
+@export_group("Squad Look")
+## The squad's rim color in every lighting state. Also the
+## `actor_rim_color` shader global's project default (`project.godot`), so
+## the rendered rim equals it before the Director writes the global.
+@export var squad_rim_color: Color = Color(1.0, 0.94, 0.85, 1.0)
+## Outline Ink (art bible §2, `#1A1418`): the sprite outline color the actor
+## shader's rim ring excludes. Never varies by lighting state.
+@export var outline_ink: Color = Color8(0x1A, 0x14, 0x18)
+## Smallest CIEDE2000 distance between any faction's signature color and a
+## light color of a preset that is not `boss_*`/`occupied_*`, and between
+## it and every preset's `shadow_color` (GDD AC-16).
+@export var faction_light_de_min: float = 10.0
+
+## Comfort settings and ambient set motion (GDD rule 13, `set_brightness_and_blur`;
+## stories 028, 048, 068).
+@export_group("Comfort and Ambient")
+## Share of blur kept when Reduce Blur is On (`reduce_blur_factor`; GDD
+## Tuning Knobs 0.20-0.40). Scales blur only, never brightness.
+@export_range(0.20, 0.40, 0.01) var reduce_blur_factor: float = 0.30
+## Sky card cloud scroll amplitude, in sky-card UV per second of mode time.
+## 0 under Reduce Motion (AC-44).
+@export var ambient_cloud_scroll: float = 0.01
+## Foliage sway amplitude, in metres. 0 under Reduce Motion.
+@export var ambient_foliage_sway: float = 0.04
+## Water ripple amplitude, in metres. 0 under Reduce Motion.
+@export var ambient_water_ripple: float = 0.02
+## Drifting particle speed, in metres per second. 0 under Reduce Motion.
+@export var ambient_particle_drift: float = 0.15
+## The Victory confetti's flash source / effect id (animated variant).
+@export var confetti_effect_id: StringName = &"vfx_confetti"
+## The still sparkle swapped in for the confetti under Reduce Motion (AC-44).
+## Art not authored yet; the id is the contract.
+@export var confetti_still_effect_id: StringName = &"vfx_confetti_still"
+
 
 ## The required value of `flash_luma_delta` (GDD `flash_gate`).
 const FLASH_LUMA_DELTA: float = 0.10
 ## The required value of `flash_area_min` (GDD `flash_gate`).
 const FLASH_AREA_MIN: float = 0.25
+## The campfire flicker's swing multiplier with Reduce Flashing On (GDD
+## AC-63: exactly half). A constant of the AC, not a tuning knob.
+const REDUCED_FLICKER_FACTOR: float = 0.5
 ## The largest `flash_rate_max` WCAG allows.
 const FLASH_RATE_CEILING: float = 3.0
 ## Tolerance every load rule allows in its passing direction (GDD

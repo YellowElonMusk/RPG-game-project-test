@@ -51,6 +51,21 @@ var current_rim_strength: float = 0.0
 
 var _resolver: Callable
 
+## The narrow Reduce Flashing view (ADR-0009 §7), injected by the owning
+## mode; read live every frame by the campfire flicker (story 068). Null
+## reads as Off.
+var flash_settings: FlashSettings
+## The narrow Presentation settings view (ADR-0009 §7), injected by the
+## owning mode; Reduce Motion is read live from it (story 048). Null reads
+## as Off.
+var presentation_settings: PresentationSettings
+
+## Second flicker partial's frequency ratio and phase (an irregular,
+## non-repeating-looking fire; fixed shape constants, not tuning knobs).
+const _FLICKER_RATIO_2: float = 2.71
+const _FLICKER_PHASE_2: float = 1.3
+const _FLICKER_WEIGHT_2: float = 0.5
+
 ## The mode's one camera (ADR-0005 §3, §6). A battle stage drives it as the
 ## level shift-lens battle camera after `configure_battle_camera()`; Camp
 ## and Title leave it fixed as authored (Camp may be pitched) -- no hit or
@@ -264,6 +279,12 @@ func bind_profiles(resolver: Callable) -> void:
 	_resolver = resolver
 
 
+## Whether a profile resolver is bound, so `request_profile()` can resolve
+## (false in tools and tests that run a mode without the Director).
+func has_profiles() -> bool:
+	return _resolver.is_valid()
+
+
 ## Resolves `id` through the bound resolver and blends to it over
 ## `blend_time` (the owning mode's call, never the Director's -- ADR-0005 §3
 ## "one door"). With a `clock` (`clock.call() -> float`, seconds), the blend
@@ -337,6 +358,59 @@ static func lighting_blend(from: LightingProfile, to: LightingProfile, p: float)
 			_:
 				out.set(key, b if p >= 0.5 else a)
 	return out
+
+
+## This frame's ambient set-motion amplitudes (ADR-0005 §7; story 048):
+## `cloud_scroll`, `foliage_sway`, `water_ripple`, `particle_drift` from
+## `config`, all 0 with Reduce Motion On (read live from
+## `presentation_settings`; null reads as Off). Amplitudes only: the
+## `mode_time` clock that drives them, lighting blends and sprite frames
+## keeps running either way (AC-44).
+func ambient_motion(config: PresentationConfig) -> Dictionary:
+	var s: float = 0.0 if _reduce_motion() else 1.0
+	return {
+		&"cloud_scroll": config.ambient_cloud_scroll * s,
+		&"foliage_sway": config.ambient_foliage_sway * s,
+		&"water_ripple": config.ambient_water_ripple * s,
+		&"particle_drift": config.ambient_particle_drift * s,
+	}
+
+
+## The Victory confetti effect to play: the still sparkle with Reduce Motion
+## On, else the animated confetti (AC-44), read live.
+func victory_confetti_id(config: PresentationConfig) -> StringName:
+	return config.confetti_still_effect_id if _reduce_motion() else config.confetti_effect_id
+
+
+func _reduce_motion() -> bool:
+	return presentation_settings != null and presentation_settings.reduce_motion
+
+
+## The campfire flicker's luminance multiplier at `mode_time` (ADR-0005 §7:
+## mode time, never `TIME`), from the current profile's `practical_flicker_*`
+## values, reading Reduce Flashing live from `flash_settings` (AC-63). With no
+## profile yet, 1.0.
+func campfire_flicker_luma(mode_time: float) -> float:
+	if current_values == null:
+		return 1.0
+	var reduce: bool = flash_settings != null and flash_settings.reduce_flashing()
+	return flicker_luma(mode_time, current_values.practical_flicker_mean,
+			current_values.practical_flicker_swing, current_values.practical_flicker_rate, reduce)
+
+
+## `mean + 0.5 * swing * s * w(t)`, with `w` a two-partial wave normalised to
+## [-1, 1] (peak-to-peak never above `swing`) and `s` =
+## `PresentationConfig.REDUCED_FLICKER_FACTOR` with Reduce Flashing On, else 1.
+## Reduce Flashing scales the swing only: the mean and frequency are unchanged.
+static func flicker_luma(t: float, mean: float, swing: float, rate: float,
+		reduce_flashing: bool) -> float:
+	if swing <= 0.0 or rate <= 0.0:
+		return mean
+	var s: float = PresentationConfig.REDUCED_FLICKER_FACTOR if reduce_flashing else 1.0
+	var phase: float = TAU * rate * t
+	var w: float = (sin(phase) + _FLICKER_WEIGHT_2 * sin(phase * _FLICKER_RATIO_2 + _FLICKER_PHASE_2)) \
+			/ (1.0 + _FLICKER_WEIGHT_2)
+	return mean + 0.5 * swing * s * w
 
 
 ## Whether a blend is still running (`p < 1`).

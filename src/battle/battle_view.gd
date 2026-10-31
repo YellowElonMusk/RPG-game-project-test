@@ -70,6 +70,7 @@ var _burst_frames: SpriteFrames
 var _burst_frames_capped: SpriteFrames
 ## Live bursts: sprite -> seconds played.
 var _bursts: Dictionary[CharacterSprite, float] = {}
+var _squad_size: int = 0
 
 
 ## Builds the sprites and backdrop for `battle`. Call once, from
@@ -85,8 +86,11 @@ func setup(battle: BattleCore, replay: BattleReplayController, descriptor: Encou
 	if _burst_set != null:
 		_burst_frames = _burst_set.build_sprite_frames()
 		_burst_frames_capped = capped_frames(_burst_frames, CAPPED_TINT, CAPPED_MIX)
+	_squad_size = battle.squad.size()
 	if _replay != null:
 		_replay.beat_impact.connect(_on_beat_impact)
+		_replay.replay_cancelled.connect(reset_display)
+		_replay.display_resynced.connect(reset_display)
 	if catalog == null:
 		catalog = BattleCatalog.shipped()
 	if sprite_sets.is_empty():
@@ -132,6 +136,63 @@ static func enemy_slots_for(battle_stage: BattleStage, count: int) -> Array[int]
 ## The sprite standing in for `c`, or null (tests, capture).
 func get_sprite(c: Combatant) -> CharacterSprite:
 	return _sprites.get(c) as CharacterSprite
+
+
+## The controller's `windup` callable (ADR-0006 §1): `plan`'s 1x wind-up,
+## from its actor's action animation (`impact_seconds()`), or -1.0 (the
+## debug path) when the actor has no sprite set or no valid impact frame.
+func windup_seconds(plan: BeatPlan) -> float:
+	var c: Combatant = plan.actor
+	if not _sets.has(c):
+		return -1.0
+	var anim_id: StringName = &"attack"
+	var move_name: String = ""
+	match plan.action_role:
+		BeatPlan.ActionRole.DEFEND:
+			anim_id = &"defend"
+		BeatPlan.ActionRole.SPECIAL:
+			anim_id = SpriteSetData.MOVE
+			move_name = plan.move_name
+	var facing: StringName = ENEMY_FACING if c.is_enemy else SQUAD_FACING
+	var r: SpriteSetData.Resolution = _sets[c].resolve(anim_id, facing, move_name, func(_m: String) -> void: pass)
+	if r.animation == null:
+		return -1.0
+	return r.animation.impact_seconds()
+
+
+## The controller's `ko_landing` callable (ADR-0006 §1): seconds at 1x from
+## `c`'s knockout start to its `land_frame`; 0.0 without one.
+func ko_landing_seconds(c: Combatant) -> float:
+	if not _sets.has(c):
+		return 0.0
+	var facing: StringName = ENEMY_FACING if c.is_enemy else SQUAD_FACING
+	var r: SpriteSetData.Resolution = _sets[c].resolve(&"knockout", facing, "", func(_m: String) -> void: pass)
+	if r.animation == null:
+		return 0.0
+	return maxf(r.animation.land_seconds(), 0.0)
+
+
+## The party row's foot anchors in stage space, one per squad member in
+## slot order (`0 .. squad size - 1`), whether or not a sprite spawned for
+## it. Empty before `setup()`.
+func party_anchors() -> Array[Vector3]:
+	var out: Array[Vector3] = []
+	if _battle_stage == null:
+		return out
+	for i: int in mini(_squad_size, mini(SQUAD_SLOTS, _battle_stage.slots.size())):
+		out.append(_battle_stage.slot_anchor(i))
+	return out
+
+
+## Resets the beat-driven display (ADR-0006 §8, Retry and exit): drops every
+## impact burst and shows each combatant's pose for the displayed state at
+## once (`idle` after a Retry's resync, knockout poses included).
+func reset_display() -> void:
+	for burst: CharacterSprite in _bursts.keys():
+		burst.queue_free()
+	_bursts.clear()
+	if _replay != null:
+		present()
 
 
 func _ready() -> void:

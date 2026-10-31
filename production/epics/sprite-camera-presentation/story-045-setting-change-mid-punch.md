@@ -1,7 +1,7 @@
 # Story 045: a comfort-setting change mid-punch applies on the very next frame
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done (2026-10-31)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S
@@ -76,7 +76,7 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/punch_setting_change_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`, both later)
 
-**Status**: [ ] Not yet created
+**Status**: [x] `tests/unit/presentation/punch_setting_change_test.gd` (6 cases) passes -- behaviour already in `HitPunch.current_offset_px` (live `A_peak`); test added (2026-10-31)
 
 ---
 

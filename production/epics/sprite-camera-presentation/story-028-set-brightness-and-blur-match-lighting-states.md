@@ -1,7 +1,7 @@
 # Story 028: set_brightness_and_blur matches the lighting curve in every battle-family state
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done (2026-10-31)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
@@ -78,7 +78,7 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/set_brightness_and_blur_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`, both later)
 
-**Status**: [ ] Not yet created
+**Status**: [x] `tests/unit/presentation/set_brightness_and_blur_test.gd` (17 cases) passes; full suite 1790/1790, exit 0, 0 orphans (2026-10-31)
 
 ---
 

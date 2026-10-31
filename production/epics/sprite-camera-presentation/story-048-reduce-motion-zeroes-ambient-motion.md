@@ -1,7 +1,7 @@
 # Story 048: Reduce Motion zeroes the punch and ambient set motion, and swaps in the still confetti
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done (2026-10-31)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S
@@ -77,7 +77,7 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/reduce_motion_test.gd` — must exist and pass (`/story-done` checks that it EXISTS; pass/fail is established by `/gate-check` and `/smoke-check`, both later)
 
-**Status**: [ ] Not yet created
+**Status**: [x] `tests/unit/presentation/reduce_motion_test.gd` (4 cases) passes (2026-10-31). Amplitude helper + confetti id swap on `DioramaStage`; sky-card/foliage shaders and the still-confetti art do not exist yet, so nothing consumes them
 
 ---
 

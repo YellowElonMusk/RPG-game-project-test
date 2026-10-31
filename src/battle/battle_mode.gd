@@ -61,6 +61,10 @@ var _hit_punch: HitPunch = null
 ## (tests, capture) plays every gated VFX uncapped.
 var flash_gate: FlashGate = null
 var _stage: DioramaStage = null
+var _spotlight: DefeatSpotlight = null
+## Mode-time seconds since the end-of-fight hold started (its light's clock).
+var _end_hold_time: float = 0.0
+var _descriptor: EncounterDescriptor = null
 
 
 ## Not `@onready`: `ModeHostSceneLoader` calls `setup()` before `add_child()`
@@ -75,6 +79,7 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 	if entry == null or entry.descriptor == null:
 		return
 	_party = entry.party
+	_descriptor = entry.descriptor
 	_rng = RandomNumberGenerator.new()
 	var result: BattleFactory.BattleBuildResult = BattleFactory.build(entry, _rng)
 	if result.core == null:
@@ -111,6 +116,11 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 		_machine.transition_finished.connect(_on_transition_finished)
 
 
+## The Defeat spotlight (story 053), or null before a Defeat.
+func defeat_spotlight() -> DefeatSpotlight:
+	return _spotlight
+
+
 ## Drives the replay and the end-of-fight hold on mode time (ADR-0006 §4/§5).
 func _process(delta: float) -> void:
 	step_replay(delta)
@@ -125,6 +135,8 @@ func step_replay(delta: float) -> void:
 	if _end_hold_left < 0.0:
 		return
 	_end_hold_left -= delta
+	_end_hold_time += delta
+	_step_end_light()
 	if _end_hold_left <= BattleReplayController.EPSILON:
 		_end_hold_left = -1.0
 		_report_outcome(_end_won)
@@ -184,12 +196,16 @@ func restore_start_snapshot(snapshot: RefCounted) -> void:
 		_hit_punch.cancel()
 		_step_punch(0.0)
 	_end_hold_left = -1.0
+	_clear_end_light()
 	_awaiting_results_done = false
 	start.restore_into(_party)
 	BattleCore.clear_transients(_party)
-	# TODO(battle-replay): (ADR-0006 §5 "Retry" step 3): request the retry-flash light through
-	# stage.request_profile(), blended or hidden by
-	# machine.is_transition_flash_capped(), once Presentation exists.
+	# ADR-0006 §5 "Retry" step 3: the fight's light back over the Defeat
+	# light, hidden behind an uncapped retry flash (blend 0) or blended over
+	# blend_defeat when the flash plays capped. (Story 030 owns its tests.)
+	if _stage != null and _stage.has_profiles():
+		var capped: bool = _machine != null and _machine.is_transition_flash_capped()
+		_stage.request_profile(_fight_profile_id(), presentation_config.blend_defeat if capped else 0.0)
 	# TODO(battle-replay): (ADR-0006 §5 "Retry" steps 4-5): reveal gate / takeover hold.
 	# The controller is IDLE after the cancel, so this first turn marker is
 	# released at once and reopens the command menu (story 040 owns the rest).
@@ -240,12 +256,67 @@ func _on_transition_finished(to: GameStateMachine.Mode) -> void:
 func _on_battle_ended_after_replay(won: bool) -> void:
 	_end_won = won
 	_end_hold_left = presentation_config.victory_hold if won else presentation_config.defeat_hold
+	_end_hold_time = 0.0
+	_start_end_light(won)
+
+
+## The Victory or Defeat light (ADR-0006 §5 "End of the fight"; GDD
+## "Victory"/"Defeat"). The blend runs on the end-of-fight hold's own
+## mode-time clock, so it freezes under the Menu and has always completed
+## by the time the hold reports (`blend_* <= *_hold`, load-validated). On
+## Defeat the spotlight is aimed at the party row's formation centre (story
+## 053) and fades in with the same blend.
+func _start_end_light(won: bool) -> void:
+	if _stage == null:
+		return
+	var blend: float = presentation_config.blend_victory if won else presentation_config.blend_defeat
+	if _stage.has_profiles():
+		_stage.request_profile(&"victory" if won else &"defeat", blend, _end_hold_clock)
+	if won:
+		return
+	if _spotlight == null:
+		_spotlight = DefeatSpotlight.new()
+		_spotlight.name = "DefeatSpotlight"
+		_stage.add_child(_spotlight)
+		_spotlight.setup(presentation_config)
+	_spotlight.aim_at(DefeatSpotlight.formation_centre(%BattleView.party_anchors()))
+	_step_end_light()
+
+
+## The fight's own light: `battle`, or `boss_<faction>` (the takeover's end
+## state) in a boss fight.
+func _fight_profile_id() -> StringName:
+	if _descriptor != null and _descriptor.is_boss:
+		return StringName("boss_%s" % _descriptor.faction_id.trim_prefix("faction_"))
+	return &"battle"
+
+
+## The end-of-fight hold's clock: mode-time seconds since it started.
+func _end_hold_clock() -> float:
+	return _end_hold_time
+
+
+func _step_end_light() -> void:
+	if _stage != null:
+		_stage.refresh_clock_blend()
+	if _spotlight != null and not _end_won:
+		_spotlight.set_progress(DioramaStage.blend_progress(_end_hold_time, presentation_config.blend_defeat))
+
+
+## Turns the Defeat spotlight off (Retry; story 053).
+func _clear_end_light() -> void:
+	_end_hold_time = 0.0
+	if _spotlight != null:
+		_spotlight.set_progress(0.0)
 
 
 ## Reporting after the hold (ADR-0010 §5/§6): Victory waits for the end
 ## banner's confirm (AC-12) before `report_results_done()`; Defeat reports at
-## once and Game State opens the Defeat Prompt.
+## once and Game State opens the Defeat Prompt. Without a machine (capture
+## tools, standalone tests) nothing is reported.
 func _report_outcome(won: bool) -> void:
+	if _machine == null:
+		return
 	if won:
 		_awaiting_results_done = true
 		_machine.report_battle_outcome(GameStateMachine.BattleResult.VICTORY)

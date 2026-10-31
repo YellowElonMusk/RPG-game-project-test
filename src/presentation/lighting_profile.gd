@@ -1,6 +1,6 @@
 ## One named lighting/tone/DOF state for a `DioramaStage` (ADR-0005 Decision
-## §5, Key Interfaces `lighting_profile.gd`). Data only -- no methods, no
-## validation; load-time validation (`glow_bloom == 0`, `dof_near_enabled ==
+## §5, Key Interfaces `lighting_profile.gd`). Data plus pure audit helpers
+## (story 019's AC-16 checks), no runtime behaviour; load-time validation (`glow_bloom == 0`, `dof_near_enabled ==
 ## false` in the battle family, etc.) is `PresentationValidators`' job
 ## (§9, a later story), not this resource's.
 ##
@@ -97,6 +97,82 @@ extends Resource
 ## Blob shadow tint (ADR-0005 §3).
 @export var shadow_color: Color = Color(0.0, 0.0, 0.0, 0.5)
 
+## The actor-lighting practical's (the campfire's) flicker (ADR-0005 §3/§7;
+## story 068): its luminance multiplier on mode time. The mean level.
+@export var practical_flicker_mean: float = 1.0
+## Peak-to-peak luminance swing around the mean; 0 = no flicker. Must stay
+## below `flash_luma_delta` (GDD `flash_gate`, "exempt by swing").
+## Halved with Reduce Flashing On (AC-63).
+@export var practical_flicker_swing: float = 0.0
+## The flicker's base frequency, in Hz of mode time.
+@export var practical_flicker_rate: float = 0.0
+
 ## Default blend time when a mode requests this profile with no explicit
 ## `blend_time` override (ADR-0005 §3, `request_profile`).
 @export var blend_time: float = 0.5
+
+
+## Tolerance for "equals the config's" color checks (per channel).
+const COLOR_EPSILON: float = 1e-4
+
+
+## Every light color in this profile that AC-16's faction audit covers, by
+## field name: the actor key and rim, the set and fill lights, and the
+## interior travelling light. Sky colors are not lights (the sky card is unlit).
+func light_colors() -> Dictionary:
+	return {
+		&"key_color": key_color,
+		&"set_color": set_color,
+		&"fill_color": fill_color,
+		&"rim_color": rim_color,
+		&"travel_light_color": travel_light_color,
+	}
+
+
+## Whether preset `id` may carry faction color in its light: only a boss
+## takeover (`boss_*`) or an occupied overworld stage (`occupied_*`) (GDD rule 11).
+static func is_faction_light_preset(id: String) -> bool:
+	return id.begins_with("boss_") or id.begins_with("occupied_")
+
+
+## AC-16's squad check (story 019): the profile's rim color equals the
+## config's `squad_rim_color` within `COLOR_EPSILON`. One error per breach,
+## naming `id`; empty means it passes. Outline Ink is not profile data at all,
+## so no profile can vary it.
+static func squad_look_errors(id: String, profile: LightingProfile,
+		config: PresentationConfig) -> PackedStringArray:
+	var errors := PackedStringArray()
+	if not _colors_equal(profile.rim_color, config.squad_rim_color):
+		errors.append("%s: rim_color %s differs from the squad rim %s" % [
+				id, profile.rim_color, config.squad_rim_color])
+	return errors
+
+
+## AC-16's faction audit (story 019): outside `boss_*`/`occupied_*`, no light
+## color within `config.faction_light_de_min` (CIEDE2000) of any signature
+## color; in every preset, `shadow_color` at least that far from each.
+## `signature_colors` maps a faction id to its signature `Color`. One error
+## per breach; empty means the preset passes.
+static func faction_color_errors(id: String, profile: LightingProfile,
+		signature_colors: Dictionary, config: PresentationConfig) -> PackedStringArray:
+	var errors := PackedStringArray()
+	var de_min: float = config.faction_light_de_min
+	for faction: Variant in signature_colors:
+		var signature: Color = signature_colors[faction]
+		if not is_faction_light_preset(id):
+			var lights: Dictionary = profile.light_colors()
+			for field: Variant in lights:
+				var de: float = ColorDifference.delta_e_srgb(lights[field], signature)
+				if de < de_min:
+					errors.append("%s: %s is ΔE %.2f from %s's signature color (min %.1f)" % [
+							id, field, de, faction, de_min])
+		var shadow_de: float = ColorDifference.delta_e_srgb(profile.shadow_color, signature)
+		if shadow_de < de_min:
+			errors.append("%s: shadow_color is ΔE %.2f from %s's signature color (min %.1f)" % [
+					id, shadow_de, faction, de_min])
+	return errors
+
+
+static func _colors_equal(a: Color, b: Color) -> bool:
+	return absf(a.r - b.r) <= COLOR_EPSILON and absf(a.g - b.g) <= COLOR_EPSILON \
+			and absf(a.b - b.b) <= COLOR_EPSILON and absf(a.a - b.a) <= COLOR_EPSILON

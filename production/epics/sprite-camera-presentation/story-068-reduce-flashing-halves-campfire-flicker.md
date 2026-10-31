@@ -1,7 +1,7 @@
 # Story 068: Reduce Flashing halves the campfire flicker's swing
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done (2026-10-31)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S
@@ -75,7 +75,7 @@ The campfire's flicker is a continuous luminance modulation on `mode_time` (§3,
 **Required evidence**:
 - `tests/unit/presentation/reduce_flashing_flicker_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] `tests/unit/presentation/reduce_flashing_flicker_test.gd` (5 cases) passes (2026-10-31). Flicker math + camp data in place; wiring it to a campfire practical light awaits the Camp scene
 
 ---
 

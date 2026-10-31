@@ -27,6 +27,14 @@ var reduce_motion: bool = false:
 			reduce_motion = value
 			changed.emit()
 
+## Reduce Blur: On scales every blur (tilt-shift, battle background, Menu
+## backdrop) by `reduce_blur_factor`, never brightness (story 028).
+var reduce_blur: bool = false:
+	set(value):
+		if value != reduce_blur:
+			reduce_blur = value
+			changed.emit()
+
 ## Faster battle animations (ADR-0006's `set_speed_settings`).
 var faster_battle_animations: bool = false
 ## Speed up boss entrances (ADR-0006's `set_speed_settings`).

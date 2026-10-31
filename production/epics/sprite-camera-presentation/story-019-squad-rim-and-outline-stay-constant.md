@@ -1,7 +1,7 @@
 # Story 019: The squad's rim and outline colors stay constant, and no non-boss light matches a faction color
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done (2026-10-31)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S
@@ -74,7 +74,7 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/lighting_profile_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] `tests/unit/presentation/lighting_profile_test.gd` (9 cases) + `tests/unit/presentation/color_difference_test.gd` (7 cases) pass; full suite 1790/1790, exit 0, 0 orphans (2026-10-31)
 
 ---
 

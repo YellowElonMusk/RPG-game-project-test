@@ -61,6 +61,10 @@ func _run() -> void:
 	var mode: BattleMode = (load("res://src/battle/battle_mode.tscn") as PackedScene).instantiate()
 	mode.setup(null, payload)
 	root.add_child(mode)
+	# Stands in for the Director's mode_entered: bind profiles, Battle light.
+	var stage: DioramaStage = mode.get_node(^"%DioramaStage")
+	stage.bind_profiles(_resolve_profile)
+	stage.apply_profile(_resolve_profile(stage.profile_id), 0.0)
 	# Stands in for the GameStateMachine swap finishing (no machine here).
 	mode._on_transition_finished(GameStateMachine.Mode.BATTLE)
 	for i: int in 90:
@@ -70,6 +74,17 @@ func _run() -> void:
 		await process_frame
 	DirAccess.make_dir_recursive_absolute(out_dir)
 	await _save(out_dir.path_join("%s.png" % enc_id))
+	if String(args.get("defeat", "0")) == "1":
+		# The Defeat curtain call (story 053): every squad member down, the
+		# replay and end-of-fight hold played out, the spotlight pooled on
+		# the party row.
+		DebugLaunchArgs.force_outcome(mode.battle, DebugLaunchArgs.DEFEAT)
+		mode.settle_replay()
+		for i: int in 30:
+			await process_frame
+		await _save(out_dir.path_join("%s_defeat.png" % enc_id))
+		quit(0)
+		return
 	# Attack the first enemy through the real command menu: Attack, then target.
 	mode.handle_action(InputActions.CONFIRM, true)
 	mode.handle_action(InputActions.CONFIRM, false)
@@ -83,6 +98,10 @@ func _run() -> void:
 		for i: int in 4:
 			await process_frame
 	quit(0)
+
+
+func _resolve_profile(id: StringName) -> LightingProfile:
+	return load("res://data/presentation/profiles/%s.tres" % id) as LightingProfile
 
 
 func _save(path: String) -> void:

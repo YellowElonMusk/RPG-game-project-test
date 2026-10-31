@@ -26,6 +26,11 @@ extends Resource
 ## exactly the same depth"): slot `i` stands `i * slot_depth_step` deeper
 ## than its authored base depth.
 @export var slot_depth_step: float = 0.05
+## The set light's authored native energy (`B_native`, GDD
+## `set_brightness_and_blur`); every battle-family state scales it by `k_state`.
+@export var set_energy_native: float = 1.0
+## The sky card's authored native energy (`B_sky_native`).
+@export var sky_energy_native: float = 1.0
 ## Each slot's authored ground position: `x` is the lateral offset (m, +x
 ## right), `y` the base view depth (m) before the stagger.
 @export var slots: Array[Vector2] = []
