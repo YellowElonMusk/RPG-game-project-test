@@ -222,3 +222,30 @@ func test_mode_entry_applies_overworld_profile() -> void:
 	assert_float(stage.key_light.light_energy).is_equal_approx(profile.key_energy, _EPSILON)
 	assert_float(stage.set_light.light_energy).is_equal_approx(profile.set_energy, _EPSILON)
 	assert_bool(stage.current_rim_color.is_equal_approx(profile.rim_color)).is_true()
+
+
+## Sprite-camera story 011 wiring: the view steps every overworld sprite's
+## ambient idle on the frame's mode-time delta, so a multi-frame idle
+## animates (the placeholder has one frame; final art will have more).
+func test_view_steps_ambient_idle_frames_on_mode_time() -> void:
+	var ctx: Dictionary = _make(OverworldConfig.new())
+	var view: OverworldView = ctx["view"]
+	var fps: float = 8.0
+	var count: int = 4
+	var frames := SpriteFrames.new()
+	frames.add_animation(PlaceholderActorFrames.IDLE_DOWN)
+	frames.set_animation_speed(PlaceholderActorFrames.IDLE_DOWN, fps)
+	frames.set_animation_loop(PlaceholderActorFrames.IDLE_DOWN, true)
+	var tex: Texture2D = ImageTexture.create_from_image(Image.create(4, 4, false, Image.FORMAT_RGBA8))
+	for i: int in count:
+		frames.add_frame(PlaceholderActorFrames.IDLE_DOWN, tex)
+	view.leader_sprite.sprite_frames = frames
+	view.leader_sprite.show_frame(&"idle", &"down", false, false, 0)
+	var seen: Dictionary = {}
+	for i: int in 60:
+		(ctx["view"] as OverworldView)._process(_DT)
+		var expected: int = int(floorf(float(i + 1) * _DT * fps + 1e-6)) % count
+		assert_int(view.leader_sprite.frame).override_failure_message("frame %d" % i) \
+				.is_equal(expected)
+		seen[view.leader_sprite.frame] = true
+	assert_int(seen.size()).is_equal(count)

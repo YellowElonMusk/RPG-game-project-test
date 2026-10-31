@@ -27,6 +27,12 @@ var started_count: int = 0
 ## Punch requests refused because another was still running (never expected:
 ## `D < reaction_hold` is validated at load, rule 8).
 var refused_count: int = 0
+## `takeover_active.call() -> bool` (the Battle mode binds
+## `DioramaStage.is_takeover_active`): while true, a punch request is dropped
+## -- not started, not queued, never played later (story 013, AC-11).
+var takeover_active: Callable = Callable()
+## Punch requests dropped because a boss takeover was running.
+var dropped_count: int = 0
 
 var _running: bool = false
 var _elapsed: float = 0.0
@@ -94,6 +100,9 @@ func on_impact(hp_delta: int, knocked_out: bool, actor_is_boss: bool, dir: Vecto
 ## (returns false, warns) while another punch is still running, so punches
 ## never overlap even under a latched `ff_mult` replay (AC-21).
 func start(a_beat: float, dir: Vector2) -> bool:
+	if takeover_active.is_valid() and bool(takeover_active.call()):
+		dropped_count += 1
+		return false
 	if is_running():
 		refused_count += 1
 		push_warning("HitPunch: a punch was requested while another is running; dropped (rule 8)")

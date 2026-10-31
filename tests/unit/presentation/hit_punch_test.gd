@@ -353,3 +353,106 @@ func test_punch_never_moves_an_actor_world_position() -> void:
 			punch.advance(_DT)
 	assert_bool(moved_view[0]).is_true()
 	assert_that(cam.frustum_offset).is_equal(stage.battle_base_shift())
+
+
+# --- AC-11 (story 013): a punch during a boss takeover is dropped -----------
+
+## A battle stage (not in the tree) entered on Battle, with a takeover clock.
+func _takeover_stage(config: PresentationConfig, clock: Callable) -> DioramaStage:
+	var stage: DioramaStage = auto_free(DioramaStage.new())
+	stage.camera = auto_free(Camera3D.new())
+	stage.configure_battle_camera(load(_STAGE_PATH) as BattleStage, config, Vector2i(1920, 1080))
+	var battle := LightingProfile.new()
+	var boss := LightingProfile.new()
+	boss.set_energy = 2.0
+	stage.bind_profiles(func(id: StringName) -> LightingProfile:
+			return boss if String(id).begins_with("boss_") else battle)
+	stage.apply_profile(battle, 0.0)
+	return stage
+
+
+## Runs `frames` frames the way the Battle mode does, asserting no offset.
+func _assert_no_punch(stage: DioramaStage, punch: HitPunch, frames: int, clock_t: Array[float]) -> void:
+	var base: Vector2 = stage.battle_base_shift()
+	for frame: int in frames:
+		clock_t[0] += _DT
+		stage.refresh_clock_blend()
+		var offset: Vector2i = punch.current_offset_px(stage.battle_viewport_height())
+		stage.set_punch_offset_px(offset)
+		assert_that(offset).is_equal(Vector2i.ZERO)
+		assert_that(stage.camera.frustum_offset).is_equal(base)
+		punch.advance(_DT)
+
+
+func test_punch_requested_during_takeover_blend_is_dropped_never_deferred() -> void:
+	var config := _config(false)
+	var clock_t: Array[float] = [0.0]
+	var stage := _takeover_stage(config, func() -> float: return clock_t[0])
+	stage.request_profile(&"boss_megacorp", config.blend_boss, func() -> float: return clock_t[0])
+	var punch := HitPunch.new(config)
+	punch.takeover_active = stage.is_takeover_active
+	clock_t[0] = config.blend_boss * 0.5
+	stage.refresh_clock_blend()
+	assert_bool(stage.is_takeover_active()).is_true()
+
+	assert_bool(punch.on_impact(-20, false, true, Vector2.RIGHT)).is_false()
+	assert_bool(punch.start(config.punch_amplitude_big, Vector2.LEFT)).is_false()
+
+	assert_int(punch.started_count).is_equal(0)
+	assert_int(punch.dropped_count).is_equal(2)
+	assert_int(punch.refused_count).is_equal(0)
+	assert_bool(punch.is_running()).is_false()
+	# Through the rest of the blend and well past it: nothing ever plays.
+	_assert_no_punch(stage, punch, 120, clock_t)
+	assert_bool(stage.is_takeover_active()).is_false()
+	assert_int(punch.started_count).is_equal(0)
+
+
+func test_punch_requested_during_takeover_hold_is_dropped_and_later_beats_punch() -> void:
+	var config := _config(false)
+	var clock_t: Array[float] = [0.0]
+	var stage := _takeover_stage(config, func() -> float: return clock_t[0])
+	stage.request_profile(&"boss_bureaucratia", config.blend_boss, func() -> float: return clock_t[0])
+	clock_t[0] = config.blend_boss + 0.01
+	stage.refresh_clock_blend()
+	assert_bool(stage.is_blending()).is_false()
+	stage.takeover_hold_active = true
+	var punch := HitPunch.new(config)
+	punch.takeover_active = stage.is_takeover_active
+
+	assert_bool(punch.on_impact(-20, true, true, Vector2.DOWN)).is_false()
+	_assert_no_punch(stage, punch, 30, clock_t)
+	stage.takeover_hold_active = false
+	_assert_no_punch(stage, punch, 30, clock_t)
+	assert_int(punch.started_count).is_equal(0)
+
+	# Only a new request after the takeover punches.
+	assert_bool(punch.on_impact(-5, false, false, Vector2.RIGHT)).is_true()
+	assert_that(punch.current_offset_px(1080)).is_not_equal(Vector2i.ZERO)
+
+
+## The stage itself never shows a punch offset during a takeover, whoever asks.
+func test_stage_ignores_a_punch_offset_during_takeover() -> void:
+	var config := _config(false)
+	var clock_t: Array[float] = [0.0]
+	var stage := _takeover_stage(config, func() -> float: return clock_t[0])
+	stage.request_profile(&"boss_megacorp", config.blend_boss, func() -> float: return clock_t[0])
+	clock_t[0] = 0.1
+	stage.refresh_clock_blend()
+	stage.set_punch_offset_px(Vector2i(4, 0))
+	assert_that(stage.punch_offset_px()).is_equal(Vector2i.ZERO)
+	assert_that(stage.camera.frustum_offset).is_equal(stage.battle_base_shift())
+
+
+## A non-boss clock blend is not a takeover.
+func test_non_boss_blend_does_not_gate_the_punch() -> void:
+	var config := _config(false)
+	var clock_t: Array[float] = [0.0]
+	var stage := _takeover_stage(config, func() -> float: return clock_t[0])
+	stage.request_profile(&"battle", 0.5, func() -> float: return clock_t[0])
+	clock_t[0] = 0.2
+	stage.refresh_clock_blend()
+	assert_bool(stage.is_takeover_active()).is_false()
+	var punch := HitPunch.new(config)
+	punch.takeover_active = stage.is_takeover_active
+	assert_bool(punch.on_impact(-5, false, false, Vector2.RIGHT)).is_true()

@@ -144,17 +144,17 @@ func _present(delta: float) -> void:
 
 	_update_prompt()
 	_update_interact_prompt(delta)
-	_place(leader_sprite, mode.get_leader_position())
+	_place(leader_sprite, mode.get_leader_position(), delta)
 	var followers: Array[Vector2] = mode.get_follower_positions()
 	for i: int in mini(followers.size(), follower_sprites.size()):
-		_place(follower_sprites[i], followers[i])
-	sync_symbol_sprites()
+		_place(follower_sprites[i], followers[i], delta)
+	sync_symbol_sprites(delta)
 
 
 ## Story 137 (AC-137b): one placeholder `CharacterSprite` per registered
 ## symbol, placed at its `SymbolBrain` position; a symbol the mode dropped
 ## (Victory) loses its sprite. Called every presentation frame.
-func sync_symbol_sprites() -> void:
+func sync_symbol_sprites(mode_dt: float = 0.0) -> void:
 	if symbol_root == null or _camera == null:
 		return
 	var live: Array[SymbolBrain] = mode.get_symbol_brains()
@@ -174,7 +174,7 @@ func sync_symbol_sprites() -> void:
 			symbol_root.add_child(sprite)
 			_setup_sprite(sprite, symbol_tint)
 			_symbol_sprites[brain] = sprite
-		_place(sprite, brain.position)
+		_place(sprite, brain.position, mode_dt)
 		# Story 134 (ADR-0005 §14): the sprite's capture-ID follows its cue.
 		CaptureIdTags.tag(sprite, CaptureIdTags.symbol_tag(brain.sub_state))
 
@@ -184,9 +184,15 @@ func get_symbol_sprites() -> Dictionary:
 	return _symbol_sprites.duplicate()
 
 
-func _place(sprite: CharacterSprite, ground: Vector2) -> void:
+## Places `sprite` and steps its ambient idle by `mode_dt`, this frame's
+## mode-time delta (sprite-camera story 011): this view runs under `ModeHost`,
+## so the Menu stops it while Dialogue lets it run. The idle clip is set only
+## when it changes, so its frame is never reset to 0 each frame.
+func _place(sprite: CharacterSprite, ground: Vector2, mode_dt: float = 0.0) -> void:
 	sprite.position = ground_to_world(ground)
-	sprite.show_frame(&"idle", &"down", false, false, 0)
+	if sprite.animation != PlaceholderActorFrames.IDLE_DOWN:
+		sprite.show_frame(&"idle", &"down", false, false, 0)
+	sprite.step_ambient(mode_dt)
 
 
 func _viewport_aspect() -> float:

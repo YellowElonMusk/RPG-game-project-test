@@ -1,7 +1,7 @@
 # Story 013: A punch requested during a boss-takeover blend or hold is dropped, never deferred
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done (2026-10-31)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S
@@ -72,7 +72,7 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/hit_punch_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] `tests/unit/presentation/hit_punch_test.gd` (33 cases, 4 new for AC-11) passes (2026-10-31). Battle mode must bind `punch.takeover_active = stage.is_takeover_active` and set `stage.takeover_hold_active` over `boss_hold`
 
 ---
 

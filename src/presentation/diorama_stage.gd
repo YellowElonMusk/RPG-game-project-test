@@ -138,11 +138,30 @@ func on_viewport_resized(viewport_size: Vector2i) -> void:
 ## becomes the base shift plus the punch's lens shift -- its transform,
 ## `near`, `size` and `keep_aspect` are untouched. On a fixed (Camp/Title)
 ## camera this is a no-op (story 007: the punch path is battle-only).
+## While a boss takeover is on (its clock-driven blend toward a `boss_*`
+## profile, or the hold after it, see `takeover_hold_active`), the punch
+## offset is forced to zero (story 013, AC-11).
 func apply_hit_punch(punch_px: Vector2i) -> void:
 	if not is_battle_camera():
 		return
-	_punch_px = punch_px
+	_punch_px = Vector2i.ZERO if is_takeover_active() else punch_px
 	_apply_lens_shift()
+
+
+## Set by the Battle mode for the boss takeover's hold (`boss_hold`, after the
+## blend completes) and cleared when the hold ends (ADR-0006 §5): with the
+## clock-driven blend, it makes up the whole takeover window.
+var takeover_hold_active: bool = false
+
+
+## Whether a boss takeover is running (story 013, AC-11): a clock-driven
+## blend toward a `boss_*` profile that has not reached `p = 1`, or the hold
+## after it (`takeover_hold_active`). A punch requested now is dropped, never
+## deferred (`HitPunch.takeover_active`).
+func is_takeover_active() -> bool:
+	if takeover_hold_active:
+		return true
+	return _blend_clock.is_valid() and is_blending() and String(_blend_id).begins_with("boss_")
 
 
 ## The battle camera's base lens shift (no punch) at the current window.
@@ -299,6 +318,7 @@ func request_profile(id: StringName, blend_time: float, clock: Callable = Callab
 	if profile == null:
 		push_error("DioramaStage: unknown lighting profile '%s'" % id)
 		return
+	_blend_id = id
 	_start_blend(profile, blend_time, clock)
 
 
@@ -307,6 +327,7 @@ func request_profile(id: StringName, blend_time: float, clock: Callable = Callab
 ## ADR-0005 §3). Cull masks, shadow casters and the set light's angle are
 ## never touched here (`_configure_light_rig()`'s job).
 func apply_profile(profile: LightingProfile, blend_time: float) -> void:
+	_blend_id = &""
 	_start_blend(profile, blend_time, Callable())
 
 
@@ -321,6 +342,7 @@ var _blend_to: LightingProfile
 var _blend_time: float = 0.0
 var _blend_clock: Callable
 var _blend_clock_start: float = 0.0
+var _blend_id: StringName = &""
 var _blend_tween: Tween
 var _blend_p: float = 1.0
 
