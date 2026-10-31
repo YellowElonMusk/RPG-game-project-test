@@ -1,7 +1,7 @@
 # Story 011: Sprite animation keeps advancing while Dialogue or the Defeat Prompt is open
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done (2026-10-31)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S
@@ -71,7 +71,7 @@
 **Required evidence**:
 - Logic: `tests/unit/presentation/character_sprite_ambient_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] `tests/unit/presentation/character_sprite_ambient_test.gd` (4 cases) passes (2026-10-31). `CharacterSprite.step_ambient()` now steps idle/walk frames on mode-time deltas; callers must pass `mode_time` deltas each frame
 
 ---
 

@@ -22,6 +22,8 @@ var _config: PresentationConfig
 var _material: ShaderMaterial
 var _mirrored: bool = false
 var _warned_no_camera: bool = false
+## Mode time spent in the current ambient animation (`step_ambient`).
+var _ambient_time: float = 0.0
 
 
 ## Assigns `sprite_frames`, creates this sprite's own `ShaderMaterial`
@@ -61,20 +63,63 @@ func show_frame(animation_id: StringName, facing: StringName, mirrored: bool,
 	var resolved: StringName = StringName("%s_%s%s" % [animation_id, facing, suffix])
 	if animation != resolved:
 		animation = resolved
+		_ambient_time = 0.0
 	set_frame_and_progress(frame, 0.0)
 	_mirrored = mirrored and not no_mirror
 	_update_shader_uniforms()
 
 
-## Steps ambient (idle/walk) frames on mode time; beat-driven frames always
-## come from `show_frame()`, never from this node's own playback (§1).
-func step_ambient(_mode_dt: float) -> void:
+## Steps ambient (idle/walk) frames on mode time (ADR-0005 §1; story 011):
+## the owner calls this every frame with that frame's `mode_time` delta, so
+## the Menu (which stops mode time) holds the frame while Dialogue and the
+## Defeat Prompt (which don't) let it advance. The frame follows the
+## animation's `SpriteFrames` speed and per-frame durations, looping when
+## the animation loops. Beat-driven animations are never stepped here: their
+## frames always come from `show_frame()`, never this node's own playback.
+func step_ambient(mode_dt: float) -> void:
+	if is_ambient_animation(animation) and mode_dt > 0.0 and sprite_frames != null \
+			and sprite_frames.has_animation(animation):
+		_ambient_time += mode_dt
+		var f: int = ambient_frame_at(sprite_frames, animation, _ambient_time)
+		if f != frame:
+			set_frame_and_progress(f, 0.0)
 	_update_shader_uniforms()
+
+
+## Whether `animation_name` (`<id>_<facing>[_mirrored]`) is ambient: idle or walk.
+static func is_ambient_animation(animation_name: StringName) -> bool:
+	var s: String = String(animation_name)
+	return s.begins_with("idle_") or s.begins_with("walk_")
+
+
+## The frame of `anim` at `t` seconds of ambient time: frames last
+## `duration / speed` seconds each; a looping animation wraps, a one-shot
+## holds its last frame.
+static func ambient_frame_at(frames: SpriteFrames, anim: StringName, t: float) -> int:
+	var count: int = frames.get_frame_count(anim)
+	var speed: float = frames.get_animation_speed(anim)
+	if count <= 1 or speed <= 0.0:
+		return 0
+	var total: float = 0.0
+	for i: int in count:
+		total += frames.get_frame_duration(anim, i)
+	var units: float = t * speed
+	if frames.get_animation_loop(anim):
+		units = fmod(units, total)
+	elif units >= total:
+		return count - 1
+	var acc: float = 0.0
+	for i: int in count:
+		acc += frames.get_frame_duration(anim, i)
+		if units < acc - 1e-6:
+			return i
+	return 0 if frames.get_animation_loop(anim) else count - 1
 
 
 ## Returns the sprite to its idle frame (on `BattleReplayController.display_resynced`).
 func reset_to_idle() -> void:
 	set_frame_and_progress(0, 0.0)
+	_ambient_time = 0.0
 	_update_shader_uniforms()
 
 

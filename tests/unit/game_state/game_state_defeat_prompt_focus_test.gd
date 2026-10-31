@@ -157,6 +157,9 @@ func test_confirm_on_retry_calls_choose_retry(offers_retreat: bool,
 		assert_object(retreat_button).override_failure_message(
 				"Retreat button present when offers_retreat is false").is_null()
 
+	# The prompt is a guarded screen (sprite-camera story 058): a confirm
+	# inside `input_guard` is refused, so mode time first passes the guard.
+	machine.tick(PresentationConfig.new().input_guard + 1.0 / 60.0)
 	recorder.clear()
 
 	# Act: confirm on Retry.
@@ -256,3 +259,40 @@ func _run_to_idle(machine: GameStateMachine) -> void:
 		ticks += 1
 	assert_bool(ticks < 600).override_failure_message(
 			"transition did not finish within 600 ticks of 1/60s").is_true()
+
+
+## Sprite-camera story 058 (AC-54, ADR-0008 §6): the Defeat Prompt is a
+## guarded screen. A confirm inside `input_guard` of mode time changes nothing
+## and gives exactly one refusal; the `GuardBlocker` is the prompt's last
+## child while guarding; once mode time passes the guard, confirm retries.
+func test_confirm_inside_the_input_guard_is_refused_once_then_accepted() -> void:
+	var recorder := SequenceRecorder.new()
+	var env: Dictionary = _build_battle_env(recorder, false)
+	var machine: GameStateMachine = env["machine"]
+	var loader: ModeHostSceneLoader = env["loader"]
+	var source: SyntheticActionSource = env["source"]
+	assert_int(machine.report_battle_outcome(GameStateMachine.BattleResult.DEFEAT)) \
+			.is_equal(GameStateMachine.RequestResult.OK)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var prompt: DefeatPrompt = loader.current_overlay_node() as DefeatPrompt
+	var retry_button: Button = prompt.get_node("%RetryButton")
+	assert_bool(prompt.guard().is_guarding()).is_true()
+	assert_str(String(prompt.get_child(prompt.get_child_count() - 1).name)) \
+			.is_equal(String(MenuGuard.BLOCKER_NAME))
+	var probe_before: Dictionary = machine.get_debug_state()
+
+	source.press(InputActions.CONFIRM)
+
+	assert_int(prompt.feedback.refusal_count).is_equal(1)
+	assert_bool(GameStateProbe.states_equal(probe_before, machine.get_debug_state())) \
+			.override_failure_message("a guarded confirm changed state").is_true()
+	assert_bool(is_same(get_viewport().gui_get_focus_owner(), retry_button)).is_true()
+
+	machine.tick(PresentationConfig.new().input_guard + 1.0 / 60.0)
+	prompt._process(0.0)
+	assert_bool(prompt.has_node(NodePath(String(MenuGuard.BLOCKER_NAME)))).is_false()
+	recorder.clear()
+	source.press(InputActions.CONFIRM)
+	assert_int(recorder.index_of(&"transition_started")).is_greater_equal(0)
+	assert_int(prompt.feedback.refusal_count).is_equal(1)

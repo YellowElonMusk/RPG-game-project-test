@@ -18,9 +18,31 @@ var _retreat_button: Button = null
 
 var _machine: GameStateMachine = null
 
+## The input guard (GDD rule 9, ADR-0008 §6; sprite-camera story 058): the
+## Defeat Prompt is one of the four guarded screens. Opened in `_ready()` on
+## the machine's mode-time clock; `input_guard` comes from this config.
+var presentation_config: PresentationConfig = PresentationConfig.new()
+## Actions held right now (`held_now` for `MenuGuard`): `UiService`'s held
+## mirror once it exists; until then nothing is reported held (the resolver
+## sends one press per physical press, so a held key never re-presses).
+var held_actions_source: Callable = func() -> Array[StringName]: return []
+## Refusal feedback for a refused press (ADR-0008 §7).
+var feedback: UiFeedback = UiFeedback.new()
+
+var _guard: MenuGuard = null
+
+
+## The prompt's `MenuGuard` (tests and the UI service read it).
+func guard() -> MenuGuard:
+	return _guard
+
 
 func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 	_machine = machine
+	_guard = MenuGuard.new(_mode_time, func() -> Array[StringName]: return held_actions_source.call(),
+			presentation_config.input_guard)
+	_guard.refused.connect(func(_action: StringName) -> void:
+			feedback.refuse(get_viewport().gui_get_focus_owner() if is_inside_tree() else null))
 	_retry_button = %RetryButton
 	_retreat_button = %RetreatButton
 	var prompt_payload: DefeatPromptPayload = payload as DefeatPromptPayload
@@ -40,15 +62,40 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 ## INTERIM (same tag as `_on_overlay_closed()` below): this overlay grabs its
 ## own focus on becoming the top overlay, standing in for `UiService`'s
 ## `overlay_opened` handoff (ADR-0008 §5) until `FocusScope` exists.
+## The default focus is `MenuDefaultFocus.DEFEAT_PROMPT` (Retry); the guard
+## window opens here, when the prompt is on screen.
 func _ready() -> void:
-	_retry_button.grab_focus()
+	_default_focus_button().grab_focus()
+	if _guard == null:
+		setup(_machine, null)
+	_guard.open(self)
+
+
+## Removes the guard's blocker once the window has passed.
+func _process(_delta: float) -> void:
+	if _guard != null:
+		_guard.tick()
+
+
+func _mode_time() -> float:
+	return _machine.mode_time if _machine != null else 0.0
+
+
+func _default_focus_button() -> Button:
+	if MenuDefaultFocus.DEFEAT_PROMPT == &"retreat" and _retreat_button != null:
+		return _retreat_button
+	return _retry_button
 
 
 ## `true` = consumed (ADR-0002 Key Interfaces). `cancel` and the unhandled
 ## default both consume and change nothing (AC-29: "cancel changes
 ## nothing"). `menu` never reaches here — the machine intercepts it before
-## routing (story 024).
+## routing (story 024). Every action first passes the `MenuGuard`: a press
+## inside `input_guard` is refused (with feedback), a carried-over held
+## action is swallowed silently.
 func handle_action(action: StringName, pressed: bool) -> bool:
+	if _guard != null and _guard.filter(action, pressed) != MenuGuard.Verdict.PASS:
+		return true
 	if not pressed:
 		return true
 	if action == InputActions.CONFIRM:
