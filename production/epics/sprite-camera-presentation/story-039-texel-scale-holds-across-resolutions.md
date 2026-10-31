@@ -1,7 +1,7 @@
 # Story 039: every sprite's texels are whole, uniform pixel blocks at every shipped resolution
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: In Progress (2026-10-31): whole-pixel texels and lit spread PASS at all 5 sizes and Battle coverage PASS at 16:9/21:9/4:3 (clip-space card shipped); Overworld coverage FAIL on set content (placeholder floor ends inside the camera frame at the town spawn), feet-into-floor MSAA observation recorded, art-director sign-off owed
 > **Layer**: Core
 > **Type**: Visual/Feel
 > **Estimate**: L
@@ -80,7 +80,7 @@
 **Required evidence**:
 - Visual/Feel: a retained screenshot in `production/qa/evidence/` + sign-off in `production/qa/evidence/story-039-texel-scale-holds-across-resolutions-evidence.md`
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created 2026-10-31: `production/qa/evidence/story-039-texel-scale-holds-across-resolutions-evidence.md` (capture: `tools/capture/texel_scale_capture.gd`, check: `tools/capture/texel_grid_check.gd`); sign-off pending
 
 ---
 

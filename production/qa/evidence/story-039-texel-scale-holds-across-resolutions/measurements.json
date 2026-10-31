@@ -1,0 +1,4291 @@
+{
+  "ac": "AC-35",
+  "battle": {
+    "bureaucratia": {
+      "coverage": {
+        "1440x1080": {
+          "T": 3,
+          "id_classes": {
+            "SKY": 1413874,
+            "actor": 126299,
+            "set": 14312,
+            "unclassified": 715
+          },
+          "sprites": {
+            "far:Enemy4": {
+              "anchor_px": [
+                348.967315673828,
+                714.691528320313
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 7354,
+              "outside": 0,
+              "rect": [
+                157,
+                331,
+                384,
+                384
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy5": {
+              "anchor_px": [
+                593.276184082031,
+                713.608459472656
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1331,
+              "outside": 0,
+              "rect": [
+                497,
+                522,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy6": {
+              "anchor_px": [
+                846.240112304688,
+                712.533569335938
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1181,
+              "outside": 0,
+              "rect": [
+                750,
+                521,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy7": {
+              "anchor_px": [
+                1086.80041503906,
+                711.466918945313
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1331,
+              "outside": 0,
+              "rect": [
+                991,
+                519,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad0": {
+              "anchor_px": [
+                345.108764648438,
+                854.412658691406
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 746,
+              "outside": 0,
+              "rect": [
+                249,
+                662,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad1": {
+              "anchor_px": [
+                591.375305175781,
+                851.998840332031
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 715,
+              "outside": 0,
+              "rect": [
+                495,
+                660,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad2": {
+              "anchor_px": [
+                847.893859863281,
+                849.612487792969
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 767,
+              "outside": 0,
+              "rect": [
+                752,
+                658,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad3": {
+              "anchor_px": [
+                1088.53723144531,
+                847.253173828125
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 825,
+              "outside": 0,
+              "rect": [
+                993,
+                655,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            }
+          },
+          "verdict": {
+            "failures": [],
+            "pass": true
+          }
+        },
+        "1920x1080": {
+          "T": 3,
+          "id_classes": {
+            "SKY": 1926691,
+            "actor": 128250,
+            "set": 17851,
+            "unclassified": 808
+          },
+          "sprites": {
+            "far:Enemy4": {
+              "anchor_px": [
+                465.289764404297,
+                808.922119140625
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 7354,
+              "outside": 0,
+              "rect": [
+                273,
+                425,
+                384,
+                384
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy5": {
+              "anchor_px": [
+                791.034912109375,
+                807.477966308594
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1331,
+              "outside": 0,
+              "rect": [
+                695,
+                615,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy6": {
+              "anchor_px": [
+                1128.32019042969,
+                806.044799804688
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1181,
+              "outside": 0,
+              "rect": [
+                1032,
+                614,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy7": {
+              "anchor_px": [
+                1449.06713867188,
+                804.622619628906
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1331,
+              "outside": 0,
+              "rect": [
+                1353,
+                613,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad0": {
+              "anchor_px": [
+                460.14501953125,
+                995.216918945313
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 746,
+              "outside": 0,
+              "rect": [
+                364,
+                803,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad1": {
+              "anchor_px": [
+                788.500427246094,
+                991.998596191406
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 715,
+              "outside": 0,
+              "rect": [
+                693,
+                800,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad2": {
+              "anchor_px": [
+                1130.52514648438,
+                988.816772460938
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 767,
+              "outside": 0,
+              "rect": [
+                1035,
+                797,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad3": {
+              "anchor_px": [
+                1451.38293457031,
+                985.670959472656
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 825,
+              "outside": 0,
+              "rect": [
+                1355,
+                794,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            }
+          },
+          "verdict": {
+            "failures": [],
+            "pass": true
+          }
+        },
+        "2560x1080": {
+          "T": 3,
+          "id_classes": {
+            "SKY": 2617892,
+            "actor": 128250,
+            "set": 17851,
+            "unclassified": 807
+          },
+          "sprites": {
+            "far:Enemy4": {
+              "anchor_px": [
+                785.289733886719,
+                808.922119140625
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 7354,
+              "outside": 0,
+              "rect": [
+                593,
+                425,
+                384,
+                384
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy5": {
+              "anchor_px": [
+                1111.03491210938,
+                807.477966308594
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1331,
+              "outside": 0,
+              "rect": [
+                1015,
+                615,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy6": {
+              "anchor_px": [
+                1448.32019042969,
+                806.044799804688
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1181,
+              "outside": 0,
+              "rect": [
+                1352,
+                614,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy7": {
+              "anchor_px": [
+                1769.06713867188,
+                804.622619628906
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1331,
+              "outside": 0,
+              "rect": [
+                1673,
+                613,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad0": {
+              "anchor_px": [
+                780.144897460938,
+                995.216918945313
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 746,
+              "outside": 0,
+              "rect": [
+                684,
+                803,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad1": {
+              "anchor_px": [
+                1108.50036621094,
+                991.998596191406
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 715,
+              "outside": 0,
+              "rect": [
+                1013,
+                800,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad2": {
+              "anchor_px": [
+                1450.52514648438,
+                988.816772460938
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 767,
+              "outside": 0,
+              "rect": [
+                1355,
+                797,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad3": {
+              "anchor_px": [
+                1771.38293457031,
+                985.670959472656
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 825,
+              "outside": 0,
+              "rect": [
+                1675,
+                794,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            }
+          },
+          "verdict": {
+            "failures": [],
+            "pass": true
+          }
+        }
+      },
+      "enemies": [
+        "enemy_clerk",
+        "enemy_middle_manager",
+        "enemy_supervisor",
+        "enemy_clerk"
+      ],
+      "pass": true,
+      "sprite_path": "clip-space card (ADR-0005 §2, sprite_actor.gdshader)",
+      "whole_pixel": {
+        "1280x720": {
+          "T": 2,
+          "lit": {
+            "far:Enemy4": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 5289,
+              "max_spread": 0.861425811153167,
+              "nonuniform": 212,
+              "opaque_texels": 7354,
+              "outside": 0,
+              "rendered_colours": 103,
+              "source_colours": 23,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy5": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 204,
+              "max_spread": 0.872978247236774,
+              "nonuniform": 34,
+              "opaque_texels": 1331,
+              "outside": 0,
+              "rendered_colours": 38,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy6": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 594,
+              "max_spread": 0.488801683050878,
+              "nonuniform": 26,
+              "opaque_texels": 1181,
+              "outside": 0,
+              "rendered_colours": 31,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy7": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 484,
+              "max_spread": 0.702717340242712,
+              "nonuniform": 43,
+              "opaque_texels": 1331,
+              "outside": 0,
+              "rendered_colours": 37,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad0": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 253,
+              "max_spread": 0.482689629964297,
+              "nonuniform": 23,
+              "opaque_texels": 746,
+              "outside": 0,
+              "rendered_colours": 26,
+              "source_colours": 15,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad1": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 423,
+              "max_spread": 0.51230644910058,
+              "nonuniform": 19,
+              "opaque_texels": 715,
+              "outside": 0,
+              "rendered_colours": 37,
+              "source_colours": 17,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad2": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 273,
+              "max_spread": 0.551637870024464,
+              "nonuniform": 23,
+              "opaque_texels": 767,
+              "outside": 0,
+              "rendered_colours": 27,
+              "source_colours": 14,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad3": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 383,
+              "max_spread": 0.864693888174592,
+              "nonuniform": 33,
+              "opaque_texels": 825,
+              "outside": 0,
+              "rendered_colours": 29,
+              "source_colours": 13,
+              "split": 0,
+              "stray": 0
+            }
+          },
+          "lit_verdict": {
+            "failures": [],
+            "pass": true
+          },
+          "unlit": {
+            "far:Enemy4": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 7354,
+              "outside": 0,
+              "rendered_colours": 23,
+              "source_colours": 23,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy5": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1331,
+              "outside": 0,
+              "rendered_colours": 19,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy6": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1181,
+              "outside": 0,
+              "rendered_colours": 19,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy7": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1331,
+              "outside": 0,
+              "rendered_colours": 19,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad0": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 746,
+              "outside": 0,
+              "rendered_colours": 15,
+              "source_colours": 15,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad1": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 715,
+              "outside": 0,
+              "rendered_colours": 17,
+              "source_colours": 17,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad2": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 767,
+              "outside": 0,
+              "rendered_colours": 14,
+              "source_colours": 14,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad3": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 825,
+              "outside": 0,
+              "rendered_colours": 13,
+              "source_colours": 13,
+              "split": 0,
+              "stray": 0
+            }
+          },
+          "unlit_verdict": {
+            "failures": [],
+            "pass": true
+          }
+        },
+        "1600x900": {
+          "T": 2,
+          "lit": {
+            "far:Enemy4": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 5272,
+              "max_spread": 0.861425811153167,
+              "nonuniform": 195,
+              "opaque_texels": 7354,
+              "outside": 0,
+              "rendered_colours": 91,
+              "source_colours": 23,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy5": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 218,
+              "max_spread": 0.666883396581706,
+              "nonuniform": 27,
+              "opaque_texels": 1331,
+              "outside": 0,
+              "rendered_colours": 33,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy6": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 267,
+              "max_spread": 0.505534258017895,
+              "nonuniform": 26,
+              "opaque_texels": 1181,
+              "outside": 0,
+              "rendered_colours": 26,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy7": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 643,
+              "max_spread": 0.702717340242712,
+              "nonuniform": 42,
+              "opaque_texels": 1331,
+              "outside": 0,
+              "rendered_colours": 35,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad0": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 201,
+              "max_spread": 0.482689629964297,
+              "nonuniform": 24,
+              "opaque_texels": 746,
+              "outside": 0,
+              "rendered_colours": 26,
+              "source_colours": 15,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad1": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 346,
+              "max_spread": 0.736662977787194,
+              "nonuniform": 17,
+              "opaque_texels": 715,
+              "outside": 0,
+              "rendered_colours": 31,
+              "source_colours": 17,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad2": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 334,
+              "max_spread": 0.53987371656219,
+              "nonuniform": 29,
+              "opaque_texels": 767,
+              "outside": 0,
+              "rendered_colours": 24,
+              "source_colours": 14,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad3": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 388,
+              "max_spread": 0.953257206523098,
+              "nonuniform": 26,
+              "opaque_texels": 825,
+              "outside": 0,
+              "rendered_colours": 26,
+              "source_colours": 13,
+              "split": 0,
+              "stray": 0
+            }
+          },
+          "lit_verdict": {
+            "failures": [],
+            "pass": true
+          },
+          "unlit": {
+            "far:Enemy4": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 7354,
+              "outside": 0,
+              "rendered_colours": 23,
+              "source_colours": 23,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy5": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1331,
+              "outside": 0,
+              "rendered_colours": 19,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy6": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1181,
+              "outside": 0,
+              "rendered_colours": 19,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy7": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1331,
+              "outside": 0,
+              "rendered_colours": 19,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad0": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 746,
+              "outside": 0,
+              "rendered_colours": 15,
+              "source_colours": 15,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad1": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 715,
+              "outside": 0,
+              "rendered_colours": 17,
+              "source_colours": 17,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad2": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 767,
+              "outside": 0,
+              "rendered_colours": 14,
+              "source_colours": 14,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad3": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 825,
+              "outside": 0,
+              "rendered_colours": 13,
+              "source_colours": 13,
+              "split": 0,
+              "stray": 0
+            }
+          },
+          "unlit_verdict": {
+            "failures": [],
+            "pass": true
+          }
+        },
+        "1920x1080": {
+          "T": 3,
+          "lit": {
+            "far:Enemy4": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 5233,
+              "max_spread": 0.861425811153167,
+              "nonuniform": 289,
+              "opaque_texels": 7354,
+              "outside": 0,
+              "rendered_colours": 103,
+              "source_colours": 23,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy5": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 195,
+              "max_spread": 0.872978247236774,
+              "nonuniform": 45,
+              "opaque_texels": 1331,
+              "outside": 0,
+              "rendered_colours": 38,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy6": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 587,
+              "max_spread": 0.488801683050878,
+              "nonuniform": 39,
+              "opaque_texels": 1181,
+              "outside": 0,
+              "rendered_colours": 32,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy7": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 494,
+              "max_spread": 0.702717340242712,
+              "nonuniform": 52,
+              "opaque_texels": 1331,
+              "outside": 0,
+              "rendered_colours": 37,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad0": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 248,
+              "max_spread": 0.482689629964297,
+              "nonuniform": 34,
+              "opaque_texels": 746,
+              "outside": 0,
+              "rendered_colours": 26,
+              "source_colours": 15,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad1": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 421,
+              "max_spread": 0.51230644910058,
+              "nonuniform": 26,
+              "opaque_texels": 715,
+              "outside": 0,
+              "rendered_colours": 37,
+              "source_colours": 17,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad2": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 269,
+              "max_spread": 0.551637870024464,
+              "nonuniform": 33,
+              "opaque_texels": 767,
+              "outside": 0,
+              "rendered_colours": 27,
+              "source_colours": 14,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad3": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 384,
+              "max_spread": 0.864693888174592,
+              "nonuniform": 39,
+              "opaque_texels": 825,
+              "outside": 0,
+              "rendered_colours": 29,
+              "source_colours": 13,
+              "split": 0,
+              "stray": 0
+            }
+          },
+          "lit_verdict": {
+            "failures": [],
+            "pass": true
+          },
+          "unlit": {
+            "far:Enemy4": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 7354,
+              "outside": 0,
+              "rendered_colours": 23,
+              "source_colours": 23,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy5": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1331,
+              "outside": 0,
+              "rendered_colours": 19,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy6": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1181,
+              "outside": 0,
+              "rendered_colours": 19,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy7": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1331,
+              "outside": 0,
+              "rendered_colours": 19,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad0": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 746,
+              "outside": 0,
+              "rendered_colours": 15,
+              "source_colours": 15,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad1": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 715,
+              "outside": 0,
+              "rendered_colours": 17,
+              "source_colours": 17,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad2": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 767,
+              "outside": 0,
+              "rendered_colours": 14,
+              "source_colours": 14,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad3": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 825,
+              "outside": 0,
+              "rendered_colours": 13,
+              "source_colours": 13,
+              "split": 0,
+              "stray": 0
+            }
+          },
+          "unlit_verdict": {
+            "failures": [],
+            "pass": true
+          }
+        },
+        "2560x1440": {
+          "T": 4,
+          "lit": {
+            "far:Enemy4": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 5208,
+              "max_spread": 0.861425811153167,
+              "nonuniform": 324,
+              "opaque_texels": 7354,
+              "outside": 0,
+              "rendered_colours": 103,
+              "source_colours": 23,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy5": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 180,
+              "max_spread": 0.872978247236774,
+              "nonuniform": 52,
+              "opaque_texels": 1331,
+              "outside": 0,
+              "rendered_colours": 38,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy6": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 587,
+              "max_spread": 0.488801683050878,
+              "nonuniform": 43,
+              "opaque_texels": 1181,
+              "outside": 0,
+              "rendered_colours": 32,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy7": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 487,
+              "max_spread": 0.702717340242712,
+              "nonuniform": 57,
+              "opaque_texels": 1331,
+              "outside": 0,
+              "rendered_colours": 37,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad0": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 246,
+              "max_spread": 0.482689629964297,
+              "nonuniform": 38,
+              "opaque_texels": 746,
+              "outside": 0,
+              "rendered_colours": 26,
+              "source_colours": 15,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad1": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 420,
+              "max_spread": 0.51230644910058,
+              "nonuniform": 34,
+              "opaque_texels": 715,
+              "outside": 0,
+              "rendered_colours": 37,
+              "source_colours": 17,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad2": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 267,
+              "max_spread": 0.551637870024464,
+              "nonuniform": 35,
+              "opaque_texels": 767,
+              "outside": 0,
+              "rendered_colours": 27,
+              "source_colours": 14,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad3": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 376,
+              "max_spread": 0.864693888174592,
+              "nonuniform": 45,
+              "opaque_texels": 825,
+              "outside": 0,
+              "rendered_colours": 29,
+              "source_colours": 13,
+              "split": 0,
+              "stray": 0
+            }
+          },
+          "lit_verdict": {
+            "failures": [],
+            "pass": true
+          },
+          "unlit": {
+            "far:Enemy4": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 7354,
+              "outside": 0,
+              "rendered_colours": 23,
+              "source_colours": 23,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy5": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1331,
+              "outside": 0,
+              "rendered_colours": 19,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy6": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1181,
+              "outside": 0,
+              "rendered_colours": 19,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy7": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1331,
+              "outside": 0,
+              "rendered_colours": 19,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad0": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 746,
+              "outside": 0,
+              "rendered_colours": 15,
+              "source_colours": 15,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad1": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 715,
+              "outside": 0,
+              "rendered_colours": 17,
+              "source_colours": 17,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad2": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 767,
+              "outside": 0,
+              "rendered_colours": 14,
+              "source_colours": 14,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad3": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 825,
+              "outside": 0,
+              "rendered_colours": 13,
+              "source_colours": 13,
+              "split": 0,
+              "stray": 0
+            }
+          },
+          "unlit_verdict": {
+            "failures": [],
+            "pass": true
+          }
+        },
+        "3840x2160": {
+          "T": 6,
+          "lit": {
+            "far:Enemy4": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 5171,
+              "max_spread": 0.861425811153167,
+              "nonuniform": 354,
+              "opaque_texels": 7354,
+              "outside": 0,
+              "rendered_colours": 104,
+              "source_colours": 23,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy5": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 177,
+              "max_spread": 0.872978247236774,
+              "nonuniform": 57,
+              "opaque_texels": 1331,
+              "outside": 0,
+              "rendered_colours": 38,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy6": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 583,
+              "max_spread": 0.488801683050878,
+              "nonuniform": 45,
+              "opaque_texels": 1181,
+              "outside": 0,
+              "rendered_colours": 32,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy7": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 477,
+              "max_spread": 0.702717340242712,
+              "nonuniform": 67,
+              "opaque_texels": 1331,
+              "outside": 0,
+              "rendered_colours": 37,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad0": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 243,
+              "max_spread": 0.482689629964297,
+              "nonuniform": 41,
+              "opaque_texels": 746,
+              "outside": 0,
+              "rendered_colours": 26,
+              "source_colours": 15,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad1": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 417,
+              "max_spread": 0.51230644910058,
+              "nonuniform": 35,
+              "opaque_texels": 715,
+              "outside": 0,
+              "rendered_colours": 37,
+              "source_colours": 17,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad2": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 268,
+              "max_spread": 0.551637870024464,
+              "nonuniform": 39,
+              "opaque_texels": 767,
+              "outside": 0,
+              "rendered_colours": 27,
+              "source_colours": 14,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad3": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 370,
+              "max_spread": 0.864693888174592,
+              "nonuniform": 51,
+              "opaque_texels": 825,
+              "outside": 0,
+              "rendered_colours": 29,
+              "source_colours": 13,
+              "split": 0,
+              "stray": 0
+            }
+          },
+          "lit_verdict": {
+            "failures": [],
+            "pass": true
+          },
+          "unlit": {
+            "far:Enemy4": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 7354,
+              "outside": 0,
+              "rendered_colours": 23,
+              "source_colours": 23,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy5": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1331,
+              "outside": 0,
+              "rendered_colours": 19,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy6": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1181,
+              "outside": 0,
+              "rendered_colours": 19,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy7": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1331,
+              "outside": 0,
+              "rendered_colours": 19,
+              "source_colours": 19,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad0": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 746,
+              "outside": 0,
+              "rendered_colours": 15,
+              "source_colours": 15,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad1": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 715,
+              "outside": 0,
+              "rendered_colours": 17,
+              "source_colours": 17,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad2": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 767,
+              "outside": 0,
+              "rendered_colours": 14,
+              "source_colours": 14,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad3": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 825,
+              "outside": 0,
+              "rendered_colours": 13,
+              "source_colours": 13,
+              "split": 0,
+              "stray": 0
+            }
+          },
+          "unlit_verdict": {
+            "failures": [],
+            "pass": true
+          }
+        }
+      }
+    },
+    "megacorp_boss": {
+      "coverage": {
+        "1440x1080": {
+          "T": 3,
+          "id_classes": {
+            "SKY": 1453611,
+            "actor": 86460,
+            "set": 14334,
+            "unclassified": 795
+          },
+          "sprites": {
+            "far:Enemy4": {
+              "anchor_px": [
+                720.0,
+                714.691528320313
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1704,
+              "outside": 0,
+              "rect": [
+                624,
+                523,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy5": {
+              "anchor_px": [
+                350.388885498047,
+                713.608459472656
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 3175,
+              "outside": 0,
+              "rect": [
+                158,
+                330,
+                384,
+                384
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy6": {
+              "anchor_px": [
+                1088.20031738281,
+                712.533569335938
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1704,
+              "outside": 0,
+              "rect": [
+                992,
+                521,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad0": {
+              "anchor_px": [
+                345.108764648438,
+                854.412658691406
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 746,
+              "outside": 0,
+              "rect": [
+                249,
+                662,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad1": {
+              "anchor_px": [
+                591.375305175781,
+                851.998840332031
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 715,
+              "outside": 0,
+              "rect": [
+                495,
+                660,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad2": {
+              "anchor_px": [
+                847.893859863281,
+                849.612487792969
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 767,
+              "outside": 0,
+              "rect": [
+                752,
+                658,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad3": {
+              "anchor_px": [
+                1088.53723144531,
+                847.253173828125
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 825,
+              "outside": 0,
+              "rect": [
+                993,
+                655,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            }
+          },
+          "verdict": {
+            "failures": [],
+            "pass": true
+          }
+        },
+        "1920x1080": {
+          "T": 3,
+          "id_classes": {
+            "SKY": 1969884,
+            "actor": 86724,
+            "set": 16196,
+            "unclassified": 796
+          },
+          "sprites": {
+            "far:Enemy4": {
+              "anchor_px": [
+                960.0,
+                808.922119140625
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1704,
+              "outside": 0,
+              "rect": [
+                864,
+                617,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy5": {
+              "anchor_px": [
+                467.185180664063,
+                807.477966308594
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 3175,
+              "outside": 0,
+              "rect": [
+                275,
+                423,
+                384,
+                384
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy6": {
+              "anchor_px": [
+                1450.93383789063,
+                806.044799804688
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1704,
+              "outside": 0,
+              "rect": [
+                1355,
+                614,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad0": {
+              "anchor_px": [
+                460.14501953125,
+                995.216918945313
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 746,
+              "outside": 0,
+              "rect": [
+                364,
+                803,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad1": {
+              "anchor_px": [
+                788.500427246094,
+                991.998596191406
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 715,
+              "outside": 0,
+              "rect": [
+                693,
+                800,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad2": {
+              "anchor_px": [
+                1130.52514648438,
+                988.816772460938
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 767,
+              "outside": 0,
+              "rect": [
+                1035,
+                797,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad3": {
+              "anchor_px": [
+                1451.38293457031,
+                985.670959472656
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 825,
+              "outside": 0,
+              "rect": [
+                1355,
+                794,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            }
+          },
+          "verdict": {
+            "failures": [],
+            "pass": true
+          }
+        },
+        "2560x1080": {
+          "T": 3,
+          "id_classes": {
+            "SKY": 2661085,
+            "actor": 86724,
+            "set": 16196,
+            "unclassified": 795
+          },
+          "sprites": {
+            "far:Enemy4": {
+              "anchor_px": [
+                1280.0,
+                808.922119140625
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1704,
+              "outside": 0,
+              "rect": [
+                1184,
+                617,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy5": {
+              "anchor_px": [
+                787.185180664063,
+                807.477966308594
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 3175,
+              "outside": 0,
+              "rect": [
+                595,
+                423,
+                384,
+                384
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy6": {
+              "anchor_px": [
+                1770.93383789063,
+                806.044799804688
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1704,
+              "outside": 0,
+              "rect": [
+                1675,
+                614,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad0": {
+              "anchor_px": [
+                780.144897460938,
+                995.216918945313
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 746,
+              "outside": 0,
+              "rect": [
+                684,
+                803,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad1": {
+              "anchor_px": [
+                1108.50036621094,
+                991.998596191406
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 715,
+              "outside": 0,
+              "rect": [
+                1013,
+                800,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad2": {
+              "anchor_px": [
+                1450.52514648438,
+                988.816772460938
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 767,
+              "outside": 0,
+              "rect": [
+                1355,
+                797,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad3": {
+              "anchor_px": [
+                1771.38293457031,
+                985.670959472656
+              ],
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 825,
+              "outside": 0,
+              "rect": [
+                1675,
+                794,
+                192,
+                192
+              ],
+              "rendered_colours": -1,
+              "source_colours": 0,
+              "split": 0,
+              "stray": 0
+            }
+          },
+          "verdict": {
+            "failures": [],
+            "pass": true
+          }
+        }
+      },
+      "enemies": [
+        "enemy_security_drone",
+        "enemy_ceo",
+        "enemy_security_drone"
+      ],
+      "pass": true,
+      "sprite_path": "clip-space card (ADR-0005 §2, sprite_actor.gdshader)",
+      "whole_pixel": {
+        "1280x720": {
+          "T": 2,
+          "lit": {
+            "far:Enemy4": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 652,
+              "max_spread": 0.697708322680516,
+              "nonuniform": 29,
+              "opaque_texels": 1704,
+              "outside": 0,
+              "rendered_colours": 35,
+              "source_colours": 18,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy5": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 1934,
+              "max_spread": 0.723978814088818,
+              "nonuniform": 74,
+              "opaque_texels": 3175,
+              "outside": 0,
+              "rendered_colours": 49,
+              "source_colours": 22,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy6": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 446,
+              "max_spread": 0.702717340242712,
+              "nonuniform": 40,
+              "opaque_texels": 1704,
+              "outside": 0,
+              "rendered_colours": 34,
+              "source_colours": 18,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad0": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 253,
+              "max_spread": 0.482689629964297,
+              "nonuniform": 23,
+              "opaque_texels": 746,
+              "outside": 0,
+              "rendered_colours": 26,
+              "source_colours": 15,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad1": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 423,
+              "max_spread": 0.51230644910058,
+              "nonuniform": 19,
+              "opaque_texels": 715,
+              "outside": 0,
+              "rendered_colours": 37,
+              "source_colours": 17,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad2": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 273,
+              "max_spread": 0.551637870024464,
+              "nonuniform": 23,
+              "opaque_texels": 767,
+              "outside": 0,
+              "rendered_colours": 27,
+              "source_colours": 14,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad3": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 383,
+              "max_spread": 0.864693888174592,
+              "nonuniform": 33,
+              "opaque_texels": 825,
+              "outside": 0,
+              "rendered_colours": 29,
+              "source_colours": 13,
+              "split": 0,
+              "stray": 0
+            }
+          },
+          "lit_verdict": {
+            "failures": [],
+            "pass": true
+          },
+          "unlit": {
+            "far:Enemy4": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1704,
+              "outside": 0,
+              "rendered_colours": 18,
+              "source_colours": 18,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy5": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 3175,
+              "outside": 0,
+              "rendered_colours": 22,
+              "source_colours": 22,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy6": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1704,
+              "outside": 0,
+              "rendered_colours": 18,
+              "source_colours": 18,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad0": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 746,
+              "outside": 0,
+              "rendered_colours": 15,
+              "source_colours": 15,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad1": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 715,
+              "outside": 0,
+              "rendered_colours": 17,
+              "source_colours": 17,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad2": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 767,
+              "outside": 0,
+              "rendered_colours": 14,
+              "source_colours": 14,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad3": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 825,
+              "outside": 0,
+              "rendered_colours": 13,
+              "source_colours": 13,
+              "split": 0,
+              "stray": 0
+            }
+          },
+          "unlit_verdict": {
+            "failures": [],
+            "pass": true
+          }
+        },
+        "1600x900": {
+          "T": 2,
+          "lit": {
+            "far:Enemy4": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 541,
+              "max_spread": 0.702017803556204,
+              "nonuniform": 20,
+              "opaque_texels": 1704,
+              "outside": 0,
+              "rendered_colours": 32,
+              "source_colours": 18,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy5": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 1285,
+              "max_spread": 0.77664836384138,
+              "nonuniform": 58,
+              "opaque_texels": 3175,
+              "outside": 0,
+              "rendered_colours": 45,
+              "source_colours": 22,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy6": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 609,
+              "max_spread": 0.977852401211781,
+              "nonuniform": 24,
+              "opaque_texels": 1704,
+              "outside": 0,
+              "rendered_colours": 34,
+              "source_colours": 18,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad0": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 201,
+              "max_spread": 0.482689629964297,
+              "nonuniform": 24,
+              "opaque_texels": 746,
+              "outside": 0,
+              "rendered_colours": 26,
+              "source_colours": 15,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad1": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 346,
+              "max_spread": 0.736662977787194,
+              "nonuniform": 17,
+              "opaque_texels": 715,
+              "outside": 0,
+              "rendered_colours": 31,
+              "source_colours": 17,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad2": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 334,
+              "max_spread": 0.53987371656219,
+              "nonuniform": 29,
+              "opaque_texels": 767,
+              "outside": 0,
+              "rendered_colours": 24,
+              "source_colours": 14,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad3": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 388,
+              "max_spread": 0.953257206523098,
+              "nonuniform": 26,
+              "opaque_texels": 825,
+              "outside": 0,
+              "rendered_colours": 26,
+              "source_colours": 13,
+              "split": 0,
+              "stray": 0
+            }
+          },
+          "lit_verdict": {
+            "failures": [],
+            "pass": true
+          },
+          "unlit": {
+            "far:Enemy4": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1704,
+              "outside": 0,
+              "rendered_colours": 18,
+              "source_colours": 18,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy5": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 3175,
+              "outside": 0,
+              "rendered_colours": 22,
+              "source_colours": 22,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy6": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1704,
+              "outside": 0,
+              "rendered_colours": 18,
+              "source_colours": 18,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad0": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 746,
+              "outside": 0,
+              "rendered_colours": 15,
+              "source_colours": 15,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad1": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 715,
+              "outside": 0,
+              "rendered_colours": 17,
+              "source_colours": 17,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad2": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 767,
+              "outside": 0,
+              "rendered_colours": 14,
+              "source_colours": 14,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad3": {
+              "bleed": 0,
+              "block": [
+                2,
+                2
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 825,
+              "outside": 0,
+              "rendered_colours": 13,
+              "source_colours": 13,
+              "split": 0,
+              "stray": 0
+            }
+          },
+          "unlit_verdict": {
+            "failures": [],
+            "pass": true
+          }
+        },
+        "1920x1080": {
+          "T": 3,
+          "lit": {
+            "far:Enemy4": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 653,
+              "max_spread": 0.697708322680516,
+              "nonuniform": 37,
+              "opaque_texels": 1704,
+              "outside": 0,
+              "rendered_colours": 35,
+              "source_colours": 18,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy5": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 1919,
+              "max_spread": 0.723978814088818,
+              "nonuniform": 93,
+              "opaque_texels": 3175,
+              "outside": 0,
+              "rendered_colours": 50,
+              "source_colours": 22,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy6": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 438,
+              "max_spread": 0.702717340242712,
+              "nonuniform": 57,
+              "opaque_texels": 1704,
+              "outside": 0,
+              "rendered_colours": 35,
+              "source_colours": 18,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad0": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 248,
+              "max_spread": 0.482689629964297,
+              "nonuniform": 34,
+              "opaque_texels": 746,
+              "outside": 0,
+              "rendered_colours": 26,
+              "source_colours": 15,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad1": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 421,
+              "max_spread": 0.51230644910058,
+              "nonuniform": 26,
+              "opaque_texels": 715,
+              "outside": 0,
+              "rendered_colours": 37,
+              "source_colours": 17,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad2": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 269,
+              "max_spread": 0.551637870024464,
+              "nonuniform": 33,
+              "opaque_texels": 767,
+              "outside": 0,
+              "rendered_colours": 27,
+              "source_colours": 14,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad3": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 384,
+              "max_spread": 0.864693888174592,
+              "nonuniform": 39,
+              "opaque_texels": 825,
+              "outside": 0,
+              "rendered_colours": 29,
+              "source_colours": 13,
+              "split": 0,
+              "stray": 0
+            }
+          },
+          "lit_verdict": {
+            "failures": [],
+            "pass": true
+          },
+          "unlit": {
+            "far:Enemy4": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1704,
+              "outside": 0,
+              "rendered_colours": 18,
+              "source_colours": 18,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy5": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 3175,
+              "outside": 0,
+              "rendered_colours": 22,
+              "source_colours": 22,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy6": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1704,
+              "outside": 0,
+              "rendered_colours": 18,
+              "source_colours": 18,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad0": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 746,
+              "outside": 0,
+              "rendered_colours": 15,
+              "source_colours": 15,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad1": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 715,
+              "outside": 0,
+              "rendered_colours": 17,
+              "source_colours": 17,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad2": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 767,
+              "outside": 0,
+              "rendered_colours": 14,
+              "source_colours": 14,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad3": {
+              "bleed": 0,
+              "block": [
+                3,
+                3
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 825,
+              "outside": 0,
+              "rendered_colours": 13,
+              "source_colours": 13,
+              "split": 0,
+              "stray": 0
+            }
+          },
+          "unlit_verdict": {
+            "failures": [],
+            "pass": true
+          }
+        },
+        "2560x1440": {
+          "T": 4,
+          "lit": {
+            "far:Enemy4": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 653,
+              "max_spread": 0.697708322680516,
+              "nonuniform": 43,
+              "opaque_texels": 1704,
+              "outside": 0,
+              "rendered_colours": 35,
+              "source_colours": 18,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy5": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 1914,
+              "max_spread": 0.723978814088818,
+              "nonuniform": 107,
+              "opaque_texels": 3175,
+              "outside": 0,
+              "rendered_colours": 49,
+              "source_colours": 22,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy6": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 436,
+              "max_spread": 0.702717340242712,
+              "nonuniform": 62,
+              "opaque_texels": 1704,
+              "outside": 0,
+              "rendered_colours": 35,
+              "source_colours": 18,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad0": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 246,
+              "max_spread": 0.482689629964297,
+              "nonuniform": 38,
+              "opaque_texels": 746,
+              "outside": 0,
+              "rendered_colours": 26,
+              "source_colours": 15,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad1": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 420,
+              "max_spread": 0.51230644910058,
+              "nonuniform": 34,
+              "opaque_texels": 715,
+              "outside": 0,
+              "rendered_colours": 37,
+              "source_colours": 17,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad2": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 267,
+              "max_spread": 0.551637870024464,
+              "nonuniform": 35,
+              "opaque_texels": 767,
+              "outside": 0,
+              "rendered_colours": 27,
+              "source_colours": 14,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad3": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 376,
+              "max_spread": 0.864693888174592,
+              "nonuniform": 45,
+              "opaque_texels": 825,
+              "outside": 0,
+              "rendered_colours": 29,
+              "source_colours": 13,
+              "split": 0,
+              "stray": 0
+            }
+          },
+          "lit_verdict": {
+            "failures": [],
+            "pass": true
+          },
+          "unlit": {
+            "far:Enemy4": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1704,
+              "outside": 0,
+              "rendered_colours": 18,
+              "source_colours": 18,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy5": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 3175,
+              "outside": 0,
+              "rendered_colours": 22,
+              "source_colours": 22,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy6": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1704,
+              "outside": 0,
+              "rendered_colours": 18,
+              "source_colours": 18,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad0": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 746,
+              "outside": 0,
+              "rendered_colours": 15,
+              "source_colours": 15,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad1": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 715,
+              "outside": 0,
+              "rendered_colours": 17,
+              "source_colours": 17,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad2": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 767,
+              "outside": 0,
+              "rendered_colours": 14,
+              "source_colours": 14,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad3": {
+              "bleed": 0,
+              "block": [
+                4,
+                4
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 825,
+              "outside": 0,
+              "rendered_colours": 13,
+              "source_colours": 13,
+              "split": 0,
+              "stray": 0
+            }
+          },
+          "unlit_verdict": {
+            "failures": [],
+            "pass": true
+          }
+        },
+        "3840x2160": {
+          "T": 6,
+          "lit": {
+            "far:Enemy4": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 649,
+              "max_spread": 0.697708322680516,
+              "nonuniform": 47,
+              "opaque_texels": 1704,
+              "outside": 0,
+              "rendered_colours": 35,
+              "source_colours": 18,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy5": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 1907,
+              "max_spread": 0.723978814088818,
+              "nonuniform": 115,
+              "opaque_texels": 3175,
+              "outside": 0,
+              "rendered_colours": 50,
+              "source_colours": 22,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy6": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 433,
+              "max_spread": 0.702717340242712,
+              "nonuniform": 65,
+              "opaque_texels": 1704,
+              "outside": 0,
+              "rendered_colours": 35,
+              "source_colours": 18,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad0": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 243,
+              "max_spread": 0.482689629964297,
+              "nonuniform": 41,
+              "opaque_texels": 746,
+              "outside": 0,
+              "rendered_colours": 26,
+              "source_colours": 15,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad1": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 417,
+              "max_spread": 0.51230644910058,
+              "nonuniform": 35,
+              "opaque_texels": 715,
+              "outside": 0,
+              "rendered_colours": 37,
+              "source_colours": 17,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad2": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 268,
+              "max_spread": 0.551637870024464,
+              "nonuniform": 39,
+              "opaque_texels": 767,
+              "outside": 0,
+              "rendered_colours": 27,
+              "source_colours": 14,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad3": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 370,
+              "max_spread": 0.864693888174592,
+              "nonuniform": 51,
+              "opaque_texels": 825,
+              "outside": 0,
+              "rendered_colours": 29,
+              "source_colours": 13,
+              "split": 0,
+              "stray": 0
+            }
+          },
+          "lit_verdict": {
+            "failures": [],
+            "pass": true
+          },
+          "unlit": {
+            "far:Enemy4": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1704,
+              "outside": 0,
+              "rendered_colours": 18,
+              "source_colours": 18,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy5": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 3175,
+              "outside": 0,
+              "rendered_colours": 22,
+              "source_colours": 22,
+              "split": 0,
+              "stray": 0
+            },
+            "far:Enemy6": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 1704,
+              "outside": 0,
+              "rendered_colours": 18,
+              "source_colours": 18,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad0": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 746,
+              "outside": 0,
+              "rendered_colours": 15,
+              "source_colours": 15,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad1": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 715,
+              "outside": 0,
+              "rendered_colours": 17,
+              "source_colours": 17,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad2": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 767,
+              "outside": 0,
+              "rendered_colours": 14,
+              "source_colours": 14,
+              "split": 0,
+              "stray": 0
+            },
+            "near:Squad3": {
+              "bleed": 0,
+              "block": [
+                6,
+                6
+              ],
+              "inconsistent": 0,
+              "max_spread": 0.0,
+              "nonuniform": 0,
+              "opaque_texels": 825,
+              "outside": 0,
+              "rendered_colours": 13,
+              "source_colours": 13,
+              "split": 0,
+              "stray": 0
+            }
+          },
+          "unlit_verdict": {
+            "failures": [],
+            "pass": true
+          }
+        }
+      }
+    }
+  },
+  "lit_spread_max": 3.0,
+  "overworld": {
+    "coverage": {
+      "1440x1080": {
+        "T": 3,
+        "id_classes": {
+          "actor": 5332,
+          "beacon": 3320,
+          "camp_sign": 5850,
+          "none": 632160,
+          "set": 908243,
+          "unclassified": 295
+        },
+        "sprites": {
+          "near:follower_1": {
+            "anchor_px": [
+              759.441833496094,
+              306.946105957031
+            ],
+            "bleed": 0,
+            "block": [
+              3,
+              3
+            ],
+            "inconsistent": 0,
+            "max_spread": 0.0,
+            "nonuniform": 0,
+            "opaque_texels": 240,
+            "outside": 0,
+            "rect": [
+              741,
+              235,
+              36,
+              72
+            ],
+            "rendered_colours": -1,
+            "source_colours": 0,
+            "split": 0,
+            "stray": 0
+          },
+          "near:follower_2": {
+            "anchor_px": [
+              758.41357421875,
+              278.449768066406
+            ],
+            "bleed": 0,
+            "block": [
+              3,
+              3
+            ],
+            "inconsistent": 0,
+            "max_spread": 0.0,
+            "nonuniform": 0,
+            "opaque_texels": 240,
+            "outside": 0,
+            "rect": [
+              740,
+              206,
+              36,
+              72
+            ],
+            "rendered_colours": -1,
+            "source_colours": 0,
+            "split": 0,
+            "stray": 0
+          },
+          "near:follower_3": {
+            "anchor_px": [
+              757.437561035156,
+              251.401504516602
+            ],
+            "bleed": 0,
+            "block": [
+              3,
+              3
+            ],
+            "inconsistent": 0,
+            "max_spread": 0.0,
+            "nonuniform": 0,
+            "opaque_texels": 240,
+            "outside": 0,
+            "rect": [
+              739,
+              179,
+              36,
+              72
+            ],
+            "rendered_colours": -1,
+            "source_colours": 0,
+            "split": 0,
+            "stray": 0
+          },
+          "near:leader": {
+            "anchor_px": [
+              760.526672363281,
+              337.010040283203
+            ],
+            "bleed": 0,
+            "block": [
+              3,
+              3
+            ],
+            "inconsistent": 0,
+            "max_spread": 0.0,
+            "nonuniform": 0,
+            "opaque_texels": 240,
+            "outside": 0,
+            "rect": [
+              743,
+              265,
+              36,
+              72
+            ],
+            "rendered_colours": -1,
+            "source_colours": 0,
+            "split": 0,
+            "stray": 0
+          }
+        },
+        "verdict": {
+          "failures": [
+            "632160 ID-pass pixel(s) are the clear class"
+          ],
+          "pass": false
+        }
+      },
+      "1920x1080": {
+        "T": 3,
+        "id_classes": {
+          "actor": 6984,
+          "beacon": 5458,
+          "camp_sign": 13388,
+          "none": 261120,
+          "set": 1784481,
+          "unclassified": 2169
+        },
+        "sprites": {
+          "near:follower_1": {
+            "anchor_px": [
+              960.0,
+              354.369140625
+            ],
+            "bleed": 0,
+            "block": [
+              3,
+              3
+            ],
+            "inconsistent": 0,
+            "max_spread": 0.0,
+            "nonuniform": 0,
+            "opaque_texels": 240,
+            "outside": 0,
+            "rect": [
+              942,
+              282,
+              36,
+              72
+            ],
+            "rendered_colours": -1,
+            "source_colours": 0,
+            "split": 0,
+            "stray": 0
+          },
+          "near:follower_2": {
+            "anchor_px": [
+              960.0,
+              309.670776367188
+            ],
+            "bleed": 0,
+            "block": [
+              3,
+              -1
+            ],
+            "inconsistent": 0,
+            "max_spread": 0.0,
+            "nonuniform": 0,
+            "opaque_texels": 240,
+            "outside": 0,
+            "rect": [
+              942,
+              238,
+              36,
+              72
+            ],
+            "rendered_colours": -1,
+            "source_colours": 0,
+            "split": 12,
+            "stray": 0
+          },
+          "near:follower_3": {
+            "anchor_px": [
+              960.0,
+              267.428131103516
+            ],
+            "bleed": 0,
+            "block": [
+              3,
+              3
+            ],
+            "inconsistent": 0,
+            "max_spread": 0.0,
+            "nonuniform": 0,
+            "opaque_texels": 240,
+            "outside": 0,
+            "rect": [
+              942,
+              195,
+              36,
+              72
+            ],
+            "rendered_colours": -1,
+            "source_colours": 0,
+            "split": 0,
+            "stray": 0
+          },
+          "near:leader": {
+            "anchor_px": [
+              960.0,
+              401.743713378906
+            ],
+            "bleed": 0,
+            "block": [
+              3,
+              -1
+            ],
+            "inconsistent": 0,
+            "max_spread": 0.0,
+            "nonuniform": 0,
+            "opaque_texels": 240,
+            "outside": 0,
+            "rect": [
+              942,
+              330,
+              36,
+              72
+            ],
+            "rendered_colours": -1,
+            "source_colours": 0,
+            "split": 12,
+            "stray": 0
+          }
+        },
+        "verdict": {
+          "failures": [
+            "261120 ID-pass pixel(s) are the clear class"
+          ],
+          "pass": false
+        }
+      },
+      "2560x1080": {
+        "T": 3,
+        "id_classes": {
+          "actor": 6995,
+          "beacon": 18128,
+          "camp_sign": 13393,
+          "none": 358136,
+          "set": 2364945,
+          "unclassified": 3203
+        },
+        "sprites": {
+          "near:follower_1": {
+            "anchor_px": [
+              1337.103515625,
+              354.369140625
+            ],
+            "bleed": 0,
+            "block": [
+              3,
+              3
+            ],
+            "inconsistent": 0,
+            "max_spread": 0.0,
+            "nonuniform": 0,
+            "opaque_texels": 240,
+            "outside": 0,
+            "rect": [
+              1319,
+              282,
+              36,
+              72
+            ],
+            "rendered_colours": -1,
+            "source_colours": 0,
+            "split": 0,
+            "stray": 0
+          },
+          "near:follower_2": {
+            "anchor_px": [
+              1335.49060058594,
+              309.670776367188
+            ],
+            "bleed": 0,
+            "block": [
+              3,
+              -1
+            ],
+            "inconsistent": 0,
+            "max_spread": 0.0,
+            "nonuniform": 0,
+            "opaque_texels": 240,
+            "outside": 0,
+            "rect": [
+              1317,
+              238,
+              36,
+              72
+            ],
+            "rendered_colours": -1,
+            "source_colours": 0,
+            "split": 12,
+            "stray": 0
+          },
+          "near:follower_3": {
+            "anchor_px": [
+              1333.96630859375,
+              267.428131103516
+            ],
+            "bleed": 0,
+            "block": [
+              3,
+              3
+            ],
+            "inconsistent": 0,
+            "max_spread": 0.0,
+            "nonuniform": 0,
+            "opaque_texels": 240,
+            "outside": 0,
+            "rect": [
+              1316,
+              195,
+              36,
+              72
+            ],
+            "rendered_colours": -1,
+            "source_colours": 0,
+            "split": 0,
+            "stray": 0
+          },
+          "near:leader": {
+            "anchor_px": [
+              1338.81298828125,
+              401.743713378906
+            ],
+            "bleed": 0,
+            "block": [
+              3,
+              -1
+            ],
+            "inconsistent": 0,
+            "max_spread": 0.0,
+            "nonuniform": 0,
+            "opaque_texels": 240,
+            "outside": 0,
+            "rect": [
+              1321,
+              330,
+              36,
+              72
+            ],
+            "rendered_colours": -1,
+            "source_colours": 0,
+            "split": 12,
+            "stray": 0
+          }
+        },
+        "verdict": {
+          "failures": [
+            "358136 ID-pass pixel(s) are the clear class"
+          ],
+          "pass": false
+        }
+      }
+    },
+    "map": "map_paris_town_placeholder",
+    "pass": false,
+    "set_cut_observation": {
+      "1440x1080": {},
+      "1920x1080": {
+        "near:follower_2": 12,
+        "near:leader": 12
+      },
+      "2560x1080": {
+        "near:follower_2": 12,
+        "near:leader": 12
+      }
+    },
+    "sprite_path": "clip-space card (ADR-0005 §2, sprite_actor.gdshader)",
+    "symbols_observation": {
+      "1440x1080": {},
+      "1920x1080": {},
+      "2560x1080": {}
+    }
+  },
+  "result": "FAIL",
+  "tool": "tools/capture/texel_scale_capture.gd",
+  "viewport_settings": {
+    "mesh_lod_threshold": {
+      "setting": "rendering/mesh_lod/lod_change/threshold_pixels",
+      "value": 1.0
+    },
+    "msaa_3d": {
+      "setting": "rendering/anti_aliasing/quality/msaa_3d",
+      "value": 1
+    },
+    "positional_shadow_atlas_16_bits": {
+      "setting": "rendering/lights_and_shadows/positional_shadow/atlas_16_bits",
+      "value": true
+    },
+    "positional_shadow_atlas_quad_0": {
+      "setting": "rendering/lights_and_shadows/positional_shadow/atlas_quadrant_0_subdiv",
+      "value": 2
+    },
+    "positional_shadow_atlas_quad_1": {
+      "setting": "rendering/lights_and_shadows/positional_shadow/atlas_quadrant_1_subdiv",
+      "value": 2
+    },
+    "positional_shadow_atlas_quad_2": {
+      "setting": "rendering/lights_and_shadows/positional_shadow/atlas_quadrant_2_subdiv",
+      "value": 3
+    },
+    "positional_shadow_atlas_quad_3": {
+      "setting": "rendering/lights_and_shadows/positional_shadow/atlas_quadrant_3_subdiv",
+      "value": 4
+    },
+    "positional_shadow_atlas_size": {
+      "setting": "rendering/lights_and_shadows/positional_shadow/atlas_size",
+      "value": 4096
+    },
+    "scaling_3d_mode": {
+      "setting": "rendering/scaling_3d/mode",
+      "value": 0
+    },
+    "scaling_3d_scale": {
+      "setting": "rendering/scaling_3d/scale",
+      "value": 1.0
+    },
+    "screen_space_aa": {
+      "setting": "rendering/anti_aliasing/quality/screen_space_aa",
+      "value": 0
+    },
+    "use_debanding": {
+      "setting": "rendering/anti_aliasing/quality/use_debanding",
+      "value": false
+    },
+    "use_taa": {
+      "setting": "rendering/anti_aliasing/quality/use_taa",
+      "value": false
+    }
+  }
+}
