@@ -51,6 +51,11 @@ var current_rim_strength: float = 0.0
 
 var _resolver: Callable
 
+## Where this stage reports a content error at runtime (an unknown profile id
+## on a debug run that skipped boot validation, story 032): `call(message)`.
+## Defaults to `push_error`; tests inject a recorder.
+var error_sink: Callable = func(message: String) -> void: push_error(message)
+
 ## The narrow Reduce Flashing view (ADR-0009 §7), injected by the owning
 ## mode; read live every frame by the campfire flicker (story 068). Null
 ## reads as Off.
@@ -316,7 +321,7 @@ func request_profile(id: StringName, blend_time: float, clock: Callable = Callab
 		return
 	var profile: LightingProfile = _resolver.call(id)
 	if profile == null:
-		push_error("DioramaStage: unknown lighting profile '%s'" % id)
+		error_sink.call("DioramaStage: unknown lighting profile '%s'; the light is unchanged" % id)
 		return
 	_blend_id = id
 	_start_blend(profile, blend_time, clock)

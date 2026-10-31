@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/enemy_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "enemy_bureaucrat_drone"
+aliases = PackedStringArray("enemy_drone_old")
+display_name = "Bureaucrat Drone"
+faction_id = "faction_tech_syndicate"
+is_boss = false
+max_hp = 40
+max_mp = 0
+attack = 14
+defense = 6
+speed = 8
+move_ids = PackedStringArray("move_notarize_strike")
+ai_profile_id = "ai_profile_basic"
+sprite_set_id = "sprite_placeholder"
+reward_xp = 50
+reward_money = 25

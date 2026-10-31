@@ -1,7 +1,7 @@
 # Story 032: an alien faction with no boss lighting preset fails boot, never the fight
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done (2026-10-31)
 > **Layer**: Core
 > **Type**: Integration
 > **Estimate**: S
@@ -77,7 +77,7 @@
 **Required evidence**:
 - Integration: `tests/integration/presentation/boss_profile_exists_test.gd` OR playtest doc
 
-**Status**: [ ] Not yet created
+**Status**: [x] `tests/integration/presentation/boss_profile_exists_test.gd` (4 cases) passes (2026-10-31). Validator in `src/presentation/presentation_validators.gd` (the story names `data/presentation/`), registered by `ContentBootstrap.run()` against `<data_root>/presentation/profiles`
 
 ---
 

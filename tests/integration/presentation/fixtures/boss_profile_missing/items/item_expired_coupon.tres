@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/item_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "item_expired_coupon"
+aliases = PackedStringArray("item_coupon_old")
+display_name = "Expired Coupon"
+description = "Expired decades ago. Still redeemable, somehow."
+kind = "consumable"
+effects = Array[Dictionary]([{
+"amount": 15,
+"type": "heal_single"
+}])
+price = 5

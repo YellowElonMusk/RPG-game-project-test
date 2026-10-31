@@ -79,6 +79,9 @@ static func run(catalog: ContentCatalogService, data_root: String = "res://data"
 	# character/enemy records that name each set.
 	PresentationValidators.register_sprite_set_validators(catalog,
 			PresentationValidators.load_sprite_sets(), PresentationValidators.load_config())
+	# ADR-0005 §9 existence checks against the root's own presentation tables
+	# (`boss_profile_exists`, story 032; `sprite_set_exists`, story 034).
+	PresentationValidators.register_existence_validators(catalog, data_root)
 	catalog.load_all(data_root)
 	return result
 

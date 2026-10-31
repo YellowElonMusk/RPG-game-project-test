@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="QuirkStateData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/quirk_state_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "quirk_complained"
+aliases = PackedStringArray("quirk_complained_old")
+display_name = "Complained"
+icon_id = "icon_complained"
+description = "The target has filed a formal complaint and is too busy to dodge."
+rule_text = "Defense -20% while active. Cashed by Overdue Notice."
+effects = Array[Dictionary]([{
+"modifier": {
+"percent": -20,
+"stat": "defense"
+},
+"type": "stat_modifier"
+}, {
+"on_expire": {
+"message_key": "complaint_dismissed",
+"restore": true
+},
+"type": "expiry_hook"
+}])

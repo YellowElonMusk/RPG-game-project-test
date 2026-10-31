@@ -74,7 +74,8 @@ func _on_mode_entered(_to: GameStateMachine.Mode) -> void:
 		return  # same-mode row (Retry): the owning mode already set the light
 	var profile: LightingProfile = _resolve_profile(stage.profile_id)
 	if profile == null:
-		return  # _resolve_profile already logged the error
+		push_error("PresentationDirector: unknown entry lighting profile '%s'" % stage.profile_id)
+		return
 	stage.apply_profile(profile, _ENTRY_BLEND_TIME)
 
 
@@ -92,10 +93,16 @@ func _find_stage() -> DioramaStage:
 
 
 ## `resolver.call(id) -> LightingProfile` (ADR-0005 §3's `bind_profiles()`
-## contract): `null`, logged, for an unknown id.
+## contract): `null` for an unknown id, with nothing logged here -- the caller
+## that asked logs it once (the stage's `request_profile()`, story 032).
 func _resolve_profile(id: StringName) -> LightingProfile:
-	var path: String = _PROFILES_DIR.path_join("%s.tres" % id)
-	var profile: LightingProfile = ResourceLoader.load(path) as LightingProfile
-	if profile == null:
-		push_error("PresentationDirector: unknown lighting profile '%s'" % id)
-	return profile
+	return resolve_profile(id)
+
+
+## The profile `id` from table directory `dir`, or null (no engine error,
+## no log) when it does not exist.
+func resolve_profile(id: StringName, dir: String = _PROFILES_DIR) -> LightingProfile:
+	var path: String = dir.path_join("%s.tres" % id)
+	if not ResourceLoader.exists(path):
+		return null
+	return ResourceLoader.load(path) as LightingProfile

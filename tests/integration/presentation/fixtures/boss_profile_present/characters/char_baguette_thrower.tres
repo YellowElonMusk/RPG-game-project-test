@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="CharacterData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/character_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "char_baguette_thrower"
+aliases = PackedStringArray("char_baguette_old")
+display_name = "Baguette Thrower"
+nation_id = "faction_human_republic"
+archetype_line = "Throws baguettes with bureaucratic precision."
+max_hp = 30
+max_mp = 10
+attack = 12
+defense = 8
+speed = 10
+move_ids = PackedStringArray("move_notarize_strike")
+signature_move_id = "move_notarize_strike"
+sprite_set_id = "sprite_set_baguette"
+portrait_id = "portrait_baguette"

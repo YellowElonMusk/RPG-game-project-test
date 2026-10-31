@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="FactionRuleData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/faction_rule_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "rule_red_tape"
+aliases = PackedStringArray("rule_red_tape_old")
+rule_class = &"delay_rule"
+ref_ids = PackedStringArray("enemy_bureaucrat_drone")
+params = {
+"delay_turns": 1,
+"trigger_chance": 0.5
+}
+texts = Dictionary[String, String]({
+"banner": "Red Tape: specials are delayed one round.",
+"tooltip": "Every special needs a permit first."
+})
+colors = Dictionary[String, String]({
+"banner": "#ffb347",
+"identity": "#ff6b00"
+})

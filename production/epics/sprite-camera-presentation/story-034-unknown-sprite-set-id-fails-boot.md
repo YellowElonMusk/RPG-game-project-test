@@ -1,7 +1,7 @@
 # Story 034: an unknown sprite_set_id fails boot; the checkerboard placeholder reaches Title
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done (2026-10-31)
 > **Layer**: Core
 > **Type**: Integration
 > **Estimate**: S
@@ -76,7 +76,7 @@
 **Required evidence**:
 - Integration: `tests/integration/presentation/sprite_set_exists_test.gd` OR playtest doc
 
-**Status**: [ ] Not yet created
+**Status**: [x] `tests/integration/presentation/sprite_set_exists_test.gd` (4 cases) passes (2026-10-31). Character and enemy records both checked against `<data_root>/presentation/sprite_sets`; boot READY asserted (the Title hand-off itself is not driven)
 
 ---
 

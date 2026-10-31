@@ -159,7 +159,7 @@ static func validate_frame_data(sprite_set: SpriteSetData, config: PresentationC
 ## `character` or `enemy` record: when its `sprite_set_id` names a set in
 ## `sets`, every `validate_sprite_set` error becomes one error on field
 ## `sprite_set_id`. A boss set is an `is_boss` enemy's set. Unknown ids and
-## `sprite_placeholder` pass here (`sprite_set_exists` is story 030).
+## `sprite_placeholder` pass here (`sprite_set_exists`, story 034, checks them).
 static func make_record_validator(sets: Dictionary[StringName, SpriteSetData],
 		config: PresentationConfig) -> Callable:
 	return func(record: Resource) -> Array:
@@ -180,6 +180,88 @@ static func register_sprite_set_validators(catalog: ContentCatalogService,
 	var validator: Callable = make_record_validator(sets, config)
 	catalog.register_record_validator(&"character", validator)
 	catalog.register_record_validator(&"enemy", validator)
+
+
+## Rule name of the boss-preset existence check (story 032, AC-28).
+const RULE_BOSS_PROFILE_EXISTS := "boss_profile_exists"
+## Where a content root keeps its lighting-profile table (ADR-0005 §5).
+const PROFILES_SUBDIR := "presentation/profiles"
+
+
+## `boss_<faction>` for faction record id `faction_<faction>` (ADR-0005 §3).
+static func boss_profile_id(faction_id: String) -> StringName:
+	return StringName("boss_" + faction_id.trim_prefix("faction_"))
+
+
+## Every lighting-profile id under `dir` (file base names), as a set; empty
+## when `dir` does not exist.
+static func load_profile_ids(dir: String) -> Dictionary:
+	var ids: Dictionary = {}
+	if not DirAccess.dir_exists_absolute(dir):
+		return ids
+	for f: String in DirAccess.get_files_at(dir):
+		var file_name: String = f.trim_suffix(".remap")
+		if file_name.ends_with(".tres"):
+			ids[StringName(file_name.get_basename())] = true
+	return ids
+
+
+## A `faction` record validator: an alien faction whose `boss_<faction>`
+## profile is not in `profile_ids` is one error on field `id` (ADR-0005 §9).
+static func make_boss_profile_validator(profile_ids: Dictionary) -> Callable:
+	return func(record: Resource) -> Array:
+		var out: Array = []
+		if str(record.get(&"kind")) != "alien":
+			return out
+		var faction_id: String = str(record.get(&"id"))
+		var boss_id: StringName = boss_profile_id(faction_id)
+		if not profile_ids.has(boss_id):
+			out.append({"severity": &"error", "field": "id", "message":
+					"%s -- alien faction %s has no lighting preset %s" % [
+						RULE_BOSS_PROFILE_EXISTS, faction_id, boss_id]})
+		return out
+
+
+## Rule name of the sprite-set existence check (story 034, AC-30).
+const RULE_SPRITE_SET_EXISTS := "sprite_set_exists"
+## Where a content root keeps its sprite-set table (ADR-0005 §5).
+const SPRITE_SETS_SUBDIR := "presentation/sprite_sets"
+
+
+## A `character`/`enemy` record validator: a non-empty `sprite_set_id` that
+## is neither in `set_ids` nor the reserved checkerboard `PLACEHOLDER_SET_ID`
+## is one error on field `sprite_set_id`, naming the record (ADR-0005 §9).
+## An empty id is left to the catalog's own field checks.
+static func make_sprite_set_exists_validator(set_ids: Dictionary) -> Callable:
+	return func(record: Resource) -> Array:
+		var out: Array = []
+		var set_id: String = str(record.get(&"sprite_set_id"))
+		if set_id.is_empty() or set_id == PLACEHOLDER_SET_ID or set_ids.has(StringName(set_id)):
+			return out
+		out.append({"severity": &"error", "field": "sprite_set_id", "message":
+				"%s -- %s names unknown sprite set %s" % [
+					RULE_SPRITE_SET_EXISTS, str(record.get(&"id")), set_id]})
+		return out
+
+
+## Registers the presentation existence validators for `data_root` (ADR-0005
+## §9). A table lives beside the records under the same root
+## (`<data_root>/presentation/...`); a root without that table (a content-data
+## fixture with no presentation half) gets no existence check for it. Must run
+## before `load_all()`.
+static func register_existence_validators(catalog: ContentCatalogService, data_root: String) -> void:
+	var profiles_dir: String = data_root.path_join(PROFILES_SUBDIR)
+	if DirAccess.dir_exists_absolute(profiles_dir):
+		catalog.register_record_validator(&"faction",
+				make_boss_profile_validator(load_profile_ids(profiles_dir)))
+	var sets_dir: String = data_root.path_join(SPRITE_SETS_SUBDIR)
+	if DirAccess.dir_exists_absolute(sets_dir):
+		var set_ids: Dictionary = {}
+		for id: StringName in load_sprite_sets(sets_dir).keys():
+			set_ids[id] = true
+		var exists: Callable = make_sprite_set_exists_validator(set_ids)
+		catalog.register_record_validator(&"character", exists)
+		catalog.register_record_validator(&"enemy", exists)
 
 
 static func _missing(sprite_set: SpriteSetData, anim_id: StringName, facing: StringName) -> String:

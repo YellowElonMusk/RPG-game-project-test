@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="MapData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/map_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "map_outskirts"
+aliases = PackedStringArray("map_outskirts_old")
+display_name = "The Outskirts"
+faction_id = "faction_tech_syndicate"
+base_stage = 1
+stage_table = Dictionary[String, int]({
+"flag_outskirts_checkpoint_cleared": 2
+})
+critical_path = PackedStringArray("leg_entry", "leg_checkpoint", "leg_exit")
+region_liberation_flag = "flag_outskirts_liberated"
+liberated_profile_id = "profile_outskirts_liberated"
+liberated_kit_id = "kit_outskirts_liberated"
+encounter_zone_ids = PackedStringArray("enc_checkpoint_ambush")
+zone_rate = 0.0
+new_game_entry = true

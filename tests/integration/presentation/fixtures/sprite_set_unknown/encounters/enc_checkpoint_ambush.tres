@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EncounterData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/encounter_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "enc_checkpoint_ambush"
+aliases = PackedStringArray("enc_checkpoint_old")
+enemy_ids = PackedStringArray("enemy_bureaucrat_drone")
+battle_stage_id = "stage_checkpoint"
+faction_id = "faction_tech_syndicate"
+is_boss = false
+can_flee = true
+retreat_allowed = true
+respawn = true
+victory_payoff = {
+"money": 10,
+"xp": 20
+}
