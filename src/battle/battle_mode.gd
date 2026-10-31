@@ -216,9 +216,12 @@ func _is_replay_press(action: StringName) -> bool:
 			or action == InputActions.CANCEL
 
 
-## While replaying or GATED the replay owns those presses (ADR-0006 §6).
-## TODO(story 067): the end-of-fight hold consumes them too.
+## While replaying or GATED the replay owns those presses (ADR-0006 §6);
+## during the end-of-fight hold they are consumed and do nothing, so none
+## carries into the results screen or the Defeat Prompt (§5; story 067).
 func _replay_owns_input() -> bool:
+	if _end_hold_left >= 0.0:
+		return true
 	return _replay.is_replaying() or _replay.get_state() == BattleReplayController.State.GATED
 
 

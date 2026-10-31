@@ -1,7 +1,7 @@
 # Story 067: End-of-fight holds complete before the outcome is reported
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done (pending commit)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
@@ -79,7 +79,7 @@ On `battle_ended_after_replay(won)`, the Battle mode requests the Victory or Def
 **Required evidence**:
 - `tests/unit/battle/end_of_fight_holds_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing -- `tests/unit/battle/end_of_fight_holds_test.gd` (4 tests); full suite 1857/1857, exit 0, 0 orphans (2026-10-31).
 
 ---
 
