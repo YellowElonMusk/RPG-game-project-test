@@ -1,7 +1,7 @@
 # Story 067: End-of-fight holds complete before the outcome is reported
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Done (pending commit)
+> **Status**: Done
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M

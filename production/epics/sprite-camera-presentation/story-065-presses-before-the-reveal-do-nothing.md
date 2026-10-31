@@ -1,7 +1,7 @@
 # Story 065: Presses before the reveal and at replay start are latched correctly
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Done (pending commit)
+> **Status**: Done
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M

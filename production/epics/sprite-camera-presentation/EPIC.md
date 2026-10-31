@@ -63,73 +63,73 @@ ADR-0005's Migration Plan sets the order: the windowed spike (Step 1, verificati
 | # | Story | Type | Status | ADR |
 |---|-------|------|--------|-----|
 | 001 | [Windowed engine spike settles sprite-shader and camera verification on 4.7.2](story-001-windowed-engine-spike.md) | Visual/Feel | In Progress | ADR-0005 |
-| 002 | [The capture tool renders the deterministic passes the \[C\] acceptance criteria measure](story-002-capture-tool.md) | Integration | Ready | ADR-0005 |
+| 002 | [The capture tool renders the deterministic passes the \[C\] acceptance criteria measure](story-002-capture-tool.md) | Integration | In Progress | ADR-0005 |
 | 003 | [Actors are lit only by their key and rim light, never ambient, fill or set light](story-003-actor-key-and-rim-lighting-only.md) | Logic | Complete | ADR-0005 |
 | 004 | [SpriteProjection returns an exact, pixel-snapped quad at the foot anchor for any camera and frame size](story-004-sprite-projection-pixel-exact-quad.md) | Logic | Complete | ADR-0005 |
 | 005 | [no_mirror animations use authored opposite-facing art instead of the shader flip](story-005-no-mirror-animations-use-authored-art.md) | Logic | Complete | ADR-0005 |
-| 006 | [The battle camera only changes through frustum_offset: lens shift plus the hit-punch](story-006-battle-camera-lens-shift-only.md) | Logic | Ready | ADR-0005 |
-| 007 | [Camp and Title cameras never move](story-007-camp-and-title-cameras-never-move.md) | Logic | Ready | ADR-0005 |
+| 006 | [The battle camera only changes through frustum_offset: lens shift plus the hit-punch](story-006-battle-camera-lens-shift-only.md) | Logic | Complete | ADR-0005 |
+| 007 | [Camp and Title cameras never move](story-007-camp-and-title-cameras-never-move.md) | Logic | Complete | ADR-0005 |
 | 008 | [Every mode entry applies its lighting profile fully before the transition reveals it](story-008-mode-entry-applies-lighting-before-reveal.md) | Integration | Complete | ADR-0005 |
-| 009 | [A lighting blend reaches p=1 exactly on its last frame and never pops](story-009-lighting-blend-completes-without-popping.md) | Logic | Ready | ADR-0005 |
+| 009 | [A lighting blend reaches p=1 exactly on its last frame and never pops](story-009-lighting-blend-completes-without-popping.md) | Logic | Complete | ADR-0005 |
 | 010 | [Opening the Menu freezes every presentation clock, beat, punch and particle](story-010-menu-freeze-stops-every-presentation-clock.md) | Visual/Feel | Ready | ADR-0005 |
-| 011 | [Sprite animation keeps advancing while Dialogue or the Defeat Prompt is open](story-011-dialogue-and-defeat-prompt-keep-animation-running.md) | Logic | Ready | ADR-0005 |
-| 012 | [Exactly one hit-punch starts per beat, on that beat's impact frame](story-012-one-hit-punch-per-beat-on-impact.md) | Logic | Ready | ADR-0005 |
-| 013 | [A punch requested during a boss-takeover blend or hold is dropped, never deferred](story-013-punch-dropped-during-boss-takeover.md) | Logic | Ready | ADR-0005 |
-| 014 | [A hit-punch never changes an actor's world position](story-014-hit-punch-never-moves-actor-position.md) | Logic | Ready | ADR-0005 |
-| 015 | [A battle replay plays beats in log order, impacting, holding and ending on the controller's own clocks](story-015-battle-replay-plays-beats-in-order.md) | Integration | Ready | ADR-0006 |
-| 016 | [The replay never mutates BattleCore, and the HUD always shows each combatant's live values](story-016-replay-never-mutates-battlecore.md) | Logic | Ready | ADR-0006 |
-| 017 | [Each shipped move resolves to its documented pose, reactions, numbers and punch shape](story-017-move-outcome-shapes-match-the-table.md) | Logic | Ready | ADR-0006 |
+| 011 | [Sprite animation keeps advancing while Dialogue or the Defeat Prompt is open](story-011-dialogue-and-defeat-prompt-keep-animation-running.md) | Logic | Done | ADR-0005 |
+| 012 | [Exactly one hit-punch starts per beat, on that beat's impact frame](story-012-one-hit-punch-per-beat-on-impact.md) | Logic | Complete | ADR-0005 |
+| 013 | [A punch requested during a boss-takeover blend or hold is dropped, never deferred](story-013-punch-dropped-during-boss-takeover.md) | Logic | Done | ADR-0005 |
+| 014 | [A hit-punch never changes an actor's world position](story-014-hit-punch-never-moves-actor-position.md) | Logic | Complete | ADR-0005 |
+| 015 | [A battle replay plays beats in log order, impacting, holding and ending on the controller's own clocks](story-015-battle-replay-plays-beats-in-order.md) | Integration | Complete | ADR-0006 |
+| 016 | [The replay never mutates BattleCore, and the HUD always shows each combatant's live values](story-016-replay-never-mutates-battlecore.md) | Logic | Complete | ADR-0006 |
+| 017 | [Each shipped move resolves to its documented pose, reactions, numbers and punch shape](story-017-move-outcome-shapes-match-the-table.md) | Logic | Complete | ADR-0006 |
 | 018 | [Missing required animations fail Boot; missing optional ones fall back with one warning](story-018-boot-validation-of-sprite-set-animations.md) | Logic | Done | ADR-0005 |
-| 019 | [The squad's rim and outline colors stay constant, and no non-boss light matches a faction color](story-019-squad-rim-and-outline-stay-constant.md) | Logic | Ready | ADR-0005 |
-| 020 | [Only the set light casts shadows; every actor gets exactly one blob shadow](story-020-one-blob-shadow-per-actor-set-light-only-caster.md) | Logic | Ready | ADR-0005 |
-| 021 | [Screen Shake and Reduce Motion settings zero or halve the hit-punch offset](story-021-screen-shake-and-reduce-motion-scale-the-punch.md) | Logic | Ready | ADR-0005 |
-| 022 | [battle_framing keeps every actor slot in view and the foot row on the formula's curve](story-022-battle-framing-keeps-every-slot-in-view.md) | Logic | Ready | ADR-0005 |
+| 019 | [The squad's rim and outline colors stay constant, and no non-boss light matches a faction color](story-019-squad-rim-and-outline-stay-constant.md) | Logic | Done | ADR-0005 |
+| 020 | [Only the set light casts shadows; every actor gets exactly one blob shadow](story-020-one-blob-shadow-per-actor-set-light-only-caster.md) | Logic | Done | ADR-0005 |
+| 021 | [Screen Shake and Reduce Motion settings zero or halve the hit-punch offset](story-021-screen-shake-and-reduce-motion-scale-the-punch.md) | Logic | Complete | ADR-0005 |
+| 022 | [battle_framing keeps every actor slot in view and the foot row on the formula's curve](story-022-battle-framing-keeps-every-slot-in-view.md) | Logic | Complete | ADR-0005 |
 | 023 | [The follow camera's dead zone, tau and ground-footprint clamp match the formula exactly](story-023-follow-camera-matches-the-formula.md) | Logic | Complete | ADR-0005 |
-| 024 | [hit_punch's offset formula is pixel-exact and never starts while another punch is running](story-024-hit-punch-formula-is-pixel-exact.md) | Logic | Ready | ADR-0005 |
+| 024 | [hit_punch's offset formula is pixel-exact and never starts while another punch is running](story-024-hit-punch-formula-is-pixel-exact.md) | Logic | Complete | ADR-0005 |
 | 025 | [A hit-punch displaces every near, far and set-element pixel by the same whole-pixel amount](story-025-punch-displaces-the-id-pass-by-whole-pixels.md) | Visual/Feel | Ready | ADR-0005 |
-| 026 | [lighting_blend reaches p=0.5 at half its duration and never jumps by more than one frame-step](story-026-lighting-blend-formula-is-exact.md) | Logic | Ready | ADR-0005 |
-| 027 | [replay_time holds the formula across every speed, latch and knockout case](story-027-replay-time-holds-every-case.md) | Logic | Ready | ADR-0006 |
-| 028 | [set_brightness_and_blur matches the lighting curve in every battle-family state](story-028-set-brightness-and-blur-match-lighting-states.md) | Logic | Ready | ADR-0005 |
+| 026 | [lighting_blend reaches p=0.5 at half its duration and never jumps by more than one frame-step](story-026-lighting-blend-formula-is-exact.md) | Logic | Complete | ADR-0005 |
+| 027 | [replay_time holds the formula across every speed, latch and knockout case](story-027-replay-time-holds-every-case.md) | Logic | Complete | ADR-0006 |
+| 028 | [set_brightness_and_blur matches the lighting curve in every battle-family state](story-028-set-brightness-and-blur-match-lighting-states.md) | Logic | Done | ADR-0005 |
 | 029 | [FlashGate books every large-area transition at its landing time, not its request](story-029-flash-gate-books-transitions-at-landing-time.md) | Logic | Done | ADR-0005 |
 | 030 | [a Retry or a cancelled first-encounter takeover lands on the right light, never a pop](story-030-retry-and-cancel-in-a-boss-fight.md) | Logic | Ready | ADR-0006 |
-| 031 | [the follow camera snaps on a warp and stays clamped inside the map](story-031-camera-snaps-on-warp-and-clamps-at-map-edges.md) | Logic | Ready | ADR-0005 |
+| 031 | [the follow camera snaps on a warp and stays clamped inside the map](story-031-camera-snaps-on-warp-and-clamps-at-map-edges.md) | Logic | Complete | ADR-0005 |
 | 032 | [an alien faction with no boss lighting preset fails boot, never the fight](story-032-missing-boss-preset-fails-boot.md) | Integration | Ready | ADR-0005 |
-| 033 | [the command menu, Defeat Prompt and outcome report open only after the replay, never off BattleCore's raw signals](story-033-command-menu-and-outcomes-wait-for-the-replay.md) | Integration | Ready | ADR-0006 |
+| 033 | [the command menu, Defeat Prompt and outcome report open only after the replay, never off BattleCore's raw signals](story-033-command-menu-and-outcomes-wait-for-the-replay.md) | Integration | Complete | ADR-0006 |
 | 034 | [an unknown sprite_set_id fails boot; the checkerboard placeholder reaches Title](story-034-unknown-sprite-set-id-fails-boot.md) | Integration | Ready | ADR-0005 |
 | 035 | [the battle benchmark holds its frame-time and draw-call budget on both target devices](story-035-battle-performance-budget.md) | Integration | Ready | ADR-0005 |
 | 036 | [one capture per lighting state passes read order and shows no glow on actors](story-036-capture-one-screen-per-lighting-state.md) | Visual/Feel | Ready | ADR-0005 |
 | 037 | [every character's silhouette passes the 2-of-3 lineup test](story-037-silhouette-sheet-passes-the-lineup-test.md) | Visual/Feel | Ready | ADR-0005 |
 | 038 | [every faction's boss takeover is lavish on its own terms, with no faction left behind](story-038-boss-takeover-faction-parity.md) | Visual/Feel | Ready | ADR-0005 |
 | 039 | [every sprite's texels are whole, uniform pixel blocks at every shipped resolution](story-039-texel-scale-holds-across-resolutions.md) | Visual/Feel | Ready | ADR-0005 |
-| 040 | [a Retry, Retreat or Quit mid-replay discards cleanly and never leaves a stale frame](story-040-retry-and-exit-mid-replay-clear-the-display.md) | Logic | Ready | ADR-0006 |
+| 040 | [a Retry, Retreat or Quit mid-replay discards cleanly and never leaves a stale frame](story-040-retry-and-exit-mid-replay-clear-the-display.md) | Logic | Done | ADR-0006 |
 | 041 | [every boss stage frames its faction's colorblind-safe shape in view](story-041-boss-stage-frames-a-colorblind-shape.md) | Integration | Ready | ADR-0005 |
-| 042 | [the replay indicator shows the right state and every press either latches, un-latches or is refused](story-042-replay-indicator-and-latch-input.md) | Logic | Ready | ADR-0006 |
-| 043 | [a 0.5-second frame never skips a beat or double-fires its events](story-043-slow-frame-never-skips-a-beat.md) | Logic | Ready | ADR-0006 |
-| 044 | [the follow camera holds its position while Dialogue is open](story-044-dialogue-holds-the-follow-camera.md) | Logic | Ready | ADR-0005 |
-| 045 | [a comfort-setting change mid-punch applies on the very next frame](story-045-setting-change-mid-punch.md) | Logic | Ready | ADR-0005 |
-| 046 | [no two actor slots share a view depth, in every shipped formation](story-046-no-two-actor-slots-share-a-depth.md) | Logic | Ready | ADR-0005 |
+| 042 | [the replay indicator shows the right state and every press either latches, un-latches or is refused](story-042-replay-indicator-and-latch-input.md) | Logic | Complete | ADR-0006 |
+| 043 | [a 0.5-second frame never skips a beat or double-fires its events](story-043-slow-frame-never-skips-a-beat.md) | Logic | Complete | ADR-0006 |
+| 044 | [the follow camera holds its position while Dialogue is open](story-044-dialogue-holds-the-follow-camera.md) | Logic | Complete | ADR-0005 |
+| 045 | [a comfort-setting change mid-punch applies on the very next frame](story-045-setting-change-mid-punch.md) | Logic | Done | ADR-0005 |
+| 046 | [no two actor slots share a view depth, in every shipped formation](story-046-no-two-actor-slots-share-a-depth.md) | Logic | Complete | ADR-0005 |
 | 047 | [every battle stage keeps every actor slot visible above the occlusion threshold](story-047-occlusion-and-visibility-pass-the-threshold.md) | Visual/Feel | Ready | ADR-0005 |
-| 048 | [Reduce Motion zeroes the punch and ambient set motion, and swaps in the still confetti](story-048-reduce-motion-zeroes-ambient-motion.md) | Logic | Ready | ADR-0005 |
+| 048 | [Reduce Motion zeroes the punch and ambient set motion, and swaps in the still confetti](story-048-reduce-motion-zeroes-ambient-motion.md) | Logic | Done | ADR-0005 |
 | 049 | [the boss takeover starts on reveal, runs on one clock, and holds the battle](story-049-boss-takeover-runs-on-one-clock.md) | Integration | Ready | ADR-0006 |
-| 050 | [every actor slot stays inside the battle camera's view at every supported aspect ratio](story-050-camera-holds-every-slot-in-view-at-every-aspect.md) | Logic | Ready | ADR-0005 |
-| 051 | [Rendering constraints are pinned at the project level](story-051-rendering-constraints.md) | Logic | Ready | ADR-0005 |
+| 050 | [every actor slot stays inside the battle camera's view at every supported aspect ratio](story-050-camera-holds-every-slot-in-view-at-every-aspect.md) | Logic | Complete | ADR-0005 |
+| 051 | [Rendering constraints are pinned at the project level](story-051-rendering-constraints.md) | Logic | Done | ADR-0005 |
 | 052 | [No emissive source bleeds through an actor's silhouette](story-052-no-emissive-behind-actor.md) | Visual/Feel | Ready | ADR-0005 |
-| 053 | [The Defeat spotlight centres on the party's formation](story-053-defeat-spotlight-formation-centre.md) | Logic | Ready | ADR-0005 |
-| 054 | [The follow camera holds still while the Menu is open](story-054-follow-camera-holds-under-the-menu.md) | Logic | Ready | ADR-0005 |
-| 055 | [A window resize recomputes the punch and the camera headlessly](story-055-resize-recomputes-punch-and-camera.md) | Logic | Ready | ADR-0005 |
+| 053 | [The Defeat spotlight centres on the party's formation](story-053-defeat-spotlight-formation-centre.md) | Logic | Done | ADR-0005 |
+| 054 | [The follow camera holds still while the Menu is open](story-054-follow-camera-holds-under-the-menu.md) | Logic | Complete | ADR-0005 |
+| 055 | [A window resize recomputes the punch and the camera headlessly](story-055-resize-recomputes-punch-and-camera.md) | Logic | Complete | ADR-0005 |
 | 056 | [Comfort settings changed mid-replay apply from the next frame](story-056-comfort-settings-change-mid-replay.md) | Logic | Ready | ADR-0006 |
 | 057 | [The UI layer is never tinted by the world's tonemapper](story-057-ui-never-tinted-by-the-world.md) | Visual/Feel | Ready | ADR-0005 |
-| 058 | [The menu input guard refuses presses for its full window](story-058-menu-input-guard.md) | Logic | Ready | ADR-0008 |
+| 058 | [The menu input guard refuses presses for its full window](story-058-menu-input-guard.md) | Logic | Done (logic, screen wiring pending) | ADR-0008 |
 | 059 | [Every flash-capable source is declared and classified](story-059-flash-coverage-declared-for-every-source.md) | Logic | Done | ADR-0005 |
 | 060 | [The flash analyser checks composited frames against flash_rate_max](story-060-composite-frame-flash-analysis.md) | Visual/Feel | Ready | ADR-0005 |
-| 061 | [PresentationConfig's load rules are validated at boot](story-061-presentation-config-load-validation.md) | Logic | Ready | ADR-0005 |
+| 061 | [PresentationConfig's load rules are validated at boot](story-061-presentation-config-load-validation.md) | Logic | Complete | ADR-0005 |
 | 062 | [A boss sprite set with no front intro fails boot](story-062-boss-intro-animation-required.md) | Logic | Done | ADR-0005 |
-| 063 | [A moving sprite stays pixel-snapped in every mode](story-063-pixel-snap-in-every-mode.md) | Logic | Ready | ADR-0005 |
-| 064 | [A stale damage number is cleared before the next one lands](story-064-old-damage-number-cleared.md) | Logic | Ready | ADR-0006 |
-| 065 | [Presses before the reveal and at replay start are latched correctly](story-065-presses-before-the-reveal-do-nothing.md) | Logic | Ready | ADR-0006 |
+| 063 | [A moving sprite stays pixel-snapped in every mode](story-063-pixel-snap-in-every-mode.md) | Logic | Complete | ADR-0005 |
+| 064 | [A stale damage number is cleared before the next one lands](story-064-old-damage-number-cleared.md) | Logic | Complete | ADR-0006 |
+| 065 | [Presses before the reveal and at replay start are latched correctly](story-065-presses-before-the-reveal-do-nothing.md) | Logic | Done | ADR-0006 |
 | 066 | [Impact and landing frame data is required at boot](story-066-impact-and-landing-frame-data-required.md) | Logic | Done | ADR-0005 |
-| 067 | [End-of-fight holds complete before the outcome is reported](story-067-end-of-fight-holds.md) | Logic | Ready | ADR-0006 |
-| 068 | [Reduce Flashing halves the campfire flicker's swing](story-068-reduce-flashing-halves-campfire-flicker.md) | Logic | Ready | ADR-0005 |
+| 067 | [End-of-fight holds complete before the outcome is reported](story-067-end-of-fight-holds.md) | Logic | Done | ADR-0006 |
+| 068 | [Reduce Flashing halves the campfire flicker's swing](story-068-reduce-flashing-halves-campfire-flicker.md) | Logic | Done | ADR-0005 |
 | 069 | [Nothing compiles a rendering pipeline in play, measured](story-069-nothing-compiles-in-play.md) | Integration | Ready | ADR-0005 |
 | 070 | [Outcome numbers and the round number release on the right frame](story-070-outcome-numbers-and-round-on-the-hud.md) | Logic | Ready | ADR-0006 |
 | 071 | [The anchor moment reads clearly to first-time players](story-071-the-anchor-moment-playtest.md) | Integration | Ready | ADR-0005 |

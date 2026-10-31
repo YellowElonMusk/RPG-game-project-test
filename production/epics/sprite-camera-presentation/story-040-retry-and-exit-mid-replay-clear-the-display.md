@@ -1,7 +1,7 @@
 # Story 040: a Retry, Retreat or Quit mid-replay discards cleanly and never leaves a stale frame
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Done (pending commit)
+> **Status**: Done
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
