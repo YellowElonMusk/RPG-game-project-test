@@ -25,11 +25,18 @@
 ## a later story's scope -- `setup()` already takes the config to match the
 ## ADR's interface shape, but this story's logic never reads it.
 ##
-## TODO(sprite-camera-presentation): `overlay_opened`/`overlay_closed(MENU)`
-## ambient pause and the every-frame `mode_time`/`actor_rim_color`/
-## `actor_rim_strength` writes through `GlobalUniformSink` are story 010's
-## scope (menu-freeze-stops-every-presentation-clock), not this story's.
+## The Menu freeze (story 010, AC-8; ADR-0005 §4/§7): on
+## `overlay_opened(MENU)` / `overlay_closed(MENU)` this calls
+## `stage.set_ambient_paused(true/false)` (Dialogue and the Defeat Prompt do
+## not pause ambience), and every frame -- processing always, so it keeps
+## writing under the Menu -- it writes the global uniforms through the sink:
+## `mode_time` from `machine.mode_time` (which stops under the Menu) and
+## `actor_rim_color`/`actor_rim_strength` from the stage's blended values.
 class_name PresentationDirector extends Node
+
+const MODE_TIME_GLOBAL: StringName = &"mode_time"
+const RIM_COLOR_GLOBAL: StringName = &"actor_rim_color"
+const RIM_STRENGTH_GLOBAL: StringName = &"actor_rim_strength"
 
 const _PROFILES_DIR: String = "res://data/presentation/profiles"
 ## `blend_time` for this class's own entry-profile apply (ADR-0005 §4):
@@ -55,6 +62,46 @@ func setup(machine: GameStateMachine, config: PresentationConfig, sink: GlobalUn
 	_sink = sink
 	_machine.transition_started.connect(_on_transition_started)
 	_machine.mode_entered.connect(_on_mode_entered)
+	_machine.overlay_opened.connect(_on_overlay_opened)
+	_machine.overlay_closed.connect(_on_overlay_closed)
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
+
+func _process(_delta: float) -> void:
+	write_globals()
+
+
+## Writes this frame's global uniforms through the sink (ADR-0005 §4):
+## `mode_time` from the machine, and the live stage's current rim values
+## when a stage exists. Public so tests and tools can drive a frame.
+func write_globals() -> void:
+	if _sink == null or _machine == null:
+		return
+	_sink.set_global(MODE_TIME_GLOBAL, _machine.mode_time)
+	if not is_inside_tree():
+		return
+	var stage: DioramaStage = _find_stage()
+	if stage != null:
+		_sink.set_global(RIM_COLOR_GLOBAL, stage.current_rim_color)
+		_sink.set_global(RIM_STRENGTH_GLOBAL, stage.current_rim_strength)
+
+
+func _on_overlay_opened(kind: GameStateMachine.OverlayKind) -> void:
+	_set_ambient_paused(kind, true)
+
+
+func _on_overlay_closed(kind: GameStateMachine.OverlayKind) -> void:
+	_set_ambient_paused(kind, false)
+
+
+## Only the Menu pauses ambience; Dialogue and the Defeat Prompt keep it
+## running (story 011).
+func _set_ambient_paused(kind: GameStateMachine.OverlayKind, paused: bool) -> void:
+	if kind != GameStateMachine.OverlayKind.MENU or not is_inside_tree():
+		return
+	var stage: DioramaStage = _find_stage()
+	if stage != null:
+		stage.set_ambient_paused(paused)
 
 
 func _on_transition_started(from: GameStateMachine.Mode, to: GameStateMachine.Mode) -> void:

@@ -1,7 +1,7 @@
 # Story 010: Opening the Menu freezes every presentation clock, beat, punch and particle
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done (2026-10-31) -- [I] `tests/integration/presentation/menu_freeze_test.gd` 5/5; [C] live capture PASS (open diff 0 px, control 66,921 px); full suite 1890/1890 exit 0; lead sign-off owed
 > **Layer**: Core
 > **Type**: Visual/Feel
 > **Estimate**: L
@@ -79,7 +79,7 @@
 **Required evidence**:
 - Visual/Feel: a retained screenshot in `production/qa/evidence/menu-freeze-stops-every-presentation-clock/` + sign-off in `production/qa/evidence/menu-freeze-stops-every-presentation-clock-evidence.md`
 
-**Status**: [ ] Not yet created
+**Status**: [x] `production/qa/evidence/menu-freeze-stops-every-presentation-clock/` (open_a/b, closed_a/b, diff masks, measurements.json, stamp.txt) + `production/qa/evidence/menu-freeze-stops-every-presentation-clock-evidence.md`; lead sign-off owed
 
 ---
 

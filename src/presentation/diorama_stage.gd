@@ -403,6 +403,50 @@ func ambient_motion(config: PresentationConfig) -> Dictionary:
 	}
 
 
+var _ambient_paused: bool = false
+## Particle node -> its `process_mode` before `set_ambient_paused(true)`.
+var _paused_particles: Dictionary[Node, int] = {}
+
+
+## The Menu's ambient pause (ADR-0005 §4/§7; story 010, AC-8): `true` sets
+## every particle node in the mode scene (the stage's owner, else its
+## parent, and everything below) to `PROCESS_MODE_DISABLED`, so each one
+## reports it is not processing even if it was wrongly set to always
+## process; `false` restores each one's previous mode. Node-driven motion
+## already freezes with `ModeHost` (ADR-0002); this is the explicit
+## particle half. Called only by `PresentationDirector` on
+## `overlay_opened/closed(MENU)` ("one door"). Idempotent.
+func set_ambient_paused(paused: bool) -> void:
+	if paused == _ambient_paused:
+		return
+	_ambient_paused = paused
+	if paused:
+		for p: Node in particles_in_scene():
+			_paused_particles[p] = p.process_mode
+			p.process_mode = Node.PROCESS_MODE_DISABLED
+		return
+	for p: Node in _paused_particles:
+		if is_instance_valid(p):
+			p.process_mode = _paused_particles[p] as Node.ProcessMode
+	_paused_particles.clear()
+
+
+## Whether the Menu's ambient pause is in effect.
+func is_ambient_paused() -> bool:
+	return _ambient_paused
+
+
+## Every particle node (`GPUParticles3D/2D`, `CPUParticles3D/2D`) in this
+## stage's mode scene: under the stage's owner, else its parent, else itself.
+func particles_in_scene() -> Array[Node]:
+	var root: Node = owner if owner != null else (get_parent() if get_parent() != null else self)
+	var out: Array[Node] = []
+	for n: Node in root.find_children("*", "", true, false):
+		if n is GPUParticles3D or n is CPUParticles3D or n is GPUParticles2D or n is CPUParticles2D:
+			out.append(n)
+	return out
+
+
 ## The Victory confetti effect to play: the still sparkle with Reduce Motion
 ## On, else the animated confetti (AC-44), read live.
 func victory_confetti_id(config: PresentationConfig) -> StringName:

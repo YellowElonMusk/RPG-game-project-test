@@ -19,6 +19,10 @@ var poll_count: int = 0
 var frozen_overworld_node_value: Node = null
 ## One entry per `set_mode_time_stopped()` call, in order (story 025).
 var set_mode_time_stopped_calls: Array[bool] = []
+## Optional stand-in for `ModeHost`: when set, `set_mode_time_stopped()`
+## toggles its `process_mode` exactly as `ModeHostSceneLoader` does
+## (`DISABLED` / `INHERIT`), so a test can run real frames under the Menu.
+var mode_host: Node = null
 
 var _recorder: SequenceRecorder
 var _queue: Array[SwapStatus] = []
@@ -74,6 +78,8 @@ func free_frozen_overworld() -> void:
 
 func set_mode_time_stopped(stopped: bool) -> void:
 	set_mode_time_stopped_calls.append(stopped)
+	if mode_host != null:
+		mode_host.process_mode = Node.PROCESS_MODE_DISABLED if stopped else Node.PROCESS_MODE_INHERIT
 	if _recorder != null:
 		_recorder.record(&"set_mode_time_stopped", [stopped])
 

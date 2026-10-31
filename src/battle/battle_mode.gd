@@ -222,7 +222,9 @@ func step_replay(delta: float) -> void:
 		_replay.advance(delta)
 	if _stage != null:
 		_stage.refresh_clock_blend()
-	_step_punch(delta)
+	# The punch runs on the replay's clamped step (GDD "One clock"): a slow
+	# frame never jumps it by more than dt_max (story 010, AC-8).
+	_step_punch(minf(delta, presentation_config.follow_camera_dt_max))
 	if _end_hold_left < 0.0:
 		return
 	_end_hold_left -= delta

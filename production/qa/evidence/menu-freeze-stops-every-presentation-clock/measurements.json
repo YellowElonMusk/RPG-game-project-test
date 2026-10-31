@@ -1,0 +1,18 @@
+{
+  "case": "a (mid-wind-up)",
+  "closed_diff_pixels": 66921,
+  "closed_diff_share": 0.0726139322916667,
+  "grab_gap_s": 1.0,
+  "open_diff_pixels": 0,
+  "particles_fixture": 1,
+  "post_impact_at_open": 0.0,
+  "result": "PASS",
+  "size": [
+    1280,
+    720
+  ],
+  "tolerance": 0,
+  "tool": "tools/capture/menu_freeze_capture.gd",
+  "windup_progress_after_1s_open": 0.01,
+  "windup_progress_at_open": 0.01
+}

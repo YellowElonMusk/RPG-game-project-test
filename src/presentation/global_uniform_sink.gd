@@ -10,12 +10,8 @@
 ## to record instead of writing a real global (the same shape as
 ## `SceneLoader`'s pattern in `src/game_state/scene_loader.gd`).
 ##
-## TODO(sprite-camera-presentation): `PresentationDirector` does not call
-## this yet -- the per-frame `mode_time`/`actor_rim_color`/
-## `actor_rim_strength` writes are story 010's scope
-## (menu-freeze-stops-every-presentation-clock). This story only wires the
-## constructor-injected reference through `PresentationDirector.setup()` so
-## the shape matches ADR-0005 §4 now.
+## `PresentationDirector` writes `mode_time`, `actor_rim_color` and
+## `actor_rim_strength` through this every frame (story 010).
 class_name GlobalUniformSink extends RefCounted
 
 

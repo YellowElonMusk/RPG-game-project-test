@@ -1,0 +1,7 @@
+Reviewed-Content-Hash: src/presentation/presentation_director.gd a2dcad253bbb24d7ffb21bc2de1e9808297be37f
+Reviewed-Content-Hash: src/presentation/diorama_stage.gd d5d55846f64f45702461567f6e1a2030962d1363
+Reviewed-Content-Hash: src/presentation/global_uniform_sink.gd f844e6f4a95cf8436f332dd55d0cd9243b842fe5
+Reviewed-Content-Hash: src/battle/battle_mode.gd 32743301adf2cd94e5e93088d8fc9fd62d015a18
+Reviewed-Content-Hash: tools/capture/menu_freeze_capture.gd 0053a23dd2b546b6bc37f29a24767479020bf943
+Reviewed-Content-Hash: tests/integration/presentation/menu_freeze_test.gd 137266ee5b455630e9ab76f8a9a5117ed7b9ea1a
+Reviewed-Content-Hash: tests/unit/game_state/doubles/stub_scene_loader.gd aae5ac3b90b934fe07e91b7adde0eda4ee12789b
