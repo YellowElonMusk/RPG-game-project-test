@@ -77,7 +77,10 @@ const _LEVELS: Array[int] = [0, 128, 255]
 ## Max per-channel distance from a level for a pixel to be classified.
 const _LEVEL_TOLERANCE: int = 24
 
-const _ID_SHADER_CODE: String = """shader_type spatial;
+## What marks the actor card shader (`sprite_actor.gdshader`, ADR-0005 §2).
+const _ACTOR_CARD_MARKER: String = "uniform vec4 sprite_rect"
+
+const _ID_SHADER_CODE: String ="""shader_type spatial;
 render_mode unshaded, cull_disabled, shadows_disabled;
 uniform vec4 id_color : source_color = vec4(1.0);
 uniform sampler2D id_mask : source_color, filter_nearest;
@@ -99,6 +102,8 @@ var read_setting: Callable = func(key: String, fallback: Variant) -> Variant:
 
 var _viewport: SubViewport = null
 var _id_shader: Shader = null
+## `{actor Shader: its ID-pass variant}` (story 072).
+var _actor_id_shaders: Dictionary = {}
 
 
 ## Builds the capture `SubViewport` (a child of this node) and applies the
@@ -185,6 +190,16 @@ func apply_id_overrides(scene_root: Node, actor_layer: int) -> Dictionary:
 	var restore: Dictionary = {}
 	for geo: GeometryInstance3D in _geometry_under(scene_root):
 		restore[geo] = geo.material_override
+		if is_actor_card_material(geo.material_override):
+			# Keep the card projection: same uniforms, ID variant shader.
+			var src := geo.material_override as ShaderMaterial
+			var card := ShaderMaterial.new()
+			card.shader = _get_actor_id_shader(src.shader)
+			for uniform_name: StringName in uniform_names(src.shader.code):
+				card.set_shader_parameter(uniform_name, src.get_shader_parameter(uniform_name))
+			card.set_shader_parameter(&"capture_id_color", colours[class_of(geo, actor_layer, scene_root)])
+			geo.material_override = card
+			continue
 		var mat := ShaderMaterial.new()
 		mat.shader = _get_id_shader()
 		mat.set_shader_parameter(&"id_color", colours[class_of(geo, actor_layer, scene_root)])
@@ -194,6 +209,42 @@ func apply_id_overrides(scene_root: Node, actor_layer: int) -> Dictionary:
 			mat.set_shader_parameter(&"id_mask", tex)
 		geo.material_override = mat
 	return restore
+
+
+## Whether `mat` is a `CharacterSprite`'s actor material: a `ShaderMaterial`
+## whose shader builds the clip-space card from `sprite_rect` (ADR-0005 §2).
+static func is_actor_card_material(mat: Material) -> bool:
+	var sm := mat as ShaderMaterial
+	return sm != null and sm.shader != null and sm.shader.code.contains(_ACTOR_CARD_MARKER)
+
+
+## The per-material (non-`global`) uniform names declared in shader `code`.
+## Read from the source, not the renderer, so it also works headless.
+static func uniform_names(code: String) -> Array[StringName]:
+	var out: Array[StringName] = []
+	var re := RegEx.create_from_string("(?m)^\\s*uniform\\s+\\w+\\s+(\\w+)")
+	for m: RegExMatch in re.search_all(code):
+		out.append(StringName(m.get_string(1)))
+	return out
+
+
+## The ID-pass variant of the actor shader `actor_code` (story 072): the
+## same vertex() card projection and alpha cut, but unshaded and flat
+## `capture_id_color`. The plain flat ID material would draw the
+## `AnimatedSprite3D`'s own quad (`pixel_size` exists only for culling
+## bounds), not the pixel-exact card the actor shader draws, so the actor's
+## ID silhouette would not line up with its pixels in the final frame.
+static func actor_id_shader_code(actor_code: String) -> String:
+	var re := RegEx.create_from_string("render_mode[^;]*;")
+	var code: String = re.sub(actor_code,
+			"render_mode unshaded, cull_disabled, shadows_disabled;\n"
+			+ "uniform vec4 capture_id_color : source_color = vec4(1.0);", false)
+	# fragment() is the shader's last function: override its outputs last.
+	var close: int = code.rfind("}")
+	if close < 0:
+		return code
+	return code.substr(0, close) + "\tALBEDO = capture_id_color.rgb;\n\tEMISSION = vec3(0.0);\n" \
+			+ code.substr(close)
 
 
 ## Puts back the materials `apply_id_overrides` replaced.
@@ -416,6 +467,14 @@ func _grab() -> Image:
 	for i: int in settle_frames:
 		await RenderingServer.frame_post_draw
 	return _viewport.get_texture().get_image()
+
+
+func _get_actor_id_shader(actor: Shader) -> Shader:
+	if not _actor_id_shaders.has(actor):
+		var s := Shader.new()
+		s.code = actor_id_shader_code(actor.code)
+		_actor_id_shaders[actor] = s
+	return _actor_id_shaders[actor] as Shader
 
 
 func _get_id_shader() -> Shader:

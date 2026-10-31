@@ -1,7 +1,7 @@
 # Story 072: The squad is never tinted by a faction's boss flood
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done (2026-10-31): capture PASS, lead sign-off pending
 > **Layer**: Core
 > **Type**: Visual/Feel
 > **Estimate**: S
@@ -31,7 +31,7 @@
 
 *From GDD `design/gdd/sprite-camera-presentation.md`, scoped to this story:*
 
-- [ ] **AC-67 [C]** (P-09) (the squad is never tinted; Pending: capture tool) On each faction's boss takeover capture and the same stage's Battle capture, each squad member's actor pixels differ by at most ΔE 3 on average and ΔE 6 at the 95th percentile.
+- [x] **AC-67 [C]** (P-09) (the squad is never tinted; Pending: capture tool) On each faction's boss takeover capture and the same stage's Battle capture, each squad member's actor pixels differ by at most ΔE 3 on average and ΔE 6 at the 95th percentile.
 
 ---
 
@@ -75,7 +75,7 @@ The capture tool's ID pass isolates each squad member's actor pixels on a `boss_
 - A retained capture-tool output in `production/qa/evidence/squad-never-tinted/`
 - Sign-off in `production/qa/evidence/squad-never-tinted-evidence.md`
 
-**Status**: [ ] Not yet created
+**Status**: [x] `production/qa/evidence/squad-never-tinted/` (tool `tools/capture/squad_tint_capture.gd`, exit 0: every faction ΔE 0.00 mean / 0.00 p95; negative and sensitivity controls fail as expected) + `production/qa/evidence/squad-never-tinted-evidence.md` (lead sign-off pending); `tests/unit/presentation/squad_tint_check_test.gd` (12 cases) passes; full suite 1902/1902, exit 0 (2026-10-31)
 
 ---
 

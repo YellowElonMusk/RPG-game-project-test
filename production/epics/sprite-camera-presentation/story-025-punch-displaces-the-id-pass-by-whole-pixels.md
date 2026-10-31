@@ -1,7 +1,7 @@
 # Story 025: A hit-punch displaces every near, far and set-element pixel by the same whole-pixel amount
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done (2026-10-31) -- [C] `tools/capture/punch_shift_capture.gd` PASS (A_peak 5 up/down, 2 up: every near, far and set region moved exactly A_peak, 0 mismatched px); `tests/unit/presentation/punch_shift_check_test.gd` 5/5; full suite 1903/1903 exit 0; lead sign-off owed
 > **Layer**: Core
 > **Type**: Visual/Feel
 > **Estimate**: M
@@ -73,7 +73,7 @@
 **Required evidence**:
 - Visual/Feel: a retained screenshot/measurement in `production/qa/evidence/punch-displaces-the-id-pass-by-whole-pixels/` + sign-off in `production/qa/evidence/punch-displaces-the-id-pass-by-whole-pixels-evidence.md`
 
-**Status**: [ ] Not yet created
+**Status**: [x] `production/qa/evidence/punch-displaces-the-id-pass-by-whole-pixels/` (id_none, id_big_up/down, id_normal_up, final_*, measurements.json, stamp.txt) + `production/qa/evidence/punch-displaces-the-id-pass-by-whole-pixels-evidence.md`; lead sign-off owed
 
 ---
 

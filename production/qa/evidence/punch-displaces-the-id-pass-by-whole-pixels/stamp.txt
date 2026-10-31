@@ -1,0 +1,6 @@
+Reviewed-Content-Hash: tools/capture/punch_shift_capture.gd 5dc7dc17a4e7e39f783386eaa92e5dc35a82e1f3
+Reviewed-Content-Hash: tools/capture/punch_shift_check.gd 7a9bf2af5f5b207e9626206898ebe4384464327e
+Reviewed-Content-Hash: tests/unit/presentation/punch_shift_check_test.gd c380aabf23b99e72b8243685ddc4565bc09224fe
+Reviewed-Content-Hash: src/presentation/diorama_stage.gd d5d55846f64f45702461567f6e1a2030962d1363
+Reviewed-Content-Hash: src/presentation/battle_framing.gd 67858bfb7059953e32e0b69cdc8fb6f29f01c505
+Reviewed-Content-Hash: tools/capture/presentation_capture.gd b3586dbd4c697b9a0c273c8eab627ef3af8ab13f

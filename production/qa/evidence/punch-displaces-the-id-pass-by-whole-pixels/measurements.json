@@ -1,0 +1,290 @@
+{
+  "cases": {
+    "big_down": {
+      "a_beat": 7.0,
+      "a_peak": 5,
+      "dir": [
+        0.0,
+        1.0
+      ],
+      "failures": [],
+      "lens_shift": [
+        0.0,
+        -0.00164082041010261
+      ],
+      "measured": {
+        "far:Enemy5": {
+          "mismatch": 0,
+          "pixels": 5256,
+          "runner_up": 348,
+          "shift": [
+            0,
+            5
+          ]
+        },
+        "near:Squad0": {
+          "mismatch": 0,
+          "pixels": 2984,
+          "runner_up": 212,
+          "shift": [
+            0,
+            5
+          ]
+        },
+        "near:Squad1": {
+          "mismatch": 0,
+          "pixels": 3010,
+          "runner_up": 314,
+          "shift": [
+            0,
+            5
+          ]
+        },
+        "near:Squad2": {
+          "mismatch": 0,
+          "pixels": 3052,
+          "runner_up": 272,
+          "shift": [
+            0,
+            5
+          ]
+        },
+        "near:Squad3": {
+          "mismatch": 0,
+          "pixels": 3292,
+          "runner_up": 204,
+          "shift": [
+            0,
+            5
+          ]
+        },
+        "set:blob_shadows": {
+          "mismatch": 0,
+          "pixels": 5487,
+          "runner_up": 276,
+          "shift": [
+            0,
+            5
+          ]
+        }
+      },
+      "pass": true,
+      "punch_px": [
+        0,
+        5
+      ]
+    },
+    "big_up": {
+      "a_beat": 7.0,
+      "a_peak": 5,
+      "dir": [
+        0.0,
+        -1.0
+      ],
+      "failures": [],
+      "lens_shift": [
+        0.0,
+        -0.00188571913167834
+      ],
+      "measured": {
+        "far:Enemy5": {
+          "mismatch": 0,
+          "pixels": 5324,
+          "runner_up": 360,
+          "shift": [
+            0,
+            -5
+          ]
+        },
+        "near:Squad0": {
+          "mismatch": 0,
+          "pixels": 2984,
+          "runner_up": 212,
+          "shift": [
+            0,
+            -5
+          ]
+        },
+        "near:Squad1": {
+          "mismatch": 0,
+          "pixels": 2864,
+          "runner_up": 276,
+          "shift": [
+            0,
+            -5
+          ]
+        },
+        "near:Squad2": {
+          "mismatch": 0,
+          "pixels": 3052,
+          "runner_up": 272,
+          "shift": [
+            0,
+            -5
+          ]
+        },
+        "near:Squad3": {
+          "mismatch": 0,
+          "pixels": 3292,
+          "runner_up": 204,
+          "shift": [
+            0,
+            -5
+          ]
+        },
+        "set:blob_shadows": {
+          "mismatch": 0,
+          "pixels": 5487,
+          "runner_up": 276,
+          "shift": [
+            0,
+            -5
+          ]
+        }
+      },
+      "pass": true,
+      "punch_px": [
+        0,
+        -5
+      ]
+    },
+    "normal_up": {
+      "a_beat": 3.0,
+      "a_peak": 2,
+      "dir": [
+        0.0,
+        -1.0
+      ],
+      "failures": [],
+      "lens_shift": [
+        0.0,
+        -0.00181224953848869
+      ],
+      "measured": {
+        "far:Enemy5": {
+          "mismatch": 0,
+          "pixels": 5288,
+          "runner_up": 358,
+          "shift": [
+            0,
+            -2
+          ]
+        },
+        "near:Squad0": {
+          "mismatch": 0,
+          "pixels": 2984,
+          "runner_up": 212,
+          "shift": [
+            0,
+            -2
+          ]
+        },
+        "near:Squad1": {
+          "mismatch": 0,
+          "pixels": 2912,
+          "runner_up": 294,
+          "shift": [
+            0,
+            -2
+          ]
+        },
+        "near:Squad2": {
+          "mismatch": 0,
+          "pixels": 3052,
+          "runner_up": 272,
+          "shift": [
+            0,
+            -2
+          ]
+        },
+        "near:Squad3": {
+          "mismatch": 0,
+          "pixels": 3292,
+          "runner_up": 204,
+          "shift": [
+            0,
+            -2
+          ]
+        },
+        "set:blob_shadows": {
+          "mismatch": 0,
+          "pixels": 5487,
+          "runner_up": 276,
+          "shift": [
+            0,
+            -2
+          ]
+        }
+      },
+      "pass": true,
+      "punch_px": [
+        0,
+        -2
+      ]
+    }
+  },
+  "h_screen": 720,
+  "regions": {
+    "far:Enemy5": {
+      "class": "actor",
+      "rect": [
+        456,
+        403,
+        142,
+        142
+      ]
+    },
+    "near:Squad0": {
+      "class": "actor",
+      "rect": [
+        236,
+        528,
+        142,
+        142
+      ]
+    },
+    "near:Squad1": {
+      "class": "actor",
+      "rect": [
+        455,
+        526,
+        142,
+        142
+      ]
+    },
+    "near:Squad2": {
+      "class": "actor",
+      "rect": [
+        683,
+        524,
+        142,
+        142
+      ]
+    },
+    "near:Squad3": {
+      "class": "actor",
+      "rect": [
+        897,
+        522,
+        142,
+        142
+      ]
+    },
+    "set:blob_shadows": {
+      "class": "set",
+      "rect": [
+        269,
+        523,
+        752,
+        157
+      ]
+    }
+  },
+  "result": "PASS",
+  "search_radius": 7,
+  "size": [
+    1280,
+    720
+  ],
+  "tool": "tools/capture/punch_shift_capture.gd"
+}

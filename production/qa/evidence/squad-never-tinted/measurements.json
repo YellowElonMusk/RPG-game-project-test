@@ -1,0 +1,313 @@
+{
+  "ac": "AC-67",
+  "cull_leak_observation": {
+    "fixture": "SetLight and FillLight cull masks include ACTORS",
+    "results": {
+      "boss_bureaucratia": {
+        "failures": [],
+        "members": {
+          "Squad0": {
+            "max": 0.0,
+            "mean": 0.0,
+            "p95": 0.0,
+            "pixels": 6714
+          },
+          "Squad1": {
+            "max": 0.0,
+            "mean": 0.0,
+            "p95": 0.0,
+            "pixels": 6435
+          },
+          "Squad2": {
+            "max": 0.0,
+            "mean": 0.0,
+            "p95": 0.0,
+            "pixels": 6903
+          },
+          "Squad3": {
+            "max": 0.0,
+            "mean": 0.0,
+            "p95": 0.0,
+            "pixels": 7425
+          }
+        },
+        "pass": true
+      },
+      "boss_megacorp": {
+        "failures": [],
+        "members": {
+          "Squad0": {
+            "max": 0.0,
+            "mean": 0.0,
+            "p95": 0.0,
+            "pixels": 6714
+          },
+          "Squad1": {
+            "max": 0.0,
+            "mean": 0.0,
+            "p95": 0.0,
+            "pixels": 6435
+          },
+          "Squad2": {
+            "max": 0.0,
+            "mean": 0.0,
+            "p95": 0.0,
+            "pixels": 6903
+          },
+          "Squad3": {
+            "max": 0.0,
+            "mean": 0.0,
+            "p95": 0.0,
+            "pixels": 7425
+          }
+        },
+        "pass": true
+      }
+    }
+  },
+  "encounter": "enc_paris_supervisor",
+  "factions": {
+    "boss_bureaucratia": {
+      "failures": [],
+      "members": {
+        "Squad0": {
+          "max": 0.0,
+          "mean": 0.0,
+          "p95": 0.0,
+          "pixels": 6714
+        },
+        "Squad1": {
+          "max": 0.0,
+          "mean": 0.0,
+          "p95": 0.0,
+          "pixels": 6435
+        },
+        "Squad2": {
+          "max": 0.0,
+          "mean": 0.0,
+          "p95": 0.0,
+          "pixels": 6903
+        },
+        "Squad3": {
+          "max": 0.0,
+          "mean": 0.0,
+          "p95": 0.0,
+          "pixels": 7425
+        }
+      },
+      "pass": true
+    },
+    "boss_megacorp": {
+      "failures": [],
+      "members": {
+        "Squad0": {
+          "max": 0.0,
+          "mean": 0.0,
+          "p95": 0.0,
+          "pixels": 6714
+        },
+        "Squad1": {
+          "max": 0.0,
+          "mean": 0.0,
+          "p95": 0.0,
+          "pixels": 6435
+        },
+        "Squad2": {
+          "max": 0.0,
+          "mean": 0.0,
+          "p95": 0.0,
+          "pixels": 6903
+        },
+        "Squad3": {
+          "max": 0.0,
+          "mean": 0.0,
+          "p95": 0.0,
+          "pixels": 7425
+        }
+      },
+      "pass": true
+    }
+  },
+  "limits": {
+    "mean_max": 3.0,
+    "p95_max": 6.0,
+    "percentile": "nearest-rank 95th"
+  },
+  "members": [
+    "Squad0",
+    "Squad1",
+    "Squad2",
+    "Squad3"
+  ],
+  "negative_control": {
+    "all_failed": true,
+    "expected": "FAIL",
+    "fixture": "boss profile with key_color = its faction set_color",
+    "results": {
+      "boss_bureaucratia": {
+        "failures": [
+          "Squad0: mean ΔE 21.13 > 3.0",
+          "Squad0: p95 ΔE 43.01 > 6.0",
+          "Squad1: mean ΔE 20.76 > 3.0",
+          "Squad1: p95 ΔE 44.18 > 6.0",
+          "Squad2: mean ΔE 20.87 > 3.0",
+          "Squad2: p95 ΔE 43.32 > 6.0",
+          "Squad3: mean ΔE 26.20 > 3.0",
+          "Squad3: p95 ΔE 44.32 > 6.0"
+        ],
+        "members": {
+          "Squad0": {
+            "max": 43.2575721740723,
+            "mean": 21.1317653736438,
+            "p95": 43.0086212158203,
+            "pixels": 6714
+          },
+          "Squad1": {
+            "max": 44.6815147399902,
+            "mean": 20.7578202961579,
+            "p95": 44.1833839416504,
+            "pixels": 6435
+          },
+          "Squad2": {
+            "max": 44.1869812011719,
+            "mean": 20.8693547730996,
+            "p95": 43.3235054016113,
+            "pixels": 6903
+          },
+          "Squad3": {
+            "max": 44.5758514404297,
+            "mean": 26.19754979657,
+            "p95": 44.3226547241211,
+            "pixels": 7425
+          }
+        },
+        "pass": false
+      },
+      "boss_megacorp": {
+        "failures": [
+          "Squad0: mean ΔE 26.99 > 3.0",
+          "Squad0: p95 ΔE 58.60 > 6.0",
+          "Squad1: mean ΔE 26.66 > 3.0",
+          "Squad1: p95 ΔE 58.35 > 6.0",
+          "Squad2: mean ΔE 31.46 > 3.0",
+          "Squad2: p95 ΔE 58.10 > 6.0",
+          "Squad3: mean ΔE 34.45 > 3.0",
+          "Squad3: p95 ΔE 57.40 > 6.0"
+        ],
+        "members": {
+          "Squad0": {
+            "max": 58.6243362426758,
+            "mean": 26.9926041562287,
+            "p95": 58.6011848449707,
+            "pixels": 6714
+          },
+          "Squad1": {
+            "max": 58.6417846679688,
+            "mean": 26.6606694466028,
+            "p95": 58.3506317138672,
+            "pixels": 6435
+          },
+          "Squad2": {
+            "max": 58.1571083068848,
+            "mean": 31.4554837802416,
+            "p95": 58.0967407226563,
+            "pixels": 6903
+          },
+          "Squad3": {
+            "max": 57.3989410400391,
+            "mean": 34.4522473587653,
+            "p95": 57.3989410400391,
+            "pixels": 7425
+          }
+        },
+        "pass": false
+      }
+    }
+  },
+  "negative_control_discriminates": true,
+  "pass": true,
+  "sensitivity_control": {
+    "expected": "FAIL",
+    "fixture": "KeyLight energy 0",
+    "responds": true,
+    "result": {
+      "failures": [
+        "Squad0: mean ΔE 35.19 > 3.0",
+        "Squad0: p95 ΔE 69.51 > 6.0",
+        "Squad1: mean ΔE 32.44 > 3.0",
+        "Squad1: p95 ΔE 69.46 > 6.0",
+        "Squad2: mean ΔE 37.91 > 3.0",
+        "Squad2: p95 ΔE 67.76 > 6.0",
+        "Squad3: mean ΔE 41.71 > 3.0",
+        "Squad3: p95 ΔE 71.42 > 6.0"
+      ],
+      "members": {
+        "Squad0": {
+          "max": 69.839241027832,
+          "mean": 35.1947213162046,
+          "p95": 69.5127639770508,
+          "pixels": 6714
+        },
+        "Squad1": {
+          "max": 69.8387451171875,
+          "mean": 32.4444425689591,
+          "p95": 69.4636077880859,
+          "pixels": 6435
+        },
+        "Squad2": {
+          "max": 72.1919555664063,
+          "mean": 37.9116056426511,
+          "p95": 67.7612915039063,
+          "pixels": 6903
+        },
+        "Squad3": {
+          "max": 71.9191741943359,
+          "mean": 41.7137027036622,
+          "p95": 71.4170761108398,
+          "pixels": 7425
+        }
+      },
+      "pass": false
+    }
+  },
+  "sensitivity_control_responds": true,
+  "size": [
+    1920,
+    1080
+  ],
+  "takeover_end": {
+    "blend_p": 1.0,
+    "profile_on_stage": "boss_bureaucratia",
+    "verdict": {
+      "failures": [],
+      "members": {
+        "Squad0": {
+          "max": 0.0,
+          "mean": 0.0,
+          "p95": 0.0,
+          "pixels": 6714
+        },
+        "Squad1": {
+          "max": 0.0,
+          "mean": 0.0,
+          "p95": 0.0,
+          "pixels": 6435
+        },
+        "Squad2": {
+          "max": 0.0,
+          "mean": 0.0,
+          "p95": 0.0,
+          "pixels": 6903
+        },
+        "Squad3": {
+          "max": 0.0,
+          "mean": 0.0,
+          "p95": 0.0,
+          "pixels": 7425
+        }
+      },
+      "pass": true
+    }
+  },
+  "tool": "tools/capture/squad_tint_capture.gd"
+}
