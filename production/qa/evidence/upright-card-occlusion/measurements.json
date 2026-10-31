@@ -1,0 +1,139 @@
+{
+  "T": 3,
+  "ac": "AC-68 [C]",
+  "camera_pitch_deg": 30.0,
+  "camp": {
+    "reason": "Camp has no 3D scene or camera yet (no DioramaStage)",
+    "status": "blocked"
+  },
+  "card_normal": [
+    0.0,
+    0.0,
+    -1.0
+  ],
+  "card_plane_point": [
+    12.5,
+    0.0,
+    8.50472640991211
+  ],
+  "foot_anchor": [
+    12.5,
+    0.0,
+    8.5
+  ],
+  "map": "map_paris_town_placeholder",
+  "negative_controls": {
+    "card_behind_wall": {
+      "failed_as_expected": true,
+      "offset_m": 0.7,
+      "verdict": {
+        "band": 216,
+        "band_behind_prop": 216,
+        "band_present": 0,
+        "failures": [
+          "wall cuts the upper half: 864 pixels missing"
+        ],
+        "pass": false,
+        "upper": 864,
+        "upper_missing": 864,
+        "upper_wall_behind": 864
+      }
+    },
+    "card_in_front_of_prop": {
+      "failed_as_expected": true,
+      "offset_m": -0.3,
+      "verdict": {
+        "band": 216,
+        "band_behind_prop": 216,
+        "band_present": 216,
+        "failures": [
+          "feet drawn over the prop: 216 band pixels present"
+        ],
+        "pass": false,
+        "upper": 864,
+        "upper_missing": 0,
+        "upper_wall_behind": 864
+      }
+    }
+  },
+  "prop_gap_m": 0.05,
+  "prop_height_m": 0.0931508636474609,
+  "rect": [
+    942,
+    330,
+    36,
+    72
+  ],
+  "rect_matches_sprite_projection": true,
+  "result": "PASS",
+  "shipped": {
+    "band": 216,
+    "band_behind_prop": 216,
+    "band_present": 0,
+    "failures": [],
+    "pass": true,
+    "upper": 864,
+    "upper_missing": 0,
+    "upper_wall_behind": 864
+  },
+  "size": [
+    1920,
+    1080
+  ],
+  "tool": "tools/capture/card_occlusion_capture.gd",
+  "viewport_settings": {
+    "mesh_lod_threshold": {
+      "setting": "rendering/mesh_lod/lod_change/threshold_pixels",
+      "value": 1.0
+    },
+    "msaa_3d": {
+      "setting": "rendering/anti_aliasing/quality/msaa_3d",
+      "value": 1
+    },
+    "positional_shadow_atlas_16_bits": {
+      "setting": "rendering/lights_and_shadows/positional_shadow/atlas_16_bits",
+      "value": true
+    },
+    "positional_shadow_atlas_quad_0": {
+      "setting": "rendering/lights_and_shadows/positional_shadow/atlas_quadrant_0_subdiv",
+      "value": 2
+    },
+    "positional_shadow_atlas_quad_1": {
+      "setting": "rendering/lights_and_shadows/positional_shadow/atlas_quadrant_1_subdiv",
+      "value": 2
+    },
+    "positional_shadow_atlas_quad_2": {
+      "setting": "rendering/lights_and_shadows/positional_shadow/atlas_quadrant_2_subdiv",
+      "value": 3
+    },
+    "positional_shadow_atlas_quad_3": {
+      "setting": "rendering/lights_and_shadows/positional_shadow/atlas_quadrant_3_subdiv",
+      "value": 4
+    },
+    "positional_shadow_atlas_size": {
+      "setting": "rendering/lights_and_shadows/positional_shadow/atlas_size",
+      "value": 4096
+    },
+    "scaling_3d_mode": {
+      "setting": "rendering/scaling_3d/mode",
+      "value": 0
+    },
+    "scaling_3d_scale": {
+      "setting": "rendering/scaling_3d/scale",
+      "value": 1.0
+    },
+    "screen_space_aa": {
+      "setting": "rendering/anti_aliasing/quality/screen_space_aa",
+      "value": 0
+    },
+    "use_debanding": {
+      "setting": "rendering/anti_aliasing/quality/use_debanding",
+      "value": false
+    },
+    "use_taa": {
+      "setting": "rendering/anti_aliasing/quality/use_taa",
+      "value": false
+    }
+  },
+  "wall_behind_m": 0.5
+}

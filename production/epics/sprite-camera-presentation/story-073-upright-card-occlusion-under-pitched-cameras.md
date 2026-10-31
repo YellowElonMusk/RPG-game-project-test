@@ -1,7 +1,7 @@
 # Story 073: Upright-card occlusion holds under pitched cameras
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done (2026-10-31): [L] PASS (`card_depth_test.gd`); [C] Overworld capture PASS with both negative controls failing as expected; Camp [C] blocked (no Camp 3D scene); lead sign-off pending
 > **Layer**: Core
 > **Type**: Visual/Feel
 > **Estimate**: M
@@ -62,6 +62,8 @@ The `[L]` half tests `SpriteProjection`'s pure card-depth function directly: for
 
 - `src/presentation/sprite_projection.gd`
 - `tests/unit/presentation/card_depth_test.gd`
+- `tests/unit/presentation/card_occlusion_check_test.gd`
+- `tools/capture/card_occlusion_check.gd`, `tools/capture/card_occlusion_capture.gd`
 - `production/qa/evidence/upright-card-occlusion/`
 
 ---
@@ -79,7 +81,7 @@ The `[L]` half tests `SpriteProjection`'s pure card-depth function directly: for
 - `tests/unit/presentation/card_depth_test.gd` — must exist and pass (the `[L]` half)
 - A retained capture-tool output in `production/qa/evidence/upright-card-occlusion/` + sign-off in `production/qa/evidence/upright-card-occlusion-evidence.md` (the `[C]` half)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created 2026-10-31: `tests/unit/presentation/card_depth_test.gd` (3 cases) + `card_occlusion_check_test.gd` (6 cases) pass; capture `tools/capture/card_occlusion_capture.gd` (check `tools/capture/card_occlusion_check.gd`) exit 0, PASS; evidence `production/qa/evidence/upright-card-occlusion/` + `upright-card-occlusion-evidence.md` (sign-off pending)
 
 ---
 

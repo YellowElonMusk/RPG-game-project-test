@@ -156,6 +156,21 @@ static func card_plane_point(rect: Rect2i, anchor_world: Vector3, cam: CameraSta
 	return origin + dir * t
 
 
+## The view depth (metres along the camera's forward axis) of the sprite's
+## upright card at window pixel `pixel` (y down, any sub-pixel position):
+## the camera ray through `pixel` meets the card plane through
+## `card_plane_point(rect, anchor_world, cam, viewport_size)` with normal
+## `card_normal(cam)` (ADR-0005 §2 as amended by story 039; GDD AC-68 [L],
+## story 073). This is the depth the shader's clip-space card gives every
+## sample inside `rect`; the capture's occlusion fixture uses it to place
+## its wall and prop.
+static func sprite_card_depth(pixel: Vector2, rect: Rect2i, anchor_world: Vector3,
+		cam: CameraState, viewport_size: Vector2i) -> float:
+	var ndc := Vector2(pixel.x / float(viewport_size.x) * 2.0 - 1.0,
+			1.0 - pixel.y / float(viewport_size.y) * 2.0)
+	return card_depth(ndc, card_plane_point(rect, anchor_world, cam, viewport_size), cam)
+
+
 ## Projects `world_point` through `cam` to an unrounded screen position in
 ## pixels (NDC y is up, screen y is down). `screen_rect` rounds this; tests
 ## use it to check the rounding (story 063).
