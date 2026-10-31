@@ -66,6 +66,9 @@ var _save_service: SaveService = null
 var _squad: Array[Combatant] = []
 var _machine: GameStateMachine = null
 var _loader: ModeHostSceneLoader = null
+## The box the loader's closures read the machine through (see `_ready()`);
+## a member so `_release_machine()` can empty it.
+var _machine_box: Array = [null]
 var _resolver: InputResolver = null
 var _used_fallback_bindings: bool = false
 
@@ -126,7 +129,6 @@ func _ready() -> void:
 	for decl: FlashSourceDecl in PresentationValidators.load_flash_sources():
 		flash_decls[decl.source_id] = decl
 	flash_gate.setup(Time.get_ticks_usec, PresentationConfig.new(), flash_decls, FlashSettings.new())
-	var machine_box: Array = [null]
 	var pre_setup := func(mode: GameMode, payload: RefCounted) -> void:
 		if mode is OverworldMode:
 			_inject_overworld(mode as OverworldMode, payload)
@@ -138,11 +140,11 @@ func _ready() -> void:
 			(mode as TitleMode).save_service = _save_service
 		elif mode is BattleMode:
 			(mode as BattleMode).flash_gate = flash_gate
-		mode.setup(machine_box[0], payload)
+		mode.setup(_machine_box[0], payload)
 	# The loader's result getter: the thawed Overworld's on_thawed() needs the
 	# battle result, and the return swap carries no payload (story 014).
 	var result_getter := func() -> int:
-		return (machine_box[0] as GameStateMachine).last_battle_result
+		return (_machine_box[0] as GameStateMachine).last_battle_result
 	var loader := ModeHostSceneLoader.new(
 			_mode_host, config, game_log, pre_setup, result_getter, _overlay_host, Callable())
 	_loader = loader
@@ -150,7 +152,7 @@ func _ready() -> void:
 	var machine := GameStateMachine.new(
 			loader, presenter, config, catalog(), get_tree().quit, game_log,
 			FlashGatePortAdapter.new(flash_gate), _save_service.mark_unsaved)
-	machine_box[0] = machine
+	_machine_box[0] = machine
 	_machine = machine
 	loader.set_machine(machine)
 	machine.mode_entered.connect(loader.on_mode_entered)
@@ -227,6 +229,22 @@ func _process(delta: float) -> void:
 ## an orphan.
 func _exit_tree() -> void:
 	_free_frozen_overworld()
+	_release_machine()
+
+
+## The machine and its loader are RefCounted and hold each other (the loader
+## is the machine's constructor argument; `set_machine()` and the loader's
+## closures, through `_machine_box`, point back), and the machine holds the
+## InputResolver. Godot never frees a RefCounted cycle, so it is broken here
+## or all of them leak at exit.
+func _release_machine() -> void:
+	if _machine != null:
+		_machine.bind_action_source(null)
+	if _loader != null:
+		_loader.set_machine(null)
+	_machine_box[0] = null
+	_machine = null
+	_loader = null
 
 
 func _notification(what: int) -> void:
