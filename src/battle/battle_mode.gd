@@ -93,6 +93,7 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 	_replay.battle_ended_after_replay.connect(_on_battle_ended_after_replay)
 	_battle.start_battle(false)
 	_replay.resync()
+	%BattleView.setup(_battle, _replay, entry.descriptor, presentation_config)
 	_hud.setup(_battle, _replay)
 	_command_menu.setup(_battle, _replay)
 	if _machine != null:

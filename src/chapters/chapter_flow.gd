@@ -38,7 +38,7 @@ static func build_squad(catalog: ContentCatalogService) -> Array[Combatant]:
 	for id: String in ids:
 		var record: CharacterData = catalog.get_record(&"character", id)
 		var combatant := Combatant.new(record.display_name, record.max_hp,
-				record.max_mp, record.attack, record.defense, record.speed, false)
+				record.max_mp, record.attack, record.defense, record.speed, false, false, record.id)
 		combatant.move_ids = record.move_ids
 		squad.append(combatant)
 	return squad

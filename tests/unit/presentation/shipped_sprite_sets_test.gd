@@ -76,16 +76,24 @@ func test_build_sprite_frames_slices_the_strip_in_order() -> void:
 	anim.fps = 10.0
 	anim.frame_durations = PackedFloat32Array([1, 2, 1])
 	anim.impact_frame = 1
-	anim.strip = ImageTexture.create_from_image(Image.create(96, 32, false, Image.FORMAT_RGBA8))
+	# Three 32 px columns, each filled with its own colour.
+	var img := Image.create(96, 32, false, Image.FORMAT_RGBA8)
+	var colours: Array[Color] = [Color.RED, Color.GREEN, Color.BLUE]
+	for i: int in colours.size():
+		img.fill_rect(Rect2i(i * 32, 0, 32, 32), colours[i])
+	anim.strip = ImageTexture.create_from_image(img)
 	var s := SpriteSetData.new()
 	s.animations.append(anim)
 	var frames := s.build_sprite_frames()
 	assert_int(frames.get_frame_count(&"attack_front")).is_equal(3)
 	assert_float(frames.get_animation_speed(&"attack_front")).is_equal(10.0)
 	assert_float(frames.get_frame_duration(&"attack_front", 1)).is_equal(2.0)
-	var second := frames.get_frame_texture(&"attack_front", 1) as AtlasTexture
-	assert_object(second).is_not_null()
-	assert_that(second.region).is_equal(Rect2(32, 0, 32, 32))
+	# Each frame is a standalone texture of one column (the shader samples it
+	# whole), not an atlas region of the strip.
+	var second := frames.get_frame_texture(&"attack_front", 1)
+	assert_bool(second is AtlasTexture).is_false()
+	assert_that(second.get_size()).is_equal(Vector2(32, 32))
+	assert_that(second.get_image().get_pixel(16, 16)).is_equal(Color.GREEN)
 
 
 func test_frame_region_is_empty_without_a_strip_or_out_of_range() -> void:

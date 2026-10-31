@@ -33,7 +33,8 @@ const COLOR_TEXT: Color = Color("#f2ead8")
 const COLOR_HEAL: Color = Color("#7bc96f")
 const COLOR_MP: Color = Color("#9fb7ff")
 const COLOR_PANEL: Color = Color("#2a2d40")
-const COLOR_BG: Color = Color("#1b1d2b")
+## Width of the squad and enemy card columns; the stage shows between them.
+const COLUMN_WIDTH: float = 220.0
 
 var _battle: BattleCore
 ## The Battle mode's replay controller (ADR-0006), or null for the standalone
@@ -103,12 +104,7 @@ func refresh() -> void:
 func _build_static_ui() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 
-	var background := ColorRect.new()
-	background.color = COLOR_BG
-	background.set_anchors_preset(Control.PRESET_FULL_RECT)
-	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(background)
-
+	# No full-screen background: the battle diorama shows through the middle.
 	var margin := MarginContainer.new()
 	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
 	for side in ["left", "right", "top", "bottom"]:
@@ -133,12 +129,18 @@ func _build_static_ui() -> void:
 	root.add_child(main_row)
 
 	_squad_column = VBoxContainer.new()
-	_squad_column.custom_minimum_size = Vector2(290, 0)
+	_squad_column.custom_minimum_size = Vector2(COLUMN_WIDTH, 0)
 	_squad_column.add_theme_constant_override("separation", 8)
 	main_row.add_child(_squad_column)
 
+	# The stage's middle stays clear; enemy cards sit at the right edge.
+	var stage_gap := Control.new()
+	stage_gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	stage_gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	main_row.add_child(stage_gap)
+
 	_enemy_column = VBoxContainer.new()
-	_enemy_column.custom_minimum_size = Vector2(290, 0)
+	_enemy_column.custom_minimum_size = Vector2(COLUMN_WIDTH, 0)
 	_enemy_column.add_theme_constant_override("separation", 8)
 	main_row.add_child(_enemy_column)
 

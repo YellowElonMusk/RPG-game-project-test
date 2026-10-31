@@ -1,0 +1,9 @@
+Reviewed-Content-Hash: src/battle/battle_view.gd 2397e828db2ed2a5d85e428e3caa1ac7e52e095e
+Reviewed-Content-Hash: src/battle/battle_mode.tscn 8a57593b4a792abc6f1ca14e3a99e4d522f9a616
+Reviewed-Content-Hash: src/battle/battle_mode.gd 0f7b25898e6f9372b0f7880bd7751f9f3ab656d6
+Reviewed-Content-Hash: src/battle/ui/battle_hud.gd dfb5d9bfe85a2d89417f626bf308ed902896aa23
+Reviewed-Content-Hash: src/chapters/chapter_flow.gd 7385b3a988982b484d10829ae9dd5b8a7f19d5c6
+Reviewed-Content-Hash: src/presentation/sprite_set_data.gd bb731f5e5f79015659c033a432adf469f7ff91eb
+Reviewed-Content-Hash: data/presentation/stages/battle_default.tres 6b1e4a00ae57359ed87aec0ec95cbfb66f07934e
+Reviewed-Content-Hash: data/presentation/stages/battle_boss.tres c758cb013dde5880c2b79fa27b8f0191d2c323d2
+Reviewed-Content-Hash: tools/capture/battle_capture.gd 6aa83fa8e65128ddca146d18029fdc21f9b8867f
