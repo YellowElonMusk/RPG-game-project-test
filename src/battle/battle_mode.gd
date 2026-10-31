@@ -57,6 +57,9 @@ var _end_won: bool = false
 ## The hit-punch (GDD rule 8; ADR-0005 §6): started on each beat's impact,
 ## advanced on mode time, written to the stage's lens shift every frame.
 var _hit_punch: HitPunch = null
+## The flash gate (ADR-0005 §12), injected by GameRoot before setup(); null
+## (tests, capture) plays every gated VFX uncapped.
+var flash_gate: FlashGate = null
 var _stage: DioramaStage = null
 
 
@@ -100,6 +103,7 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 	_replay.beat_impact.connect(_on_beat_impact)
 	_battle.start_battle(false)
 	_replay.resync()
+	%BattleView.flash_gate = flash_gate
 	%BattleView.setup(_battle, _replay, entry.descriptor, presentation_config)
 	_hud.setup(_battle, _replay)
 	_command_menu.setup(_battle, _replay)

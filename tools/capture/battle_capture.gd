@@ -5,6 +5,11 @@ extends SceneTree
 ##
 ##   godot --path . -s res://tools/capture/battle_capture.gd -- --encounter=enc_paris_supervisor --out=<dir>
 ##
+## Or an ad-hoc fight with no encounter record (e.g. a faction no shipped
+## encounter uses yet):
+##
+##   ... -- --faction=faction_megacorp --enemies=enemy_ceo,enemy_security_drone --boss=1 --name=megacorp_boss
+##
 ## `--encounter` defaults to `enc_paris_clerks_hall`. Writes `<encounter>.png`
 ## after the reveal (idle), then `<encounter>_attack_<n>.png`, one every ~4
 ## frames through the squad's first Attack beat (wind-up, impact, reaction).
@@ -32,17 +37,24 @@ func _run() -> void:
 		printerr("battle_capture: content boot failed: %s" % [catalog.report])
 		quit(1)
 		return
-	var rec: EncounterData = catalog.get_record(&"encounter", enc_id) as EncounterData
-	if rec == null:
-		printerr("battle_capture: unknown encounter %s" % enc_id)
-		quit(1)
-		return
 	var d := EncounterDescriptor.new()
-	d.encounter_id = rec.id
-	d.enemy_ids = rec.enemy_ids
-	d.battle_stage_id = rec.battle_stage_id
-	d.faction_id = rec.faction_id
-	d.is_boss = rec.is_boss
+	if args.has("enemies"):
+		enc_id = String(args.get("name", "adhoc"))
+		d.encounter_id = enc_id
+		d.enemy_ids = PackedStringArray(String(args["enemies"]).split(","))
+		d.faction_id = String(args.get("faction", ""))
+		d.is_boss = String(args.get("boss", "0")) == "1"
+	else:
+		var rec: EncounterData = catalog.get_record(&"encounter", enc_id) as EncounterData
+		if rec == null:
+			printerr("battle_capture: unknown encounter %s" % enc_id)
+			quit(1)
+			return
+		d.encounter_id = rec.id
+		d.enemy_ids = rec.enemy_ids
+		d.battle_stage_id = rec.battle_stage_id
+		d.faction_id = rec.faction_id
+		d.is_boss = rec.is_boss
 	var payload := BattleEntryPayload.new()
 	payload.descriptor = d
 	payload.party = ChapterFlow.build_squad(catalog)

@@ -37,6 +37,14 @@ const IMPACT_BURST_PATH := "res://assets/vfx/impact_burst.png"
 const IMPACT_BURST_FPS: float = 16.0
 ## Bursts sit this far in front of their target so they draw over it (m).
 const VFX_DEPTH_BIAS: float = 0.05
+## The burst's flash source (`data/presentation/flash_sources/`).
+const IMPACT_BURST_SOURCE: StringName = &"vfx_impact_burst"
+## The capped variant (GDD rule 13): the same shape pulled toward a dim warm
+## grey, a soft swell under `flash_luma_delta` (declared as the source's
+## `capped_luma_swing`). Not an alpha fade: the sprite shader cuts alpha at
+## 0.5, so a faded burst would vanish instead.
+const CAPPED_TINT: Color = Color(0.45, 0.40, 0.36)
+const CAPPED_MIX: float = 0.8
 
 ## The mode's diorama stage; its `camera` becomes the battle camera.
 @export var stage: DioramaStage
@@ -56,6 +64,10 @@ var _mode_time: float = 0.0
 var _camera_configured: bool = false
 var _shadows: Dictionary[Combatant, MeshInstance3D] = {}
 var _burst_set: SpriteSetData
+## The flash gate every burst asks first (ADR-0005 §12); null plays uncapped.
+var flash_gate: FlashGate = null
+var _burst_frames: SpriteFrames
+var _burst_frames_capped: SpriteFrames
 ## Live bursts: sprite -> seconds played.
 var _bursts: Dictionary[CharacterSprite, float] = {}
 
@@ -70,6 +82,9 @@ func setup(battle: BattleCore, replay: BattleReplayController, descriptor: Encou
 	_config = config
 	_replay = replay
 	_burst_set = _make_burst_set()
+	if _burst_set != null:
+		_burst_frames = _burst_set.build_sprite_frames()
+		_burst_frames_capped = capped_frames(_burst_frames, CAPPED_TINT, CAPPED_MIX)
 	if _replay != null:
 		_replay.beat_impact.connect(_on_beat_impact)
 	if catalog == null:
@@ -267,17 +282,48 @@ func _place_shadow(c: Combatant) -> void:
 
 
 ## Starts an impact burst on every reactor the beat hits (rule 9's impact).
-## TODO(flash-gate): route through FlashGate (`vfx_impact_burst`, gated
-## class) once GameRoot wires it; until then it always plays uncapped.
+## Each burst asks the flash gate first (`vfx_impact_burst`, gated); a
+## refusal -- the flash limit, or Reduce Flashing On -- plays the capped
+## variant. The burst plays on this view's mode time at 1x.
 func _on_beat_impact(plan: BeatPlan) -> void:
 	if _burst_set == null:
 		return
 	for c: Combatant in plan.reactions:
 		if plan.reactions[c] in [BeatPlan.Reaction.HIT, BeatPlan.Reaction.KNOCKOUT] and _sprites.has(c):
-			_spawn_burst(c)
+			_spawn_burst(c, not burst_allowed())
 
 
-func _spawn_burst(target: Combatant) -> void:
+## Asks the gate for one impact burst: true plays the full variant. No gate
+## (tests, capture) always allows.
+func burst_allowed() -> bool:
+	if flash_gate == null:
+		return true
+	return flash_gate.request(IMPACT_BURST_SOURCE, func() -> float: return _mode_time, 1.0) != FlashGate.REFUSED
+
+
+## `frames` with every texel's colour mixed `mix` of the way to `tint`,
+## alpha untouched: the capped variant.
+static func capped_frames(frames: SpriteFrames, tint: Color, mix: float) -> SpriteFrames:
+	var out := SpriteFrames.new()
+	if out.has_animation(&"default"):
+		out.remove_animation(&"default")
+	for clip: StringName in frames.get_animation_names():
+		out.add_animation(clip)
+		out.set_animation_speed(clip, frames.get_animation_speed(clip))
+		out.set_animation_loop(clip, frames.get_animation_loop(clip))
+		for i: int in frames.get_frame_count(clip):
+			var img: Image = frames.get_frame_texture(clip, i).get_image()
+			img.convert(Image.FORMAT_RGBA8)
+			for y: int in img.get_height():
+				for x: int in img.get_width():
+					var px: Color = img.get_pixel(x, y)
+					var c: Color = px.lerp(tint, mix)
+					img.set_pixel(x, y, Color(c.r, c.g, c.b, px.a))
+			out.add_frame(clip, ImageTexture.create_from_image(img), frames.get_frame_duration(clip, i))
+	return out
+
+
+func _spawn_burst(target: Combatant, capped: bool) -> void:
 	var target_sprite: CharacterSprite = _sprites[target]
 	var burst := CharacterSprite.new()
 	burst.name = "Burst%d" % _bursts.size()
@@ -296,7 +342,7 @@ func _spawn_burst(target: Combatant) -> void:
 	burst.position = Vector3(target_sprite.position.x, lift_m, -z)
 	if actor_root != null:
 		actor_root.add_child(burst)
-	burst.setup(_burst_set.build_sprite_frames(), _config)
+	burst.setup(_burst_frames_capped if capped else _burst_frames, _config)
 	burst.show_frame(&"vfx", ENEMY_FACING, false, false, 0)
 	_bursts[burst] = 0.0
 

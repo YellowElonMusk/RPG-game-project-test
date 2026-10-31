@@ -72,3 +72,35 @@ func test_backdrop_layer_follows_the_punch_offset() -> void:
 	# Assert: the canvas backdrop moves by the same whole pixels as the 3D view.
 	var layer := view.backdrop.get_parent() as CanvasLayer
 	assert_vector(layer.offset).is_equal(Vector2(0, -5))
+
+
+func test_capped_burst_keeps_its_shape_with_muted_colour() -> void:
+	# Arrange: one white opaque texel and one transparent texel.
+	var img := Image.create(2, 1, false, Image.FORMAT_RGBA8)
+	img.set_pixel(0, 0, Color.WHITE)
+	img.set_pixel(1, 0, Color(1, 1, 1, 0))
+	var frames := SpriteFrames.new()
+	frames.add_frame(&"default", ImageTexture.create_from_image(img))
+	# Act
+	var capped := BattleView.capped_frames(frames, BattleView.CAPPED_TINT, BattleView.CAPPED_MIX)
+	# Assert: alpha unchanged (the shader's 0.5 cutoff keeps the shape), colour muted.
+	var out: Image = capped.get_frame_texture(&"default", 0).get_image()
+	assert_float(out.get_pixel(0, 0).a).is_equal(1.0)
+	assert_float(out.get_pixel(1, 0).a).is_equal(0.0)
+	assert_float(out.get_pixel(0, 0).get_luminance()).is_less(0.6)
+
+
+func test_burst_asks_the_gate_and_reduce_flashing_caps_it() -> void:
+	# Arrange: a real gate with the shipped declaration and Reduce Flashing On.
+	var view: BattleView = auto_free(BattleView.new())
+	var gate: FlashGate = auto_free(FlashGate.new())
+	var decls: Dictionary[StringName, FlashSourceDecl] = {}
+	for decl: FlashSourceDecl in PresentationValidators.load_flash_sources():
+		decls[decl.source_id] = decl
+	var settings := FlashSettings.new()
+	gate.setup(func() -> int: return 0, PresentationConfig.new(), decls, settings)
+	view.flash_gate = gate
+	# Act / Assert: allowed with Reduce Flashing Off, refused (capped) with it On.
+	assert_bool(view.burst_allowed()).is_true()
+	settings.reduce_flashing_on = true
+	assert_bool(view.burst_allowed()).is_false()

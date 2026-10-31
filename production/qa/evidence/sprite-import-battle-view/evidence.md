@@ -22,5 +22,10 @@ beside the card; every actor has a blob shadow (story 020). The hit-punch
 is too short (0.1 s, 2-5 px) to judge in a still; its wiring and the
 backdrop following it are unit-tested.
 
-Known gaps: impact_burst is not routed through FlashGate yet (not wired in
-GameRoot); no MegaCorp encounter to capture.
+FlashGate + MegaCorp (same day): GameRoot now owns the FlashGate service and
+injects it into GameStateMachine (FlashGatePortAdapter) and BattleMode; every
+impact burst asks it first and plays a muted capped variant on refusal
+(unit-tested; Reduce Flashing has no settings UI yet, so it is Off in play).
+07/08 are ad-hoc MegaCorp fights (`--faction --enemies --boss`): grounded on
+the street, CEO burst on impact. The command panel now starts at y 464 so a
+two-line faction banner no longer pushes the last squad card under it.

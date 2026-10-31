@@ -117,6 +117,15 @@ func _ready() -> void:
 	# GameStateMachine, so it is built first and has no reference to the
 	# machine yet -- the box lets pre_setup's closure see the real instance
 	# once it exists (mode_host_scene_loader.gd's own documented pattern).
+	# ADR-0005 §12: the one flash gate, on real time. Reduce Flashing reads a
+	# fixed FlashSettings until the Settings service exists.
+	var flash_gate := FlashGate.new()
+	flash_gate.name = "FlashGate"
+	_services.add_child(flash_gate)
+	var flash_decls: Dictionary[StringName, FlashSourceDecl] = {}
+	for decl: FlashSourceDecl in PresentationValidators.load_flash_sources():
+		flash_decls[decl.source_id] = decl
+	flash_gate.setup(Time.get_ticks_usec, PresentationConfig.new(), flash_decls, FlashSettings.new())
 	var machine_box: Array = [null]
 	var pre_setup := func(mode: GameMode, payload: RefCounted) -> void:
 		if mode is OverworldMode:
@@ -127,6 +136,8 @@ func _ready() -> void:
 			(mode as InterimCampMode).save_service = _save_service
 		elif mode is TitleMode:
 			(mode as TitleMode).save_service = _save_service
+		elif mode is BattleMode:
+			(mode as BattleMode).flash_gate = flash_gate
 		mode.setup(machine_box[0], payload)
 	# The loader's result getter: the thawed Overworld's on_thawed() needs the
 	# battle result, and the return swap carries no payload (story 014).
@@ -136,11 +147,9 @@ func _ready() -> void:
 			_mode_host, config, game_log, pre_setup, result_getter, _overlay_host, Callable())
 	_loader = loader
 
-	# TODO(presentation): inject the real FlashGate once ADR-0005 ships --
-	# flash_gate stays null (never capped) until then.
 	var machine := GameStateMachine.new(
-			loader, presenter, config, catalog(), get_tree().quit, game_log, null,
-			_save_service.mark_unsaved)
+			loader, presenter, config, catalog(), get_tree().quit, game_log,
+			FlashGatePortAdapter.new(flash_gate), _save_service.mark_unsaved)
 	machine_box[0] = machine
 	_machine = machine
 	loader.set_machine(machine)
