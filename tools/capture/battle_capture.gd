@@ -90,13 +90,22 @@ func _run() -> void:
 	mode.handle_action(InputActions.CONFIRM, false)
 	mode.handle_action(InputActions.CONFIRM, true)
 	mode.handle_action(InputActions.CONFIRM, false)
-	# A short sequence through the beat (wind-up, impact burst, reaction).
+	# A short sequence through the beat (wind-up, impact burst, reaction),
+	# then the frame the beat ends: its number appears over the target's
+	# card (story 070).
+	var ended: Array[bool] = [false]
+	mode.replay.beat_finished.connect(func(_p: BeatPlan) -> void: ended[0] = true, CONNECT_ONE_SHOT)
 	for shot: int in 8:
-		if not mode.is_presenting():
+		if not mode.is_presenting() or ended[0]:
 			break
 		await _save(out_dir.path_join("%s_attack_%d.png" % [enc_id, shot]))
 		for i: int in 4:
 			await process_frame
+	var guard: int = 0
+	while not ended[0] and guard < 600:
+		await process_frame
+		guard += 1
+	await _save(out_dir.path_join("%s_beat_end.png" % enc_id))
 	quit(0)
 
 

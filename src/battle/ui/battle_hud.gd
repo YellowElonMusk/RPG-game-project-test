@@ -58,6 +58,12 @@ var _cards: Dictionary = {}
 ## Combatant -> next float's vertical stagger slot (0, 1, 2, repeating), so
 ## several floats on the same card don't stack on top of each other.
 var _float_slots: Dictionary = {}
+## Combatant -> the floating number Label over it (the latest one).
+var _number_labels: Dictionary = {}
+## The replay's beat numbers (null for the standalone demo).
+var _beat_numbers: BeatNumbers = null
+## The round the banner was last painted for.
+var _banner_round: int = 0
 
 
 ## Wires this HUD to a battle: builds one card per squad/enemy member and
@@ -80,8 +86,14 @@ func setup(battle: BattleCore, replay: BattleReplayController = null) -> void:
 		_ui_built = true
 	if _replay != null:
 		_replay.turn_started_after_replay.connect(_on_turn_started)
-		_replay.beat_impact.connect(_on_beat_impact)
 		_replay.beat_finished.connect(_on_beat_finished)
+		# Numbers (story 070, GDD AC-65/AC-14b): exactly each beat's
+		# `BeatPlan.numbers()`, over its own combatant, from the frame the
+		# beat ends; a later impact on that combatant clears it (AC-59).
+		_beat_numbers = BeatNumbers.new()
+		_beat_numbers.bind(_replay)
+		_beat_numbers.number_shown.connect(_on_number_shown)
+		_beat_numbers.number_cleared.connect(_on_number_cleared)
 		_replay.round_advanced_after_replay.connect(_on_round_advanced)
 		_replay.battle_ended_after_replay.connect(_on_battle_ended)
 		_replay.display_resynced.connect(refresh)
@@ -272,6 +284,7 @@ func _card_tooltip(combatant: Combatant, knocked_out: bool) -> String:
 
 func _refresh_banner() -> void:
 	var round_number: int = _shown_round()
+	_banner_round = round_number
 	_banner_label.text = _battle.faction_rule.get_banner_text(round_number)
 	var style := StyleBoxFlat.new()
 	style.bg_color = _battle.faction_rule.get_banner_color(round_number)
@@ -293,10 +306,19 @@ func _on_action_resolved(outcome: BattleOutcome) -> void:
 	_spawn_floats(outcome)
 
 
-## A beat reached its impact: its numbers float now; the cards update when
-## the beat finishes (the displayed snapshot changes only then).
-func _on_beat_impact(plan: BeatPlan) -> void:
-	_spawn_floats(plan.outcome)
+## A beat's number appeared (its end): float it beside `combatant`'s card.
+## MP spent shows on the MP bar at the beat's end, never as a number
+## (AC-65: exactly AC-14b's numbers).
+func _on_number_shown(combatant: Combatant, text: String) -> void:
+	_float_near(combatant, text, COLOR_HEAL if text.begins_with("+") else COLOR_TEXT)
+
+
+## A beat's number was cleared (the next impact on it): remove its float.
+func _on_number_cleared(combatant: Combatant) -> void:
+	var label: Label = _number_labels.get(combatant) as Label
+	_number_labels.erase(combatant)
+	if label != null and is_instance_valid(label):
+		label.queue_free()
 
 
 func _on_beat_finished(_plan: BeatPlan) -> void:
@@ -340,6 +362,7 @@ func _float_near(combatant: Combatant, text: String, color: Color) -> void:
 	label.add_theme_color_override("font_outline_color", Color.BLACK)
 	label.add_theme_constant_override("outline_size", 6)
 	_overlay.add_child(label)
+	_number_labels[combatant] = label
 
 	var slot: int = _float_slots.get(combatant, 0)
 	_float_slots[combatant] = (slot + 1) % 3
@@ -359,10 +382,38 @@ func _float_near(combatant: Combatant, text: String, color: Color) -> void:
 ## Removes every floating number at once (ADR-0006 §8: a cancelled replay
 ## or a Retry's `display_resynced` leaves no number on screen).
 func clear_numbers() -> void:
+	if _beat_numbers != null:
+		_beat_numbers.clear_all()
+	_number_labels.clear()
 	for child: Node in _overlay.get_children():
 		if child is Label:
 			child.queue_free()
 	_float_slots.clear()
+
+
+## The floating number over `combatant` now, or "" when none.
+func number_over(combatant: Combatant) -> String:
+	if _beat_numbers != null:
+		return _beat_numbers.number_over(combatant)
+	var label: Label = _number_labels.get(combatant) as Label
+	if label == null or not is_instance_valid(label) or label.is_queued_for_deletion():
+		return ""
+	return label.text
+
+
+## The HP and MP `combatant`'s card shows now: {"hp": int, "mp": int}, with
+## "mp" -1 for a card without an MP bar.
+func card_values(combatant: Combatant) -> Dictionary:
+	var nodes: Dictionary = _cards.get(combatant, {})
+	if nodes.is_empty():
+		return {"hp": -1, "mp": -1}
+	var mp_bar: ProgressBar = nodes["mp_bar"]
+	return {"hp": int((nodes["hp_bar"] as ProgressBar).value), "mp": int(mp_bar.value) if mp_bar != null else -1}
+
+
+## The round the banner shows now.
+func shown_round() -> int:
+	return _banner_round
 
 
 ## How many floating numbers are on screen now (ones already fading out and

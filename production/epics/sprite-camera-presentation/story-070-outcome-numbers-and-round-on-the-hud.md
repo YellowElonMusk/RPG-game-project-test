@@ -1,7 +1,7 @@
 # Story 070: Outcome numbers and the round number release on the right frame
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Done (pending commit)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: M
@@ -78,7 +78,7 @@ The HUD's displayed HP/MP/status is always one snapshot behind the live state un
 **Required evidence**:
 - `tests/unit/battle/hud_display_state_test.gd` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created and passing -- `tests/unit/battle/hud_display_state_test.gd` (1 test); full suite 1859/1859, exit 0, 0 orphans (2026-10-31). Evidence: `production/qa/evidence/story-070-hud-numbers/enc_paris_clerks_hall_attack_6.png` (mid-beat, no number, HP 40/40) and `enc_paris_clerks_hall_beat_end.png` (-11 beside the Clerk card, HP 29/40).
 
 ---
 
