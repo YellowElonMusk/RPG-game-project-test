@@ -12,3 +12,4 @@ attack = 15
 defense = 7
 speed = 13
 move_ids = PackedStringArray("move_home_run")
+sprite_set_id = "sprite_baguette_thrower"

@@ -12,4 +12,4 @@ attack = 12
 defense = 8
 speed = 10
 move_ids = PackedStringArray("move_laser_scan")
-sprite_set_id = "sprite_placeholder"
+sprite_set_id = "sprite_security_drone"

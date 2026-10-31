@@ -12,4 +12,4 @@ attack = 10
 defense = 6
 speed = 8
 move_ids = PackedStringArray("move_upsell")
-sprite_set_id = "sprite_placeholder"
+sprite_set_id = "sprite_middle_manager"

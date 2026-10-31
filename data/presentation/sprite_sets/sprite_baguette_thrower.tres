@@ -1,0 +1,79 @@
+[gd_resource type="Resource" script_class="SpriteSetData" load_steps=17 format=3]
+
+[ext_resource type="Script" path="res://src/presentation/sprite_set_data.gd" id="1_set"]
+[ext_resource type="Script" path="res://src/presentation/sprite_animation_data.gd" id="2_anim"]
+[ext_resource type="Texture2D" path="res://assets/sprites/squad/baguette_thrower/baguette_thrower_idle.png" id="3_idle"]
+[ext_resource type="Texture2D" path="res://assets/sprites/squad/baguette_thrower/baguette_thrower_attack.png" id="4_attack"]
+[ext_resource type="Texture2D" path="res://assets/sprites/squad/baguette_thrower/baguette_thrower_defend.png" id="5_defend"]
+[ext_resource type="Texture2D" path="res://assets/sprites/squad/baguette_thrower/baguette_thrower_hurt.png" id="6_hurt"]
+[ext_resource type="Texture2D" path="res://assets/sprites/squad/baguette_thrower/baguette_thrower_ko.png" id="7_ko"]
+[ext_resource type="Texture2D" path="res://assets/sprites/squad/baguette_thrower/baguette_thrower_victory.png" id="8_victory"]
+[ext_resource type="Texture2D" path="res://assets/sprites/squad/baguette_thrower/baguette_thrower_special.png" id="9_special"]
+
+[sub_resource type="Resource" id="anim_0"]
+script = ExtResource("2_anim")
+animation_id = &"idle"
+facing = &"back"
+fps = 4.0
+frame_durations = PackedFloat32Array(1, 1, 1, 1)
+strip = ExtResource("3_idle")
+
+[sub_resource type="Resource" id="anim_1"]
+script = ExtResource("2_anim")
+animation_id = &"attack"
+facing = &"back"
+fps = 10.0
+frame_durations = PackedFloat32Array(1, 1, 1, 1)
+impact_frame = 1
+strip = ExtResource("4_attack")
+
+[sub_resource type="Resource" id="anim_2"]
+script = ExtResource("2_anim")
+animation_id = &"defend"
+facing = &"back"
+fps = 6.0
+frame_durations = PackedFloat32Array(1, 1)
+impact_frame = 0
+strip = ExtResource("5_defend")
+
+[sub_resource type="Resource" id="anim_3"]
+script = ExtResource("2_anim")
+animation_id = &"hit"
+facing = &"back"
+fps = 8.0
+frame_durations = PackedFloat32Array(1, 1)
+strip = ExtResource("6_hurt")
+
+[sub_resource type="Resource" id="anim_4"]
+script = ExtResource("2_anim")
+animation_id = &"knockout"
+facing = &"back"
+fps = 8.0
+frame_durations = PackedFloat32Array(1, 1, 1)
+land_frame = 2
+strip = ExtResource("7_ko")
+
+[sub_resource type="Resource" id="anim_5"]
+script = ExtResource("2_anim")
+animation_id = &"victory"
+facing = &"back"
+fps = 8.0
+frame_durations = PackedFloat32Array(1, 1, 1, 1)
+strip = ExtResource("8_victory")
+
+[sub_resource type="Resource" id="anim_6"]
+script = ExtResource("2_anim")
+animation_id = &"move"
+facing = &"back"
+move_name = "Home Run"
+fps = 10.0
+frame_durations = PackedFloat32Array(1, 1, 1, 1, 1, 1)
+impact_frame = 2
+strip = ExtResource("9_special")
+
+[resource]
+script = ExtResource("1_set")
+set_id = &"sprite_baguette_thrower"
+is_squad = true
+facings_used = Array[StringName]([&"back"])
+animations = Array[ExtResource("2_anim")]([SubResource("anim_0"), SubResource("anim_1"), SubResource("anim_2"), SubResource("anim_3"), SubResource("anim_4"), SubResource("anim_5"), SubResource("anim_6")])

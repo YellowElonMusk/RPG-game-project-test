@@ -12,3 +12,4 @@ attack = 11
 defense = 7
 speed = 10
 move_ids = PackedStringArray("move_appetizer", "move_family_meal")
+sprite_set_id = "sprite_michelin_chef"

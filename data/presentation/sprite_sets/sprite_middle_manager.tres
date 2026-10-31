@@ -1,0 +1,58 @@
+[gd_resource type="Resource" script_class="SpriteSetData" load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://src/presentation/sprite_set_data.gd" id="1_set"]
+[ext_resource type="Script" path="res://src/presentation/sprite_animation_data.gd" id="2_anim"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/middle_manager/middle_manager_idle.png" id="3_idle"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/middle_manager/middle_manager_attack.png" id="4_attack"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/middle_manager/middle_manager_hurt.png" id="5_hurt"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/middle_manager/middle_manager_ko.png" id="6_ko"]
+
+[sub_resource type="Resource" id="anim_0"]
+script = ExtResource("2_anim")
+animation_id = &"idle"
+facing = &"front"
+fps = 4.0
+frame_durations = PackedFloat32Array(1, 1, 1, 1)
+strip = ExtResource("3_idle")
+
+[sub_resource type="Resource" id="anim_1"]
+script = ExtResource("2_anim")
+animation_id = &"attack"
+facing = &"front"
+fps = 10.0
+frame_durations = PackedFloat32Array(1, 1, 1, 1)
+impact_frame = 1
+strip = ExtResource("4_attack")
+
+[sub_resource type="Resource" id="anim_2"]
+script = ExtResource("2_anim")
+animation_id = &"defend"
+facing = &"front"
+fps = 6.0
+frame_durations = PackedFloat32Array(1, 1, 1, 1)
+impact_frame = 0
+strip = ExtResource("3_idle")
+
+[sub_resource type="Resource" id="anim_3"]
+script = ExtResource("2_anim")
+animation_id = &"hit"
+facing = &"front"
+fps = 8.0
+frame_durations = PackedFloat32Array(1, 1)
+strip = ExtResource("5_hurt")
+
+[sub_resource type="Resource" id="anim_4"]
+script = ExtResource("2_anim")
+animation_id = &"knockout"
+facing = &"front"
+fps = 8.0
+frame_durations = PackedFloat32Array(1, 1, 1)
+land_frame = 2
+strip = ExtResource("6_ko")
+
+[resource]
+script = ExtResource("1_set")
+set_id = &"sprite_middle_manager"
+is_squad = false
+facings_used = Array[StringName]([&"front"])
+animations = Array[ExtResource("2_anim")]([SubResource("anim_0"), SubResource("anim_1"), SubResource("anim_2"), SubResource("anim_3"), SubResource("anim_4")])

@@ -13,4 +13,4 @@ attack = 15
 defense = 10
 speed = 9
 move_ids = PackedStringArray("move_pen_jab", "move_red_tape", "move_mass_audit", "move_final_notice")
-sprite_set_id = "sprite_placeholder"
+sprite_set_id = "sprite_supervisor"

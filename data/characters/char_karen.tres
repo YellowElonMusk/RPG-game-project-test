@@ -12,3 +12,4 @@ attack = 12
 defense = 9
 speed = 11
 move_ids = PackedStringArray("move_speak_to_the_manager")
+sprite_set_id = "sprite_karen"

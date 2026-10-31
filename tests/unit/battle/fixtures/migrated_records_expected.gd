@@ -72,7 +72,8 @@ const NAMED_ATTACKS: Dictionary = {
 # `CharacterizationExpected.ENEMY_IDS` / `ENEMY_STATS` (story 003) -- only the
 # record-only fields (faction_id, move_ids, reward, sprite_set_id) go here.
 
-const ENEMY_SPRITE_SET_ID: String = "sprite_placeholder"
+## Each enemy names its SpriteForge set: `sprite_` + the id without `enemy_`.
+const ENEMY_SPRITE_SET_PREFIX: String = "sprite_"
 const ENEMY_AI_PROFILE_ID: String = ""
 const ENEMY_REWARD_XP: int = 0
 const ENEMY_REWARD_MONEY: int = 0
@@ -180,6 +181,8 @@ const CHARACTER_MOVE_IDS: Dictionary = {
 ## inventing a human_nation Faction with no source anywhere in the shipped
 ## code or the prototype -- unlike the squad's own stats, a nation would be
 ## pure invention, not "moved as-is". Flagged for technical-director review.
+## `sprite_set_id` left this list once the SpriteForge sets shipped (its
+## source is now `data/presentation/sprite_sets/`).
 const CHARACTER_EMPTY_FIELDS: PackedStringArray = [
-	"nation_id", "archetype_line", "signature_move_id", "sprite_set_id", "portrait_id",
+	"nation_id", "archetype_line", "signature_move_id", "portrait_id",
 ]

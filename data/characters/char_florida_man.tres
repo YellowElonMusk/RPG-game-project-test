@@ -12,3 +12,4 @@ attack = 14
 defense = 8
 speed = 12
 move_ids = PackedStringArray("move_viral_stunt")
+sprite_set_id = "sprite_florida_man"

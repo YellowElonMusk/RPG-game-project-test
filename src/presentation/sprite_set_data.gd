@@ -125,6 +125,42 @@ func _lookup(animation_id: StringName, facing: StringName, move_name: String) ->
 	return null
 
 
+## The `SpriteFrames` a `CharacterSprite` plays this set from (ADR-0005 §1):
+## one animation per authored animation with a `strip`, named
+## `<animation_id>_<facing>` (a move-specific one `move_<move name>_<facing>`),
+## one `AtlasTexture` per frame, `fps` as its speed and `frame_durations` as
+## per-frame durations. Only `idle` loops; beat-driven frames are stepped by
+## the caller. Animations without a strip are skipped.
+func build_sprite_frames() -> SpriteFrames:
+	var frames := SpriteFrames.new()
+	if frames.has_animation(&"default"):
+		frames.remove_animation(&"default")
+	for anim: SpriteAnimationData in animations:
+		if anim == null or anim.strip == null or anim.frame_count() == 0:
+			continue
+		var clip: StringName = clip_name(anim.animation_id, anim.facing, anim.move_name)
+		if frames.has_animation(clip):
+			continue
+		frames.add_animation(clip)
+		frames.set_animation_speed(clip, anim.fps)
+		frames.set_animation_loop(clip, anim.animation_id == &"idle")
+		for i: int in anim.frame_count():
+			var atlas := AtlasTexture.new()
+			atlas.atlas = anim.strip
+			atlas.region = Rect2(anim.frame_region(i))
+			frames.add_frame(clip, atlas, anim.frame_durations[i])
+	return frames
+
+
+## The `SpriteFrames` animation name for an animation in `facing`
+## (ADR-0005 §1: `<animation_id>_<facing>`; a move-specific one carries its
+## move name, which `CharacterSprite.show_frame()` passes as `animation_id`).
+static func clip_name(animation_id: StringName, facing: StringName, move_name: String = "") -> StringName:
+	if animation_id == MOVE:
+		return StringName("move_%s_%s" % [move_name.to_snake_case(), facing])
+	return StringName("%s_%s" % [animation_id, facing])
+
+
 ## A display label for an animation: its id, or `move` plus the move name.
 static func label_for(animation_id: StringName, move_name: String) -> String:
 	return "%s '%s'" % [animation_id, move_name] if animation_id == MOVE else String(animation_id)

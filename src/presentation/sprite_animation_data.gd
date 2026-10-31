@@ -42,11 +42,26 @@ const NO_FRAME: int = -1
 ## True when this animation must never be shown by mirroring the opposite
 ## facing (rule 3; story 005).
 @export var no_mirror: bool = false
+## The art: one horizontal strip of `frame_count()` equal-width frames, as
+## SpriteForge exports it (`<out_dir>/<short>_<anim>.png`, asset list §7).
+## Null for frame-data-only sets (tests); `SpriteSetData.build_sprite_frames()`
+## skips them.
+@export var strip: Texture2D
 
 
 ## Number of frames.
 func frame_count() -> int:
 	return frame_durations.size()
+
+
+## Frame `index`'s region of `strip`, in texels: `strip` split into
+## `frame_count()` equal columns. `Rect2i()` without a strip or for an index
+## outside `0 .. frame_count() - 1`.
+func frame_region(index: int) -> Rect2i:
+	if strip == null or index < 0 or index >= frame_count():
+		return Rect2i()
+	var w: int = strip.get_width() / frame_count()
+	return Rect2i(index * w, 0, w, strip.get_height())
 
 
 ## True for an action animation (`attack`, `defend` or a move-specific one),

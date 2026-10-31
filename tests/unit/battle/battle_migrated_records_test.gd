@@ -141,7 +141,7 @@ func test_enemy_records_match_shipped_roster() -> void:
 		assert_int(enemy.reward_money).override_failure_message(
 				"%s reward_money" % id).is_equal(MigratedRecordsExpected.ENEMY_REWARD_MONEY)
 		assert_str(enemy.sprite_set_id).override_failure_message(
-				"%s sprite_set_id" % id).is_equal(MigratedRecordsExpected.ENEMY_SPRITE_SET_ID)
+				"%s sprite_set_id" % id).is_equal(MigratedRecordsExpected.ENEMY_SPRITE_SET_PREFIX + String(id).trim_prefix("enemy_"))
 		assert_str(enemy.ai_profile_id).override_failure_message(
 				"%s ai_profile_id" % id).is_equal(MigratedRecordsExpected.ENEMY_AI_PROFILE_ID)
 
