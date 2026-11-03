@@ -36,6 +36,7 @@ sources/0 = SubResource("TileSetAtlasSource_jg8d7")
 [node name="ParisDungeonPlaceholder" type="Node3D" unique_id=1070864201 node_paths=PackedStringArray("walk_layer")]
 script = ExtResource("1_lhx28")
 map_id = "map_paris_dungeon_placeholder"
+set_style = 1
 walk_layer = NodePath("WalkLayer")
 leader_spawn_cell = Vector2i(17, 31)
 floor_color = Color(0.5, 0.48, 0.46, 1)

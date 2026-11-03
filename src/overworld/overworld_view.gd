@@ -33,6 +33,13 @@ extends Node
 @export var leader_tint: Color = Color(0.75, 0.2, 0.2)
 @export var follower_tints: Array[Color] = [
 	Color(0.2, 0.45, 0.8), Color(0.25, 0.65, 0.3), Color(0.8, 0.6, 0.15)]
+## Stand-in art: battle sprite sets whose idle strip the leader, followers
+## and symbols show (`PlaceholderActorFrames.from_sprite_set()`). Null = the
+## tinted placeholder above. Squad sets face right (`back`), enemy sets
+## face left (`front`); a sprite mirrors when it walks the other way.
+@export var leader_sprite_set: SpriteSetData
+@export var follower_sprite_sets: Array[SpriteSetData] = []
+@export var symbol_sprite_set: SpriteSetData
 
 var _camera: FollowCamera = null
 var _last_aspect: float = 0.0
@@ -45,6 +52,15 @@ var _last_aspect: float = 0.0
 @export var symbol_tint: Color = Color(0.25, 0.25, 0.3)
 ## SymbolBrain -> CharacterSprite, one per registered symbol.
 var _symbol_sprites: Dictionary = {}
+## CharacterSprite -> true when its stand-in art faces left (enemy `front`
+## sets); only sprites showing a sprite set are keys.
+var _art_faces_left: Dictionary = {}
+## CharacterSprite -> whether it is currently drawn mirrored.
+var _mirrored: Dictionary = {}
+## Every shipped sprite set by id, loaded on the first symbol that names one.
+var _sprite_sets: Dictionary[StringName, SpriteSetData] = {}
+## Sideways motion per frame, in metres, below which a sprite keeps its turn.
+const TURN_EPSILON_M: float = 0.001
 ## The placeholder camp prompt (`_build_prompt()`).
 var _prompt_label: Label = null
 ## Interact prompt text per `OverworldMode.probe_kind()` (placeholder for
@@ -105,11 +121,12 @@ func _start() -> void:
 	_camera.name = "FollowCamera"
 	stage.add_child(_camera)
 	_camera.current = true
-	_setup_sprite(leader_sprite, leader_tint)
+	_setup_sprite(leader_sprite, leader_tint, leader_sprite_set, &"back")
 	for i: int in follower_sprites.size():
 		var sprite: CharacterSprite = follower_sprites[i]
 		sprite.visible = i < follower_count
-		_setup_sprite(sprite, follower_tints[i % follower_tints.size()])
+		var follower_set: SpriteSetData = follower_sprite_sets[i] if i < follower_sprite_sets.size() else null
+		_setup_sprite(sprite, follower_tints[i % follower_tints.size()], follower_set, &"back")
 	_build_prompt()
 	_camera.snap_to(mode.get_leader_position())
 	_present(0.0)
@@ -119,10 +136,16 @@ func _process(delta: float) -> void:
 	_present(delta)
 
 
-func _setup_sprite(sprite: CharacterSprite, tint: Color) -> void:
+func _setup_sprite(sprite: CharacterSprite, tint: Color, sprite_set: SpriteSetData = null,
+		facing: StringName = &"back") -> void:
 	sprite.card_camera = _camera
 	sprite.layers = DioramaStage.LAYER_ACTORS
-	sprite.setup(PlaceholderActorFrames.make(tint, placeholder_size_px), presentation_config)
+	var frames: SpriteFrames = PlaceholderActorFrames.from_sprite_set(sprite_set, facing)
+	if frames == null:
+		frames = PlaceholderActorFrames.make(tint, placeholder_size_px)
+	else:
+		_art_faces_left[sprite] = facing == &"front"
+	sprite.setup(frames, presentation_config)
 
 
 ## One presentation frame: trail, camera, then sprites (their uniforms read
@@ -158,10 +181,15 @@ func sync_symbol_sprites(mode_dt: float = 0.0) -> void:
 	if symbol_root == null or _camera == null:
 		return
 	var live: Array[SymbolBrain] = mode.get_symbol_brains()
+	var sources: Dictionary = {}
+	for source: EncounterSource in mode.get_encounter_sources():
+		sources[source.brain] = source
 	for brain: SymbolBrain in _symbol_sprites.keys():
 		if not live.has(brain):
 			var gone: CharacterSprite = _symbol_sprites[brain]
 			_symbol_sprites.erase(brain)
+			_art_faces_left.erase(gone)
+			_mirrored.erase(gone)
 			gone.queue_free()
 	for brain: SymbolBrain in live:
 		var sprite: CharacterSprite = _symbol_sprites.get(brain) as CharacterSprite
@@ -172,11 +200,26 @@ func sync_symbol_sprites(mode_dt: float = 0.0) -> void:
 			mat.shader = symbol_shader
 			sprite.material_override = mat
 			symbol_root.add_child(sprite)
-			_setup_sprite(sprite, symbol_tint)
+			_setup_sprite(sprite, symbol_tint, _symbol_set_for(sources.get(brain) as EncounterSource), &"front")
 			_symbol_sprites[brain] = sprite
 		_place(sprite, brain.position, mode_dt)
 		# Story 134 (ADR-0005 §14): the sprite's capture-ID follows its cue.
 		CaptureIdTags.tag(sprite, CaptureIdTags.symbol_tag(brain.sub_state))
+
+
+## The sprite set a symbol draws: the one its encounter's lead enemy names
+## (`OverworldMode.symbol_sprite_set()`; a deflated id with no art of its own
+## falls back to the plain one), else `symbol_sprite_set`.
+func _symbol_set_for(source: EncounterSource) -> SpriteSetData:
+	var set_id: String = mode.symbol_sprite_set(source) if source != null else ""
+	if set_id.is_empty():
+		return symbol_sprite_set
+	if _sprite_sets.is_empty():
+		_sprite_sets = PresentationValidators.load_sprite_sets()
+	var found: SpriteSetData = _sprite_sets.get(StringName(set_id))
+	if found == null:
+		found = _sprite_sets.get(StringName(set_id.trim_suffix(mode.config.deflated_sprite_suffix)))
+	return found if found != null else symbol_sprite_set
 
 
 ## The live symbol sprites, keyed by `SymbolBrain` (tests).
@@ -188,10 +231,20 @@ func get_symbol_sprites() -> Dictionary:
 ## mode-time delta (sprite-camera story 011): this view runs under `ModeHost`,
 ## so the Menu stops it while Dialogue lets it run. The idle clip is set only
 ## when it changes, so its frame is never reset to 0 each frame.
+##
+## Stand-in art (`_art_faces_left`) turns to face its walk: a sprite moving
+## against the way its art faces is mirrored, and keeps the last turn while
+## standing or moving straight up or down.
 func _place(sprite: CharacterSprite, ground: Vector2, mode_dt: float = 0.0) -> void:
+	var dx: float = ground.x - sprite.position.x
 	sprite.position = ground_to_world(ground)
-	if sprite.animation != PlaceholderActorFrames.IDLE_DOWN:
-		sprite.show_frame(&"idle", &"down", false, false, 0)
+	var mirrored: bool = _mirrored.get(sprite, false)
+	if _art_faces_left.has(sprite) and absf(dx) > TURN_EPSILON_M:
+		mirrored = (dx > 0.0) == bool(_art_faces_left[sprite])
+	if sprite.animation != PlaceholderActorFrames.IDLE_DOWN or mirrored != _mirrored.get(sprite, false):
+		_mirrored[sprite] = mirrored
+		var keep: int = sprite.frame if sprite.animation == PlaceholderActorFrames.IDLE_DOWN else 0
+		sprite.show_frame(&"idle", &"down", mirrored, false, keep)
 	sprite.step_ambient(mode_dt)
 
 

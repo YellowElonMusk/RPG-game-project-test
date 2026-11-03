@@ -17,6 +17,9 @@ extends Node3D
 ## Story 066: the group of faction set-dressing nodes a liberated set kit
 ## removes (rule 17).
 const FACTION_DRESSING_GROUP: StringName = &"faction_dressing"
+## The stand-in floor and wall shader (`set_style`). TODO(art): authored
+## textures replace it.
+const SET_SHADER: Shader = preload("res://src/presentation/shaders/paris_set.gdshader")
 
 ## The walk layer: a `TileSet` with a `walk: bool` custom data layer. Hidden
 ## at load (it is a 2D node; drawing it would overlay the 3D diorama).
@@ -34,6 +37,11 @@ const FACTION_DRESSING_GROUP: StringName = &"faction_dressing"
 ## Floor and wall albedo for the placeholder set geometry.
 @export var floor_color: Color = Color(0.62, 0.58, 0.5)
 @export var wall_color: Color = Color(0.78, 0.7, 0.55)
+## Stand-in surface look for the floor and walls (`paris_set.gdshader`):
+## 0 = street (cobbles, limestone fronts, slate roofs), 1 = interior
+## (carpet tiles, office panels and filing drawers). Tinted by the two
+## colours above.
+@export_enum("Street", "Interior") var set_style: int = 0
 ## Placeholder tint of a MapExit rectangle's floor patch (story 138).
 @export var exit_color: Color = Color(0.35, 0.6, 0.85)
 ## Placeholder tint of a CampSpot's floor patch.
@@ -245,7 +253,7 @@ func build_set(grid: WalkGrid, presentation: PresentationConfig = null) -> void:
 	add_child(set_root)
 
 	var floor_mesh := PlaneMesh.new()
-	floor_mesh.material = _flat_material(floor_color)
+	floor_mesh.material = _set_material(0)
 	var floor_node := MeshInstance3D.new()
 	floor_node.name = "Floor"
 	floor_node.mesh = floor_mesh
@@ -255,7 +263,7 @@ func build_set(grid: WalkGrid, presentation: PresentationConfig = null) -> void:
 
 	var wall_mesh := BoxMesh.new()
 	wall_mesh.size = Vector3(grid.cell_m, wall_height_m, grid.cell_m)
-	wall_mesh.material = _flat_material(wall_color)
+	wall_mesh.material = _set_material(1)
 	for y: int in grid.size.y:
 		for x: int in grid.size.x:
 			if grid.is_walkable(Vector2i(x, y)):
@@ -387,6 +395,18 @@ func set_checkpoint_shown(marker_id: StringName, shown: bool) -> void:
 	var bar: Node3D = get_node_or_null("PlaceholderSet/Checkpoint_%s" % marker_id) as Node3D
 	if bar != null:
 		bar.visible = shown
+
+
+## The stand-in set shader for `surface` (0 floor, 1 wall), tinted by this
+## map's colours and `set_style`.
+func _set_material(surface: int) -> ShaderMaterial:
+	var mat := ShaderMaterial.new()
+	mat.shader = SET_SHADER
+	mat.set_shader_parameter(&"style", set_style)
+	mat.set_shader_parameter(&"surface", surface)
+	mat.set_shader_parameter(&"floor_tint", floor_color)
+	mat.set_shader_parameter(&"wall_tint", wall_color)
+	return mat
 
 
 func _flat_material(color: Color) -> StandardMaterial3D:

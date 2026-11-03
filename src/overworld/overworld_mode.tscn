@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://src/overworld/overworld_mode.gd" id="1_mode"]
 [ext_resource type="Script" path="res://src/presentation/diorama_stage.gd" id="2_stage"]
@@ -6,6 +6,11 @@
 [ext_resource type="Shader" path="res://src/presentation/shaders/sprite_actor.gdshader" id="4_shader"]
 [ext_resource type="Script" path="res://src/overworld/overworld_view.gd" id="5_view"]
 [ext_resource type="PackedScene" path="res://data/maps/paris_town_placeholder.tscn" id="6_map"]
+[ext_resource type="Resource" path="res://data/presentation/sprite_sets/sprite_karen.tres" id="7_karen"]
+[ext_resource type="Resource" path="res://data/presentation/sprite_sets/sprite_florida_man.tres" id="8_florida"]
+[ext_resource type="Resource" path="res://data/presentation/sprite_sets/sprite_baguette_thrower.tres" id="9_baguette"]
+[ext_resource type="Resource" path="res://data/presentation/sprite_sets/sprite_michelin_chef.tres" id="10_chef"]
+[ext_resource type="Resource" path="res://data/presentation/sprite_sets/sprite_clerk.tres" id="11_clerk"]
 
 [sub_resource type="Environment" id="Env_1"]
 background_mode = 1
@@ -81,3 +86,6 @@ leader_sprite = NodePath("../DioramaStage/Actors/Leader")
 follower_sprites = [NodePath("../DioramaStage/Actors/Follower1"), NodePath("../DioramaStage/Actors/Follower2"), NodePath("../DioramaStage/Actors/Follower3")]
 symbol_root = NodePath("../DioramaStage/Actors")
 symbol_shader = ExtResource("4_shader")
+leader_sprite_set = ExtResource("7_karen")
+follower_sprite_sets = [ExtResource("8_florida"), ExtResource("9_baguette"), ExtResource("10_chef")]
+symbol_sprite_set = ExtResource("11_clerk")

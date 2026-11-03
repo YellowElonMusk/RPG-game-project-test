@@ -11,6 +11,30 @@ extends RefCounted
 const IDLE_DOWN: StringName = &"idle_down"
 
 
+## Stand-in overworld frames cut from a battle sprite set: its looping
+## `idle` strip in `facing` (`back` for the squad, `front` for enemies),
+## aliased as `idle_down`, the clip the overworld shows. Null when the set
+## has no idle strip in that facing. TODO(art): real overworld walk sheets
+## (`production/asset-requests/art.md`) replace this.
+static func from_sprite_set(sprite_set: SpriteSetData, facing: StringName) -> SpriteFrames:
+	if sprite_set == null:
+		return null
+	var anim: SpriteAnimationData = sprite_set.find(&"idle", facing)
+	if anim == null or anim.strip == null or anim.frame_count() == 0:
+		return null
+	var strip: Image = anim.strip.get_image()
+	var frames := SpriteFrames.new()
+	if frames.has_animation(&"default"):
+		frames.remove_animation(&"default")
+	frames.add_animation(IDLE_DOWN)
+	frames.set_animation_speed(IDLE_DOWN, anim.fps)
+	frames.set_animation_loop(IDLE_DOWN, true)
+	for i: int in anim.frame_count():
+		frames.add_frame(IDLE_DOWN, ImageTexture.create_from_image(strip.get_region(anim.frame_region(i))),
+				anim.frame_durations[i])
+	return frames
+
+
 ## Builds frames of `size_px` texels tinted `body`. Pure: no file I/O.
 static func make(body: Color, size_px: Vector2i) -> SpriteFrames:
 	var img := Image.create(size_px.x, size_px.y, false, Image.FORMAT_RGBA8)

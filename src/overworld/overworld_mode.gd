@@ -1998,8 +1998,8 @@ func is_deflated(source: EncounterSource) -> bool:
 
 ## The sprite set `source` draws with: its encounter's first enemy's
 ## `sprite_set_id`, plus `config.deflated_sprite_suffix` when deflated; ""
-## when the records name none. TODO(overworld-view): the view still draws
-## symbols as tinted placeholders and no deflated art exists yet.
+## when the records name none. The view draws it; no deflated art exists
+## yet, so a deflated symbol shows the plain set.
 func symbol_sprite_set(source: EncounterSource) -> String:
 	if source == null or encounter_catalog == null:
 		return ""
