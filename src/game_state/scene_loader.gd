@@ -26,8 +26,10 @@ func rollback_swap() -> void:
 
 
 ## Interface addition (story-001): pushes an overlay scene onto `OverlayHost`.
-func push_overlay(_kind: int, _payload: RefCounted) -> void:
-	pass
+## Returns false when nothing was pushed, so the machine can roll its stack
+## entry back instead of leaving an overlay with no node behind it.
+func push_overlay(_kind: int, _payload: RefCounted) -> bool:
+	return true
 
 
 ## Interface addition: pops the top overlay scene from `OverlayHost`.

@@ -165,27 +165,28 @@ func free_frozen_overworld() -> void:
 ## `OverlayHost`, an unmapped `kind`, a load failure or a wrong scene root
 ## type is logged and skipped rather than throwing, matching
 ## `_instantiate_mode()`'s error handling below.
-func push_overlay(kind: int, payload: RefCounted) -> void:
+func push_overlay(kind: int, payload: RefCounted) -> bool:
 	if _overlay_host == null:
 		_log.error(&"overlay_host_missing", {"kind": kind})
-		return
+		return false
 	var path: String = String(_config.overlay_scene_paths.get(kind, ""))
 	if path.is_empty():
 		_log.error(&"overlay_scene_path_missing", {"kind": kind})
-		return
+		return false
 	var scene: PackedScene = ResourceLoader.load(path) as PackedScene
 	if scene == null:
 		_log.error(&"overlay_scene_load_failed", {"kind": kind, "path": path})
-		return
+		return false
 	var node: GameOverlay = scene.instantiate() as GameOverlay
 	if node == null:
 		_log.error(&"overlay_scene_wrong_type", {"kind": kind, "path": path})
-		return
+		return false
 	if _overlay_pre_setup.is_valid():
 		_overlay_pre_setup.call(node)
 	node.setup(_machine, payload)
 	_overlay_host.add_child(node)
 	_overlay_nodes.append(node)
+	return true
 
 
 ## Frees the top overlay (the last child of `OverlayHost`). A no-op if the

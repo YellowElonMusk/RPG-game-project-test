@@ -284,7 +284,11 @@ func open_overlay(kind: OverlayKind, payload: RefCounted = null) -> RequestResul
 	if kind == OverlayKind.DIALOGUE and _overlay_stack.has(OverlayKind.MENU):
 		return RequestResult.REJECTED_OVERLAY_BLOCKS
 	_overlay_stack.append(kind)
-	_loader.push_overlay(kind, payload)
+	if not _loader.push_overlay(kind, payload):
+		# No node behind the entry: every press would be dropped and a Menu
+		# would freeze mode time with nothing on screen (a soft-lock).
+		_overlay_stack.pop_back()
+		return RequestResult.REJECTED_INVALID_PAYLOAD
 	if kind == OverlayKind.MENU:
 		_loader.set_mode_time_stopped(true)
 	overlay_opened.emit(kind)
@@ -928,6 +932,10 @@ func _handle_menu_action() -> void:
 	if _phase != Phase.IDLE:
 		return
 	if not (_current_mode in _MENU_ALLOWED_MODES):
+		return
+	# The menu key on an open Menu closes it, never stacks a second one.
+	if not _overlay_stack.is_empty() and _overlay_stack.back() == OverlayKind.MENU:
+		close_overlay()
 		return
 	open_overlay(OverlayKind.MENU, _build_menu_payload())
 
