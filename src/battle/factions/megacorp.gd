@@ -96,7 +96,9 @@ func choose_enemy_action(enemy: Combatant, living_squad: Array[Combatant],
 			return actions
 		return [{"move": _named_attack("move_hostile_takeover"), "target": weakest}]
 
-	if enemy.display_name == MIDDLE_MANAGER_DISPLAY_NAME:
+	# By record id first: repeated enemies are lettered ("Middle Manager B",
+	# BattleFactory.letter_duplicate_names), so the name alone no longer matches.
+	if enemy.record_id == "enemy_middle_manager" or enemy.display_name == MIDDLE_MANAGER_DISPLAY_NAME:
 		return [{"move": _named_attack("move_upsell"), "target": weakest}]
 
 	return [{"move": _named_attack("move_laser_scan"), "target": weakest}]

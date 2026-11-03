@@ -41,7 +41,7 @@ locally, so liberation is something you can see on the street.
 
 **The data and rules layer.** Maps and encounters are content records:
 - `map_` records hold a map's display name, lighting profile and occupation-stage parameters;
-- `enc_` records hold the descriptor Turn Battle needs.
+- `enc_` records hold the descriptor Turn Battle needs. Their `enemy_ids` list one entry per enemy on the field, so **an ID may appear more than once** (two Clerks are two entries). This is the "duplicates are meaningful" case of Content Data's list rule (ruling 2026-11-03, for chapter difficulty). The stage's enemy slots cap the count: 4 on the default battle stage, 3 on the boss stage.
 
 The system owns movement on the map's walkable area, symbol patrol and chase,
 interaction, map exits, camp spots and post-battle consequences. It also owns

@@ -186,3 +186,31 @@ func test_repeated_missing_value_reports_missing_and_duplicate_errors() -> void:
 	for entry: Dictionary in errors:
 		assert_str(entry["record_id"]).is_equal("char_x")
 		assert_str(String(entry["field"])).is_equal("move_ids")
+
+
+## Ruling 2026-11-03 (Overworld GDD, Encounter): an Encounter's `enemy_ids`
+## lists one entry per enemy on the field, so duplicates are meaningful there
+## and only there; every other list field still errors on a repeat (T6).
+func test_only_encounter_enemy_ids_allow_duplicates() -> void:
+	var allowed: Array[String] = []
+	for type: StringName in ContentCatalogService.REFERENCE_SCHEMA:
+		var fields: Dictionary = ContentCatalogService.REFERENCE_SCHEMA[type]
+		for field: StringName in fields:
+			if bool((fields[field] as Dictionary).get("duplicates_meaningful", false)):
+				allowed.append("%s.%s" % [type, field])
+	assert_array(allowed).is_equal(["encounter.enemy_ids"])
+
+
+## The shipped chapter fights repeat `enemy_clerk` and still load clean.
+func test_shipped_multi_clerk_encounters_load_with_no_errors() -> void:
+	var catalog: ContentCatalogService = auto_free(ContentCatalogService.new())
+	catalog.load_all("res://data")
+	var dupes: int = 0
+	for rec: Resource in catalog.all_records(&"encounter"):
+		var ids: PackedStringArray = (rec as EncounterData).enemy_ids
+		for id: String in ids:
+			if ids.count(id) > 1:
+				dupes += 1
+				break
+	assert_int(dupes).override_failure_message("no shipped encounter repeats an enemy").is_greater(0)
+	assert_array(_errors(catalog)).is_empty()

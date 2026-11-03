@@ -56,7 +56,11 @@ const TYPE_TABLE: Dictionary = {
 ## `_run_reference_checks()` is the one generic pass that reads it; no field
 ## gets its own check. Every target id goes through the alias map first.
 ## Asset-ID fields (`sprite_set_id`, `ai_profile_id`, …) are not references
-## and are not listed. Fields are in name order within each type, so the
+## and are not listed. `duplicates_meaningful`, when true, lets a list hold
+## the same id more than once (Content Data edge case: "unless the owning GDD
+## defines duplicates as meaningful"): an Encounter's `enemy_ids` lists one
+## entry per enemy on the field, so two Clerks are two entries (Overworld
+## GDD, Encounter, ruling 2026-11-03). Fields are in name order within each type, so the
 ## report order is deterministic.
 ## Example: [code]var spec: Dictionary = ContentCatalogService.REFERENCE_SCHEMA[&"character"][&"nation_id"][/code]
 const REFERENCE_SCHEMA: Dictionary = {
@@ -84,7 +88,7 @@ const REFERENCE_SCHEMA: Dictionary = {
 		&"faction_id": {"target_types": [&"faction"], "list": false},
 	},
 	&"encounter": {
-		&"enemy_ids": {"target_types": [&"enemy"], "list": true},
+		&"enemy_ids": {"target_types": [&"enemy"], "list": true, "duplicates_meaningful": true},
 		&"faction_id": {"target_types": [&"faction"], "list": false},
 	},
 	&"occupation_stage": {
@@ -846,7 +850,7 @@ func _check_list_reference_field(record_id: String, field: StringName,
 		counts[value] = counts.get(value, 0) + 1
 	for value: String in counts:
 		_check_reference_value(record_id, field, value, spec, file_path)
-		if counts[value] > 1:
+		if counts[value] > 1 and not spec.get("duplicates_meaningful", false):
 			_add_report_entry(&"error", record_id, field, file_path,
 					"The value %s appears more than once in this list." % value, [])
 
