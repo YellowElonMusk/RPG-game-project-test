@@ -67,6 +67,11 @@ var feedback: UiFeedback = UiFeedback.new()
 var ui_config: UiConfig = null
 ## The Victory results screen (XP and money, F9), built in `setup()`.
 var _results_panel: ResultsPanel = null
+## The post-alien-boss spare-or-finish choice (narrative bible §6.2).
+var _boss_choice: BossChoicePanel = null
+## Where the choice's reputation goes (GameRoot injects the Overworld's
+## WorldState before `setup()`); null (tests, capture) keeps no score.
+var world_state: WorldState = null
 ## One RNG per Battle-mode instance (ADR-0010 §3): never recreated, never
 ## restored on Retry, so a retried fight draws fresh variance.
 var _rng: RandomNumberGenerator = null
@@ -215,15 +220,56 @@ func _build_results_panel() -> void:
 	_results_panel = ResultsPanel.new(func() -> float: return _mode_time, presentation_config.input_guard)
 	add_child(_results_panel)
 	_results_panel.continued.connect(_on_results_continued)
+	_boss_choice = BossChoicePanel.new(func() -> float: return _mode_time, presentation_config.input_guard)
+	add_child(_boss_choice)
+	_boss_choice.chosen.connect(_on_boss_chosen)
+	_boss_choice.continued.connect(_report_results_done)
 
 
 ## The results screen's Continue: Victory's results are done (Game State
 ## AC-12: the return to the Overworld starts only now).
 func _on_results_continued() -> void:
+	if _offers_boss_choice():
+		_results_panel.visible = false
+		_boss_choice.ask(_find_boss(_battle.enemies).display_name)
+		return
+	_report_results_done()
+
+
+func _report_results_done() -> void:
 	if not _awaiting_results_done or _machine == null:
 		return
 	_awaiting_results_done = false
 	_machine.report_results_done()
+
+
+## The spare-or-finish choice follows an alien boss only (narrative bible
+## §6.2: ordinary fights and human bosses get no prompt).
+func _offers_boss_choice() -> bool:
+	if _descriptor == null or not _descriptor.is_boss or _battle == null or _find_boss(_battle.enemies) == null:
+		return false
+	var faction: Resource = BattleCatalog.shipped().get_record(&"faction", _descriptor.faction_id)
+	return faction != null and String(faction.get(&"kind")) == "alien"
+
+
+## Scores the choice and, on "Finish him off", turns the boss into a pile
+## of purple goo (the whole visual, guardrail 2: no gore beyond goo).
+func _on_boss_chosen(finished: bool) -> void:
+	if world_state != null:
+		if finished:
+			world_state.street_cred += 1
+		else:
+			world_state.alien_points += 1
+	if not finished:
+		return
+	var sprite: CharacterSprite = (%BattleView as BattleView).get_sprite(_find_boss(_battle.enemies))
+	if sprite != null:
+		sprite.create_tween().tween_property(sprite, "goo", 1.0, 0.35)
+
+
+## The boss choice (tests and capture).
+func boss_choice() -> BossChoicePanel:
+	return _boss_choice
 
 
 ## The results screen (tests and capture).
@@ -391,6 +437,8 @@ func settle_replay() -> void:
 func handle_action(action: StringName, pressed: bool) -> bool:
 	# The results screen owns every press while it is up (its input guard
 	# first; GDD rule 9), and only its Continue reports results done.
+	if _boss_choice != null and _boss_choice.visible:
+		return _boss_choice.handle_action(action, pressed)
 	if _results_panel != null and _results_panel.visible:
 		return _results_panel.handle_action(action, pressed)
 	if _replay != null and _is_replay_press(action) and _replay_owns_input():

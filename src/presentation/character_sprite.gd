@@ -21,6 +21,15 @@ extends AnimatedSprite3D
 var _config: PresentationConfig
 var _material: ShaderMaterial
 var _mirrored: bool = false
+## The finished-boss gag (narrative bible §6.2): 0 = as drawn, 1 = a pile
+## of purple goo. Squashes the card toward its feet and tints it (the
+## shader's `goo`). Tween it; every write repaints this frame.
+var goo: float = 0.0:
+	set(value):
+		goo = clampf(value, 0.0, 1.0)
+		if _material != null:
+			_material.set_shader_parameter(&"goo", goo)
+		_update_shader_uniforms()
 var _warned_no_camera: bool = false
 ## Mode time spent in the current ambient animation (`step_ambient`).
 var _ambient_time: float = 0.0
@@ -146,6 +155,11 @@ func _update_shader_uniforms() -> void:
 	var frame_size: Vector2i = frame_tex.get_size() if frame_tex != null else Vector2i.ZERO
 	var rect: Rect2i = SpriteProjection.screen_rect(
 			global_position, cam_state, frame_size, viewport_size, _config.texel_base_lines)
+	if goo > 0.0:
+		# Squash toward the feet and spread: a puddle, not a shrink.
+		var h: int = maxi(2, int(round(rect.size.y * (1.0 - 0.82 * goo))))
+		var w: int = int(round(rect.size.x * (1.0 + 0.6 * goo)))
+		rect = Rect2i(rect.position.x - (w - rect.size.x) / 2, rect.end.y - h, w, h)
 	var normal: Vector3 = SpriteProjection.card_normal(cam_state)
 	_material.set_shader_parameter(&"sprite_rect", Rect2(rect))
 	_material.set_shader_parameter(&"viewport_size", Vector2(viewport_size))

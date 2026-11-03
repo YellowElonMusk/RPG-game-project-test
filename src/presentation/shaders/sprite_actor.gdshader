@@ -56,6 +56,11 @@ uniform sampler2D frame_tex : source_color, filter_nearest;
 // animation -- `character_sprite.gd` substitutes the authored
 // `<id>_<facing>_mirrored` clip instead (Story 005).
 uniform bool flip_h = false;
+// The finished-boss gag (narrative bible §6.2): 0 draws the sprite as is,
+// 1 a pile of purple goo. `character_sprite.gd` also squashes the card's
+// rect toward the feet by the same amount.
+uniform float goo : hint_range(0.0, 1.0) = 0.0;
+uniform vec3 goo_color : source_color = vec3(0.69, 0.42, 0.88);
 group_uniforms;
 
 // The stage's current blended rim values (`project.godot` Shader Globals,
@@ -174,6 +179,7 @@ void fragment() {
 
 	vec4 tex = texture(frame_tex, uv);
 	ALBEDO = tex.rgb;
+	ALBEDO = mix(ALBEDO, goo_color * (0.55 + 0.6 * dot(tex.rgb, vec3(0.3333))), goo);
 	ALPHA = tex.a;
 	ALPHA_SCISSOR_THRESHOLD = ALPHA_CUTOFF;
 

@@ -151,6 +151,7 @@ func _ready() -> void:
 			(mode as TitleMode).save_service = _save_service
 		elif mode is BattleMode:
 			(mode as BattleMode).flash_gate = flash_gate
+			(mode as BattleMode).world_state = _world_state
 		mode.setup(_machine_box[0], payload)
 	# The loader's result getter: the thawed Overworld's on_thawed() needs the
 	# battle result, and the return swap carries no payload (story 014).

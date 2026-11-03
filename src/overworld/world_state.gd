@@ -37,6 +37,11 @@ var continue_entry: String = ""
 ## The current ChapterFlow step ID (ADR-0012 §8; story 068). New Game sets
 ## the chapter's opening step; the walk home moves it through the last act.
 var chapter_step: String = ""
+## The two reputation meters (narrative bible §6.2, game concept MVP item 6):
+## "Finish him off" after an alien boss gains human street cred, "Let him go"
+## gains alien points. They change how NPCs see the squad, never battle rules.
+var street_cred: int = 0
+var alien_points: int = 0
 
 # map_id -> { symbol_id -> Respawn }
 var _resolved: Dictionary = {}
@@ -120,6 +125,8 @@ func reset_to_new_game() -> void:
 	party_facing = Vector2.ZERO
 	continue_entry = ""
 	chapter_step = ""
+	street_cred = 0
+	alien_points = 0
 	_resolved = {}
 	_opened = {}
 	_flags = {}
@@ -151,6 +158,8 @@ func to_dict() -> Dictionary:
 		"party_facing": [party_facing.x, party_facing.y],
 		"continue_entry": continue_entry,
 		"chapter_step": chapter_step,
+		"street_cred": street_cred,
+		"alien_points": alien_points,
 		"resolved": resolved,
 		"opened": opened,
 		"flags": flags,
@@ -168,6 +177,8 @@ func from_dict(data: Dictionary) -> void:
 	party_facing = data.get("party_facing", Vector2.ZERO)
 	continue_entry = data.get("continue_entry", "")
 	chapter_step = data.get("chapter_step", "")
+	street_cred = int(data.get("street_cred", 0))
+	alien_points = int(data.get("alien_points", 0))
 	var resolved: Dictionary = data.get("resolved", {})
 	for m: String in resolved:
 		_resolved[m] = {}

@@ -1,7 +1,9 @@
 extends SceneTree
 ## The Victory results screen in the real BattleMode: boots the five-Clerk
 ## `enc_paris_clerks_keen` and the boss fight, forces Victory, plays the end
-## hold out and saves `results_<encounter>.png`. Needs a window and a GPU:
+## hold out and saves `results_<encounter>.png`; for the boss it continues
+## into the spare-or-finish choice (`boss_choice.png`) and finishes him
+## (`boss_finished_goo.png`). Needs a window and a GPU:
 ##
 ##   godot --path . -s res://tools/capture/results_capture.gd [-- --out=res://dir/]
 
@@ -51,7 +53,26 @@ func _run() -> void:
 		for i: int in 3:
 			await RenderingServer.frame_post_draw
 		root.get_texture().get_image().save_png(ProjectSettings.globalize_path(out.path_join("results_%s.png" % enc_id)))
+		if enc_id == "enc_paris_supervisor":
+			mode.step_replay(0.3)
+			mode.handle_action(InputActions.CONFIRM, true)
+			for i: int in 5:
+				await process_frame
+			ok = ok and mode.boss_choice().visible
+			await _shot(out, "boss_choice")
+			mode.boss_choice().finish_button().pressed.emit()
+			for i: int in 40:
+				await process_frame
+			print("results_capture: boss choice -> %s" % mode.boss_choice().result_text().replace("
+", " | "))
+			await _shot(out, "boss_finished_goo")
 		root.remove_child(mode)
 		mode.free()
 		await process_frame
 	quit(0 if ok else 1)
+
+
+func _shot(out: String, file_name: String) -> void:
+	for i: int in 3:
+		await RenderingServer.frame_post_draw
+	root.get_texture().get_image().save_png(ProjectSettings.globalize_path(out.path_join(file_name + ".png")))
