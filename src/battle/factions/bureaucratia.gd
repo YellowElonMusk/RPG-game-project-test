@@ -53,9 +53,9 @@ const CLERK_DEFENSE: int = 5
 const CLERK_SPEED: int = 8
 
 const SUPERVISOR_DISPLAY_NAME: String = "Supervisor"
-const SUPERVISOR_MAX_HP: int = 110
-const SUPERVISOR_ATTACK: int = 15
-const SUPERVISOR_DEFENSE: int = 10
+const SUPERVISOR_MAX_HP: int = 190
+const SUPERVISOR_ATTACK: int = 20
+const SUPERVISOR_DEFENSE: int = 11
 const SUPERVISOR_SPEED: int = 9
 
 

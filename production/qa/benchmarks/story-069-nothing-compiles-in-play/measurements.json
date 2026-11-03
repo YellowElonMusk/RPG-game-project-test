@@ -3,7 +3,7 @@
   "benchmark": "P-15",
   "ac": "AC-64",
   "story": "sprite-camera-presentation 069",
-  "date": "2026-11-03T20:00:36",
+  "date": "2026-11-03T22:42:56",
   "build": "development run (debug binary, windowed)",
   "engine": "4.7.2-stable (official)",
   "device": {
@@ -38,7 +38,7 @@
       "C:\\Users\\PC\\AppData\\Local/D3DSCache": true
     }
   },
-  "boot_seconds_to_title": 4.699568,
+  "boot_seconds_to_title": 4.710021,
   "boot_warmup": {
     "stages": [
       "overworld:map_paris_boss_chamber_placeholder",
@@ -52,7 +52,7 @@
     ],
     "profiles": 9,
     "frames": 318,
-    "seconds": 3.518229,
+    "seconds": 3.526842,
     "counters_delta": {
       "canvas": 3,
       "mesh": 0,
@@ -459,52 +459,52 @@
     }
   ],
   "worst_render_ms_by_step": {
-    "title_new_game_to_overworld": 2.59099995344877,
-    "overworld_menu_open": 9.51299999654293,
-    "overworld_menu_close": 9.7799996137619,
-    "battle_entry": 2.12000002712011,
-    "battle_hit_1": 1.79100000858307,
-    "battle_hit_2": 4.61199997365475,
-    "battle_menu_open": 1.841000020504,
-    "battle_menu_close": 2.29199993610382,
-    "battle_victory": 1.89500005543232,
-    "battle_victory_results_confirm": 5.56199978291988,
-    "boss_bureaucratia_takeover": 5.33200012147427,
-    "boss_bureaucratia_defeat": 4.96700014173985,
-    "boss_bureaucratia_retry": 2.3520000576973,
-    "boss_bureaucratia_victory": 8.96299955248833,
-    "boss_bureaucratia_victory_results_confirm": 3.92100001871586,
-    "boss_megacorp_takeover": 4.61100023984909,
-    "boss_megacorp_victory": 4.70999979972839,
-    "boss_megacorp_victory_results_confirm": 9.28900028765202,
-    "camp_entry": 10.1029999703169,
-    "camp_menu_open": 0.141000002622604,
-    "camp_menu_close": 0.126000002026558,
-    "camp_set_out": 2.38699990510941
+    "title_new_game_to_overworld": 9.52499990165234,
+    "overworld_menu_open": 5.90899987518787,
+    "overworld_menu_close": 2.22300004959106,
+    "battle_entry": 2.23999993503094,
+    "battle_hit_1": 2.12700000405312,
+    "battle_hit_2": 4.90100000798702,
+    "battle_menu_open": 1.91699999570847,
+    "battle_menu_close": 1.7950000166893,
+    "battle_victory": 6.16999986767769,
+    "battle_victory_results_confirm": 4.50999976694584,
+    "boss_bureaucratia_takeover": 7.10000018775463,
+    "boss_bureaucratia_defeat": 7.42799977958202,
+    "boss_bureaucratia_retry": 2.34899996221066,
+    "boss_bureaucratia_victory": 6.57700020074844,
+    "boss_bureaucratia_victory_results_confirm": 2.45999989658594,
+    "boss_megacorp_takeover": 4.32300016283989,
+    "boss_megacorp_victory": 7.15699990093708,
+    "boss_megacorp_victory_results_confirm": 9.76299996674061,
+    "camp_entry": 2.33400003612041,
+    "camp_menu_open": 0.163999997079372,
+    "camp_menu_close": 0.120999999344349,
+    "camp_set_out": 9.07600036263466
   },
   "worst_wall_frame_ms_by_step": {
-    "title_new_game_to_overworld": 21.668,
-    "overworld_menu_open": 16.049,
-    "overworld_menu_close": 22.28,
-    "battle_entry": 46.625,
-    "battle_hit_1": 13.047,
-    "battle_hit_2": 15.802,
-    "battle_menu_open": 12.07,
-    "battle_menu_close": 12.707,
-    "battle_victory": 12.188,
-    "battle_victory_results_confirm": 14.932,
-    "boss_bureaucratia_takeover": 49.81,
-    "boss_bureaucratia_defeat": 19.215,
-    "boss_bureaucratia_retry": 12.419,
-    "boss_bureaucratia_victory": 21.708,
-    "boss_bureaucratia_victory_results_confirm": 14.053,
-    "boss_megacorp_takeover": 45.956,
-    "boss_megacorp_victory": 14.885,
-    "boss_megacorp_victory_results_confirm": 20.044,
-    "camp_entry": 19.726,
-    "camp_menu_open": 11.12,
-    "camp_menu_close": 11.223,
-    "camp_set_out": 20.692
+    "title_new_game_to_overworld": 21.679,
+    "overworld_menu_open": 14.13,
+    "overworld_menu_close": 13.012,
+    "battle_entry": 45.554,
+    "battle_hit_1": 14.499,
+    "battle_hit_2": 14.846,
+    "battle_menu_open": 12.362,
+    "battle_menu_close": 12.193,
+    "battle_victory": 16.92,
+    "battle_victory_results_confirm": 14.41,
+    "boss_bureaucratia_takeover": 51.399,
+    "boss_bureaucratia_defeat": 19.248,
+    "boss_bureaucratia_retry": 12.824,
+    "boss_bureaucratia_victory": 20.169,
+    "boss_bureaucratia_victory_results_confirm": 12.407,
+    "boss_megacorp_takeover": 40.669,
+    "boss_megacorp_victory": 16.928,
+    "boss_megacorp_victory_results_confirm": 20.083,
+    "camp_entry": 13.066,
+    "camp_menu_open": 11.998,
+    "camp_menu_close": 11.098,
+    "camp_set_out": 22.351
   },
   "negative_control": {
     "parts": {
@@ -518,13 +518,13 @@
           "draw": 0,
           "specialization": 2
         },
-        "worst_ms": 67.810002207756
+        "worst_ms": 26.056999206543
       },
       "material_fixture": {
         "fixture": "StandardMaterial3D: alpha depth pre-pass, cull off, clearcoat, rim, SSS, anisotropy",
         "camera_found": true,
         "in_view": true,
-        "mode": "OverworldMode:<Node#1404554970992>",
+        "mode": "OverworldMode:<Node#1405293168501>",
         "delta": {
           "canvas": 0,
           "mesh": 0,
@@ -532,7 +532,7 @@
           "draw": 0,
           "specialization": 5
         },
-        "worst_ms": 965.164993286133
+        "worst_ms": 709.534995555878
       }
     },
     "delta": {
@@ -542,16 +542,16 @@
       "draw": 0,
       "specialization": 7
     },
-    "worst_ms": 965.164993286133,
+    "worst_ms": 709.534995555878,
     "expected": "a counter rises (or a frame exceeds the limit)"
   },
   "flow_errors": [],
   "verdict": {
     "cycle_unchanged": true,
     "no_spike": true,
-    "frames_measured": 1895,
+    "frames_measured": 1892,
     "frames_over_limit": 0,
-    "worst_frame_ms": 10.1029996871948,
+    "worst_frame_ms": 9.76299953460693,
     "limit_ms": 33.0,
     "control_discriminates": true,
     "pass": true

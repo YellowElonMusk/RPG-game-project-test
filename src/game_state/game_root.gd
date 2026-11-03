@@ -72,7 +72,8 @@ var _world_state: WorldState = null
 var _camp_directory: CampDirectory = null
 ## Save/Load (ADR-0009), under Services.
 var _save_service: SaveService = null
-var _squad: Array[Combatant] = []
+## The live squad and any loaded save data for it (Leveling GDD rule 7).
+var _squad_store: SquadStore = SquadStore.new()
 var _machine: GameStateMachine = null
 var _loader: ModeHostSceneLoader = null
 ## The box the loader's closures read the machine through (see `_ready()`);
@@ -145,7 +146,7 @@ func _ready() -> void:
 		elif mode is InterimCampMode:
 			(mode as InterimCampMode).camp_directory = _camp_directory
 			(mode as InterimCampMode).save_service = _save_service
-			var squad: Array[Combatant] = _squad
+			var squad: Array[Combatant] = _squad_store.squad
 			(mode as InterimCampMode).party_source = func() -> Array[Combatant]: return squad
 		elif mode is TitleMode:
 			(mode as TitleMode).save_service = _save_service
@@ -173,7 +174,7 @@ func _ready() -> void:
 	if not save_dir_override.is_empty():
 		save_config.save_dir = save_dir_override
 	_save_service.setup(machine, catalog(), SaveFileSystem.new(), save_config,
-			SaveBootstrap.participants(machine, _world_state, _camp_return),
+			SaveBootstrap.participants(machine, _world_state, _camp_return, _squad_store, catalog()),
 			func() -> int: return int(Time.get_unix_time_from_system()))
 	loader.save_commit = _save_service.commit_if_loaded
 
@@ -228,11 +229,14 @@ func _inject_overworld(overworld: OverworldMode, payload: RefCounted = null) -> 
 	# WorldState Save/Load just committed (ADR-0009 §6).
 	if payload == null:
 		_world_state.reset_to_new_game()
-		_squad = ChapterFlow.build_squad(catalog())
+		_squad_store.pending = {}
+		_squad_store.rebuild(catalog())
 		_apply_opening_step(overworld.config)
-	elif _squad.is_empty():
-		_squad = ChapterFlow.build_squad(catalog())
-	var squad: Array[Combatant] = _squad
+	elif _squad_store.squad.is_empty():
+		# Continue (a committed save) or first entry: build, applying any
+		# loaded levels, XP, HP and MP.
+		_squad_store.rebuild(catalog())
+	var squad: Array[Combatant] = _squad_store.squad
 	overworld.world_state = _world_state
 	overworld.encounter_catalog = catalog()
 	overworld.party_source = func() -> Array[Combatant]:

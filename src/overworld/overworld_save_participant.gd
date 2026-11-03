@@ -55,6 +55,7 @@ func stage(data: Dictionary, reader: SaveReader) -> SaveStage:
 		"chapter_step": reader.get_string("chapter_step"),
 		"street_cred": maxi(0, reader.get_int("street_cred")),
 		"alien_points": maxi(0, reader.get_int("alien_points")),
+		"money": maxi(0, reader.get_int("money")),
 		"resolved": {},
 		"opened": {},
 		"flags": [],

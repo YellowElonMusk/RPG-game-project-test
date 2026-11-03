@@ -27,6 +27,7 @@ var guard: MenuGuard = null
 
 var _xp_label: Label = null
 var _money_label: Label = null
+var _levels_label: Label = null
 var _continue_button: Button = null
 var _done: bool = false
 
@@ -58,6 +59,8 @@ func _init(clock: Callable, guard_seconds: float) -> void:
 	box.add_child(_xp_label)
 	_money_label = _label("", 18, COLOR_BORDER)
 	box.add_child(_money_label)
+	_levels_label = _label("", 17, COLOR_GOLD)
+	box.add_child(_levels_label)
 	_continue_button = Button.new()
 	_continue_button.text = "Continue"
 	_continue_button.focus_mode = Control.FOCUS_ALL
@@ -65,15 +68,23 @@ func _init(clock: Callable, guard_seconds: float) -> void:
 	box.add_child(_continue_button)
 
 
-## Shows the totals, focuses Continue and starts the input guard.
-func show_results(xp: int, money: int) -> void:
+## Shows the totals and one line per level gained (Leveling GDD rule 6),
+## focuses Continue and starts the input guard.
+func show_results(xp: int, money: int, level_lines: Array[String] = []) -> void:
 	_done = false
 	_xp_label.text = "+%d XP" % xp
 	_money_label.text = "+%d Money" % money
+	_levels_label.text = "\n".join(level_lines)
+	_levels_label.visible = not level_lines.is_empty()
 	visible = true
 	guard.open(self)
 	if _continue_button.is_inside_tree():
 		_continue_button.grab_focus()
+
+
+## The level-up lines shown, one per line (tests).
+func levels_text() -> String:
+	return _levels_label.text
 
 
 ## The shown totals' text (tests and capture).

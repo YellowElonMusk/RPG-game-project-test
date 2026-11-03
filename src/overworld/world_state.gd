@@ -42,6 +42,8 @@ var chapter_step: String = ""
 ## gains alien points. They change how NPCs see the squad, never battle rules.
 var street_cred: int = 0
 var alien_points: int = 0
+## The squad's wallet (Leveling GDD rule 5): Victory money, kept for shops.
+var money: int = 0
 
 # map_id -> { symbol_id -> Respawn }
 var _resolved: Dictionary = {}
@@ -127,6 +129,7 @@ func reset_to_new_game() -> void:
 	chapter_step = ""
 	street_cred = 0
 	alien_points = 0
+	money = 0
 	_resolved = {}
 	_opened = {}
 	_flags = {}
@@ -160,6 +163,7 @@ func to_dict() -> Dictionary:
 		"chapter_step": chapter_step,
 		"street_cred": street_cred,
 		"alien_points": alien_points,
+		"money": money,
 		"resolved": resolved,
 		"opened": opened,
 		"flags": flags,
@@ -179,6 +183,7 @@ func from_dict(data: Dictionary) -> void:
 	chapter_step = data.get("chapter_step", "")
 	street_cred = int(data.get("street_cred", 0))
 	alien_points = int(data.get("alien_points", 0))
+	money = int(data.get("money", 0))
 	var resolved: Dictionary = data.get("resolved", {})
 	for m: String in resolved:
 		_resolved[m] = {}

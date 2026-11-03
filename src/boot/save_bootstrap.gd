@@ -7,10 +7,14 @@ extends RefCounted
 
 
 ## `camp_return`: (camp_id) -> MapEntryPayload, for a save made in Camp.
+## `squad` (optional): the live squad store, saved by the `squad`
+## participant (Leveling GDD rule 7); null saves no squad (older tests).
 static func participants(machine: GameStateMachine, world_state: WorldState,
-		camp_return: Callable) -> Array[SaveParticipant]:
+		camp_return: Callable, squad: SquadStore = null,
+		catalog: ContentCatalogService = null) -> Array[SaveParticipant]:
 	var out: Array[SaveParticipant] = []
 	out.append(GameStateSaveParticipant.new(machine))  # story 090: last camp
 	out.append(OverworldSaveParticipant.new(world_state, machine, camp_return))  # story 090: WorldState
-	# TODO(save-load): squad_roster (HP, items), once the Squad Roster system exists.
+	if squad != null:
+		out.append(SquadSaveParticipant.new(squad, catalog))  # leveling: level, XP, HP, MP
 	return out

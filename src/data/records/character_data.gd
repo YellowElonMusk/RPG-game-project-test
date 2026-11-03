@@ -27,6 +27,12 @@ extends Resource
 @export var attack: int = 0
 @export var defense: int = 0
 @export var speed: int = 0
+## Per-level stat gains (Leveling GDD rule 4): `stat(L) = base + growth × (L − 1)`.
+@export var growth_hp: int = 0
+@export var growth_mp: int = 0
+@export var growth_attack: int = 0
+@export var growth_defense: int = 0
+@export var growth_speed: int = 0
 ## Move record IDs available from the start.
 @export var move_ids: PackedStringArray = PackedStringArray()
 ## Move record ID unlocked by loyalty.

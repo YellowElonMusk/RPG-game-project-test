@@ -37,6 +37,11 @@ var is_boss: bool = false
 ## Defend only.
 var move_ids: PackedStringArray = PackedStringArray()
 
+## Squad members only (Leveling GDD): level, from 1, and the running XP
+## total. Enemies stay at level 1 with 0 XP.
+var level: int = 1
+var xp: int = 0
+
 ## Current HP/MP. Clamped to [0, max_*] by take_damage()/heal()/spend_mp().
 var hp: int
 var mp: int

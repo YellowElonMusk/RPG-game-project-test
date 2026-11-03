@@ -622,7 +622,11 @@ func _clear_end_light() -> void:
 func _report_outcome(won: bool) -> void:
 	if won and _results_panel != null and _battle != null:
 		var r: Dictionary = BattleRewards.totals(_battle.enemies, BattleCatalog.shipped())
-		_results_panel.show_results(int(r["xp"]), int(r["money"]))
+		# Leveling GDD rules 2-5: XP to every standing member, money banked.
+		var lines: Array[String] = Leveling.award(_battle.squad, int(r["xp"]), BattleCatalog.shipped())
+		if world_state != null:
+			world_state.money += int(r["money"])
+		_results_panel.show_results(int(r["xp"]), int(r["money"]), lines)
 	if _machine == null:
 		return
 	if won:

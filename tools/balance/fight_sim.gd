@@ -14,11 +14,13 @@ extends SceneTree
 ##
 ##   godot --headless --path . -s res://tools/balance/fight_sim.gd [-- --runs=300 --encounter=enc_paris_supervisor]
 ##   ... -- --roster=enemy_supervisor,enemy_clerk,enemy_clerk --boss=1   (an ad-hoc fight)
+##   ... -- --level=4   (the squad at level 4, Leveling GDD growth, full HP/MP)
 
 const DEFAULT_RUNS: int = 300
 const TURN_CAP: int = 2000
 
 var _catalog: ContentCatalogService = null
+var _level: int = 1
 
 
 func _initialize() -> void:
@@ -30,11 +32,14 @@ func _run() -> void:
 	var only: String = ""
 	var roster: String = ""
 	var boss: bool = false
+	var level: int = 1
 	for a: String in OS.get_cmdline_user_args():
 		if a.begins_with("--runs="):
 			runs = int(a.substr(7))
 		elif a.begins_with("--roster="):
 			roster = a.substr(9)
+		elif a.begins_with("--level="):
+			level = int(a.substr(8))
 		elif a.begins_with("--boss="):
 			boss = a.substr(7) == "1"
 		elif a.begins_with("--encounter="):
@@ -45,7 +50,8 @@ func _run() -> void:
 		printerr("fight_sim: content boot failed: %s" % [_catalog.report])
 		quit(1)
 		return
-	print("fight_sim: %d runs per policy" % runs)
+	_level = level
+	print("fight_sim: %d runs per policy, squad level %d" % [runs, level])
 	print("%-28s %-6s %6s %7s %9s %5s" % ["encounter", "policy", "win%", "rounds", "hp_lost%", "KOs"])
 	var records: Array = _catalog.all_records(&"encounter")
 	if not roster.is_empty():
@@ -76,6 +82,10 @@ func _simulate(enc: EncounterData, policy: String, runs: int) -> Dictionary:
 		var payload := BattleEntryPayload.new()
 		payload.descriptor = OverworldMode.build_descriptor(enc)
 		payload.party = ChapterFlow.build_squad(_catalog)
+		for m: Combatant in payload.party:
+			Leveling.apply_level(m, _level, _catalog)
+			m.hp = m.max_hp
+			m.mp = m.max_mp
 		var rng := RandomNumberGenerator.new()
 		rng.seed = 1000 + seed
 		var core: BattleCore = BattleFactory.build(payload, rng).core
