@@ -1,7 +1,7 @@
 # Story 074: Retained screenshots of the replay indicator and the refusal pulse
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: In Review -- 2026-11-03: ReplayIndicator, PromptGlyphs (interim), RefusalPulse and UiConfig built (ADR-0008 §7/§12); 21 retained 1080p shots, every text >= 4.5:1 on its own backing (11.33 / 6.09 passive / 14.31 menu). Open: ux-designer sign-off; boss shots re-run once the dusk flood renders; MenuGuard not wired in the battle menu. See `production/qa/evidence/replay-indicator-refusal-pulse-evidence.md`
 > **Layer**: Core
 > **Type**: UI
 > **Estimate**: M
@@ -76,7 +76,7 @@ This story captures, rather than builds, the replay indicator's three states (pa
 - Retained screenshots of each screen/state touched (three indicator states × keyboard/gamepad × Battle/each boss takeover; the refusal pulse) in `production/qa/evidence/replay-indicator-and-refusal-pulse/`
 - ux-designer sign-off on the full set
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created -- `production/qa/evidence/replay-indicator-refusal-pulse/` + `replay-indicator-refusal-pulse-evidence.md` (ux-designer sign-off owed)
 
 ---
 

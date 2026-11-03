@@ -58,6 +58,13 @@ var _command_window: Control = null
 var _command_panels: Array[Control] = []
 ## True while a window fit waits for the next process frame.
 var _fit_queued: bool = false
+## The replay indicator (ADR-0008 §12), built in `setup()`.
+var _indicator: ReplayIndicator = null
+## Refusal feedback for this mode's presses (ADR-0008 §7): a refused latch
+## pulses the indicator when it is visible.
+var feedback: UiFeedback = UiFeedback.new()
+## The refusal pulse's size and length; the shipped config when not injected.
+var ui_config: UiConfig = null
 ## One RNG per Battle-mode instance (ADR-0010 §3): never recreated, never
 ## restored on Retry, so a retried fight draws fresh variance.
 var _rng: RandomNumberGenerator = null
@@ -100,6 +107,7 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 	# The first list is built here, before add_child(), where no fit can queue.
 	tree_entered.connect(_queue_fit_command_window)
 	_command_menu.visibility_changed.connect(_queue_fit_command_window)
+	_build_indicator()
 	var entry: BattleEntryPayload = payload as BattleEntryPayload
 	if entry == null or entry.descriptor == null:
 		return
@@ -172,6 +180,57 @@ func _fit_command_window() -> void:
 	for panel: Control in _command_panels:
 		if panel.is_visible_in_tree() and panel.size.y > _command_window.size.y:
 			_command_window.offset_top = _command_window.offset_bottom - panel.size.y
+
+
+## The shipped bindings the indicator's prompts are labelled from.
+const BINDINGS_PATH: String = "res://data/bindings/bindings_default.tres"
+
+
+## The replay indicator (tests and capture tools).
+func replay_indicator() -> ReplayIndicator:
+	return _indicator
+
+
+## Builds the indicator above the command menu, keyboard prompts by default.
+## TODO(ui-service): the UI service will set its glyphs from the Input
+## System's active device and re-label on `active_device_changed`.
+func _build_indicator() -> void:
+	if _indicator != null:
+		return
+	_indicator = ReplayIndicator.new()
+	var bindings: InputBindings = load(BINDINGS_PATH) as InputBindings
+	_indicator.glyphs = PromptGlyphs.new(bindings)
+	add_child(_indicator)
+	_indicator.indicator_clicked.connect(_on_indicator_clicked)
+	feedback.refused.connect(_on_refused)
+
+
+## Shows the indicator's state for this frame: hidden outside a replay.
+func _update_indicator() -> void:
+	if _indicator == null:
+		return
+	_indicator.show_state(ReplayInputRouter.INDICATOR_HIDDEN if _replay == null
+			else ReplayInputRouter.indicator_state(_replay))
+
+
+func _on_indicator_clicked() -> void:
+	if _replay == null:
+		return
+	ReplayInputRouter.route(_replay, ReplayInputRouter.ACTION_INDICATOR_CLICK, _refuse)
+	_update_indicator()
+
+
+## A press that changed nothing (ADR-0006 §6): refusal feedback on the
+## indicator when it is visible, tick only otherwise (ADR-0008 §7).
+func _refuse() -> void:
+	feedback.refuse(_indicator if _indicator != null and _indicator.visible else null)
+
+
+func _on_refused(control: Control) -> void:
+	if ui_config == null:
+		ui_config = load(UiConfig.DEFAULT_PATH) as UiConfig
+	var reduce_motion: bool = presentation_settings != null and presentation_settings.reduce_motion
+	RefusalPulse.play(control, ui_config, reduce_motion)
 
 
 ## ADR-0006 §5 "Retry" and "Exit" (story 040, GDD AC-36): every transition
@@ -264,6 +323,7 @@ func step_replay(delta: float) -> void:
 	# The punch runs on the replay's clamped step (GDD "One clock"): a slow
 	# frame never jumps it by more than dt_max (story 010, AC-8).
 	_step_punch(minf(delta, presentation_config.follow_camera_dt_max))
+	_update_indicator()
 	if _end_hold_left < 0.0:
 		return
 	_end_hold_left -= delta
@@ -309,7 +369,8 @@ func handle_action(action: StringName, pressed: bool) -> bool:
 		return true
 	if _replay != null and _is_replay_press(action) and _replay_owns_input():
 		if pressed:
-			ReplayInputRouter.route(_replay, action, Callable())
+			ReplayInputRouter.route(_replay, action, _refuse)
+			_update_indicator()
 		return true
 	if _command_menu != null and _command_menu.handle_action(action, pressed):
 		return true

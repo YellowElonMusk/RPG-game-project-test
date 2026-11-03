@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="UiConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/ui/ui_config.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+refusal_pulse_px = 2.0
+refusal_pulse_time = 0.12
+feedback_bus = &"UI"

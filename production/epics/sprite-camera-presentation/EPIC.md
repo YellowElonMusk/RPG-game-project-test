@@ -135,7 +135,7 @@ ADR-0005's Migration Plan sets the order: the windowed spike (Step 1, verificati
 | 071 | [The anchor moment reads clearly to first-time players](story-071-the-anchor-moment-playtest.md) | Integration | Ready | ADR-0005 |
 | 072 | [The squad is never tinted by a faction's boss flood](story-072-squad-never-tinted-by-the-boss-flood.md) | Visual/Feel | Ready | ADR-0005 |
 | 073 | [Upright-card occlusion holds under pitched cameras](story-073-upright-card-occlusion-under-pitched-cameras.md) | Visual/Feel | Ready | ADR-0005 |
-| 074 | [Retained screenshots of the replay indicator and the refusal pulse](story-074-replay-indicator-and-refusal-pulse-screenshots.md) | UI | Ready | ADR-0006 |
+| 074 | [Retained screenshots of the replay indicator and the refusal pulse](story-074-replay-indicator-and-refusal-pulse-screenshots.md) | UI | In Review | ADR-0006 |
 
 ## Definition of Done
 

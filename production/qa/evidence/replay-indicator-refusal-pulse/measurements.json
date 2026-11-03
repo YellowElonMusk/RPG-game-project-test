@@ -1,0 +1,306 @@
+{
+  "ac": "AC-69",
+  "min_ratio": 4.5,
+  "pass": true,
+  "shots": {
+    "battle_active_key": {
+      "backing": "2a2d40",
+      "pass": true,
+      "ratio": 11.33,
+      "rect": [
+        1758,
+        1025,
+        146,
+        39
+      ],
+      "state_reached": true,
+      "text": "[Shift] Speed up",
+      "text_colour": "f2ead8"
+    },
+    "battle_active_pad": {
+      "backing": "2a2d40",
+      "pass": true,
+      "ratio": 11.33,
+      "rect": [
+        1783,
+        1025,
+        121,
+        39
+      ],
+      "state_reached": true,
+      "text": "[X] Speed up",
+      "text_colour": "f2ead8"
+    },
+    "battle_latched_key": {
+      "backing": "2a2d40",
+      "pass": true,
+      "ratio": 11.33,
+      "rect": [
+        1669,
+        1025,
+        235,
+        39
+      ],
+      "state_reached": true,
+      "text": "Speeding up · [Escape] Stop",
+      "text_colour": "f2ead8"
+    },
+    "battle_latched_pad": {
+      "backing": "2a2d40",
+      "pass": true,
+      "ratio": 11.33,
+      "rect": [
+        1712,
+        1025,
+        192,
+        39
+      ],
+      "state_reached": true,
+      "text": "Speeding up · [B] Stop",
+      "text_colour": "f2ead8"
+    },
+    "battle_passive_key": {
+      "backing": "2a2d40",
+      "pass": true,
+      "ratio": 6.09,
+      "rect": [
+        1756,
+        1025,
+        148,
+        39
+      ],
+      "state_reached": true,
+      "text": "Playing the turn",
+      "text_colour": "b4ad9f"
+    },
+    "battle_passive_pad": {
+      "backing": "2a2d40",
+      "pass": true,
+      "ratio": 6.09,
+      "rect": [
+        1756,
+        1025,
+        148,
+        39
+      ],
+      "state_reached": true,
+      "text": "Playing the turn",
+      "text_colour": "b4ad9f"
+    },
+    "battle_refusal_pulse": {
+      "backing": "202129",
+      "focused": "Attack (MP 0)",
+      "pass": true,
+      "pulse_offset_px": 1.37940001487732,
+      "ratio": 14.31,
+      "rect": [
+        26,
+        817,
+        200,
+        31
+      ],
+      "text_colour": "f2f2f2"
+    },
+    "boss_bureaucratia_active_key": {
+      "backing": "2a2d40",
+      "pass": true,
+      "ratio": 11.33,
+      "rect": [
+        1758,
+        1025,
+        146,
+        39
+      ],
+      "state_reached": true,
+      "text": "[Shift] Speed up",
+      "text_colour": "f2ead8"
+    },
+    "boss_bureaucratia_active_pad": {
+      "backing": "2a2d40",
+      "pass": true,
+      "ratio": 11.33,
+      "rect": [
+        1783,
+        1025,
+        121,
+        39
+      ],
+      "state_reached": true,
+      "text": "[X] Speed up",
+      "text_colour": "f2ead8"
+    },
+    "boss_bureaucratia_latched_key": {
+      "backing": "2a2d40",
+      "pass": true,
+      "ratio": 11.33,
+      "rect": [
+        1669,
+        1025,
+        235,
+        39
+      ],
+      "state_reached": true,
+      "text": "Speeding up · [Escape] Stop",
+      "text_colour": "f2ead8"
+    },
+    "boss_bureaucratia_latched_pad": {
+      "backing": "2a2d40",
+      "pass": true,
+      "ratio": 11.33,
+      "rect": [
+        1712,
+        1025,
+        192,
+        39
+      ],
+      "state_reached": true,
+      "text": "Speeding up · [B] Stop",
+      "text_colour": "f2ead8"
+    },
+    "boss_bureaucratia_passive_key": {
+      "backing": "2a2d40",
+      "pass": true,
+      "ratio": 6.09,
+      "rect": [
+        1756,
+        1025,
+        148,
+        39
+      ],
+      "state_reached": true,
+      "text": "Playing the turn",
+      "text_colour": "b4ad9f"
+    },
+    "boss_bureaucratia_passive_pad": {
+      "backing": "2a2d40",
+      "pass": true,
+      "ratio": 6.09,
+      "rect": [
+        1756,
+        1025,
+        148,
+        39
+      ],
+      "state_reached": true,
+      "text": "Playing the turn",
+      "text_colour": "b4ad9f"
+    },
+    "boss_bureaucratia_refusal_pulse": {
+      "backing": "202129",
+      "focused": "Attack (MP 0)",
+      "pass": true,
+      "pulse_offset_px": 1.38888895511627,
+      "ratio": 14.31,
+      "rect": [
+        26,
+        817,
+        200,
+        31
+      ],
+      "text_colour": "f2f2f2"
+    },
+    "boss_megacorp_active_key": {
+      "backing": "2a2d40",
+      "pass": true,
+      "ratio": 11.33,
+      "rect": [
+        1758,
+        1025,
+        146,
+        39
+      ],
+      "state_reached": true,
+      "text": "[Shift] Speed up",
+      "text_colour": "f2ead8"
+    },
+    "boss_megacorp_active_pad": {
+      "backing": "2a2d40",
+      "pass": true,
+      "ratio": 11.33,
+      "rect": [
+        1783,
+        1025,
+        121,
+        39
+      ],
+      "state_reached": true,
+      "text": "[X] Speed up",
+      "text_colour": "f2ead8"
+    },
+    "boss_megacorp_latched_key": {
+      "backing": "2a2d40",
+      "pass": true,
+      "ratio": 11.33,
+      "rect": [
+        1669,
+        1025,
+        235,
+        39
+      ],
+      "state_reached": true,
+      "text": "Speeding up · [Escape] Stop",
+      "text_colour": "f2ead8"
+    },
+    "boss_megacorp_latched_pad": {
+      "backing": "2a2d40",
+      "pass": true,
+      "ratio": 11.33,
+      "rect": [
+        1712,
+        1025,
+        192,
+        39
+      ],
+      "state_reached": true,
+      "text": "Speeding up · [B] Stop",
+      "text_colour": "f2ead8"
+    },
+    "boss_megacorp_passive_key": {
+      "backing": "2a2d40",
+      "pass": true,
+      "ratio": 6.09,
+      "rect": [
+        1756,
+        1025,
+        148,
+        39
+      ],
+      "state_reached": true,
+      "text": "Playing the turn",
+      "text_colour": "b4ad9f"
+    },
+    "boss_megacorp_passive_pad": {
+      "backing": "2a2d40",
+      "pass": true,
+      "ratio": 6.09,
+      "rect": [
+        1756,
+        1025,
+        148,
+        39
+      ],
+      "state_reached": true,
+      "text": "Playing the turn",
+      "text_colour": "b4ad9f"
+    },
+    "boss_megacorp_refusal_pulse": {
+      "backing": "202129",
+      "focused": "Attack (MP 0)",
+      "pass": true,
+      "pulse_offset_px": 1.38888895511627,
+      "ratio": 14.31,
+      "rect": [
+        26,
+        859,
+        200,
+        31
+      ],
+      "text_colour": "f2f2f2"
+    }
+  },
+  "size": [
+    1920,
+    1080
+  ],
+  "tool": "tools/capture/replay_indicator_capture.gd"
+}
