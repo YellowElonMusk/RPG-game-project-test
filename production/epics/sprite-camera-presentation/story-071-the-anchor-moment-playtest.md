@@ -1,7 +1,7 @@
 # Story 071: The anchor moment reads clearly to first-time players
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: Blocked (needs five first-time human players) -- 2026-11-03: kit and blank record ready in `production/qa/playtests/anchor-moment-2026-10-29.md`; launch with `play.bat`. Not run.
 > **Layer**: Core
 > **Type**: Integration
 > **Estimate**: L
