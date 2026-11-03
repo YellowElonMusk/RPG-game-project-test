@@ -41,7 +41,7 @@ Unit tests: `tests/unit/battle/replay_indicator_test.gd`, 9 tests.
 
 ## Gaps
 
-- **The boss takeover backgrounds show no dusk flood.** This is a known gap (the sky card and boss flood are a 2D backdrop, and the boss light isn't visible). The boss shots are taken over the boss stage as it currently renders, and they will need a re-run once the flood is visible. Because the widgets are opaque, the ratios will not change.
+- **Boss backgrounds re-taken 2026-11-03 with the dusk flood visible** (`backdrop_flood.gdshader`, story 038). The ratios are unchanged, as expected for opaque widgets. They need another re-take only if the flood is re-tuned to the GDD's darker dusk.
 - **The pulse is shown on the command menu by calling it directly.** `MenuGuard` is still not wired into the battle command menu (an open gap). The pulse appearance is the real one, but the guard window that would trigger it in play is not.
 - **Glyphs are text labels, not images.** The UI service will also set the device from the Input System and re-label on `active_device_changed`; for now `BattleMode` defaults to keyboard prompts (TODO(ui-service)).
 - **Text scale:** there is no text-scale setting yet, so the indicator does not follow one.

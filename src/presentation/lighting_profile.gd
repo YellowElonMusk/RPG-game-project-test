@@ -51,6 +51,12 @@ extends Resource
 ## Sky card overall energy scale.
 @export var sky_energy: float = 1.0
 
+## How strongly the sky gradient above floods the painted backdrop's sky, 0
+## to 1 (story 038; GDD AC-34 "the flooded sky"). 0 shows the painting as
+## painted; only `boss_<faction>` profiles set it. Blended like every other
+## continuous parameter, so a takeover floods in on `blend_boss`.
+@export var sky_flood: float = 0.0
+
 ## `CameraAttributesPractical`/`Environment` exposure.
 @export var exposure: float = 1.0
 ## AgX tonemapper white point.

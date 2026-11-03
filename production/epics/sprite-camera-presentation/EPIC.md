@@ -99,7 +99,7 @@ ADR-0005's Migration Plan sets the order: the windowed spike (Step 1, verificati
 | 035 | [the battle benchmark holds its frame-time and draw-call budget on both target devices](story-035-battle-performance-budget.md) | Integration | Ready | ADR-0005 |
 | 036 | [one capture per lighting state passes read order and shows no glow on actors](story-036-capture-one-screen-per-lighting-state.md) | Visual/Feel | Ready | ADR-0005 |
 | 037 | [every character's silhouette passes the 2-of-3 lineup test](story-037-silhouette-sheet-passes-the-lineup-test.md) | Visual/Feel | Ready | ADR-0005 |
-| 038 | [every faction's boss takeover is lavish on its own terms, with no faction left behind](story-038-boss-takeover-faction-parity.md) | Visual/Feel | Ready | ADR-0005 |
+| 038 | [every faction's boss takeover is lavish on its own terms, with no faction left behind](story-038-boss-takeover-faction-parity.md) | Visual/Feel | In Progress | ADR-0005 |
 | 039 | [every sprite's texels are whole, uniform pixel blocks at every shipped resolution](story-039-texel-scale-holds-across-resolutions.md) | Visual/Feel | Ready | ADR-0005 |
 | 040 | [a Retry, Retreat or Quit mid-replay discards cleanly and never leaves a stale frame](story-040-retry-and-exit-mid-replay-clear-the-display.md) | Logic | Done | ADR-0006 |
 | 041 | [every boss stage frames its faction's colorblind-safe shape in view](story-041-boss-stage-frames-a-colorblind-shape.md) | Integration | Ready | ADR-0005 |
@@ -132,7 +132,7 @@ ADR-0005's Migration Plan sets the order: the windowed spike (Step 1, verificati
 | 068 | [Reduce Flashing halves the campfire flicker's swing](story-068-reduce-flashing-halves-campfire-flicker.md) | Logic | Done | ADR-0005 |
 | 069 | [Nothing compiles a rendering pipeline in play, measured](story-069-nothing-compiles-in-play.md) | Integration | In Review | ADR-0005 |
 | 070 | [Outcome numbers and the round number release on the right frame](story-070-outcome-numbers-and-round-on-the-hud.md) | Logic | Ready | ADR-0006 |
-| 071 | [The anchor moment reads clearly to first-time players](story-071-the-anchor-moment-playtest.md) | Integration | Ready | ADR-0005 |
+| 071 | [The anchor moment reads clearly to first-time players](story-071-the-anchor-moment-playtest.md) | Integration | Blocked | ADR-0005 |
 | 072 | [The squad is never tinted by a faction's boss flood](story-072-squad-never-tinted-by-the-boss-flood.md) | Visual/Feel | Ready | ADR-0005 |
 | 073 | [Upright-card occlusion holds under pitched cameras](story-073-upright-card-occlusion-under-pitched-cameras.md) | Visual/Feel | Ready | ADR-0005 |
 | 074 | [Retained screenshots of the replay indicator and the refusal pulse](story-074-replay-indicator-and-refusal-pulse-screenshots.md) | UI | In Review | ADR-0006 |

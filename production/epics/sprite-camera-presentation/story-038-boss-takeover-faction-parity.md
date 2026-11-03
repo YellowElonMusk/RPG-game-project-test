@@ -1,7 +1,7 @@
 # Story 038: every faction's boss takeover is lavish on its own terms, with no faction left behind
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: In Progress -- 2026-11-03: the dusk flood now reaches the screen (backdrop_flood.gdshader on the painted backdrop, driven by the blended profile; `sky_flood` 0.75 on both boss profiles). Not yet measured: the [L] parity table, the [C] sky/stars/contrast checks (needs the ID-pass sky mask over a painted backdrop), the art-director side-by-side.
 > **Layer**: Core
 > **Type**: Visual/Feel
 > **Estimate**: L

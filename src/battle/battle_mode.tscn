@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://src/battle/battle_mode.gd" id="1_mode"]
 [ext_resource type="PackedScene" path="res://src/battle/ui/battle_hud.tscn" id="2_hud"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://src/presentation/diorama_stage.gd" id="4_stage"]
 [ext_resource type="Script" path="res://src/battle/battle_view.gd" id="5_view"]
 [ext_resource type="Shader" path="res://src/presentation/shaders/sprite_actor.gdshader" id="6_shader"]
+[ext_resource type="Shader" path="res://src/presentation/shaders/backdrop_flood.gdshader" id="7_flood"]
 
 [sub_resource type="Environment" id="Env_1"]
 background_mode = 3
@@ -13,6 +14,9 @@ background_canvas_max_layer = -1
 ambient_light_source = 2
 ambient_light_color = Color(1, 1, 1, 1)
 tonemap_mode = 0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_flood"]
+shader = ExtResource("7_flood")
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_window"]
 bg_color = Color(0.16470589, 0.1764706, 0.2509804, 1)
@@ -33,6 +37,7 @@ script = ExtResource("1_mode")
 layer = -1
 
 [node name="Backdrop" type="TextureRect" parent="BackdropLayer"]
+material = SubResource("ShaderMaterial_flood")
 texture_filter = 1
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -46,7 +51,7 @@ mouse_filter = 2
 expand_mode = 1
 stretch_mode = 6
 
-[node name="DioramaStage" type="Node3D" parent="." node_paths=PackedStringArray("key_light", "set_light", "fill_light", "world_environment", "camera")]
+[node name="DioramaStage" type="Node3D" parent="." node_paths=PackedStringArray("key_light", "set_light", "fill_light", "world_environment", "camera", "backdrop")]
 unique_name_in_owner = true
 script = ExtResource("4_stage")
 profile_id = &"battle"
@@ -55,6 +60,7 @@ set_light = NodePath("SetLight")
 fill_light = NodePath("FillLight")
 world_environment = NodePath("WorldEnvironment")
 camera = NodePath("BattleCamera")
+backdrop = NodePath("../BackdropLayer/Backdrop")
 
 [node name="KeyRig" type="Node3D" parent="DioramaStage"]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)

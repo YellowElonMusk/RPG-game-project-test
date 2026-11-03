@@ -41,7 +41,7 @@
           128
         ]
       ],
-      "general_max_per_window": 0,
+      "general_max_per_window": 1,
       "red_max_per_window": 0,
       "flashes_outside_flood": [],
       "reduce_flashing_only_flood": true,
@@ -67,20 +67,29 @@
             "kind": "general",
             "rising": true,
             "coverage": 0.282
+          },
+          {
+            "frame": 35,
+            "t_s": 0.583333333333333,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.322
           }
         ],
-        "general_flash_frames": [],
+        "general_flash_frames": [
+          35
+        ],
         "red_flash_frames": [],
         "general_worst_window": {
-          "start_frame": -1,
-          "count": 0
+          "start_frame": 35,
+          "count": 1
         },
         "red_worst_window": {
           "start_frame": -1,
           "count": 0
         },
         "mean_luma_min": 0.0186492968350649,
-        "mean_luma_max": 0.202600061893463,
+        "mean_luma_max": 0.201723456382751,
         "pass": true
       },
       "notes": [],
@@ -130,7 +139,15 @@
         "area_min": 0.25,
         "rate_max": 3.0,
         "coincidence_frames": 3,
-        "events": [],
+        "events": [
+          {
+            "frame": 35,
+            "t_s": 0.583333333333333,
+            "kind": "general",
+            "rising": false,
+            "coverage": 0.322
+          }
+        ],
         "general_flash_frames": [],
         "red_flash_frames": [],
         "general_worst_window": {
@@ -141,8 +158,8 @@
           "start_frame": -1,
           "count": 0
         },
-        "mean_luma_min": 0.189997926354408,
-        "mean_luma_max": 0.202600061893463,
+        "mean_luma_min": 0.0994633585214615,
+        "mean_luma_max": 0.201723456382751,
         "pass": true
       },
       "notes": [],
@@ -207,7 +224,7 @@
           "count": 0
         },
         "mean_luma_min": 0.0186492968350649,
-        "mean_luma_max": 0.209376022219658,
+        "mean_luma_max": 0.209579184651375,
         "pass": true
       },
       "notes": [],
@@ -264,7 +281,7 @@
           "count": 0
         },
         "mean_luma_min": 0.19626484811306,
-        "mean_luma_max": 0.209376022219658,
+        "mean_luma_max": 0.209678322076797,
         "pass": true
       },
       "notes": [],
@@ -329,7 +346,7 @@
           "count": 0
         },
         "mean_luma_min": 0.0186492968350649,
-        "mean_luma_max": 0.209376022219658,
+        "mean_luma_max": 0.209426283836365,
         "pass": true
       },
       "notes": [],
@@ -386,7 +403,7 @@
           "count": 0
         },
         "mean_luma_min": 0.19626484811306,
-        "mean_luma_max": 0.209376022219658,
+        "mean_luma_max": 0.209472835063934,
         "pass": true
       },
       "notes": [],
@@ -1137,7 +1154,7 @@
           "count": 0
         },
         "mean_luma_min": 0.0186492968350649,
-        "mean_luma_max": 0.209376022219658,
+        "mean_luma_max": 0.209617793560028,
         "pass": true
       },
       "notes": [],
@@ -1202,7 +1219,7 @@
           "count": 0
         },
         "mean_luma_min": 0.0186492968350649,
-        "mean_luma_max": 0.20937168598175,
+        "mean_luma_max": 0.209508150815964,
         "pass": true
       },
       "notes": [],

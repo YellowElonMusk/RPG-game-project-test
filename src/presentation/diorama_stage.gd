@@ -51,6 +51,9 @@ const META_FACTION_ID: StringName = &"faction_id"
 @export var fill_light: DirectionalLight3D
 ## The stage's environment. Ambient is pinned to 0 at `_ready()`.
 @export var world_environment: WorldEnvironment
+## The painted backdrop, when the mode has one (Battle). Its `ShaderMaterial`
+## (`backdrop_flood.gdshader`) receives the blended sky (story 038).
+@export var backdrop: CanvasItem
 
 ## The blended rim color currently applied to actors (read by
 ## `PresentationDirector` to drive the `actor_rim_color` global uniform).
@@ -649,3 +652,22 @@ func _apply_values(profile: LightingProfile) -> void:
 		fill_light.light_energy = profile.fill_energy
 	current_rim_color = profile.rim_color
 	current_rim_strength = profile.rim_strength
+	_apply_backdrop_flood(profile)
+
+
+## Writes the blended sky to the painted backdrop's flood shader (story 038):
+## the stage's 3D sky card is hidden behind the painting, so the takeover's
+## dusk flood reaches the screen only through the backdrop. No-op without a
+## backdrop or with a backdrop that has no flood material.
+func _apply_backdrop_flood(profile: LightingProfile) -> void:
+	if backdrop == null:
+		return
+	var mat := backdrop.material as ShaderMaterial
+	if mat == null:
+		return
+	mat.set_shader_parameter(&"sky_top", profile.sky_top)
+	mat.set_shader_parameter(&"sky_bottom", profile.sky_bottom)
+	mat.set_shader_parameter(&"sky_horizon", profile.sky_horizon)
+	mat.set_shader_parameter(&"horizon_width", profile.sky_horizon_width)
+	mat.set_shader_parameter(&"horizon_intensity", profile.sky_horizon_intensity)
+	mat.set_shader_parameter(&"flood", profile.sky_flood)

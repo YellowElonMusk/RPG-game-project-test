@@ -19,6 +19,7 @@ sky_horizon = Color(0.3, 0.55, 0.85, 1)
 sky_horizon_width = 0.1
 sky_horizon_intensity = 1.4
 sky_energy = 1.2
+sky_flood = 0.75
 exposure = 1.0
 agx_white = 6.0
 agx_contrast = 1.05
