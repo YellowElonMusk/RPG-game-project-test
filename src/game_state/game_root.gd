@@ -145,6 +145,8 @@ func _ready() -> void:
 		elif mode is InterimCampMode:
 			(mode as InterimCampMode).camp_directory = _camp_directory
 			(mode as InterimCampMode).save_service = _save_service
+			var squad: Array[Combatant] = _squad
+			(mode as InterimCampMode).party_source = func() -> Array[Combatant]: return squad
 		elif mode is TitleMode:
 			(mode as TitleMode).save_service = _save_service
 		elif mode is BattleMode:

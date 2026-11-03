@@ -15,6 +15,11 @@ var save_service: SaveService = null
 ## The last autosave result (tests).
 var last_save_result: int = -1
 var _machine: GameStateMachine = null
+## The party resting here (`GameRoot` injects the one squad the Overworld
+## shares): resting restores every member to full HP and MP, knocked-out
+## members included (Stats & Damage rule 3: characters carry HP/MP between
+## battles and are restored to full at camp). Null rests nobody.
+var party_source: Callable = Callable()
 ## The camp being rested at (the payload's ID; may be empty on a Retreat
 ## with no camp registered).
 var camp_id: String = ""
@@ -24,7 +29,18 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 	_machine = machine
 	var camp: CampEntryPayload = payload as CampEntryPayload
 	camp_id = camp.camp_id if camp != null else ""
-	(%Card as Label).text = "Resting at camp.\n[Confirm] Set out"
+	restore_party()
+	(%Card as Label).text = "Resting at camp. Everyone is back on their feet.\n[Confirm] Set out"
+
+
+## Restores every party member to full HP and MP and clears battle-only
+## state (Stats & Damage rule 3). Called on arriving at camp, a Retreat
+## included.
+func restore_party() -> void:
+	if not party_source.is_valid():
+		return
+	for member: Combatant in party_source.call():
+		member.reset_for_battle()
 
 
 ## `confirm` sets out; every other action is consumed and does nothing.
