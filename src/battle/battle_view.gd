@@ -120,9 +120,11 @@ static func load_backdrop(faction_id: String, is_boss: bool) -> Texture2D:
 	return load(path) as Texture2D if ResourceLoader.exists(path) else null
 
 
-## The slots `count` enemies stand on: the enemy slots (`SQUAD_SLOTS` on)
-## nearest the centre line first, so the first enemy (the boss, in a boss
-## encounter) takes the middle; at most as many as the stage has.
+## The slots `count` enemies stand on: the front enemy row first (the
+## smallest depth `y`), and within a row the slots nearest the centre line
+## first, so the first enemy (the boss, in a boss encounter) takes the front
+## middle and a crowd fills the front row before the back row (1 to 8
+## enemies, Turn Battle GDD); at most as many as the stage has.
 static func enemy_slots_for(battle_stage: BattleStage, count: int) -> Array[int]:
 	var slots: Array[int] = []
 	if battle_stage == null:
@@ -130,6 +132,10 @@ static func enemy_slots_for(battle_stage: BattleStage, count: int) -> Array[int]
 	for i: int in range(SQUAD_SLOTS, battle_stage.slots.size()):
 		slots.append(i)
 	slots.sort_custom(func(a: int, b: int) -> bool:
+		var ya: float = battle_stage.slots[a].y
+		var yb: float = battle_stage.slots[b].y
+		if not is_equal_approx(ya, yb):
+			return ya < yb
 		var da: float = absf(battle_stage.slots[a].x)
 		var db: float = absf(battle_stage.slots[b].x)
 		return da < db if not is_equal_approx(da, db) else battle_stage.slots[a].x < battle_stage.slots[b].x)

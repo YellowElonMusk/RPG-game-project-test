@@ -16,13 +16,13 @@ const _FAMILY_MEAL_HP_DELTA: int = 9
 const _FAMILY_MEAL_M1_HP: int = 16
 const _FAMILY_MEAL_M2_HP: int = 30
 const _APPETIZER_HEAL: int = 12
-const _VIRAL_BOOSTED_ATTACK_DAMAGE: int = 9
+const _VIRAL_BOOSTED_ATTACK_DAMAGE: int = 10
 ## The two `rng.state` pins depend on Godot's RandomNumberGenerator (PCG32);
 ## an engine upgrade that changes it means re-pinning them, not a regression.
 const _VIRAL_BOOSTED_ATTACK_RNG_STATE: int = -6618438155849649559
 ## Home Run damage against each of `CharacterizationExpected.ENEMY_IDS`, in
 ## that same order (Clerk, Supervisor, Security Drone, Middle Manager, CEO).
-const _HOME_RUN_DAMAGE: Array[int] = [20, 16, 17, 21, 15]
+const _HOME_RUN_DAMAGE: Array[int] = [21, 16, 17, 21, 15]
 const _HOME_RUN_RNG_STATE: int = 9033400586920292166
 
 

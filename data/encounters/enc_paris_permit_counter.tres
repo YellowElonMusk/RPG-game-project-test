@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_a")
 id = "enc_paris_permit_counter"
-enemy_ids = PackedStringArray("enemy_clerk", "enemy_clerk", "enemy_clerk")
+enemy_ids = PackedStringArray("enemy_clerk", "enemy_clerk", "enemy_clerk", "enemy_clerk", "enemy_clerk")
 battle_stage_id = "stage_chapter_interim"
 faction_id = "faction_bureaucratia"
 is_boss = false

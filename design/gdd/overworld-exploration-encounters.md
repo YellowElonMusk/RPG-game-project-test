@@ -41,7 +41,7 @@ locally, so liberation is something you can see on the street.
 
 **The data and rules layer.** Maps and encounters are content records:
 - `map_` records hold a map's display name, lighting profile and occupation-stage parameters;
-- `enc_` records hold the descriptor Turn Battle needs. Their `enemy_ids` list one entry per enemy on the field, so **an ID may appear more than once** (two Clerks are two entries). This is the "duplicates are meaningful" case of Content Data's list rule (ruling 2026-11-03, for chapter difficulty). The stage's enemy slots cap the count: 4 on the default battle stage, 3 on the boss stage.
+- `enc_` records hold the descriptor Turn Battle needs. Their `enemy_ids` list one entry per enemy on the field, so **an ID may appear more than once** (two Clerks are two entries). This is the "duplicates are meaningful" case of Content Data's list rule (ruling 2026-11-03, for chapter difficulty). Roster sizes follow Turn Battle's 1 to 8 (typical 2 to 5, up to 8 in late-game and hard areas, bosses with minions; user direction 2026-10-29). The stages hold **5** (default) and **boss + 3** today, every slot passing the 90% visibility, framing and blur rules. Fights of 6 to 8 wait on the staging pass owed by Sprite & Camera (Beatbox OQ-12).
 
 The system owns movement on the map's walkable area, symbol patrol and chase,
 interaction, map exits, camp spots and post-battle consequences. It also owns

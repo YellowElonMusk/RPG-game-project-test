@@ -44,10 +44,12 @@ const LATE_FEE_POWER: int = 16
 const MASS_AUDIT_POWER: int = 8
 const FINAL_NOTICE_POWER: int = 18
 
+## A crowd unit (Turn Battle GDD: typical fights field 2-5): tuned 2026-11-03
+## from 40/11/6 so a pack of 4-5 is a fair fight (tools/balance/fight_sim.gd).
 const CLERK_DISPLAY_NAME: String = "Clerk"
-const CLERK_MAX_HP: int = 40
-const CLERK_ATTACK: int = 11
-const CLERK_DEFENSE: int = 6
+const CLERK_MAX_HP: int = 28
+const CLERK_ATTACK: int = 9
+const CLERK_DEFENSE: int = 5
 const CLERK_SPEED: int = 8
 
 const SUPERVISOR_DISPLAY_NAME: String = "Supervisor"
