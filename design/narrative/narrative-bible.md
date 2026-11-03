@@ -97,6 +97,10 @@ Built from each kit in `data/characters/`. Every line a writer drafts for a squa
 - Locals who join in are **enthusiastic adopters**: form hobbyists, people who queue for fun, queue-number collectors. Their eagerness only makes life harder for themselves. Comedy, never judgment, never enforcement on neighbours.
 - Parisians game the system (forged *stamps*, stamp black market, counter-forms). Their jokes come from behaviour, never from being French.
 
+### 4.5 No churches — **Established** (user, 2026-11-04)
+- Every church was blown out in the invasion ("all church are blown out in the invasion"). Paris has none: no Notre-Dame, no Sacré-Coeur, no spires on the skyline.
+- How it squares with G-2 and G-7: the churches are simply *absent*. No ruins, rubble or empty plots are drawn, and no line jokes about them or mentions religion. The lore exists so the skyline needs no explanation.
+
 ---
 
 ## 5. The battle cry: "Go back to your planet!" — **Established** (N-3 A); closes OQ-21
@@ -187,7 +191,7 @@ Nazi-related material; Jews and Jewish topics; religion in general; LGBTQ topics
 | G-6a | No Nazi material: no Nazi uniforms, insignia, salutes, symbols or lookalikes, and no Holocaust or Jewish-persecution imagery or allegory (no camps, roundups, yellow stars or marked people). Other WWII-era settings and words are allowed | **Narrowed** (user, 2026-10-29: "WW2 things we don't want is nazi related and jews related") | Established |
 | G-6b | No "papers, please"; forms and permits are processed, never people; identity documents never forged, checked or confiscated | Unchanged | Established |
 | G-6c | No migrant/border template: no visa, residency, deportation, border or asylum vocabulary, either direction | Kept (user, 2026-10-29). N-8 does not lift it, and the title makes it the highest risk | Established |
-| G-6d | Enthusiastic adopters, never shamed or punished; no one marked by anything worn | Unchanged | Established |
+| G-6d | Enthusiastic adopters, never shamed or punished; no civilian marked by anything worn. Alien uniforms may carry badges (the Clerk's name badge) | Clarified (user, 2026-11-04) | Established |
 | G-6e | No food or ration queues | Unchanged | Established |
 | G-6f | **"resistance" is now allowed** in player-facing text | **Changed** (C-1) | Established |
 | G-6g | "maquis" and "collaborator" are allowed: they are neither Nazi- nor Jewish-related. Still, a "collaborator" is never shamed or punished (G-6d) | **Changed** (user, 2026-10-29) | Provisional |

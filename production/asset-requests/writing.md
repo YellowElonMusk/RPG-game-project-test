@@ -19,7 +19,7 @@
 
 | ID | Decision | Options | Default if you don't answer |
 |---|---|---|---|
-| **D-1** | **The game's title.** Docs say *Go back to your planet!*; `project.godot` says *"Resistance Permit Denied"* | A. *Go back to your planet!* B. *Resistance Permit Denied* C. A as the title, B as Chapter 1's subtitle D. Your own | **C** (the title joke stays; the subtitle sells Paris) |
+| **D-1** | **The game's title.** Docs say *Go back to your planet!*; `project.godot` says *"Resistance Permit Denied"* | A. *Go back to your planet!* B. *Resistance Permit Denied* C. A as the title, B as Chapter 1's subtitle D. Your own | **ANSWERED 2026-11-04: A, *Go back to your planet!*** (`project.godot` renamed) |
 | **D-2** | **Squad voices (N-4)**: never approved, still the default | A. Approve the four in `narrative-bible.md` §3 (Karen: speak to the manager of the universe; Chef: ban the aliens' food; Florida Man: go viral; Baguette Thrower: Paris's honour, sports commentator in his head). B. Change one or more (one line each) | **A** |
 | **D-3** | **Squad personal names.** Today they are titles only | A. Titles only (Karen, Five-Star Chef, Florida Man, Baguette Thrower). B. Titles plus a first name used in banter (e.g. Chef "Gaspard", Baguette Thrower "Didier"). C. Your names | **A** |
 | **D-4** | **The alien cell (the player).** It has no portrait and no name in MVP | A. No name; messages end "— Head Office". B. A codename the squad uses, e.g. "The Committee". C. Your name. Voice: terse, slightly too formal, an alien who learned English from spy films | **A** |

@@ -17,7 +17,7 @@
 |---|---|
 | **Fights have no background music** (user ruling) | The aliens on the field *are* the music: each alien performs one beatbox layer, and together they make the track. A knockout drops that alien's layer; the last knockout cuts the beat dead and the victory sting plays |
 | **Everything is original** (R12) | Darude's "Sandstorm" and the beatboxer Dharni are for *energy and layering feel only*. Incredibox is a reference for *structure* only. No sample, melody, riff or recognisable rhythm from them or any track. Never name them in a prompt to an AI tool |
-| **Mouth-made** (R12) | Every beatbox stem is recorded beatboxing (pitch, filters and effects allowed). Drum-machine samples are not allowed. See the note at the end of section 1 about AI tools |
+| **Sounds mouth-made** (R12, as amended 2026-11-04) | AI-generated a cappella beatbox is fine (user ruling). Every stem must still *sound* like a mouth: reject anything that sounds like a drum machine or instruments |
 | Loudness, music | -16 LUFS integrated, true peak -1 dBTP |
 | Loudness, beatbox | The **full** tier mix (every layer at once) lands near -16 LUFS. Mix the stems *together*, then export each one solo with no further gain change |
 | Loudness, ambience | -26 LUFS integrated (a bed under the music) |
@@ -92,7 +92,7 @@ Path: `assets/audio/beatbox/bureaucratia/`. Name: `bx_bur_t<tier>_<role>_<varian
 
 > *Supervisor hook (lead), D minor, 124 BPM, 8 bars: a deadpan monotone chant of the words "Take a number. NEXT." like a bored official calling the queue, rhythmic and stamped, with beatbox accents between phrases. Hook B: the same voice speeding up, "NEXT. NEXT. NEXT.", more urgent, same key and length.*
 
-**Who makes the stems (GDD OQ-4, open).** The GDD requires *recorded* beatboxing. Options: (a) hire a beatboxer with the brief above (best fit; a few hours of studio work); (b) record it yourself and process it; (c) use an AI audio tool. **Option (c) breaks R12's "mouth-made" rule as written.** If you want (c), say so and Claude will propose the GDD change. Before any tier 3 stem is accepted, you listen to it for "could anyone name the source?" (GDD OQ-7).
+**Who makes the stems (GDD OQ-4, resolved 2026-11-04): you, with an AI audio tool.** Generate each layer as its own solo stem where the tool allows it; if it only gives a full mix, generate the mix and Claude can split it, though solo stems loop much more cleanly. Before any tier 3 stem is accepted, you listen to it for "could anyone name the source?" (GDD OQ-7).
 
 ---
 

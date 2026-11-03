@@ -27,12 +27,12 @@
 
 **Guardrails (user rulings, `design/narrative/narrative-bible.md` §8.3).** These are hard rules. An asset that breaks one gets redone.
 - No Nazi or WWII-persecution imagery of any kind: no uniforms that look like it, no insignia, salutes, armbands, yellow stars, camps, cages or roundups.
-- **No civilian is marked by anything worn**: no armbands, badges, tags or ribbons on civilians.
+- **No civilian is marked by anything worn**: no armbands, badges, tags or ribbons on civilians. Alien uniforms may carry badges (the Clerk's name badge is fine; user, 2026-11-04).
 - No "papers, please". Booths process *forms*, never people. No ID cards, passports, visas, border or customs imagery.
 - No rubble, victims, cages or violence against humans. Occupation is paperwork: posters, queues, stamps, filing cabinets.
 - No food or ration queues. People queue for forms and numbers.
 - No hanging banners over streets at stage 1. No crowd tableaux.
-- No religion: **no Notre-Dame, no Sacré-Coeur, no church spires or crosses** in the Paris skyline. The Eiffel Tower is fine (daytime only; the night light show is copyrighted).
+- No religion: **no Notre-Dame, no Sacré-Coeur, no church spires or crosses** in the Paris skyline. Lore (user, 2026-11-04): every church was blown out in the invasion, so they are simply gone. Draw no ruins or rubble in their place either. The Eiffel Tower is fine (daytime only; the night light show is copyrighted).
 - No real brands, logos or shop names (café names are invented; no Michelin).
 
 ---

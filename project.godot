@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="Resistance Permit Denied"
+config/name="Go back to your planet!"
 run/main_scene="res://src/game_state/game_root.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 
