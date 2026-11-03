@@ -143,6 +143,11 @@ func _measure(args: Dictionary) -> void:
 	_root_node.save_dir_override = SAVE_DIR
 	root.add_child(_root_node)
 	var m: GameStateMachine = _root_node.machine
+	# The game opens the Menu by itself when its window loses focus (story
+	# 026); a click elsewhere mid-run froze a battle under that Menu and
+	# cascaded into 15 flow errors. The script opens its own Menus.
+	if m._action_source != null:
+		m._unbind_action_source()
 
 	# Boot (its warm-up stage included) to an idle, settled Title.
 	_step = "boot"

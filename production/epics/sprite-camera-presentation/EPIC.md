@@ -130,7 +130,7 @@ ADR-0005's Migration Plan sets the order: the windowed spike (Step 1, verificati
 | 066 | [Impact and landing frame data is required at boot](story-066-impact-and-landing-frame-data-required.md) | Logic | Done | ADR-0005 |
 | 067 | [End-of-fight holds complete before the outcome is reported](story-067-end-of-fight-holds.md) | Logic | Done | ADR-0006 |
 | 068 | [Reduce Flashing halves the campfire flicker's swing](story-068-reduce-flashing-halves-campfire-flicker.md) | Logic | Done | ADR-0005 |
-| 069 | [Nothing compiles a rendering pipeline in play, measured](story-069-nothing-compiles-in-play.md) | Integration | Ready | ADR-0005 |
+| 069 | [Nothing compiles a rendering pipeline in play, measured](story-069-nothing-compiles-in-play.md) | Integration | In Review | ADR-0005 |
 | 070 | [Outcome numbers and the round number release on the right frame](story-070-outcome-numbers-and-round-on-the-hud.md) | Logic | Ready | ADR-0006 |
 | 071 | [The anchor moment reads clearly to first-time players](story-071-the-anchor-moment-playtest.md) | Integration | Ready | ADR-0005 |
 | 072 | [The squad is never tinted by a faction's boss flood](story-072-squad-never-tinted-by-the-boss-flood.md) | Visual/Feel | Ready | ADR-0005 |

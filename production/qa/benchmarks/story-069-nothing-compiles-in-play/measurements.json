@@ -3,7 +3,7 @@
   "benchmark": "P-15",
   "ac": "AC-64",
   "story": "sprite-camera-presentation 069",
-  "date": "2026-10-31T16:00:29",
+  "date": "2026-11-03T18:12:38",
   "build": "development run (debug binary, windowed)",
   "engine": "4.7.2-stable (official)",
   "device": {
@@ -38,7 +38,7 @@
       "C:\\Users\\PC\\AppData\\Local/D3DSCache": true
     }
   },
-  "boot_seconds_to_title": 3.568699,
+  "boot_seconds_to_title": 5.162597,
   "boot_warmup": {
     "stages": [
       "overworld:map_paris_boss_chamber_placeholder",
@@ -51,14 +51,14 @@
       "battle:warmup_boss_faction_megacorp_stage_chapter_interim"
     ],
     "profiles": 9,
-    "frames": 218,
-    "seconds": 2.360155,
+    "frames": 318,
+    "seconds": 3.614857,
     "counters_delta": {
       "canvas": 2,
       "mesh": 0,
       "surface": 8,
       "draw": 0,
-      "specialization": 6
+      "specialization": 7
     }
   },
   "counters_after_boot": {
@@ -66,14 +66,14 @@
     "mesh": 0,
     "surface": 8,
     "draw": 0,
-    "specialization": 6
+    "specialization": 7
   },
   "counters_before_cycle": {
     "canvas": 2,
     "mesh": 0,
     "surface": 8,
     "draw": 0,
-    "specialization": 6
+    "specialization": 7
   },
   "counters_after_cycle": {
     "canvas": 2,
@@ -87,7 +87,7 @@
     "mesh": 0,
     "surface": 0,
     "draw": 0,
-    "specialization": 1
+    "specialization": 0
   },
   "steps": [
     {
@@ -97,7 +97,7 @@
         "mesh": 0,
         "surface": 8,
         "draw": 0,
-        "specialization": 6
+        "specialization": 7
       },
       "delta": {
         "canvas": 0,
@@ -114,7 +114,7 @@
         "mesh": 0,
         "surface": 8,
         "draw": 0,
-        "specialization": 6
+        "specialization": 7
       },
       "delta": {
         "canvas": 0,
@@ -131,7 +131,7 @@
         "mesh": 0,
         "surface": 8,
         "draw": 0,
-        "specialization": 6
+        "specialization": 7
       },
       "delta": {
         "canvas": 0,
@@ -148,7 +148,7 @@
         "mesh": 0,
         "surface": 8,
         "draw": 0,
-        "specialization": 6
+        "specialization": 7
       },
       "delta": {
         "canvas": 0,
@@ -165,7 +165,7 @@
         "mesh": 0,
         "surface": 8,
         "draw": 0,
-        "specialization": 6
+        "specialization": 7
       },
       "delta": {
         "canvas": 0,
@@ -182,7 +182,7 @@
         "mesh": 0,
         "surface": 8,
         "draw": 0,
-        "specialization": 6
+        "specialization": 7
       },
       "delta": {
         "canvas": 0,
@@ -199,7 +199,7 @@
         "mesh": 0,
         "surface": 8,
         "draw": 0,
-        "specialization": 6
+        "specialization": 7
       },
       "delta": {
         "canvas": 0,
@@ -216,7 +216,7 @@
         "mesh": 0,
         "surface": 8,
         "draw": 0,
-        "specialization": 6
+        "specialization": 7
       },
       "delta": {
         "canvas": 0,
@@ -233,7 +233,7 @@
         "mesh": 0,
         "surface": 8,
         "draw": 0,
-        "specialization": 6
+        "specialization": 7
       },
       "delta": {
         "canvas": 0,
@@ -250,7 +250,7 @@
         "mesh": 0,
         "surface": 8,
         "draw": 0,
-        "specialization": 6
+        "specialization": 7
       },
       "delta": {
         "canvas": 0,
@@ -267,7 +267,7 @@
         "mesh": 0,
         "surface": 8,
         "draw": 0,
-        "specialization": 6
+        "specialization": 7
       },
       "delta": {
         "canvas": 0,
@@ -284,14 +284,14 @@
         "mesh": 0,
         "surface": 8,
         "draw": 0,
-        "specialization": 6
+        "specialization": 7
       },
       "delta": {
         "canvas": 0,
         "mesh": 0,
         "surface": 0,
         "draw": 0,
-        "specialization": 1
+        "specialization": 0
       }
     },
     {
@@ -459,52 +459,52 @@
     }
   ],
   "worst_render_ms_by_step": {
-    "title_new_game_to_overworld": 1.34999996423721,
-    "overworld_menu_open": 1.05600000917912,
-    "overworld_menu_close": 1.34500002861023,
-    "battle_entry": 1.32499998807907,
-    "battle_hit_1": 0.961999982595444,
-    "battle_hit_2": 1.44099998474121,
-    "battle_menu_open": 1.10099998116493,
-    "battle_menu_close": 1.06600001454353,
-    "battle_victory": 3.45100006461143,
-    "battle_victory_results_confirm": 3.57399992644787,
-    "boss_bureaucratia_takeover": 1.8760000616312,
-    "boss_bureaucratia_defeat": 1.55400002002716,
-    "boss_bureaucratia_retry": 2.42899991571903,
-    "boss_bureaucratia_victory": 1.64099997282028,
-    "boss_bureaucratia_victory_results_confirm": 2.25900000333786,
-    "boss_megacorp_takeover": 3.22799997031689,
-    "boss_megacorp_victory": 1.17500001192093,
-    "boss_megacorp_victory_results_confirm": 2.3060000538826,
-    "camp_entry": 1.79500003159046,
-    "camp_menu_open": 0.146999999880791,
-    "camp_menu_close": 0.12499999627471,
-    "camp_set_out": 2.49100005626678
+    "title_new_game_to_overworld": 6.15699982643127,
+    "overworld_menu_open": 5.51599976420403,
+    "overworld_menu_close": 5.79399996995926,
+    "battle_entry": 4.98799994587898,
+    "battle_hit_1": 3.55099993944168,
+    "battle_hit_2": 6.89400014281273,
+    "battle_menu_open": 7.5089997947216,
+    "battle_menu_close": 2.02699998021126,
+    "battle_victory": 3.08200009167194,
+    "battle_victory_results_confirm": 8.85999995470047,
+    "boss_bureaucratia_takeover": 4.33000008761883,
+    "boss_bureaucratia_defeat": 7.89700016379356,
+    "boss_bureaucratia_retry": 2.38800002634525,
+    "boss_bureaucratia_victory": 5.75099986791611,
+    "boss_bureaucratia_victory_results_confirm": 4.59200011193752,
+    "boss_megacorp_takeover": 0.489000014960766,
+    "boss_megacorp_victory": 0.564999997615814,
+    "boss_megacorp_victory_results_confirm": 1.84300002455711,
+    "camp_entry": 1.12000000476837,
+    "camp_menu_open": 0.11599999666214,
+    "camp_menu_close": 0.105999998748302,
+    "camp_set_out": 3.68299987912178
   },
   "worst_wall_frame_ms_by_step": {
-    "title_new_game_to_overworld": 21.314,
-    "overworld_menu_open": 10.263,
-    "overworld_menu_close": 11.085,
-    "battle_entry": 43.89,
-    "battle_hit_1": 13.451,
-    "battle_hit_2": 13.047,
-    "battle_menu_open": 12.296,
-    "battle_menu_close": 12.649,
-    "battle_victory": 15.28,
-    "battle_victory_results_confirm": 15.167,
-    "boss_bureaucratia_takeover": 50.079,
-    "boss_bureaucratia_defeat": 23.928,
-    "boss_bureaucratia_retry": 13.454,
-    "boss_bureaucratia_victory": 12.421,
-    "boss_bureaucratia_victory_results_confirm": 11.82,
-    "boss_megacorp_takeover": 54.666,
-    "boss_megacorp_victory": 13.565,
-    "boss_megacorp_victory_results_confirm": 13.93,
-    "camp_entry": 12.704,
-    "camp_menu_open": 11.472,
-    "camp_menu_close": 12.965,
-    "camp_set_out": 22.35
+    "title_new_game_to_overworld": 22.193,
+    "overworld_menu_open": 13.1,
+    "overworld_menu_close": 12.963,
+    "battle_entry": 54.104,
+    "battle_hit_1": 16.517,
+    "battle_hit_2": 15.854,
+    "battle_menu_open": 17.319,
+    "battle_menu_close": 11.703,
+    "battle_victory": 14.278,
+    "battle_victory_results_confirm": 19.849,
+    "boss_bureaucratia_takeover": 52.406,
+    "boss_bureaucratia_defeat": 29.703,
+    "boss_bureaucratia_retry": 14.317,
+    "boss_bureaucratia_victory": 15.26,
+    "boss_bureaucratia_victory_results_confirm": 12.646,
+    "boss_megacorp_takeover": 42.418,
+    "boss_megacorp_victory": 11.239,
+    "boss_megacorp_victory_results_confirm": 11.728,
+    "camp_entry": 12.094,
+    "camp_menu_open": 12.84,
+    "camp_menu_close": 10.592,
+    "camp_set_out": 25.374
   },
   "negative_control": {
     "parts": {
@@ -518,13 +518,13 @@
           "draw": 0,
           "specialization": 2
         },
-        "worst_ms": 24.4520001411438
+        "worst_ms": 24.9060001373291
       },
       "material_fixture": {
         "fixture": "StandardMaterial3D: alpha depth pre-pass, cull off, clearcoat, rim, SSS, anisotropy",
         "camera_found": true,
         "in_view": true,
-        "mode": "OverworldMode:<Node#1186199505325>",
+        "mode": "OverworldMode:<Node#1230927563210>",
         "delta": {
           "canvas": 0,
           "mesh": 0,
@@ -532,7 +532,7 @@
           "draw": 0,
           "specialization": 5
         },
-        "worst_ms": 765.311002254486
+        "worst_ms": 880.186984777451
       }
     },
     "delta": {
@@ -542,19 +542,19 @@
       "draw": 0,
       "specialization": 7
     },
-    "worst_ms": 765.311002254486,
+    "worst_ms": 880.186984777451,
     "expected": "a counter rises (or a frame exceeds the limit)"
   },
   "flow_errors": [],
   "verdict": {
-    "cycle_unchanged": false,
+    "cycle_unchanged": true,
     "no_spike": true,
-    "frames_measured": 1776,
+    "frames_measured": 1780,
     "frames_over_limit": 0,
-    "worst_frame_ms": 3.57399988174438,
+    "worst_frame_ms": 8.85999965667725,
     "limit_ms": 33.0,
     "control_discriminates": true,
-    "pass": false
+    "pass": true
   },
-  "result": "FAIL"
+  "result": "PASS"
 }

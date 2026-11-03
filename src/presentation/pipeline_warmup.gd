@@ -241,19 +241,46 @@ func _warm_battle(d: EncounterDescriptor, squad: Array[Combatant], profiles: Arr
 			mode.handle_action(InputActions.CONFIRM, true)
 			mode.handle_action(InputActions.CONFIRM, false)
 		n += await _play_replay(mode)
+		n += await _play_defeat(mode, squad)
 	n += await _warm_profiles(mode, profiles)
-	# The Defeat spotlight (story 053), lit.
+	# The Defeat spotlight (story 053), lit, under every profile: in play it
+	# lights up as the stage blends to `defeat` (a boss stage's included), and
+	# warming it under one profile left that combination compiling in play
+	# (story 069 benchmark, boss_bureaucratia_defeat: specialization +1).
 	if stage != null:
 		var spot := DefeatSpotlight.new()
 		stage.add_child(spot)
 		spot.setup(mode.presentation_config)
 		spot.aim_at(Vector3.ZERO)
 		spot.set_progress(1.0)
-		n += await _frames(frames_per_state)
+		n += await _warm_profiles(mode, profiles)
 	_retain(mode)
 	mode.queue_free()
 	await get_tree().process_frame
 	return n + 1
+
+
+## Loses the fight and plays it out, at speed: the squad's knockouts, the
+## blend to `defeat` and the Defeat spotlight, as in play. Warming those
+## pieces separately left a boss Defeat compiling in play (story 069
+## benchmark, boss_bureaucratia_defeat: specialization +1). Same mechanism as
+## `DebugLaunchArgs.force_outcome()` (zeroed hp, then one Defend so
+## `BattleCore` reports the end itself) without its debug-build gate, since
+## the warm-up runs in release. The shared warm-up squad's hp is restored.
+func _play_defeat(mode: BattleMode, squad: Array[Combatant]) -> int:
+	var battle: BattleCore = mode.battle
+	if battle == null or battle.state != BattleCore.State.SQUAD_TURN:
+		return 0
+	var hp: Array[int] = []
+	for member: Combatant in squad:
+		hp.append(member.hp)
+	for member: Combatant in battle.squad:
+		member.hp = 0
+	battle.submit_action(Move.make_defend(), null)
+	var n: int = await _play_replay(mode)
+	for i: int in squad.size():
+		squad[i].hp = hp[i]
+	return n
 
 
 func _play_replay(mode: BattleMode) -> int:

@@ -1,7 +1,7 @@
 # Story 069: Nothing compiles a rendering pipeline in play, measured
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: Ready
+> **Status**: In Review -- 2026-11-03: AC-64 PASSES on the editor binary (cycle deltas all 0, worst render 8.86 ms, negative control surface +9 / specialization +7; 3 consecutive passing runs). Open: the release-export run (no export preset yet); lead review of 42-54 ms wall-clock frames at battle scene swaps. Record: `production/qa/benchmarks/story-069-nothing-compiles-in-play/`
 > **Layer**: Core
 > **Type**: Integration
 > **Estimate**: L
@@ -80,7 +80,7 @@ This builds the P-15 benchmark harness: a windowed release export, an empty-cach
 **Required evidence**:
 - A retained benchmark record in `production/qa/benchmarks/` (counters before/after, worst frame time, negative-control result) — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created -- `production/qa/benchmarks/story-069-nothing-compiles-in-play/` (`measurements.json` + `README.md`); release-export run owed
 
 ---
 
