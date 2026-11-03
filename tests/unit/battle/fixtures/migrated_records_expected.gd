@@ -75,8 +75,13 @@ const NAMED_ATTACKS: Dictionary = {
 ## Each enemy names its SpriteForge set: `sprite_` + the id without `enemy_`.
 const ENEMY_SPRITE_SET_PREFIX: String = "sprite_"
 const ENEMY_AI_PROFILE_ID: String = ""
-const ENEMY_REWARD_XP: int = 0
-const ENEMY_REWARD_MONEY: int = 0
+## Victory rewards per enemy, `[xp, money]` (Stats & Damage F9; authored
+## 2026-11-03 for the results screen: the GDD's Clerk 8/5 and Supervisor 20/15,
+## MegaCorp provisional).
+const ENEMY_REWARDS: Dictionary = {
+	"enemy_clerk": [8, 5], "enemy_supervisor": [20, 15],
+	"enemy_security_drone": [7, 4], "enemy_middle_manager": [8, 6], "enemy_ceo": [24, 18],
+}
 
 ## enemy id -> faction id and the AI's reachable move_ids, in the shipped
 ## rule's branch order (the rule's own params, story 017, decide which one is

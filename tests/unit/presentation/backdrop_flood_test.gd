@@ -41,3 +41,22 @@ func test_battle_scene_backdrop_carries_the_flood_material() -> void:
 	assert_object(stage.backdrop).is_not_null()
 	assert_object(stage.backdrop.material as ShaderMaterial).override_failure_message(
 			"the battle backdrop has no flood material").is_not_null()
+
+
+## GDD "After a boss fight": the sky stays at the flood through Victory and
+## its results screen; only the set, fill and actors follow the Victory light.
+func test_a_held_sky_keeps_the_flood_through_victory() -> void:
+	var stage: DioramaStage = auto_free(DioramaStage.new())
+	var backdrop: TextureRect = auto_free(TextureRect.new())
+	var mat := ShaderMaterial.new()
+	mat.shader = load("res://src/presentation/shaders/backdrop_flood.gdshader")
+	backdrop.material = mat
+	stage.backdrop = backdrop
+	var boss: LightingProfile = _profile("boss_bureaucratia")
+	stage.apply_profile(boss, 0.0)
+	stage.held_sky = stage.current_values.duplicate() as LightingProfile
+
+	stage.apply_profile(_profile("victory"), 0.0)
+
+	assert_float(float(mat.get_shader_parameter(&"flood"))).override_failure_message(
+			"the flood faded out on a boss Victory").is_equal_approx(boss.sky_flood, 0.0001)

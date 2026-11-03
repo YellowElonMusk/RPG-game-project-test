@@ -54,6 +54,11 @@ const META_FACTION_ID: StringName = &"faction_id"
 ## The painted backdrop, when the mode has one (Battle). Its `ShaderMaterial`
 ## (`backdrop_flood.gdshader`) receives the blended sky (story 038).
 @export var backdrop: CanvasItem
+## When set, the backdrop keeps this sky instead of the blended profile's:
+## after a boss fight the sky stays at the flood through Victory and its
+## results screen, and only the set, fill and actors follow the Victory
+## light (GDD "After a boss fight"). `BattleMode` sets it on a boss Victory.
+var held_sky: LightingProfile = null
 
 ## The blended rim color currently applied to actors (read by
 ## `PresentationDirector` to drive the `actor_rim_color` global uniform).
@@ -662,6 +667,8 @@ func _apply_values(profile: LightingProfile) -> void:
 func _apply_backdrop_flood(profile: LightingProfile) -> void:
 	if backdrop == null:
 		return
+	if held_sky != null:
+		profile = held_sky
 	var mat := backdrop.material as ShaderMaterial
 	if mat == null:
 		return

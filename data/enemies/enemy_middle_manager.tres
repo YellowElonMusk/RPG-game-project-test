@@ -11,5 +11,7 @@ max_hp = 44
 attack = 10
 defense = 6
 speed = 8
+reward_xp = 8
+reward_money = 6
 move_ids = PackedStringArray("move_upsell")
 sprite_set_id = "sprite_middle_manager"

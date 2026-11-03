@@ -125,7 +125,10 @@ func test_victory_carryover_and_report_order() -> void:
 			"left BATTLE before the end banner was confirmed").is_equal(
 			GameStateMachine.Mode.BATTLE)
 
-	# report_results_done() only fires once the player confirms the banner.
+	# report_results_done() only fires once the player continues from the
+	# results screen, after its input guard (GDD rule 9): a Confirm the same
+	# instant it opens is refused, so mode time moves past the guard first.
+	battle_mode.step_replay(battle_mode.presentation_config.input_guard + 0.05)
 	source.press(InputActions.CONFIRM)
 	_run_to_idle(machine)
 

@@ -137,9 +137,9 @@ func test_enemy_records_match_shipped_roster() -> void:
 		assert_str(enemy.faction_id).override_failure_message("%s faction_id" % id).is_equal(record_only["faction_id"])
 		assert_array(Array(enemy.move_ids)).override_failure_message(
 				"%s move_ids" % id).is_equal(record_only["move_ids"])
-		assert_int(enemy.reward_xp).override_failure_message("%s reward_xp" % id).is_equal(MigratedRecordsExpected.ENEMY_REWARD_XP)
+		assert_int(enemy.reward_xp).override_failure_message("%s reward_xp" % id).is_equal(MigratedRecordsExpected.ENEMY_REWARDS[id][0])
 		assert_int(enemy.reward_money).override_failure_message(
-				"%s reward_money" % id).is_equal(MigratedRecordsExpected.ENEMY_REWARD_MONEY)
+				"%s reward_money" % id).is_equal(MigratedRecordsExpected.ENEMY_REWARDS[id][1])
 		assert_str(enemy.sprite_set_id).override_failure_message(
 				"%s sprite_set_id" % id).is_equal(MigratedRecordsExpected.ENEMY_SPRITE_SET_PREFIX + String(id).trim_prefix("enemy_"))
 		assert_str(enemy.ai_profile_id).override_failure_message(

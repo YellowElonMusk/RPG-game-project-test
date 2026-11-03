@@ -89,7 +89,7 @@
           "count": 0
         },
         "mean_luma_min": 0.0186492968350649,
-        "mean_luma_max": 0.201723456382751,
+        "mean_luma_max": 0.193750143051147,
         "pass": true
       },
       "notes": [],
@@ -158,8 +158,8 @@
           "start_frame": -1,
           "count": 0
         },
-        "mean_luma_min": 0.0994633585214615,
-        "mean_luma_max": 0.201723456382751,
+        "mean_luma_min": 0.0983099937438965,
+        "mean_luma_max": 0.193750143051147,
         "pass": true
       },
       "notes": [],
@@ -170,11 +170,11 @@
       "encounter": "enc_paris_clerks_hall",
       "reduce_flashing": false,
       "gate": true,
-      "frames": 343,
-      "seconds": 5.71666666666667,
+      "frames": 403,
+      "seconds": 6.71666666666667,
       "decision_s": 0.6,
       "latches_engaged": 0,
-      "mode_time_s": 5.71666666666665,
+      "mode_time_s": 6.71666666666665,
       "gate_requests": [
         {
           "source": "battle_wipe",
@@ -183,14 +183,14 @@
           "capped": false
         }
       ],
-      "gate_booked_max_per_window": 2,
+      "gate_booked_max_per_window": 3,
       "boss_flood_spans": [],
       "general_max_per_window": 0,
       "red_max_per_window": 0,
       "flashes_outside_flood": [],
       "reduce_flashing_only_flood": true,
       "analysis": {
-        "frames": 343,
+        "frames": 403,
         "fps": 60,
         "analysis_size": [
           160,
@@ -210,7 +210,7 @@
             "t_s": 0.166666666666667,
             "kind": "general",
             "rising": true,
-            "coverage": 0.294
+            "coverage": 0.282
           }
         ],
         "general_flash_frames": [],
@@ -224,7 +224,7 @@
           "count": 0
         },
         "mean_luma_min": 0.0186492968350649,
-        "mean_luma_max": 0.209579184651375,
+        "mean_luma_max": 0.195386186242104,
         "pass": true
       },
       "notes": [],
@@ -235,11 +235,11 @@
       "encounter": "enc_paris_clerks_hall",
       "reduce_flashing": true,
       "gate": true,
-      "frames": 343,
-      "seconds": 5.71666666666667,
+      "frames": 403,
+      "seconds": 6.71666666666667,
       "decision_s": 0.6,
       "latches_engaged": 0,
-      "mode_time_s": 5.71666666666665,
+      "mode_time_s": 6.71666666666665,
       "gate_requests": [
         {
           "source": "battle_wipe",
@@ -255,7 +255,7 @@
       "flashes_outside_flood": [],
       "reduce_flashing_only_flood": true,
       "analysis": {
-        "frames": 343,
+        "frames": 403,
         "fps": 60,
         "analysis_size": [
           160,
@@ -280,8 +280,8 @@
           "start_frame": -1,
           "count": 0
         },
-        "mean_luma_min": 0.19626484811306,
-        "mean_luma_max": 0.209678322076797,
+        "mean_luma_min": 0.183208927512169,
+        "mean_luma_max": 0.195386186242104,
         "pass": true
       },
       "notes": [],
@@ -292,11 +292,11 @@
       "encounter": "enc_paris_clerks_hall",
       "reduce_flashing": false,
       "gate": true,
-      "frames": 343,
-      "seconds": 5.71666666666667,
+      "frames": 400,
+      "seconds": 6.66666666666667,
       "decision_s": 0.6,
       "latches_engaged": 4,
-      "mode_time_s": 5.71666666666665,
+      "mode_time_s": 6.66666666666665,
       "gate_requests": [
         {
           "source": "battle_wipe",
@@ -312,7 +312,7 @@
       "flashes_outside_flood": [],
       "reduce_flashing_only_flood": true,
       "analysis": {
-        "frames": 343,
+        "frames": 400,
         "fps": 60,
         "analysis_size": [
           160,
@@ -332,7 +332,7 @@
             "t_s": 0.166666666666667,
             "kind": "general",
             "rising": true,
-            "coverage": 0.294
+            "coverage": 0.282
           }
         ],
         "general_flash_frames": [],
@@ -346,7 +346,7 @@
           "count": 0
         },
         "mean_luma_min": 0.0186492968350649,
-        "mean_luma_max": 0.209426283836365,
+        "mean_luma_max": 0.195386186242104,
         "pass": true
       },
       "notes": [],
@@ -357,11 +357,11 @@
       "encounter": "enc_paris_clerks_hall",
       "reduce_flashing": true,
       "gate": true,
-      "frames": 343,
-      "seconds": 5.71666666666667,
+      "frames": 400,
+      "seconds": 6.66666666666667,
       "decision_s": 0.6,
       "latches_engaged": 4,
-      "mode_time_s": 5.71666666666665,
+      "mode_time_s": 6.66666666666665,
       "gate_requests": [
         {
           "source": "battle_wipe",
@@ -377,7 +377,7 @@
       "flashes_outside_flood": [],
       "reduce_flashing_only_flood": true,
       "analysis": {
-        "frames": 343,
+        "frames": 400,
         "fps": 60,
         "analysis_size": [
           160,
@@ -402,8 +402,8 @@
           "start_frame": -1,
           "count": 0
         },
-        "mean_luma_min": 0.19626484811306,
-        "mean_luma_max": 0.209472835063934,
+        "mean_luma_min": 0.183208927512169,
+        "mean_luma_max": 0.195386186242104,
         "pass": true
       },
       "notes": [],
@@ -414,11 +414,11 @@
       "encounter": "enc_paris_clerks_hall",
       "reduce_flashing": false,
       "gate": true,
-      "frames": 147,
-      "seconds": 2.45,
+      "frames": 293,
+      "seconds": 4.88333333333333,
       "decision_s": 0.6,
       "latches_engaged": 0,
-      "mode_time_s": 2.45,
+      "mode_time_s": 4.88333333333332,
       "gate_requests": [
         {
           "source": "battle_wipe",
@@ -434,7 +434,7 @@
       "flashes_outside_flood": [],
       "reduce_flashing_only_flood": true,
       "analysis": {
-        "frames": 147,
+        "frames": 293,
         "fps": 60,
         "analysis_size": [
           160,
@@ -454,7 +454,7 @@
             "t_s": 0.166666666666667,
             "kind": "general",
             "rising": true,
-            "coverage": 0.294
+            "coverage": 0.282
           }
         ],
         "general_flash_frames": [],
@@ -468,7 +468,7 @@
           "count": 0
         },
         "mean_luma_min": 0.0186492968350649,
-        "mean_luma_max": 0.209376022219658,
+        "mean_luma_max": 0.195524111390114,
         "pass": true
       },
       "notes": [
@@ -481,11 +481,11 @@
       "encounter": "enc_paris_clerks_hall",
       "reduce_flashing": true,
       "gate": true,
-      "frames": 147,
-      "seconds": 2.45,
+      "frames": 293,
+      "seconds": 4.88333333333333,
       "decision_s": 0.6,
       "latches_engaged": 0,
-      "mode_time_s": 2.45,
+      "mode_time_s": 4.88333333333332,
       "gate_requests": [
         {
           "source": "battle_wipe",
@@ -501,7 +501,7 @@
       "flashes_outside_flood": [],
       "reduce_flashing_only_flood": true,
       "analysis": {
-        "frames": 147,
+        "frames": 293,
         "fps": 60,
         "analysis_size": [
           160,
@@ -526,8 +526,8 @@
           "start_frame": -1,
           "count": 0
         },
-        "mean_luma_min": 0.19626484811306,
-        "mean_luma_max": 0.209376022219658,
+        "mean_luma_min": 0.183208927512169,
+        "mean_luma_max": 0.195396974682808,
         "pass": true
       },
       "notes": [
@@ -589,7 +589,7 @@
             "t_s": 0.166666666666667,
             "kind": "general",
             "rising": true,
-            "coverage": 0.294
+            "coverage": 0.282
           },
           {
             "frame": 81,
@@ -610,7 +610,7 @@
             "t_s": 2.43333333333333,
             "kind": "general",
             "rising": true,
-            "coverage": 0.294
+            "coverage": 0.282
           }
         ],
         "general_flash_frames": [
@@ -627,7 +627,7 @@
           "count": 0
         },
         "mean_luma_min": 0.0186492968350649,
-        "mean_luma_max": 0.212452068924904,
+        "mean_luma_max": 0.19788371026516,
         "pass": true
       },
       "notes": [
@@ -706,8 +706,8 @@
           "start_frame": -1,
           "count": 0
         },
-        "mean_luma_min": 0.19626484811306,
-        "mean_luma_max": 0.212479278445244,
+        "mean_luma_min": 0.183208927512169,
+        "mean_luma_max": 0.19790156185627,
         "pass": true
       },
       "notes": [
@@ -760,7 +760,7 @@
             "t_s": 0.166666666666667,
             "kind": "general",
             "rising": true,
-            "coverage": 0.294
+            "coverage": 0.282
           }
         ],
         "general_flash_frames": [],
@@ -774,7 +774,7 @@
           "count": 0
         },
         "mean_luma_min": 0.0186492968350649,
-        "mean_luma_max": 0.209376022219658,
+        "mean_luma_max": 0.195386186242104,
         "pass": true
       },
       "notes": [
@@ -832,8 +832,8 @@
           "start_frame": -1,
           "count": 0
         },
-        "mean_luma_min": 0.19626484811306,
-        "mean_luma_max": 0.209376022219658,
+        "mean_luma_min": 0.183208927512169,
+        "mean_luma_max": 0.195386186242104,
         "pass": true
       },
       "notes": [
@@ -907,14 +907,14 @@
             "t_s": 0.166666666666667,
             "kind": "general",
             "rising": true,
-            "coverage": 0.294
+            "coverage": 0.282
           },
           {
             "frame": 21,
             "t_s": 0.35,
             "kind": "general",
             "rising": true,
-            "coverage": 0.966
+            "coverage": 0.957
           },
           {
             "frame": 27,
@@ -1100,11 +1100,11 @@
       "encounter": "enc_paris_clerks_hall",
       "reduce_flashing": false,
       "gate": false,
-      "frames": 343,
-      "seconds": 5.71666666666667,
+      "frames": 400,
+      "seconds": 6.66666666666667,
       "decision_s": 0.6,
       "latches_engaged": 4,
-      "mode_time_s": 5.71666666666665,
+      "mode_time_s": 6.66666666666665,
       "gate_requests": [
         {
           "source": "battle_wipe",
@@ -1120,7 +1120,7 @@
       "flashes_outside_flood": [],
       "reduce_flashing_only_flood": true,
       "analysis": {
-        "frames": 343,
+        "frames": 400,
         "fps": 60,
         "analysis_size": [
           160,
@@ -1140,7 +1140,7 @@
             "t_s": 0.166666666666667,
             "kind": "general",
             "rising": true,
-            "coverage": 0.294
+            "coverage": 0.282
           }
         ],
         "general_flash_frames": [],
@@ -1154,7 +1154,7 @@
           "count": 0
         },
         "mean_luma_min": 0.0186492968350649,
-        "mean_luma_max": 0.209617793560028,
+        "mean_luma_max": 0.195386186242104,
         "pass": true
       },
       "notes": [],
@@ -1165,11 +1165,11 @@
       "encounter": "enc_paris_clerks_hall",
       "reduce_flashing": false,
       "gate": true,
-      "frames": 259,
-      "seconds": 4.31666666666667,
+      "frames": 319,
+      "seconds": 5.31666666666667,
       "decision_s": 0.25,
       "latches_engaged": 0,
-      "mode_time_s": 4.31666666666666,
+      "mode_time_s": 5.31666666666665,
       "gate_requests": [
         {
           "source": "battle_wipe",
@@ -1185,7 +1185,7 @@
       "flashes_outside_flood": [],
       "reduce_flashing_only_flood": true,
       "analysis": {
-        "frames": 259,
+        "frames": 319,
         "fps": 60,
         "analysis_size": [
           160,
@@ -1205,7 +1205,7 @@
             "t_s": 0.166666666666667,
             "kind": "general",
             "rising": true,
-            "coverage": 0.294
+            "coverage": 0.282
           }
         ],
         "general_flash_frames": [],
@@ -1219,7 +1219,7 @@
           "count": 0
         },
         "mean_luma_min": 0.0186492968350649,
-        "mean_luma_max": 0.209508150815964,
+        "mean_luma_max": 0.195374384522438,
         "pass": true
       },
       "notes": [],

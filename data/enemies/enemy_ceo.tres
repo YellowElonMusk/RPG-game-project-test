@@ -12,5 +12,7 @@ max_hp = 120
 attack = 15
 defense = 10
 speed = 9
+reward_xp = 24
+reward_money = 18
 move_ids = PackedStringArray("move_layoffs", "move_hostile_takeover")
 sprite_set_id = "sprite_ceo"

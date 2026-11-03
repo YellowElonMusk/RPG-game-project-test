@@ -65,6 +65,8 @@ var _indicator: ReplayIndicator = null
 var feedback: UiFeedback = UiFeedback.new()
 ## The refusal pulse's size and length; the shipped config when not injected.
 var ui_config: UiConfig = null
+## The Victory results screen (XP and money, F9), built in `setup()`.
+var _results_panel: ResultsPanel = null
 ## One RNG per Battle-mode instance (ADR-0010 §3): never recreated, never
 ## restored on Retry, so a retried fight draws fresh variance.
 var _rng: RandomNumberGenerator = null
@@ -108,6 +110,7 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 	tree_entered.connect(_queue_fit_command_window)
 	_command_menu.visibility_changed.connect(_queue_fit_command_window)
 	_build_indicator()
+	_build_results_panel()
 	var entry: BattleEntryPayload = payload as BattleEntryPayload
 	if entry == null or entry.descriptor == null:
 		return
@@ -203,6 +206,29 @@ func _build_indicator() -> void:
 	add_child(_indicator)
 	_indicator.indicator_clicked.connect(_on_indicator_clicked)
 	feedback.refused.connect(_on_refused)
+
+
+## Builds the results screen above everything else in the mode, hidden.
+func _build_results_panel() -> void:
+	if _results_panel != null:
+		return
+	_results_panel = ResultsPanel.new(func() -> float: return _mode_time, presentation_config.input_guard)
+	add_child(_results_panel)
+	_results_panel.continued.connect(_on_results_continued)
+
+
+## The results screen's Continue: Victory's results are done (Game State
+## AC-12: the return to the Overworld starts only now).
+func _on_results_continued() -> void:
+	if not _awaiting_results_done or _machine == null:
+		return
+	_awaiting_results_done = false
+	_machine.report_results_done()
+
+
+## The results screen (tests and capture).
+func results_panel() -> ResultsPanel:
+	return _results_panel
 
 
 ## Shows the indicator's state for this frame: hidden outside a replay.
@@ -363,10 +389,10 @@ func settle_replay() -> void:
 ## over. Only a `pressed` reaches the latch -- a key held from the command's
 ## own Confirm sends none -- and its release is consumed too.
 func handle_action(action: StringName, pressed: bool) -> bool:
-	if _awaiting_results_done and pressed and action == InputActions.CONFIRM:
-		_awaiting_results_done = false
-		_machine.report_results_done()
-		return true
+	# The results screen owns every press while it is up (its input guard
+	# first; GDD rule 9), and only its Continue reports results done.
+	if _results_panel != null and _results_panel.visible:
+		return _results_panel.handle_action(action, pressed)
 	if _replay != null and _is_replay_press(action) and _replay_owns_input():
 		if pressed:
 			ReplayInputRouter.route(_replay, action, _refuse)
@@ -498,6 +524,9 @@ func _start_end_light(won: bool) -> void:
 	if _stage == null:
 		return
 	var blend: float = presentation_config.blend_victory if won else presentation_config.blend_defeat
+	# A boss Victory keeps the flooded sky (GDD "After a boss fight").
+	if won and _descriptor != null and _descriptor.is_boss and _stage.current_values != null:
+		_stage.held_sky = _stage.current_values.duplicate() as LightingProfile
 	if _stage.has_profiles():
 		_stage.request_profile(&"victory" if won else &"defeat", blend, _end_hold_clock)
 	if won:
@@ -543,6 +572,9 @@ func _clear_end_light() -> void:
 ## once and Game State opens the Defeat Prompt. Without a machine (capture
 ## tools, standalone tests) nothing is reported.
 func _report_outcome(won: bool) -> void:
+	if won and _results_panel != null and _battle != null:
+		var r: Dictionary = BattleRewards.totals(_battle.enemies, BattleCatalog.shipped())
+		_results_panel.show_results(int(r["xp"]), int(r["money"]))
 	if _machine == null:
 		return
 	if won:

@@ -12,5 +12,7 @@ max_hp = 110
 attack = 15
 defense = 10
 speed = 9
+reward_xp = 20
+reward_money = 15
 move_ids = PackedStringArray("move_pen_jab", "move_red_tape", "move_mass_audit", "move_final_notice")
 sprite_set_id = "sprite_supervisor"

@@ -96,6 +96,8 @@ func test_dialogue_after_transition_finished() -> void:
 
 	# Victory -> report_results_done (the banner confirm) -> return to Overworld.
 	recorder.clear()
+	# Past the results screen's input guard (GDD rule 9) first.
+	battle_mode.step_replay(battle_mode.presentation_config.input_guard + 0.05)
 	source.press(InputActions.CONFIRM)
 	_run_to_idle(machine)
 
