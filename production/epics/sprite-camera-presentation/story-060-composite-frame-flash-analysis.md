@@ -1,7 +1,7 @@
 # Story 060: The flash analyser checks composited frames against flash_rate_max
 
 > **Epic**: Sprite & Camera Presentation
-> **Status**: In Review -- analyser built and unit-tested (18/18); AC-55b measured: PASS with Reduce Flashing Off, FAIL with Reduce Flashing On (ungated command-menu panel; InterimFadePresenter ignores `capped`). See `production/qa/evidence/composite-flash-sequences-evidence.md`
+> **Status**: In Review -- 2026-11-03 re-run: every measured P-13 sequence PASSES with Reduce Flashing Off and On; the negative control FAILS as required (command-menu panel replaced by a persistent CommandWindow; capped fades soft-swell since 350e0d1). Open: Victory confetti, results screen, Defeat stamp and Menu backdrop are not built, so not measured; lead sign-off owed. See `production/qa/evidence/composite-flash-sequences-evidence.md`
 > **Layer**: Core
 > **Type**: Visual/Feel
 > **Estimate**: M

@@ -121,7 +121,7 @@ ADR-0005's Migration Plan sets the order: the windowed spike (Step 1, verificati
 | 057 | [The UI layer is never tinted by the world's tonemapper](story-057-ui-never-tinted-by-the-world.md) | Visual/Feel | Ready | ADR-0005 |
 | 058 | [The menu input guard refuses presses for its full window](story-058-menu-input-guard.md) | Logic | Done (logic, screen wiring pending) | ADR-0008 |
 | 059 | [Every flash-capable source is declared and classified](story-059-flash-coverage-declared-for-every-source.md) | Logic | Done | ADR-0005 |
-| 060 | [The flash analyser checks composited frames against flash_rate_max](story-060-composite-frame-flash-analysis.md) | Visual/Feel | Ready | ADR-0005 |
+| 060 | [The flash analyser checks composited frames against flash_rate_max](story-060-composite-frame-flash-analysis.md) | Visual/Feel | In Review | ADR-0005 |
 | 061 | [PresentationConfig's load rules are validated at boot](story-061-presentation-config-load-validation.md) | Logic | Complete | ADR-0005 |
 | 062 | [A boss sprite set with no front intro fails boot](story-062-boss-intro-animation-required.md) | Logic | Done | ADR-0005 |
 | 063 | [A moving sprite stays pixel-snapped in every mode](story-063-pixel-snap-in-every-mode.md) | Logic | Complete | ADR-0005 |

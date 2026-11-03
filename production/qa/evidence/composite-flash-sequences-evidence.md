@@ -1,9 +1,41 @@
 # Evidence: Story 060, the flash analyser checks composited frames against flash_rate_max
 
 Story: `production/epics/sprite-camera-presentation/story-060-composite-frame-flash-analysis.md`
-AC: GDD `design/gdd/sprite-camera-presentation.md` AC-55b [C] (P-13). Date: 2026-10-31. Engine 4.7.2, Vulkan Forward+, RTX 4080 SUPER, windowed 1280x720, `--fixed-fps 60`.
+AC: GDD `design/gdd/sprite-camera-presentation.md` AC-55b [C] (P-13). First run 2026-10-31; re-run 2026-11-03 after the fixes below. Engine 4.7.2, Vulkan Forward+, RTX 4080 SUPER, windowed 1280x720, `--fixed-fps 60`.
 
-**Verdict: the analyser is built and tested. AC-55b PASSES with Reduce Flashing Off and FAILS with Reduce Flashing On.** The On failures come from two sources outside the flash gate (Findings 1 and 2 below). The story stays open until they are routed through the gate or capped.
+**Verdict (2026-11-03): every measured sequence PASSES with Reduce Flashing Off and On, and the negative control FAILS as required.** Findings 1, 2 and 4 from the first run are fixed. The story stays In Review for two reasons. Several P-13 sources are not built yet (see Gaps), so they could not be measured. Lead sign-off is also still owed.
+
+## Re-run 2026-11-03
+
+| Sequence | Off: max general / red per 1 s | On: max | On: flashes outside the boss flood |
+|---|---|---|---|
+| boss_takeover | 0 / 0 PASS | 0 / 0 | 0 PASS |
+| hits_1x | 0 / 0 PASS | 0 / 0 | 0 PASS |
+| hits_latched | 0 / 0 PASS | 0 / 0 | 0 PASS |
+| victory | 0 / 0 PASS | 0 / 0 | 0 PASS |
+| defeat_retry | 1 / 0 PASS (the retry flash) | 0 / 0 | 0 PASS |
+| menu_during_replay | 0 / 0 PASS | 0 / 0 | 0 PASS |
+| **neg_strobe** | **11** / 0 **FAIL as required** | — | — |
+| obs_gate_bypassed | 0 / 0 | — | observation |
+| obs_fast_menu (0.25 s picks) | 0 / 0 (was **4**) | — | observation |
+
+I deleted every event frame left over from earlier runs, so each `event_*.png` now comes from this run. I opened the following myself:
+- `hits_1x_rf_off/event_0010.png`: the wipe reveal over the four squad cards. The navy command window sits under the cards, about 280 px tall, with the cards drawn over it.
+- `defeat_retry_rf_off/event_0081.png`: Defeat. The squad cards read KNOCKED OUT, and the empty command window stays put under them.
+- `hits_1x_rf_on/contact_sheet.png`: the window is in every tile. Only its contents change between turns.
+
+Unit tests: `tests/unit/battle/battle_command_window_test.gd` (5) and `battle_hud_number_clear_test.gd` (3). I watched each new test fail against the unfixed code. Full suite: 2049 passed, 0 failures.
+
+## Fixes since the first run
+
+- **Finding 1, the command-menu panel:** `BattleMode` has a persistent `CommandWindow`: a navy fill with a cream border, behind the HUD, present for the whole battle. The menu's panels draw no background of their own (`StyleBoxEmpty`), so opening and closing the menu changes only its text. On a long list the window grows upward to the panel's settled height on the next process frame. It only grows, so it never pulses. Fitting on the panel's first layout pass locked in a 620 px transient (wrapped buttons measured at near-zero width) and swallowed the squad column. That pass is now skipped, and a test covers it.
+- **Finding 2, `InterimFadePresenter` ignoring `capped`:** fixed in 350e0d1. A capped transition plays a soft swell.
+- **Finding 4, the HUD freed-label cast:** fixed in 350e0d1.
+- **New: a fade tween outlived its label on Retry.** `clear_numbers()` freed the float labels mid-fade, and each tween then finished into `BattleHud._on_float_faded` with a freed bound label ("Cannot convert argument 2 from Object to Object", about 10 per run). The tween is now killed when its label leaves the tree.
+
+---
+
+# First run, 2026-10-31 (superseded by the re-run above)
 
 ## The analyser (`tools/capture/flash_analyser.gd`, `FlashAnalyser`)
 

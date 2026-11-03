@@ -50,6 +50,14 @@ var _machine: GameStateMachine = null
 var _hud: BattleHud = null
 ## The command menu (Story 007): built once per scene instance, like `_hud`.
 var _command_menu: BattleCommandMenu = null
+## The persistent window behind the command menu (story 060 Finding 1; GDD
+## rule 13 "Flash limit"): shown for the whole battle so opening and closing
+## the menu changes only its contents, never a large dark area.
+var _command_window: Control = null
+## The menu's command and target panels the window must enclose.
+var _command_panels: Array[Control] = []
+## True while a window fit waits for the next process frame.
+var _fit_queued: bool = false
 ## One RNG per Battle-mode instance (ADR-0010 §3): never recreated, never
 ## restored on Retry, so a retried fight draws fresh variance.
 var _rng: RandomNumberGenerator = null
@@ -84,6 +92,14 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 	_hud = %BattleHud
 	_stage = %DioramaStage
 	_command_menu = %BattleCommandMenu
+	_command_window = %CommandWindow
+	for panel_path: NodePath in [^"%CommandPanel", ^"%TargetPanel"]:
+		var panel: Control = _command_menu.get_node(panel_path)
+		_command_panels.append(panel)
+		panel.resized.connect(_queue_fit_command_window)
+	# The first list is built here, before add_child(), where no fit can queue.
+	tree_entered.connect(_queue_fit_command_window)
+	_command_menu.visibility_changed.connect(_queue_fit_command_window)
 	var entry: BattleEntryPayload = payload as BattleEntryPayload
 	if entry == null or entry.descriptor == null:
 		return
@@ -133,6 +149,29 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 	if _machine != null:
 		_machine.transition_finished.connect(_on_transition_finished)
 		_machine.transition_started.connect(_on_transition_started)
+
+
+## A menu panel resized: fit the window on the next process frame, once the
+## containers have sorted. A panel's first layout pass measures its wrapped
+## buttons at near-zero width (600+ px tall for that one pass); fitting then
+## would lock that height in.
+func _queue_fit_command_window() -> void:
+	if _fit_queued or not is_inside_tree():
+		return
+	_fit_queued = true
+	get_tree().process_frame.connect(_fit_command_window, CONNECT_ONE_SHOT)
+
+
+## Grows the command window upward to the visible panel's settled height (the
+## window and the panels share the same bottom inset). Grow-only: shrinking
+## back on a shorter list would itself be a large-area swing each turn.
+func _fit_command_window() -> void:
+	_fit_queued = false
+	if _command_window == null or not is_instance_valid(_command_menu):
+		return
+	for panel: Control in _command_panels:
+		if panel.is_visible_in_tree() and panel.size.y > _command_window.size.y:
+			_command_window.offset_top = _command_window.offset_bottom - panel.size.y
 
 
 ## ADR-0006 §5 "Retry" and "Exit" (story 040, GDD AC-36): every transition

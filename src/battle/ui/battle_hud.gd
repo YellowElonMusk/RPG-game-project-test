@@ -377,6 +377,9 @@ func _float_near(combatant: Combatant, text: String, color: Color) -> void:
 	tween.tween_property(label, "position:y", label.position.y - FLOAT_RISE_PX, FLOAT_RISE_DURATION_SEC)
 	tween.tween_property(label, "modulate:a", 0.0, FLOAT_FADE_DURATION_SEC).set_delay(FLOAT_FADE_DELAY_SEC)
 	tween.finished.connect(_on_float_faded.bind(combatant, label))
+	# Retry's clear_numbers() can free the label mid-fade; the tween must not
+	# then finish into _on_float_faded with a freed bound label.
+	label.tree_exiting.connect(tween.kill)
 
 
 ## A float finished fading: free it and drop it from `_number_labels` if it

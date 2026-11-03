@@ -1,6 +1,12 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://src/battle/ui/battle_command_menu.gd" id="1_cmd"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_window"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
 
 [node name="BattleCommandMenu" type="Control"]
 anchor_right = 1.0
@@ -22,6 +28,7 @@ offset_top = -256.0
 offset_bottom = -16.0
 grow_horizontal = 1
 grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxEmpty_window")
 
 [node name="CommandVBox" type="VBoxContainer" parent="CommandPanel"]
 
@@ -46,6 +53,7 @@ offset_top = -256.0
 offset_bottom = -16.0
 grow_horizontal = 1
 grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxEmpty_window")
 
 [node name="TargetVBox" type="VBoxContainer" parent="TargetPanel"]
 

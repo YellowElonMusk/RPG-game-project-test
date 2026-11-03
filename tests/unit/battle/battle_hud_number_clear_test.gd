@@ -50,3 +50,23 @@ func test_number_over_a_freed_label_reads_empty() -> void:
 	(_hud._number_labels.get(foe) as Label).free()
 
 	assert_str(_hud.number_over(foe)).is_equal("")
+
+
+## Regression (story 060 re-run): Retry's `clear_numbers()` frees every float
+## label while its fade tween is still running; the tween then finished into
+## `_on_float_faded` with a freed bound label ("Cannot convert argument 2 from
+## Object to Object"). A label's fade tween must die with the label.
+func test_float_fade_tween_dies_with_its_freed_label() -> void:
+	var foe: Combatant = _make_hud()
+	var before: Array[Tween] = get_tree().get_processed_tweens()
+	_hud._float_near(foe, "-5", BattleHud.COLOR_TEXT)
+	var fades: Array[Tween] = []
+	for tween: Tween in get_tree().get_processed_tweens():
+		if not before.has(tween):
+			fades.append(tween)
+	assert_int(fades.size()).is_equal(1)
+
+	(_hud._number_labels.get(foe) as Label).free()  # clear_numbers on Retry
+
+	assert_bool(fades[0].is_valid()).override_failure_message(
+			"the fade tween outlived its freed label and will finish into _on_float_faded").is_false()

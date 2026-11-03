@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://src/battle/battle_mode.gd" id="1_mode"]
 [ext_resource type="PackedScene" path="res://src/battle/ui/battle_hud.tscn" id="2_hud"]
@@ -13,6 +13,14 @@ background_canvas_max_layer = -1
 ambient_light_source = 2
 ambient_light_color = Color(1, 1, 1, 1)
 tonemap_mode = 0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_window"]
+bg_color = Color(0.16470589, 0.1764706, 0.2509804, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.9490196, 0.91764706, 0.84705883, 1)
 
 [node name="BattleMode" type="Control"]
 anchor_right = 1.0
@@ -73,6 +81,21 @@ stage = NodePath("../DioramaStage")
 actor_root = NodePath("../DioramaStage/Actors")
 backdrop = NodePath("../BackdropLayer/Backdrop")
 sprite_shader = ExtResource("6_shader")
+
+[node name="CommandWindow" type="Panel" parent="."]
+unique_name_in_owner = true
+anchor_left = 0.0
+anchor_right = 0.0
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_right = 236.0
+offset_top = -256.0
+offset_bottom = -16.0
+grow_horizontal = 1
+grow_vertical = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_window")
 
 [node name="BattleHud" parent="." instance=ExtResource("2_hud")]
 unique_name_in_owner = true
