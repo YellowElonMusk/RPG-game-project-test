@@ -2,7 +2,8 @@
 
 > **Status**: Draft
 > **Created**: 2026-10-13
-> **Last Updated**: 2026-10-29
+> **Last Updated**: 2026-11-03
+> **Revision (2026-11-03, user ruling)**: combat is classic JRPG. **Quirk State System (7) and Combo System & Codex (8) are CUT**: each faction keeps one special condition, which works like a Pokémon ability (game concept revision note), and each character has classic JRPG skills. Every dependency on them below is void.
 > **Revision (2026-10-29, narrative bible §10)**: Reputation scope changed from "one choice that wins or loses one recruit" to the post-alien-boss spare-or-finish prompt and two meters; audio GDD flagged as needed.
 > **Source Concept**: design/gdd/game-concept.md
 > **TD-SYSTEM-BOUNDARY**: skipped — lean mode · **PR-SCOPE**: skipped — lean mode · **CD-SYSTEMS**: skipped — lean mode
@@ -33,8 +34,8 @@ A satirical turn-based RPG: the player recruits a squad of mismatched "misfit" h
 | 4 | Sprite & Camera Presentation (inferred) | Core | MVP | In Review | design/gdd/sprite-camera-presentation.md | Game State & Scene Flow, Content Data Definitions, Turn Battle System (hard, Battle only) |
 | 5 | Turn Battle System | Gameplay | MVP | Reverse-Documented | design/gdd/turn-battle-system.md | Game State & Scene Flow, Input System, Content Data Definitions, Stats & Damage Resolution |
 | 6 | Stats & Damage Resolution (inferred) | Gameplay | MVP | Designed | design/gdd/stats-damage-resolution.md | Content Data Definitions |
-| 7 | Quirk State System | Gameplay | MVP | Not Started | — | Turn Battle System, Stats & Damage Resolution |
-| 8 | Combo System & Codex | Gameplay | MVP | Not Started | — | Quirk State System, Turn Battle System, Stats & Damage Resolution |
+| 7 | ~~Quirk State System~~ | Gameplay | **CUT 2026-11-03** | Cut | — | Turn Battle System, Stats & Damage Resolution |
+| 8 | ~~Combo System & Codex~~ | Gameplay | **CUT 2026-11-03** | Cut | — | Quirk State System, Turn Battle System, Stats & Damage Resolution |
 | 9 | Faction Rule Modifiers | Gameplay | MVP | Reverse-Documented | design/gdd/faction-rule-modifiers.md | Turn Battle System, Quirk State System, Stats & Damage Resolution |
 | 10 | Enemy AI (inferred) | Gameplay | MVP | Not Started | — | Turn Battle System, Stats & Damage Resolution, Faction Rule Modifiers |
 | 11 | Overworld Exploration & Encounters | Gameplay | MVP | Approved | design/gdd/overworld-exploration-encounters.md | Game State & Scene Flow, Input System, Content Data Definitions, Sprite & Camera Presentation, Dialogue Banter & Quests |
@@ -142,8 +143,8 @@ Design order within this layer: Turn Battle first, then the systems that plug in
 | 6 | Squad Roster & Recruitment | MVP | Core | game-designer | M |
 | 7 | Dialogue, Banter & Quests | MVP | Core | narrative-director, writer | M |
 | 8 | Turn Battle System | MVP | Feature | game-designer, systems-designer | L |
-| 9 | Quirk State System | MVP | Feature | systems-designer | M |
-| 10 | Combo System & Codex | MVP | Feature | systems-designer | M |
+| 9 | ~~Quirk State System~~ (cut 2026-11-03) | — | — | — | — |
+| 10 | ~~Combo System & Codex~~ (cut 2026-11-03) | — | — | — | — |
 | 11 | Faction Rule Modifiers | MVP | Feature | systems-designer | M |
 | 12 | Enemy AI | MVP | Feature | game-designer, ai-programmer | M |
 | 13 | Overworld Exploration & Encounters | MVP | Feature | level-designer | M |

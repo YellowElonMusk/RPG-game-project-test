@@ -1,5 +1,7 @@
 # Asset List & Generation Prompts — Chapter 1 (Bureaucratia + MegaCorp)
 
+> **Revision (2026-11-03, user ruling)**: combat is classic JRPG. **Quirk states, combos and the Combo Codex are cut** (game concept revision note; systems index 7 and 8). Each faction keeps one special condition that works like a Pokémon ability. Every quirk, combo or Codex reference in this document is superseded and must not be built.
+
 > **Status**: Draft (2026-10-28) · **Source**: `design/art/art-bible.md` §1–§4
 > **Scope**: every asset the current playable slice references — the 4-hero squad,
 > 5 enemies, the moves and effects they use, battle backdrops, faction icons, and

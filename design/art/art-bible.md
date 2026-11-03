@@ -1,5 +1,7 @@
 # Art Bible: Go back to your planet!
 
+> **Revision (2026-11-03, user ruling)**: combat is classic JRPG. **Quirk states, combos and the Combo Codex are cut** (game concept revision note; systems index 7 and 8). Each faction keeps one special condition that works like a Pokémon ability. Every quirk, combo or Codex reference in this document is superseded and must not be built.
+
 > **Status**: Draft
 > **Owned By**: art-director
 > **Last Updated**: 2026-10-22 (§2 boss row and §4 dusk flood swatches, per the Sprite & Camera Presentation GDD revision 6, ruling D1; provisional until the user ratifies D1–D4, GDD Open Question 18)

@@ -3,6 +3,14 @@
 *Created: 2026-10-12*
 *Status: Draft*
 
+> **Revision (2026-11-03, user ruling): combat is classic JRPG. Quirk states, combos and the Combo Codex are cut.**
+> - **Who the aliens are:** Earth's worst possible evolutions, such as influencer planet, extreme EU-style bureaucracy and cyberpunk megacorp. The joke is on them, and really on us.
+> - **The satire stays out of the fighting itself:** "Yes, the EU is full of bureaucrats, but EU soldiers still fight wars with guns and tanks, not cabinets and papers."
+> - **How battles work:** a Dragon Quest-style party fight, with Attack, Defend, each character's skills and enemy packs.
+> - **The one twist** is each faction's **special condition**. It works like a Pokémon ability, for example Bureaucratia's Attack and Defend only until round 3. Narrative bible §6.1 already says this.
+>
+> Every quirk, combo and Codex mention below is superseded by this note. That covers core mechanic 2, Pillar 3, the MDA and onboarding notes, the hypotheses, the risks and the prototype task. The MVP list, the scope table and the core hypothesis are edited in place.
+
 ---
 
 ## Elevator Pitch
@@ -75,7 +83,7 @@ is the mechanic, and the punchline is figuring it out.
 ### Core Mechanics (Systems we build)
 
 1. **Turn-based party combat** with a third-person battle camera and DQ-style command menus.
-2. **Quirk states & combos** — character moves apply comedic states (*Complained*, *Unionized*, *Gone Viral*, *Notarized*) that teammates cash in for named combos, logged in a **Combo Codex**.
+2. ~~**Quirk states & combos**~~ **Cut 2026-11-03** (see the revision note). Each character has classic JRPG skills instead: a heal, a stun, a big hit, a debuff.
 3. **Faction rule sets** — each alien civilization modifies combat rules in a telegraphed way.
 4. **Squad recruitment & loyalty** — Mass Effect-style roster; pick an active party at camp; loyalty quests unlock signature quirks.
 5. **Faction reputation** — after each alien boss, finish him (human street cred) or let him go (alien points); reputation changes prices, recruit likelihood, who hunts you and the ending, never battle rules. Human (bounty-hunter) bosses and ordinary fights get no prompt.
@@ -257,11 +265,11 @@ A new player understands any fight's rules within one turn.
 
 ## MVP Definition
 
-**Core hypothesis**: Players find cracking a faction's rule with misfit quirk combos both fun and funny across a 45–60 minute chapter.
+**Core hypothesis** (revised 2026-11-03): players find a classic JRPG fight both fun and funny across a 45–60 minute chapter, when it is bent by one readable faction condition and played by a squad of comic misfits.
 
 **Required for MVP**:
 1. Turn-based party combat with third-person camera and command menus.
-2. Quirk states and ~8 combos, with a Combo Codex.
+2. ~~Quirk states and ~8 combos, with a Combo Codex.~~ Cut 2026-11-03. Each character has classic JRPG skills instead.
 3. One faction rule set: Bureaucratia (the *Permit Ban*: no special moves until round 4).
 4. One region: occupied Paris — town, overworld segment, one dungeon.
 5. 4 recruits (e.g., Baguette Thrower, Five-Star Chef, Karen, Florida Man), ~8 enemy types, one boss (the Supervisor).
@@ -277,7 +285,7 @@ A new player understands any fight's rules within one turn.
 
 | Tier | Content | Features | Timeline |
 | ---- | ---- | ---- | ---- |
-| **MVP** | Paris, Bureaucratia, 4 recruits, 1 boss | Core combat + combos + boss spare/finish prompt and two meters | ~6 weeks |
+| **MVP** | Paris, Bureaucratia, 4 recruits, 1 boss | Core combat (classic JRPG + the faction condition) + boss spare/finish prompt and two meters | ~6 weeks |
 | **Vertical Slice** | Paris polished, 6 recruits | + art pass, 1 loyalty quest, banter | +6 weeks |
 | **Alpha** | 4 regions / 4 factions, placeholder art | All features, rough | +3 months |
 | **Full Vision** | ~10 recruits, 2–3 endings, ~8–10 hrs | All features, polished | ~8–10 months total |

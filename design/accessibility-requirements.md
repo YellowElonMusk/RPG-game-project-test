@@ -1,5 +1,7 @@
 # Accessibility Requirements
 
+> **Revision (2026-11-03, user ruling)**: combat is classic JRPG. **Quirk states, combos and the Combo Codex are cut** (game concept revision note; systems index 7 and 8). Each faction keeps one special condition that works like a Pokémon ability. Every quirk, combo or Codex reference in this document is superseded and must not be built.
+
 > Authoring guidance: .claude/docs/templates/guidance/accessibility-requirements-guide.md (load per-section as you author — do not read entirely).
 
 > **Status**: Committed (tier chosen autonomously on 2026-10-22, logged for user veto in `production/session-logs/decision-log.md`)

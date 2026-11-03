@@ -1,5 +1,7 @@
 # Overworld Exploration & Encounters
 
+> **Revision (2026-11-03, user ruling)**: combat is classic JRPG. **Quirk states, combos and the Combo Codex are cut** (game concept revision note; systems index 7 and 8). Each faction keeps one special condition that works like a Pokémon ability. Every quirk, combo or Codex reference in this document is superseded and must not be built.
+
 > **Status**: Approved (rev 4, design review 2026-10-23)
 > **Author**: user + agents (`/design-system`, autonomous mode)
 > **Last Updated**: 2026-10-29
