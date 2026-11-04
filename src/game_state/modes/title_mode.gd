@@ -6,8 +6,8 @@
 ## transition, with the `LoadedSave` as its payload. It stays in the focus
 ## chain regardless (default
 ## `Button.focus_mode`, untouched here) so GDD rule 12's lock glyph and
-## unlock-reason tooltip can still show on focus; Settings goes nowhere until
-## Settings exists; Quit opens `QuitConfirm`, a child panel of this scene,
+## unlock-reason tooltip can still show on focus; Settings opens a
+## `SettingsPanel` child (when a `SettingsService` is injected); Quit opens `QuitConfirm`, a child panel of this scene,
 ## never a machine overlay (the Overlays table has no Quit overlay -- see
 ## `quit_confirm.gd`).
 ##
@@ -38,6 +38,11 @@ var _buttons: Control = null
 var _machine: GameStateMachine = null
 ## Injected by `GameRoot` before `setup()`; null in tests that do not need it.
 var save_service: SaveService = null
+## Injected by `GameRoot` before `setup()`; null leaves Settings disabled.
+var settings_service: SettingsService = null
+## The open Settings screen, or null.
+var settings_panel: SettingsPanel = null
+var _settings_button: Button = null
 ## The last Continue preflight, for tests and the load report.
 var last_load: LoadedSave = null
 
@@ -54,6 +59,9 @@ func setup(machine: GameStateMachine, _payload: RefCounted) -> void:
 	_continue_button.pressed.connect(_on_continue_pressed)
 	_new_game_button.pressed.connect(_on_new_game_pressed)
 	_quit_button.pressed.connect(_on_quit_pressed)
+	_settings_button = %SettingsButton
+	_settings_button.disabled = settings_service == null
+	_settings_button.pressed.connect(_on_settings_pressed)
 	_quit_confirm.configure()
 	_quit_confirm.confirmed.connect(_on_quit_confirmed)
 	_quit_confirm.cancelled.connect(_on_quit_cancelled)
@@ -75,6 +83,8 @@ func _ready() -> void:
 ## scene, not a machine overlay, so there is no overlay-stack gate to rely on
 ## (ADR-0002 §2 Implementation Notes).
 func handle_action(action: StringName, pressed: bool) -> bool:
+	if settings_panel != null:
+		return settings_panel.handle_action(action, pressed)
 	if _quit_confirm.visible:
 		return _quit_confirm.handle_action(action, pressed)
 	if not pressed:
@@ -118,6 +128,24 @@ func _on_continue_pressed() -> void:
 		_continue_button.disabled = true
 		return
 	_machine.request_transition(GameStateMachine.Mode.OVERWORLD, last_load)
+
+
+## Opens the Settings screen over the title buttons; Back returns focus to
+## the Settings button.
+func _on_settings_pressed() -> void:
+	if settings_service == null or settings_panel != null:
+		return
+	settings_panel = SettingsPanel.new()
+	settings_panel.setup(settings_service)
+	settings_panel.closed.connect(_on_settings_closed)
+	add_child(settings_panel)
+
+
+func _on_settings_closed() -> void:
+	if settings_panel != null:
+		settings_panel.queue_free()
+		settings_panel = null
+	_settings_button.grab_focus()
 
 
 func _on_quit_pressed() -> void:

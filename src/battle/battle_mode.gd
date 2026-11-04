@@ -108,6 +108,8 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 	_machine = machine
 	_hud = %BattleHud
 	_stage = %DioramaStage
+	if presentation_settings != null:
+		_stage.presentation_settings = presentation_settings
 	_command_menu = %BattleCommandMenu
 	_command_window = %CommandWindow
 	for panel_path: NodePath in [^"%CommandPanel", ^"%TargetPanel"]:

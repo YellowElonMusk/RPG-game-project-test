@@ -37,6 +37,11 @@ var _button_by_entry: Dictionary[StringName, Button] = {}
 var world_state: WorldState = null
 var item_catalog: Object = null
 var party: Array[Combatant] = []
+## Injected by GameRoot's overlay pre-setup; with it, Settings is enabled
+## and opens a `SettingsPanel` over the Menu.
+var settings_service: SettingsService = null
+## The open Settings screen, or null.
+var settings_panel: SettingsPanel = null
 var _box: VBoxContainer = null
 ## `main`, `items`, `targets`, `party`, `member` or `slot`: which list is
 ## showing (cancel steps back one level).
@@ -132,6 +137,9 @@ func _show_main() -> void:
 		button.disabled = not bool(spec[1])
 		if entry == &"party" and has_items_entry():
 			button.text = "Party"
+			button.disabled = false
+		if entry == &"settings" and settings_service != null:
+			button.text = "Settings"
 			button.disabled = false
 		button.focus_mode = Control.FOCUS_ALL
 		button.pressed.connect(_on_entry.bind(entry))
@@ -372,6 +380,8 @@ func _ready() -> void:
 ## `true` = consumed. Cancel closes the Menu; Confirm and directions route
 ## through `InterimFocusNav`; everything else is consumed and ignored.
 func handle_action(action: StringName, pressed: bool) -> bool:
+	if settings_panel != null:
+		return settings_panel.handle_action(action, pressed)
 	if not pressed:
 		return true
 	match action:
@@ -403,9 +413,31 @@ func _on_entry(entry: StringName) -> void:
 			_show_items()
 		&"party":
 			_show_party()
+		&"settings":
+			_open_settings()
 		&"quit":
 			if _machine != null:
 				_machine.request_transition(GameStateMachine.Mode.TITLE)
+
+
+## Opens the Settings screen over the Menu; Back returns to the main list.
+func _open_settings() -> void:
+	if settings_service == null or settings_panel != null:
+		return
+	settings_panel = SettingsPanel.new()
+	settings_panel.setup(settings_service)
+	settings_panel.closed.connect(_on_settings_closed)
+	add_child(settings_panel)
+
+
+func _on_settings_closed() -> void:
+	if settings_panel != null:
+		settings_panel.queue_free()
+		settings_panel = null
+	_show_main()
+	var button: Button = button_for(&"settings")
+	if button != null and is_inside_tree():
+		button.grab_focus()
 
 
 func _close() -> void:

@@ -30,6 +30,13 @@ const _BINDINGS_RECORD_ID: String = "bindings_default"
 var data_root_override: String = ""
 ## Tests point saves at their own folder (default `user://saves`).
 var save_dir_override: String = ""
+## Tests point the settings file elsewhere (default `user://settings.json`).
+var settings_path_override: String = ""
+
+## Read-only: the player's settings (ADR-0009 §7), built first in `_ready()`.
+var settings_service: SettingsService:
+	get:
+		return _settings_service
 
 ## Read-only: the one `GameStateMachine` for this session, handed to tests
 ## and the demo scene so neither needs a second way to reach it (Game State
@@ -72,6 +79,9 @@ var _world_state: WorldState = null
 var _camp_directory: CampDirectory = null
 ## Save/Load (ADR-0009), under Services.
 var _save_service: SaveService = null
+var _settings_service: SettingsService = null
+## The settings' per-consumer views (ADR-0009 §7).
+var _settings_views: SettingsViews = null
 ## The live squad and any loaded save data for it (Leveling GDD rule 7).
 var _squad_store: SquadStore = SquadStore.new()
 var _machine: GameStateMachine = null
@@ -108,7 +118,19 @@ func _enter_tree() -> void:
 ## transition the same frame rather than waiting one.
 func _ready() -> void:
 	var game_log := GameStateLog.new()
-	# SettingsService: TODO(save-load) once ADR-0009 ships -- absent, skipped.
+	# ADR-0009 §7: settings first, before FlashGate and every mode that reads
+	# a view. No catalog dependency, so they apply on Content Error too.
+	var settings_config := SettingsConfig.new()
+	if not settings_path_override.is_empty():
+		settings_config.path = settings_path_override
+	_settings_service = SettingsService.new()
+	_settings_service.name = "SettingsService"
+	_services.add_child(_settings_service)
+	_settings_service.setup(SaveFileSystem.new(), settings_config, SettingsSchema.new(),
+			func() -> float: return Time.get_ticks_msec() / 1000.0)
+	_settings_views = SettingsViews.new(_settings_service, settings_config)
+	var settings_views: SettingsViews = _settings_views
+	var settings_service: SettingsService = _settings_service
 	var config: TransitionConfig = _load_transition_config(game_log)
 	var input_config: InputConfig = _load_input_config()
 	var resolver: InputResolver = _build_input_resolver(input_config)
@@ -130,15 +152,15 @@ func _ready() -> void:
 	# GameStateMachine, so it is built first and has no reference to the
 	# machine yet -- the box lets pre_setup's closure see the real instance
 	# once it exists (mode_host_scene_loader.gd's own documented pattern).
-	# ADR-0005 §12: the one flash gate, on real time. Reduce Flashing reads a
-	# fixed FlashSettings until the Settings service exists.
+	# ADR-0005 §12: the one flash gate, on real time. Reduce Flashing reads
+	# the settings' FlashSettings view.
 	var flash_gate := FlashGate.new()
 	flash_gate.name = "FlashGate"
 	_services.add_child(flash_gate)
 	var flash_decls: Dictionary[StringName, FlashSourceDecl] = {}
 	for decl: FlashSourceDecl in PresentationValidators.load_flash_sources():
 		flash_decls[decl.source_id] = decl
-	flash_gate.setup(Time.get_ticks_usec, PresentationConfig.new(), flash_decls, FlashSettings.new())
+	flash_gate.setup(Time.get_ticks_usec, PresentationConfig.new(), flash_decls, settings_views.flash)
 	var pre_setup := func(mode: GameMode, payload: RefCounted) -> void:
 		if mode is OverworldMode:
 			_inject_overworld(mode as OverworldMode, payload)
@@ -154,8 +176,10 @@ func _ready() -> void:
 			(mode as InterimCampMode).party_source = func() -> Array[Combatant]: return squad
 		elif mode is TitleMode:
 			(mode as TitleMode).save_service = _save_service
+			(mode as TitleMode).settings_service = settings_service
 		elif mode is BattleMode:
 			(mode as BattleMode).flash_gate = flash_gate
+			(mode as BattleMode).presentation_settings = settings_views.presentation
 			(mode as BattleMode).world_state = _world_state
 			(mode as BattleMode).item_catalog = catalog()
 		mode.setup(_machine_box[0], payload)
@@ -166,6 +190,10 @@ func _ready() -> void:
 	# Items & Shops OQ-2: outside Battle, the Menu can use items on the squad.
 	var overlay_pre_setup := func(node: Node) -> void:
 		var machine: GameStateMachine = _machine_box[0] as GameStateMachine
+		if node is InterimLineDialogue:
+			(node as InterimLineDialogue).chars_per_s = settings_views.text_chars_per_s()
+		if node is InterimMenu:
+			(node as InterimMenu).settings_service = settings_service
 		if node is InterimMenu and machine != null and machine.current_mode != GameStateMachine.Mode.BATTLE \
 				and catalog().state != ContentCatalogService.State.FAILED:
 			(node as InterimMenu).world_state = _world_state
