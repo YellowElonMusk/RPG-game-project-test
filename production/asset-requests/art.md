@@ -245,6 +245,22 @@ Guardrails as section 0: no national flags, team logos or national dress; the jo
 
 ---
 
+### 4.2 Influencia enemies and backdrops (Chapter 3, Sydney; added 2026-11-04)
+
+Chapter 3 plays today on stand-ins: each Influencia enemy is a MegaCorp enemy's strips recoloured Feed Magenta (`tools/art/influencia_placeholder_sprites.gd`, `is_placeholder` in its sprite set), and the two backdrops are painted by `tools/art/influencia_backdrops.gd`. Same spec as the MegaCorp enemies: front-facing, one horizontal strip per clip at `assets/sprites/enemies/<id>/<id>_<clip>.png`, clips `idle` `attack` `hurt` `ko` and a `base` still (the boss adds `special`, its intro). Faction rule: Feed Magenta `#E83E9C` and the circle shape belong to Influencia only.
+
+| # | `<id>` / file | What | Prompt (after the Style Anchor) | Silhouette must read as |
+|---|---|---|---|---|
+| I1 | `micro_influencer` | Micro-Influencer (regular) | *alien influencer with a round head, phone on a selfie stick held high, duck-face pout, magenta outfit with circle motifs, posing* | Selfie stick up, posing |
+| I2 | `ring_light` | Ring Light (regular, also the overworld patrol) | *floating alien ring light, a glowing circular lamp on spindly tripod legs, one camera eye in the middle, magenta trim* | A bright hoop of light |
+| I3 | `mega_influencer` | Mega-Influencer (boss) | *towering alien mega-influencer in a sequinned magenta suit, giant ring light halo behind its head, arms spread for the camera, verified-badge pin* | Arms spread inside a halo |
+| I4 | `bg_battle_influencia.png` | Battle backdrop, 640x360 | *sunny harbour beach with an arched steel bridge on the horizon, sea, sand, palm trees, floating magenta notification bubbles, two magenta billboards with a circle logo, no text, no real brands* | Bright, magenta accents |
+| I5 | `bg_battle_influencia_boss.png` | Boss backdrop, 640x360 | *the same harbour at a magenta sunset, a giant glowing ring light hanging in the sky over the bridge* | The sky ring |
+
+Guardrails as section 0: no real platforms, logos or brands; no real influencers.
+
+---
+
 ## 5. Later (not needed for Chapter 1 to play)
 
 | Asset | Note |
@@ -253,7 +269,8 @@ Guardrails as section 0: no national flags, team logos or national dress; the jo
 | Rat Catchers (human bounty hunters) | Battle set (back of a scruffy gang, no uniforms, no armbands) + overworld walk. Waits on writing D-10 |
 | MegaCorp overworld region | Chapter 2. Needs the city decision (writing.md D-7), then the same list as sections 2-3 in wedge shapes and Terminal Cyan |
 | True 3D low-poly sets | `.glb` per building, once the flats prove the layout |
-| Influencia, Liberty-7 | Not in Chapter 1 |
+| Influencia overworld region | Chapter 3 (Sydney) plays on the London-shaped maps with procedural harbour and Content House surfaces (set styles 4 and 5). Same list as sections 2-3 in circle shapes and Feed Magenta |
+| Liberty-7 | Not yet in the campaign |
 
 ## 6. Priority order (one line each)
 
