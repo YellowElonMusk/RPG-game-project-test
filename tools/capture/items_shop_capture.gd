@@ -3,7 +3,8 @@ extends SceneTree
 ## the squad 60 money, rests at the Paris café and buys from its shop, then
 ## starts a Clerk fight with one member hurt and opens the Items command.
 ## Saves `01-camp.png`, `02-shop.png`, `03-battle-items.png` and
-## `04-battle-item-target.png`. Needs a window and a GPU:
+## `04-battle-item-target.png`, plus `05-menu-items.png` (the Overworld
+## Menu's Items screen, taken before the fight). Needs a window and a GPU:
 ##
 ##   godot --path . -s res://tools/capture/items_shop_capture.gd [-- --out=res://dir/]
 
@@ -74,6 +75,18 @@ func _run() -> void:
 	var party: Array[Combatant] = []
 	party.assign(ow.party_source.call())
 	party[0].hp = 9
+	m._on_source_action_pressed(&"menu")
+	await _frames(10)
+	var menu_overlay: InterimMenu = _root_node.current_overlay_node() as InterimMenu
+	ok = _check("menu has Items", menu_overlay != null and menu_overlay.button_for(&"items") != null) and ok
+	if menu_overlay != null and menu_overlay.button_for(&"items") != null:
+		menu_overlay.button_for(&"items").emit_signal(&"pressed")
+	await _frames(10)
+	await _shot("05-menu-items")
+	if menu_overlay != null:
+		menu_overlay.handle_action(InputActions.CANCEL, true)
+		menu_overlay.handle_action(InputActions.CANCEL, true)
+	await _frames(10)
 	var rec: EncounterData = _root_node.catalog().get_record(&"encounter", "enc_paris_clerks_hall") as EncounterData
 	var payload := BattleEntryPayload.new()
 	payload.descriptor = OverworldMode.build_descriptor(rec)

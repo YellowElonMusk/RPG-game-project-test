@@ -161,8 +161,16 @@ func _ready() -> void:
 	# battle result, and the return swap carries no payload (story 014).
 	var result_getter := func() -> int:
 		return (_machine_box[0] as GameStateMachine).last_battle_result
+	# Items & Shops OQ-2: outside Battle, the Menu can use items on the squad.
+	var overlay_pre_setup := func(node: Node) -> void:
+		var machine: GameStateMachine = _machine_box[0] as GameStateMachine
+		if node is InterimMenu and machine != null and machine.current_mode != GameStateMachine.Mode.BATTLE \
+				and catalog().state != ContentCatalogService.State.FAILED:
+			(node as InterimMenu).world_state = _world_state
+			(node as InterimMenu).item_catalog = catalog()
+			(node as InterimMenu).party = _squad_store.squad
 	var loader := ModeHostSceneLoader.new(
-			_mode_host, config, game_log, pre_setup, result_getter, _overlay_host, Callable())
+			_mode_host, config, game_log, pre_setup, result_getter, _overlay_host, overlay_pre_setup)
 	_loader = loader
 
 	var machine := GameStateMachine.new(

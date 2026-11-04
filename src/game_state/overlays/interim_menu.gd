@@ -19,6 +19,7 @@ const ENTRIES: Dictionary = {
 	&"codex": ["Codex (coming soon)", false],
 	&"settings": ["Settings (coming soon)", false],
 	&"quit": ["Quit to Title", true],
+	&"items": ["Items", true],
 }
 const COLOR_BACKING: Color = Color("#2a2d40")
 const COLOR_BORDER: Color = Color("#f2ead8")
@@ -29,6 +30,19 @@ var _machine: GameStateMachine = null
 var _entries: Array[StringName] = []
 var _buttons: Array[Button] = []
 var _button_by_entry: Dictionary[StringName, Button] = {}
+## Items & Shops OQ-2: using items outside battle. GameRoot's overlay
+## pre-setup injects these outside Battle; with all three set, the Menu
+## shows an Items entry under Resume (not a payload entry, so `entries()`
+## stays the exact AC-31 list).
+var world_state: WorldState = null
+var item_catalog: Object = null
+var party: Array[Combatant] = []
+var _box: VBoxContainer = null
+## `main`, `items` or `targets`: which list is showing (cancel steps back).
+var _screen: StringName = &"main"
+var _title: Label = null
+## The line under the list on the Items screens ("" = none).
+var _note: Label = null
 
 
 func setup(machine: GameStateMachine, payload: RefCounted) -> void:
@@ -72,21 +86,42 @@ func _build() -> void:
 	panel.add_theme_stylebox_override(&"panel", style)
 	panel.custom_minimum_size = Vector2(260, 0)
 	center.add_child(panel)
-	var box := VBoxContainer.new()
-	box.add_theme_constant_override(&"separation", 8)
-	panel.add_child(box)
-	var title := Label.new()
-	title.text = "Paused"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override(&"font_size", 22)
-	title.add_theme_color_override(&"font_color", COLOR_BORDER)
-	box.add_child(title)
+	var outer := VBoxContainer.new()
+	outer.add_theme_constant_override(&"separation", 8)
+	panel.add_child(outer)
+	_title = Label.new()
+	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_title.add_theme_font_size_override(&"font_size", 22)
+	_title.add_theme_color_override(&"font_color", COLOR_BORDER)
+	outer.add_child(_title)
+	_box = VBoxContainer.new()
+	_box.add_theme_constant_override(&"separation", 8)
+	outer.add_child(_box)
+	_note = Label.new()
+	_note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_note.custom_minimum_size = Vector2(260, 0)
+	_note.add_theme_color_override(&"font_color", COLOR_BORDER)
+	outer.add_child(_note)
+	_show_main()
+
+
+## The main list: Resume (always first), Items when the bag is wired, then
+## the payload's entries.
+func _show_main() -> void:
+	_screen = &"main"
+	_title.text = "Paused"
+	_note.text = ""
+	_reset_list()
+	var box: VBoxContainer = _box
 	# A Menu without "pause" (Battle: settings, quit) still opens on Resume,
 	# never on Quit to Title: the safe default focus (GDD rule 9). Resume is
 	# not a payload entry, so `entries()` stays the exact AC-31 list.
 	var shown: Array[StringName] = _entries.duplicate()
 	if not shown.has(&"pause"):
 		shown.push_front(&"pause")
+	if has_items_entry():
+		shown.insert(1, &"items")
 	for entry: StringName in shown:
 		var spec: Array = ENTRIES.get(entry, [String(entry).capitalize(), false])
 		var button := Button.new()
@@ -97,11 +132,113 @@ func _build() -> void:
 		box.add_child(button)
 		_buttons.append(button)
 		_button_by_entry[entry] = button
+	_wire_and_focus()
+
+
+## `true` when the Menu offers Items (outside Battle, with the bag wired).
+func has_items_entry() -> bool:
+	return world_state != null and item_catalog != null and not party.is_empty()
+
+
+## The bag: one row per usable record with its count; an item no one needs
+## right now is disabled (rule 6). Cancel returns to the main list.
+func _show_items(note: String = "") -> void:
+	_screen = &"items"
+	_title.text = "Items"
+	_note.text = note
+	_reset_list()
+	var moves: Array[Move] = _item_moves()
+	if moves.is_empty():
+		_note.text = "The bag is empty. The café sells snacks."
+	for move: Move in moves:
+		var targets: Array[Combatant] = _targets_for(move)
+		var button := _add_button("%s x%d" % [move.display_name, world_state.inventory.count(move.item_id)]
+				+ ("" if not targets.is_empty() else " -- no one needs it"))
+		button.disabled = targets.is_empty()
+		button.pressed.connect(_on_item.bind(move))
+	_wire_and_focus()
+
+
+## Who `move` can be used on: the members it would help (a party item: a
+## single "Everyone" row when it would help anyone).
+func _show_targets(move: Move) -> void:
+	_screen = &"targets"
+	_title.text = "%s -- on whom?" % move.display_name
+	_note.text = ""
+	_reset_list()
+	for c: Combatant in _targets_for(move):
+		var button := _add_button("%s  HP %d/%d  MP %d/%d" % [c.display_name, c.hp, c.max_hp, c.mp, c.max_mp])
+		button.pressed.connect(_use.bind(move, c))
+	_wire_and_focus()
+
+
+func _on_item(move: Move) -> void:
+	if move.target_type == Move.TargetType.SELF:
+		_use(move, null)
+	else:
+		_show_targets(move)
+
+
+## Spends one and applies it (the same `ItemEffects` battle uses), then
+## returns to the bag with what it did.
+func _use(move: Move, target: Combatant) -> void:
+	if not ItemEffects.has_effect(move, target, party) or not world_state.inventory.remove(move.item_id):
+		_show_items()
+		return
+	var living: Array[Combatant] = []
+	for c: Combatant in party:
+		if not c.is_knocked_out():
+			living.append(c)
+	ItemEffects.apply(move, target, living)
+	_show_items("Used %s%s." % [move.display_name, "" if target == null else " on " + target.display_name])
+
+
+func _item_moves() -> Array[Move]:
+	var out: Array[Move] = []
+	for id: String in world_state.inventory.ids():
+		var move: Move = ItemEffects.move_for(item_catalog.call(&"get_record", &"item", id) as ItemData)
+		if move != null:
+			out.append(move)
+	return out
+
+
+func _targets_for(move: Move) -> Array[Combatant]:
+	var out: Array[Combatant] = []
+	if move.target_type == Move.TargetType.SELF:
+		if ItemEffects.has_effect(move, null, party):
+			out.append_array(party)
+		return out
+	for c: Combatant in party:
+		if ItemEffects.has_effect(move, c, party):
+			out.append(c)
+	return out
+
+
+func _reset_list() -> void:
+	for b: Button in _buttons:
+		_box.remove_child(b)
+		b.queue_free()
+	_buttons.clear()
+	_button_by_entry.clear()
+
+
+func _add_button(text: String) -> Button:
+	var button := Button.new()
+	button.text = text
+	button.focus_mode = Control.FOCUS_ALL
+	_box.add_child(button)
+	_buttons.append(button)
+	return button
+
+
+func _wire_and_focus() -> void:
 	for i: int in _buttons.size():
 		var up: NodePath = _buttons[i].get_path_to(_buttons[i - 1]) if i > 0 else NodePath()
 		var down: NodePath = _buttons[i].get_path_to(_buttons[i + 1]) if i < _buttons.size() - 1 else NodePath()
 		_buttons[i].focus_neighbor_top = up
 		_buttons[i].focus_neighbor_bottom = down
+	if is_inside_tree():
+		_ready()
 
 
 ## INTERIM (as `DefeatPrompt._ready()`): focuses the first enabled entry.
@@ -119,7 +256,12 @@ func handle_action(action: StringName, pressed: bool) -> bool:
 		return true
 	match action:
 		InputActions.CANCEL:
-			_close()
+			if _screen == &"targets":
+				_show_items()
+			elif _screen == &"items":
+				_show_main()
+			else:
+				_close()
 		InputActions.CONFIRM:
 			InterimFocusNav.route_confirm(self)
 		InputActions.NAV_UP:
@@ -133,6 +275,8 @@ func _on_entry(entry: StringName) -> void:
 	match entry:
 		&"pause":
 			_close()
+		&"items":
+			_show_items()
 		&"quit":
 			if _machine != null:
 				_machine.request_transition(GameStateMachine.Mode.TITLE)

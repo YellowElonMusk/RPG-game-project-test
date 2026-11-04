@@ -80,5 +80,5 @@ The squad carries a bag of consumables, buys them with Victory money at a camp's
 ## Open Questions
 
 - **OQ-1** Equipment (weapons and outfits per hero) is not designed. It needs a stat-modifier hook in Stats & Damage.
-- **OQ-2** Using items from the Overworld Menu, outside battle. Camp already heals for free, so this matters only in the dungeon. Not built yet.
+- **OQ-2 — Resolved 2026-11-04.** Using items outside battle: the Overworld and camp Menu shows **Items** under Resume (never in Battle). It lists the bag with the same rule-6 disabling, then a target pick showing each member's HP and MP, and applies the same `ItemEffects` that battle uses (`menu_items_test`; evidence `items-shop/05-menu-items.png`).
 - **OQ-3** Selling, and alien-route prices (narrative bible §6: reputation changes shop prices) are not built.
