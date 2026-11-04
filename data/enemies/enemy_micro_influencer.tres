@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/enemy_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "enemy_micro_influencer"
+display_name = "Micro-Influencer"
+faction_id = "faction_influencia"
+max_hp = 70
+attack = 20
+defense = 14
+speed = 11
+reward_xp = 18
+reward_money = 10
+move_ids = PackedStringArray("move_hot_take")
+sprite_set_id = "sprite_micro_influencer"

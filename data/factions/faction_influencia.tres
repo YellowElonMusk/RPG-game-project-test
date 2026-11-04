@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="FactionData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/faction_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "faction_influencia"
+display_name = "Influencia"
+kind = "alien"
+base_shape = "circle"
+signature_color = "#e83e9c"
+backup_icon_id = "icon_faction_influencia"
+rule_id = "rule_influencia_followers"
+patrol_archetype_id = "patrol_ring_light"

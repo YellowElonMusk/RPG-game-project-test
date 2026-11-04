@@ -58,6 +58,28 @@ func apply_round_upkeep(_living_squad: Array[Combatant]) -> void:
 	pass
 
 
+## Called by BattleCore each time `defender` loses HP to `attacker` (Attack
+## or a damage Special), after the damage lands. Influencia's Followers grow
+## here. Default: no-op.
+## Example: [code]faction_rule.on_damage_taken(target, actor, 12)[/code]
+func on_damage_taken(_defender: Combatant, _attacker: Combatant, _amount: int) -> void:
+	pass
+
+
+## Called by BattleCore once per round, after `apply_round_upkeep()`, with the
+## living enemies (Influencia's ignored-influencer decay). Default: no-op.
+## Example: [code]faction_rule.on_round_end(battle.get_living_enemies())[/code]
+func on_round_end(_living_enemies: Array[Combatant]) -> void:
+	pass
+
+
+## Short card text for a combatant's `rule_stacks` (Influencia: "Followers
+## 3"), or "" for none. The HUD appends it to the card's HP line. Default: "".
+## Example: [code]var badge := faction_rule.get_stack_badge(enemy.rule_stacks)[/code]
+func get_stack_badge(_stacks: int) -> String:
+	return ""
+
+
 ## True if `actor` may submit `move` right now, beyond the generic
 ## specials_allowed()/can_afford() gates BattleCore already runs. MegaCorp's
 ## suspension rule (Story 004: 0 MP permits Attack only) lives here; a

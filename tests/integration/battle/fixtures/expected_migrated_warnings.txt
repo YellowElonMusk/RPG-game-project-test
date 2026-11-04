@@ -33,3 +33,13 @@ enc_london_staff_keen |
 enc_london_staff_pocket |
 enc_london_staff_shortcut |
 enc_london_staff_west |
+# Chapter 3 (2026-11-04): the Sydney encounters, referenced the same way.
+enc_sydney_mega_influencer |
+enc_sydney_velvet_rope |
+enc_sydney_fans_east |
+enc_sydney_fans_first_room |
+enc_sydney_fans_hall |
+enc_sydney_fans_keen |
+enc_sydney_fans_pocket |
+enc_sydney_fans_shortcut |
+enc_sydney_fans_west |

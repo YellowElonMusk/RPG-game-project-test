@@ -21,6 +21,8 @@ var is_defending: bool = false
 var is_stunned: bool = false
 ## Viral Stunt rounds left.
 var vulnerable_rounds_left: int = 0
+## The faction rule's counter (Influencia Followers).
+var rule_stacks: int = 0
 
 
 ## Reads `c`'s live values into a new copy. Read-only: never writes to `c`.
@@ -32,6 +34,7 @@ static func from_combatant(c: Combatant) -> CombatantDisplay:
 	d.is_defending = c.is_defending
 	d.is_stunned = c.is_stunned
 	d.vulnerable_rounds_left = c.vulnerable_rounds_left
+	d.rule_stacks = c.rule_stacks
 	return d
 
 
@@ -43,10 +46,12 @@ func copy() -> CombatantDisplay:
 	d.is_defending = is_defending
 	d.is_stunned = is_stunned
 	d.vulnerable_rounds_left = vulnerable_rounds_left
+	d.rule_stacks = rule_stacks
 	return d
 
 
 ## True when every field equals `c`'s live value.
 func matches(c: Combatant) -> bool:
 	return hp == c.hp and mp == c.mp and is_defending == c.is_defending \
-			and is_stunned == c.is_stunned and vulnerable_rounds_left == c.vulnerable_rounds_left
+			and is_stunned == c.is_stunned and vulnerable_rounds_left == c.vulnerable_rounds_left \
+			and rule_stacks == c.rule_stacks

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/enemy_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "enemy_mega_influencer"
+display_name = "Mega-Influencer"
+faction_id = "faction_influencia"
+is_boss = true
+max_hp = 300
+attack = 19
+defense = 15
+speed = 10
+reward_xp = 80
+reward_money = 50
+move_ids = PackedStringArray("move_going_viral", "move_cancelled")
+sprite_set_id = "sprite_mega_influencer"

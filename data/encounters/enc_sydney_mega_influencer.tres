@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EncounterData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/encounter_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "enc_sydney_mega_influencer"
+enemy_ids = PackedStringArray("enemy_mega_influencer", "enemy_micro_influencer", "enemy_ring_light", "enemy_ring_light")
+battle_stage_id = "stage_chapter_interim"
+faction_id = "faction_influencia"
+is_boss = true
+can_flee = false
+retreat_allowed = true
+respawn = false
+post_battle_line = "The Mega-Influencer announces a break from content to focus on leaving Earth. Nobody likes the post."
+post_battle_conversation_id = "conv_sydney_mega_influencer_defeated"

@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="Conversation" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/dialogue/conversation.gd" id="1_conv"]
+[ext_resource type="Script" path="res://src/dialogue/dialogue_line.gd" id="2_line"]
+
+[sub_resource type="Resource" id="l_1"]
+script = ExtResource("2_line")
+text = "The Mega-Influencer announces a break from content to focus on leaving Earth."
+
+[sub_resource type="Resource" id="l_2"]
+script = ExtResource("2_line")
+text = "Nobody likes the post. Somewhere, a ring light switches itself off out of respect."
+
+[sub_resource type="Resource" id="l_3"]
+script = ExtResource("2_line")
+speaker = "Florida Man"
+speaker_id = "char_florida_man"
+text = "Wait, wait. Did that count as a collab? I'm tagging myself. I'm tagging all of us."
+
+[sub_resource type="Resource" id="l_4"]
+script = ExtResource("2_line")
+speaker = "Five-Star Chef"
+speaker_id = "char_michelin_chef"
+text = "Every meal in this city was photographed and never eaten. Tonight, we eat. Cameras down."
+
+[resource]
+script = ExtResource("1_conv")
+id = "conv_sydney_mega_influencer_defeated"
+lines = Array[ExtResource("2_line")]([SubResource("l_1"), SubResource("l_2"), SubResource("l_3"), SubResource("l_4")])

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="MapData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/map_data.gd" id="1_a"]
+[ext_resource type="Script" path="res://src/data/records/critical_path_leg.gd" id="2_leg"]
+
+[sub_resource type="Resource" id="leg_1"]
+script = ExtResource("2_leg")
+id = "boss_fight"
+from_entry = &"from_dungeon"
+to = "sym_sydney_mega_influencer"
+
+[resource]
+script = ExtResource("1_a")
+id = "map_sydney_boss_chamber_placeholder"
+display_name = "Sydney - The Main Feed"
+faction_id = "faction_influencia"
+base_stage = 0
+critical_path = Array[ExtResource("2_leg")]([SubResource("leg_1")])
+region_liberation_flag = "sydney_liberated"
+new_game_entry = false

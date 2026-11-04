@@ -1,0 +1,59 @@
+[gd_resource type="Resource" script_class="Conversation" load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://src/dialogue/conversation.gd" id="1_conv"]
+[ext_resource type="Script" path="res://src/dialogue/dialogue_line.gd" id="2_line"]
+[ext_resource type="Script" path="res://src/dialogue/dialogue_choice.gd" id="3_choice"]
+
+[sub_resource type="Resource" id="l_open"]
+script = ExtResource("2_line")
+speaker = "Café regular"
+text = "The Ring Lights won't follow you past the café door. Bad lighting, they say."
+
+[sub_resource type="Resource" id="l_again"]
+script = ExtResource("2_line")
+speaker = "Café regular"
+text = "One at a time. Pile on one of them, and starve the rest of attention."
+requires_flag = "sydney_heard_follower_tip"
+next_id = "end"
+
+[sub_resource type="Resource" id="c_yes"]
+script = ExtResource("3_choice")
+label = "Go on, then."
+sets_flag = "sydney_heard_follower_tip"
+goto_id = "tip"
+
+[sub_resource type="Resource" id="c_no"]
+script = ExtResource("3_choice")
+label = "No thanks."
+goto_id = "bye"
+
+[sub_resource type="Resource" id="l_ask"]
+script = ExtResource("2_line")
+speaker = "Café regular"
+text = "Want a tip? It's not sponsored. Probably the last thing in Sydney that isn't."
+skip_if_flag = "sydney_heard_follower_tip"
+choices = Array[ExtResource("3_choice")]([SubResource("c_yes"), SubResource("c_no")])
+
+[sub_resource type="Resource" id="l_tip"]
+script = ExtResource("2_line")
+id = "tip"
+speaker = "Café regular"
+text = "Every hit earns them a Follower, and Followers hit harder. Ignore one and it fades. Finish them one at a time."
+
+[sub_resource type="Resource" id="l_florida"]
+script = ExtResource("2_line")
+speaker = "Florida Man"
+speaker_id = "char_florida_man"
+text = "Ignore them so they lose followers? Brother, that's been happening to me since 2014."
+next_id = "end"
+
+[sub_resource type="Resource" id="l_bye"]
+script = ExtResource("2_line")
+id = "bye"
+speaker = "Café regular"
+text = "Fair enough. Nobody reads the caption anyway."
+
+[resource]
+script = ExtResource("1_conv")
+id = "conv_sydney_union_regular"
+lines = Array[ExtResource("2_line")]([SubResource("l_open"), SubResource("l_again"), SubResource("l_ask"), SubResource("l_tip"), SubResource("l_florida"), SubResource("l_bye")])

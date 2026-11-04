@@ -296,7 +296,10 @@ func _resolve_move(actor: Combatant, move: Move, target: Combatant) -> BattleOut
 ## two call sites can't drift apart. Returns the HP actually removed.
 func _apply_damage(attacker: Combatant, defender: Combatant, power: int) -> int:
 	var amount: int = DamageCalculator.calculate_damage(attacker, defender, power, rng)
-	return defender.take_damage(amount)
+	var taken: int = defender.take_damage(amount)
+	if taken > 0:
+		faction_rule.on_damage_taken(defender, attacker, taken)
+	return taken
 
 
 func _skip_to_living_squad_member() -> void:
@@ -339,6 +342,7 @@ func _run_enemy_phase() -> void:
 				return
 	_tick_round_effects()
 	faction_rule.apply_round_upkeep(get_living_squad())
+	faction_rule.on_round_end(get_living_enemies())
 	_advance_round()
 
 

@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="Conversation" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://src/dialogue/conversation.gd" id="1_conv"]
+[ext_resource type="Script" path="res://src/dialogue/dialogue_line.gd" id="2_line"]
+
+[sub_resource type="Resource" id="l_1"]
+script = ExtResource("2_line")
+speaker = "Retired lifeguard"
+text = "No ring lights, no hashtags. How is anyone supposed to know the sea is there?"
+
+[sub_resource type="Resource" id="l_2"]
+script = ExtResource("2_line")
+speaker = "Karen"
+speaker_id = "char_karen"
+text = "The sea is there because I asked to see it. You're welcome. Is there a manager for the tide?"
+
+[sub_resource type="Resource" id="l_3"]
+script = ExtResource("2_line")
+speaker = "Retired lifeguard"
+text = "Swim between the flags, love. Not the hashtags."
+
+[resource]
+script = ExtResource("1_conv")
+id = "conv_sydney_grumbler"
+lines = Array[ExtResource("2_line")]([SubResource("l_1"), SubResource("l_2"), SubResource("l_3")])

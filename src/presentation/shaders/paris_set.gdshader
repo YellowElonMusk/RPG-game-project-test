@@ -10,7 +10,9 @@ render_mode cull_back;
 // 0 = street (cobbles; limestone fronts, windows, slate roofs),
 // 1 = interior (carpet tiles; office panels, filing drawers, grey tops),
 // 2 = London street (flagstones; glass curtain walls, cyan ad strips),
-// 3 = MegaCorp Tower (polished tiles; white panels, server racks).
+// 3 = MegaCorp Tower (polished tiles; white panels, server racks),
+// 4 = Sydney harbour (boardwalk planks; whitewashed fronts, magenta awnings),
+// 5 = the Content House (pink terrazzo; pastel panels, ring lights, neon).
 uniform int style = 0;
 // 0 = floor, 1 = wall.
 uniform int surface = 0;
@@ -162,6 +164,66 @@ vec3 tower_floor(vec2 p) {
 	return mix(c, floor_tint * 0.75, clamp(seam, 0.0, 1.0));
 }
 
+
+vec3 boardwalk(vec2 p) {
+	// Sydney: sun-bleached boardwalk planks, 25 cm wide, staggered butt joints.
+	vec2 s = vec2(p.x * 0.5, p.y * 4.0);
+	s.x += hash(vec2(0.0, floor(s.y))) * 0.9;
+	vec2 cell = floor(s);
+	vec2 f = fract(s);
+	float joint = step(f.y, 0.1) + step(f.x, 0.015);
+	vec3 plank = floor_tint * (0.88 + 0.16 * hash(cell));
+	return mix(plank, floor_tint * 0.58, clamp(joint, 0.0, 1.0));
+}
+
+vec3 harbour_front(float u, float v) {
+	// Sydney: whitewashed shopfronts, a big shop window, and a Feed Magenta
+	// and white striped awning over each bay.
+	float bay = fract(u * 0.5);
+	if (v < 0.16) {
+		return wall_tint * 0.7;
+	}
+	if (v > 0.66 && v < 0.84) {
+		float stripe = step(0.5, fract(u * 4.0));
+		vec3 awning = mix(vec3(0.91, 0.24, 0.61), vec3(0.97, 0.94, 0.9), stripe);
+		return awning * (v < 0.7 ? 0.8 : 1.0);
+	}
+	if (bay > 0.12 && bay < 0.88 && v > 0.22 && v < 0.62) {
+		bool mullion = abs(bay - 0.5) < 0.02;
+		return mullion ? wall_tint * 0.8 : vec3(0.32, 0.56, 0.66) * (0.8 + 0.4 * v);
+	}
+	return wall_tint * (0.95 + 0.06 * hash(vec2(floor(u * 8.0), floor(v * 8.0))));
+}
+
+vec3 terrazzo(vec2 p) {
+	// The Content House: pink terrazzo with flecks and a 1 m grid.
+	vec2 f = fract(p);
+	float seam = step(f.x, 0.015) + step(f.y, 0.015);
+	float fleck = step(0.9, hash(floor(p * 16.0)));
+	vec3 c = floor_tint * (0.95 + 0.05 * hash(floor(p)));
+	c = mix(c, vec3(0.97, 0.94, 0.92), fleck * 0.6);
+	return mix(c, floor_tint * 0.75, clamp(seam, 0.0, 1.0));
+}
+
+vec3 content_wall(float u, float v) {
+	// Pastel panels, a ring light (a glowing circle) in every other bay and a
+	// Feed Magenta neon strip at the top.
+	float bay = fract(u * 0.5);
+	if (v > 1.0) {
+		return vec3(0.91, 0.24, 0.61);
+	}
+	vec2 c = vec2(bay - 0.5, (v - 0.62) * 0.5);
+	float r = length(c);
+	bool lit = mod(floor(u * 0.5), 2.0) < 1.0;
+	if (lit && r > 0.13 && r < 0.18) {
+		return vec3(1.0, 0.97, 0.93);
+	}
+	if (v < 0.12) {
+		return wall_tint * 0.72;
+	}
+	return wall_tint * (fract(u * 2.0) < 0.03 ? 0.88 : 1.0);
+}
+
 void fragment() {
 	vec3 p = floor(world_pos * texels_per_m) / texels_per_m + 0.5 / texels_per_m;
 	vec3 col;
@@ -169,20 +231,32 @@ void fragment() {
 	if (surface == 0) {
 		if (style == 2) {
 			col = paving(p.xz);
+		} else if (style == 4) {
+			col = boardwalk(p.xz);
+		} else if (style == 5) {
+			col = terrazzo(p.xz);
 		} else if (style == 3) {
 			col = tower_floor(p.xz);
 		} else {
 			col = style == 0 ? cobbles(p.xz) : carpet(p.xz);
 		}
 	} else if (world_normal.y > 0.5) {
-		if (style == 2) {
+		if (style == 4) {
+			col = vec3(0.86, 0.5, 0.36);
+		} else if (style == 5) {
+			col = vec3(0.96, 0.84, 0.9);
+		} else if (style == 2) {
 			col = vec3(0.3, 0.33, 0.37);
 		} else {
 			col = style == 0 ? roof(p.xz) : vec3(0.42, 0.43, 0.45);
 		}
 	} else {
 		float u = abs(world_normal.x) > 0.5 ? p.z : p.x;
-		if (style == 2) {
+		if (style == 4) {
+			col = harbour_front(u, p.y);
+		} else if (style == 5) {
+			col = content_wall(u, p.y);
+		} else if (style == 2) {
 			col = glass_front(u, p.y);
 		} else if (style == 3) {
 			col = tower_wall(u, p.y);

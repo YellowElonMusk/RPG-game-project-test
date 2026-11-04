@@ -262,6 +262,9 @@ func _refresh_card(combatant: Combatant) -> void:
 		info_label.text = "HP %d/%d   MP %d/%d" % [shown.hp, combatant.max_hp, shown.mp, combatant.max_mp]
 	else:
 		info_label.text = "HP %d/%d" % [shown.hp, combatant.max_hp]
+	var badge: String = _battle.faction_rule.get_stack_badge(shown.rule_stacks) if not knocked_out else ""
+	if badge != "":
+		info_label.text += "   " + badge
 
 	var panel: PanelContainer = nodes["panel"]
 	panel.modulate = KNOCKED_OUT_MODULATE if knocked_out else Color.WHITE

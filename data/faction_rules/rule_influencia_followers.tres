@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="FactionRuleData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/faction_rule_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "rule_influencia_followers"
+rule_class = &"influencia_followers"
+ref_ids = PackedStringArray("move_hot_take", "move_blinding_glow", "move_going_viral", "move_cancelled", "enemy_micro_influencer", "enemy_ring_light", "enemy_mega_influencer")
+params = {
+"follower_attack": 2,
+"max_followers": 5
+}
+texts = Dictionary[String, String]({
+"banner": "INFLUENCIA — Attention economy. Every hit an influencer takes earns it a Follower: +{follower_attack} ATK each, up to {max_followers}. Ignore one for a round and it loses one.",
+"tooltip": "Influencia feeds on attention. Each hit gives that enemy a Follower (+{follower_attack} ATK, max {max_followers}). An enemy nobody hit this round loses a Follower. Focus one down instead of spreading damage.",
+"badge": "Followers {n}",
+"note_followers": "{n} Followers: +{atk} ATK."
+})

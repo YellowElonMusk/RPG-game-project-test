@@ -2361,5 +2361,15 @@ func is_dialogue_open() -> bool:
 
 ## Game-state story 021 (ADR-0012 §4 `CampSpot.is_region_default`): Retreat's
 ## fallback camp when none has been registered; `""` without a directory.
+## The current campaign chapter's `start_camp_id` when the directory knows
+## it (every region has its own default camp, Chapters 2-3); else the
+## directory's region default.
 func get_region_default_camp_id() -> String:
-	return camp_directory.region_default_camp_id if camp_directory != null else ""
+	if camp_directory == null:
+		return ""
+	var campaign: Campaign = Campaign.load_default()
+	var chapter: CampaignChapter = campaign.chapter(world_state.chapter_id if world_state != null else "") \
+			if campaign != null else null
+	if chapter != null and camp_directory.has_camp(chapter.start_camp_id):
+		return chapter.start_camp_id
+	return camp_directory.region_default_camp_id

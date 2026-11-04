@@ -1,8 +1,8 @@
 ## Chapter 2 (2026-11-04): Yes at the Paris café on the final step sends the
 ## squad to London's Town at its arrival point, in chapter_london's first
 ## step with billing live and the London café as the Retreat camp, and says
-## the London intro. The chapter survives Save -> Continue. London's own
-## chapter end says its end line and goes nowhere. Drives real GameRoots.
+## the London intro. The chapter survives Save -> Continue. (Ending London
+## leads on to Sydney: chapter_three_progression_test.gd.)
 extends GdUnitTestSuite
 
 const _GAME_ROOT_SCENE: String = "res://src/game_state/game_root.tscn"
@@ -53,17 +53,6 @@ func test_london_survives_save_and_continue() -> void:
 	assert_str(again.world_state.chapter_id).is_equal("chapter_london")
 	assert_str(back.objective_line()).contains("MegaCorp Tower")
 
-
-func test_ending_london_says_the_end_line_and_stays() -> void:
-	var root: GameRoot = _new_game()
-	var london: OverworldMode = _end_paris(root)
-	_close_line(root)
-	root.world_state.chapter_step = "london_step_walk_home_b"
-	_say_yes_at_cafe(london)
-	assert_int(london.chapter_end_calls).is_equal(1)
-	assert_int(root.machine.phase).is_equal(GameStateMachine.Phase.IDLE)
-	assert_str(root.world_state.chapter_id).is_equal("chapter_london")
-	assert_str((root.current_overlay_node() as InterimLineDialogue).text).contains("To be continued")
 
 
 func _end_paris(root: GameRoot) -> OverworldMode:

@@ -68,6 +68,17 @@ var is_stunned: bool = false
 ## down once per round (BattleCore._tick_round_effects()), not per turn.
 var vulnerable_rounds_left: int = 0
 
+## A faction rule's per-combatant counter (Influencia's Followers). Only the
+## rule writes it; the HUD shows it through `FactionRule.get_stack_badge()`.
+## Cleared by `reset_for_battle()`.
+var rule_stacks: int = 0
+## Attack added by the faction rule (Influencia: per Follower). Read by
+## `effective_attack()`; cleared by `reset_for_battle()`.
+var rule_attack_bonus: int = 0
+## Set by the faction rule when this combatant took damage this round
+## (Influencia's decay check); the rule clears it at round end.
+var hit_this_round: bool = false
+
 ## Catalog record ID this combatant was built from (ADR-0011 §5;
 ## content-migration story 024). Identity only: the damage resolver never
 ## reads it. Empty for a combatant built without a record. Read-only after
@@ -99,7 +110,7 @@ func _init(p_display_name: String, p_max_hp: int, p_max_mp: int, p_attack: int,
 
 ## Attack with gear (Stats & Damage F3 reads this, never `attack`).
 func effective_attack() -> int:
-	return attack + bonus_attack
+	return attack + bonus_attack + rule_attack_bonus
 
 
 ## Defense with gear (Stats & Damage F3 reads this, never `defense`).
@@ -148,3 +159,6 @@ func reset_for_battle() -> void:
 	is_defending = false
 	is_stunned = false
 	vulnerable_rounds_left = 0
+	rule_stacks = 0
+	rule_attack_bonus = 0
+	hit_this_round = false

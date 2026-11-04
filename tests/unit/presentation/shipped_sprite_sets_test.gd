@@ -8,7 +8,8 @@ const SQUAD_IDS: Array[String] = ["char_karen", "char_michelin_chef", "char_flor
 		"char_street_mime", "char_rush_hour_commuter", "char_infomercial_host", "char_boxing_kangaroo",
 		"char_goalie", "char_fitness_instructor"]
 const ENEMY_IDS: Array[String] = ["enemy_clerk", "enemy_supervisor", "enemy_security_drone",
-		"enemy_middle_manager", "enemy_ceo"]
+		"enemy_middle_manager", "enemy_ceo", "enemy_micro_influencer", "enemy_ring_light",
+		"enemy_mega_influencer"]
 
 
 func _sets() -> Dictionary[StringName, SpriteSetData]:
