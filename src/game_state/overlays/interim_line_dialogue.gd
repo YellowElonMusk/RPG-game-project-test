@@ -13,6 +13,9 @@ class_name InterimLineDialogue extends GameOverlay
 
 ## Letters revealed per second; 0 or less shows each line whole at once.
 @export var chars_per_s: float = 45.0
+## Injected by `GameRoot`: the Audio Manager's text blip, called every
+## second revealed letter (spaces skipped). Invalid plays nothing.
+var text_blip: Callable = Callable()
 
 var _machine: GameStateMachine = null
 var _guard_s: float = 0.15
@@ -144,8 +147,22 @@ func _tick(seconds: float) -> void:
 	_guard_left = maxf(0.0, _guard_left - seconds)
 	if _run == null or not is_revealing():
 		return
+	var before: int = int(_revealed)
 	_revealed = minf(float(_line_length()), _revealed + seconds * chars_per_s)
+	_blip(before, int(_revealed))
 	_apply_reveal()
+
+
+## One blip if a non-space letter on an even index was revealed in
+## (`from`, `to`].
+func _blip(from: int, to: int) -> void:
+	if not text_blip.is_valid() or to <= from:
+		return
+	var line: String = (%Line as Label).text
+	for i: int in range(from, mini(to, line.length())):
+		if i % 2 == 0 and line[i] != " ":
+			text_blip.call()
+			return
 
 
 func _show_line() -> void:

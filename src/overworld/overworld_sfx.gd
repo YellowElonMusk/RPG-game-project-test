@@ -4,9 +4,8 @@
 ##
 ## `OverworldMode.sfx_cue(event, subject)` fires one of these on the frame its
 ## visual twin first shows ([A11Y]: every sound has a visual twin). This is
-## only the trigger seam: the Audio Manager (no epic yet) will connect to the
-## signal and own the sounds, layers and mix.
-## TODO(audio-manager): connect the Audio Manager to `OverworldMode.sfx_cue`.
+## only the trigger seam: `GameRoot` connects the Audio Manager to the signal,
+## and each id's file is listed in `data/config/audio_events.tres`.
 class_name OverworldSfx
 extends RefCounted
 

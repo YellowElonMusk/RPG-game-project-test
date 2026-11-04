@@ -38,6 +38,11 @@ var settings_service: SettingsService:
 	get:
 		return _settings_service
 
+## Read-only: the Audio Manager, built right after the settings.
+var audio: AudioManager:
+	get:
+		return _audio
+
 ## Read-only: the one `GameStateMachine` for this session, handed to tests
 ## and the demo scene so neither needs a second way to reach it (Game State
 ## is never an autoload -- control manifest).
@@ -86,6 +91,8 @@ var _camp_directory: CampDirectory = null
 ## Save/Load (ADR-0009), under Services.
 var _save_service: SaveService = null
 var _settings_service: SettingsService = null
+## The Audio Manager (systems index #20), under Services.
+var _audio: AudioManager = null
 ## The settings' per-consumer views (ADR-0009 §7).
 var _settings_views: SettingsViews = null
 ## The live squad and any loaded save data for it (Leveling GDD rule 7).
@@ -137,6 +144,13 @@ func _ready() -> void:
 	_settings_views = SettingsViews.new(_settings_service, settings_config)
 	var settings_views: SettingsViews = _settings_views
 	var settings_service: SettingsService = _settings_service
+	# Audio Manager (systems index #20): on the Music/SFX buses the settings
+	# above drive; contexts are routed from the machine's transitions below.
+	_audio = AudioManager.new()
+	_audio.name = "AudioManager"
+	_services.add_child(_audio)
+	_audio.setup(AudioEventTable.load_default())
+	var audio: AudioManager = _audio
 	var config: TransitionConfig = _load_transition_config(game_log)
 	var input_config: InputConfig = _load_input_config()
 	var resolver: InputResolver = _build_input_resolver(input_config)
@@ -183,12 +197,15 @@ func _ready() -> void:
 			(mode as OverworldMode).glyphs = _prompt_glyphs
 			(mode as OverworldMode).chapter_end_requested.connect(
 					_on_chapter_end_requested.bind(mode))
+			(mode as OverworldMode).sfx_cue.connect(
+					func(event: StringName, _subject: String) -> void: audio.play_sfx(event))
 		elif mode is InterimCampMode:
 			(mode as InterimCampMode).camp_directory = _camp_directory
 			(mode as InterimCampMode).hints = _tutorial_hints
 			(mode as InterimCampMode).save_service = _save_service
 			(mode as InterimCampMode).world_state = _world_state
 			(mode as InterimCampMode).item_catalog = catalog()
+			(mode as InterimCampMode).sfx = audio.play_sfx
 			var squad: Array[Combatant] = _squad_store.squad
 			(mode as InterimCampMode).party_source = func() -> Array[Combatant]: return squad
 		elif mode is TitleMode:
@@ -200,6 +217,7 @@ func _ready() -> void:
 			(mode as BattleMode).presentation_settings = settings_views.presentation
 			(mode as BattleMode).world_state = _world_state
 			(mode as BattleMode).item_catalog = catalog()
+			(mode as BattleMode).audio = audio
 		mode.setup(_machine_box[0], payload)
 	# The loader's result getter: the thawed Overworld's on_thawed() needs the
 	# battle result, and the return swap carries no payload (story 014).
@@ -210,6 +228,10 @@ func _ready() -> void:
 		var machine: GameStateMachine = _machine_box[0] as GameStateMachine
 		if node is InterimLineDialogue:
 			(node as InterimLineDialogue).chars_per_s = settings_views.text_chars_per_s()
+			(node as InterimLineDialogue).text_blip = audio.play_sfx.bind(AudioIds.UI_TEXT_BLIP)
+		if node is DefeatPrompt:
+			(node as DefeatPrompt).feedback.refused.connect(
+					func(_c: Control) -> void: audio.play_sfx(AudioIds.UI_REFUSED))
 		if node is InterimMenu:
 			(node as InterimMenu).settings_service = settings_service
 		if node is InterimMenu and machine != null and machine.current_mode != GameStateMachine.Mode.BATTLE \
@@ -229,6 +251,9 @@ func _ready() -> void:
 	loader.set_machine(machine)
 	machine.mode_entered.connect(loader.on_mode_entered)
 	machine.transition_finished.connect(_on_transition_finished)
+	machine.transition_started.connect(_on_audio_transition_started)
+	machine.transition_finished.connect(_route_audio)
+	resolver.action_pressed.connect(_on_audio_action)
 	machine.bind_action_source(resolver)
 	var save_config := SaveConfig.new()
 	if not save_dir_override.is_empty():
@@ -542,6 +567,67 @@ func _on_transition_finished(to: GameStateMachine.Mode) -> void:
 	var overworld: OverworldMode = current_mode_node() as OverworldMode
 	if overworld != null and overworld.say(_pending_intro) == GameStateMachine.RequestResult.OK:
 		_pending_intro = ""
+
+
+## Audio (systems index #20): the encounter sting going into a fight, the
+## flee scratch coming out of one; a fight drops the ambience bed.
+func _on_audio_transition_started(from: GameStateMachine.Mode, to: GameStateMachine.Mode) -> void:
+	if _audio == null:
+		return
+	if from == GameStateMachine.Mode.OVERWORLD and to == GameStateMachine.Mode.BATTLE:
+		_audio.play_sfx(AudioIds.BT_ENCOUNTER_START)
+		_audio.play_ambience(&"")
+	elif from == GameStateMachine.Mode.BATTLE and _machine != null \
+			and _machine.last_battle_result == GameStateMachine.BattleResult.FLED:
+		_audio.play_sfx(AudioIds.BT_FLEE)
+
+
+## Audio: each settled mode's music and ambience. The Overworld's track is
+## the map's city and kind (liberated once the region is); a fight hands its
+## music to the beatbox seam; Title plays the credits theme while they roll.
+func _route_audio(to: GameStateMachine.Mode) -> void:
+	if _audio == null:
+		return
+	var node: Node = current_mode_node()
+	match to:
+		GameStateMachine.Mode.TITLE:
+			var title: TitleMode = node as TitleMode
+			if title != null and title.credits_panel != null:
+				_audio.play_music([AudioIds.MUS_CREDITS])
+				if not title.credits_panel.finished.is_connected(_on_credits_audio_done):
+					title.credits_panel.finished.connect(_on_credits_audio_done)
+			else:
+				_audio.play_music([AudioIds.MUS_TITLE])
+			_audio.play_ambience(&"")
+		GameStateMachine.Mode.CAMP:
+			_audio.play_music([AudioIds.MUS_CAMP])
+			_audio.play_ambience(AudioIds.AMB_CAMP)
+		GameStateMachine.Mode.OVERWORLD:
+			var overworld: OverworldMode = node as OverworldMode
+			if overworld == null:
+				return
+			_audio.play_music(AudioIds.overworld_music(overworld.current_map_id(),
+					overworld.is_region_liberated()))
+			_audio.play_ambience(StringName(overworld.ambience_bed_id))
+		GameStateMachine.Mode.BATTLE:
+			var battle: BattleMode = node as BattleMode
+			_audio.play_ambience(&"")
+			_audio.play_battle_music(battle.encounter_descriptor() if battle != null else null)
+
+
+func _on_credits_audio_done() -> void:
+	if _audio != null:
+		_audio.play_music([AudioIds.MUS_TITLE])
+
+
+## Audio: menu clicks while a menu, overlay, camp, Title or a fight has the
+## input (walking the overworld makes no UI sound).
+func _on_audio_action(action: StringName) -> void:
+	if _audio == null or _machine == null:
+		return
+	if _machine.overlay_stack.is_empty() and _machine.current_mode == GameStateMachine.Mode.OVERWORLD:
+		return
+	_audio.play_sfx(AudioIds.ui_sfx(action))
 
 
 ## The controls strip relabels for the device the player last used.

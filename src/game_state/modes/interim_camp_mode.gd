@@ -30,6 +30,9 @@ var world_state: WorldState = null
 var item_catalog: Object = null
 ## What this camp sells; the shipped config when not injected.
 var shop_config: ShopConfig = null
+## Injected by `GameRoot`: the Audio Manager's `play_sfx(id)` for the buy
+## and save sounds. Invalid plays nothing.
+var sfx: Callable = Callable()
 ## Injected by `GameRoot`: onboarding hints (the "setting out saves" tip on
 ## the first camp visit). Null shows none.
 var hints: TutorialHints = null
@@ -163,6 +166,12 @@ func _pick(row: String) -> void:
 		var result: Shop.Result = Shop.buy(world_state, rec)
 		shop_message = "Bought: %s." % rec.display_name if result == Shop.Result.OK \
 				else "%s: %s." % [rec.display_name, Shop.reason(result)]
+		_sfx(AudioIds.UI_BUY if result == Shop.Result.OK else AudioIds.UI_REFUSED)
+
+
+func _sfx(id: StringName) -> void:
+	if sfx.is_valid():
+		sfx.call(id)
 
 
 func _open(next: Screen) -> void:
@@ -185,4 +194,6 @@ func set_out() -> GameStateMachine.RequestResult:
 		hints.mark_seen(TutorialHints.SAVE)
 	if save_service != null:
 		last_save_result = save_service.save_to_slot(1)
+		if last_save_result == SaveService.SaveResult.OK:
+			_sfx(AudioIds.UI_SAVE)
 	return _machine.request_transition(GameStateMachine.Mode.OVERWORLD, target)

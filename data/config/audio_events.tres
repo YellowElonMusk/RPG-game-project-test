@@ -1,0 +1,80 @@
+[gd_resource type="Resource" script_class="AudioEventTable" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/audio/audio_event_table.gd" id="1_audio"]
+
+[resource]
+script = ExtResource("1_audio")
+music = Dictionary[String, PackedStringArray]({
+"mus_title": PackedStringArray("res://assets/audio/music/mus_title.ogg", "res://assets/audio/placeholder/ph_mus_title.wav"),
+"mus_credits": PackedStringArray("res://assets/audio/music/mus_credits.ogg", "res://assets/audio/music/mus_chapter_end.ogg", "res://assets/audio/placeholder/ph_mus_credits.wav"),
+"mus_camp": PackedStringArray("res://assets/audio/music/mus_camp_cafe.ogg", "res://assets/audio/placeholder/ph_mus_camp.wav"),
+"mus_paris_town": PackedStringArray("res://assets/audio/music/mus_paris_town.ogg", "res://assets/audio/placeholder/ph_mus_bureaucratia.wav"),
+"mus_paris_segment": PackedStringArray("res://assets/audio/music/mus_paris_occupied.ogg", "res://assets/audio/placeholder/ph_mus_bureaucratia.wav"),
+"mus_paris_dungeon": PackedStringArray("res://assets/audio/music/mus_paris_ministry.ogg", "res://assets/audio/placeholder/ph_mus_dungeon.wav"),
+"mus_paris_boss_chamber": PackedStringArray("res://assets/audio/music/mus_paris_boss_chamber.ogg", "res://assets/audio/placeholder/ph_mus_boss_chamber.wav"),
+"mus_paris_liberated": PackedStringArray("res://assets/audio/music/mus_paris_liberated.ogg", "res://assets/audio/placeholder/ph_mus_liberated.wav"),
+"mus_london_town": PackedStringArray("res://assets/audio/music/mus_london_town.ogg", "res://assets/audio/placeholder/ph_mus_megacorp.wav"),
+"mus_london_segment": PackedStringArray("res://assets/audio/music/mus_london_segment.ogg", "res://assets/audio/placeholder/ph_mus_megacorp.wav"),
+"mus_london_dungeon": PackedStringArray("res://assets/audio/music/mus_london_dungeon.ogg", "res://assets/audio/placeholder/ph_mus_dungeon.wav"),
+"mus_london_boss_chamber": PackedStringArray("res://assets/audio/music/mus_london_boss_chamber.ogg", "res://assets/audio/placeholder/ph_mus_boss_chamber.wav"),
+"mus_london_liberated": PackedStringArray("res://assets/audio/music/mus_london_liberated.ogg", "res://assets/audio/placeholder/ph_mus_liberated.wav"),
+"mus_sydney_town": PackedStringArray("res://assets/audio/music/mus_sydney_town.ogg", "res://assets/audio/placeholder/ph_mus_influencia.wav"),
+"mus_sydney_segment": PackedStringArray("res://assets/audio/music/mus_sydney_segment.ogg", "res://assets/audio/placeholder/ph_mus_influencia.wav"),
+"mus_sydney_dungeon": PackedStringArray("res://assets/audio/music/mus_sydney_dungeon.ogg", "res://assets/audio/placeholder/ph_mus_dungeon.wav"),
+"mus_sydney_boss_chamber": PackedStringArray("res://assets/audio/music/mus_sydney_boss_chamber.ogg", "res://assets/audio/placeholder/ph_mus_boss_chamber.wav"),
+"mus_sydney_liberated": PackedStringArray("res://assets/audio/music/mus_sydney_liberated.ogg", "res://assets/audio/placeholder/ph_mus_liberated.wav"),
+"mus_newyork_town": PackedStringArray("res://assets/audio/music/mus_newyork_town.ogg", "res://assets/audio/placeholder/ph_mus_liberty7.wav"),
+"mus_newyork_segment": PackedStringArray("res://assets/audio/music/mus_newyork_segment.ogg", "res://assets/audio/placeholder/ph_mus_liberty7.wav"),
+"mus_newyork_dungeon": PackedStringArray("res://assets/audio/music/mus_newyork_dungeon.ogg", "res://assets/audio/placeholder/ph_mus_dungeon.wav"),
+"mus_newyork_boss_chamber": PackedStringArray("res://assets/audio/music/mus_newyork_boss_chamber.ogg", "res://assets/audio/placeholder/ph_mus_boss_chamber.wav"),
+"mus_newyork_liberated": PackedStringArray("res://assets/audio/music/mus_newyork_liberated.ogg", "res://assets/audio/placeholder/ph_mus_liberated.wav"),
+"mus_ow_town": PackedStringArray("res://assets/audio/placeholder/ph_mus_bureaucratia.wav"),
+"mus_ow_segment": PackedStringArray("res://assets/audio/placeholder/ph_mus_bureaucratia.wav"),
+"mus_ow_dungeon": PackedStringArray("res://assets/audio/placeholder/ph_mus_dungeon.wav"),
+"mus_ow_boss_chamber": PackedStringArray("res://assets/audio/placeholder/ph_mus_boss_chamber.wav"),
+"mus_ow_liberated": PackedStringArray("res://assets/audio/placeholder/ph_mus_liberated.wav"),
+"bx_floor_pulse": PackedStringArray("res://assets/audio/beatbox/bx_floor_pulse.ogg", "res://assets/audio/placeholder/ph_bx_floor_pulse.wav"),
+"stg_victory": PackedStringArray("res://assets/audio/stings/stg_victory.ogg", "res://assets/audio/placeholder/ph_stg_victory.wav"),
+"stg_victory_boss": PackedStringArray("res://assets/audio/stings/stg_victory_boss.ogg", "res://assets/audio/placeholder/ph_stg_victory_boss.wav"),
+"stg_defeat": PackedStringArray("res://assets/audio/stings/stg_defeat.ogg", "res://assets/audio/placeholder/ph_stg_defeat.wav")
+})
+ambience = Dictionary[String, PackedStringArray]({
+"amb_paris_stage1": PackedStringArray("res://assets/audio/ambience/amb_paris_stage1.ogg", "res://assets/audio/placeholder/ph_amb_street.wav"),
+"amb_paris_stage2": PackedStringArray("res://assets/audio/ambience/amb_paris_stage2.ogg", "res://assets/audio/placeholder/ph_amb_street.wav"),
+"amb_paris_stage3": PackedStringArray("res://assets/audio/ambience/amb_paris_stage3.ogg", "res://assets/audio/placeholder/ph_amb_office.wav"),
+"amb_london_stage1": PackedStringArray("res://assets/audio/ambience/amb_london_stage1.ogg", "res://assets/audio/placeholder/ph_amb_street.wav"),
+"amb_london_stage2": PackedStringArray("res://assets/audio/ambience/amb_london_stage2.ogg", "res://assets/audio/placeholder/ph_amb_street.wav"),
+"amb_london_stage3": PackedStringArray("res://assets/audio/ambience/amb_london_stage3.ogg", "res://assets/audio/placeholder/ph_amb_office.wav"),
+"amb_sydney_stage1": PackedStringArray("res://assets/audio/ambience/amb_sydney_stage1.ogg", "res://assets/audio/placeholder/ph_amb_harbour.wav"),
+"amb_sydney_stage2": PackedStringArray("res://assets/audio/ambience/amb_sydney_stage2.ogg", "res://assets/audio/placeholder/ph_amb_harbour.wav"),
+"amb_sydney_stage3": PackedStringArray("res://assets/audio/ambience/amb_sydney_stage3.ogg", "res://assets/audio/placeholder/ph_amb_office.wav"),
+"amb_newyork_stage1": PackedStringArray("res://assets/audio/ambience/amb_newyork_stage1.ogg", "res://assets/audio/placeholder/ph_amb_street.wav"),
+"amb_newyork_stage2": PackedStringArray("res://assets/audio/ambience/amb_newyork_stage2.ogg", "res://assets/audio/placeholder/ph_amb_street.wav"),
+"amb_newyork_stage3": PackedStringArray("res://assets/audio/ambience/amb_newyork_stage3.ogg", "res://assets/audio/placeholder/ph_amb_office.wav"),
+"amb_camp_cafe": PackedStringArray("res://assets/audio/ambience/amb_camp_cafe.ogg", "res://assets/audio/placeholder/ph_amb_cafe.wav"),
+"amb_boss_chamber": PackedStringArray("res://assets/audio/ambience/amb_boss_chamber.ogg", "res://assets/audio/placeholder/ph_amb_office.wav")
+})
+sfx = Dictionary[String, PackedStringArray]({
+"ui_move": PackedStringArray("res://assets/audio/sfx/ui/sfx_ui_move.wav", "res://assets/audio/placeholder/ph_ui_move.wav"),
+"ui_confirm": PackedStringArray("res://assets/audio/sfx/ui/sfx_ui_confirm.wav", "res://assets/audio/placeholder/ph_ui_confirm.wav"),
+"ui_cancel": PackedStringArray("res://assets/audio/sfx/ui/sfx_ui_cancel.wav", "res://assets/audio/placeholder/ph_ui_cancel.wav"),
+"ui_refused": PackedStringArray("res://assets/audio/sfx/ui/sfx_ui_refused.wav", "res://assets/audio/placeholder/ph_ui_refused.wav"),
+"ui_text_blip": PackedStringArray("res://assets/audio/sfx/ui/sfx_ui_text_blip.wav", "res://assets/audio/placeholder/ph_ui_text_blip.wav"),
+"ui_save": PackedStringArray("res://assets/audio/sfx/ui/sfx_ui_save.wav", "res://assets/audio/placeholder/ph_ui_save.wav"),
+"ui_buy": PackedStringArray("res://assets/audio/sfx/ui/sfx_ui_buy.wav", "res://assets/audio/placeholder/ph_ui_buy.wav"),
+"bt_encounter_start": PackedStringArray("res://assets/audio/sfx/battle/sfx_bt_encounter_start.wav", "res://assets/audio/placeholder/ph_bt_encounter_start.wav"),
+"bt_hit": PackedStringArray("res://assets/audio/sfx/battle/sfx_bt_hit.wav", "res://assets/audio/placeholder/ph_bt_hit.wav"),
+"bt_hit_heavy": PackedStringArray("res://assets/audio/sfx/battle/sfx_bt_hit_heavy.wav", "res://assets/audio/placeholder/ph_bt_hit_heavy.wav"),
+"bt_crit": PackedStringArray("res://assets/audio/sfx/battle/sfx_bt_crit.wav", "res://assets/audio/placeholder/ph_bt_crit.wav"),
+"bt_heal": PackedStringArray("res://assets/audio/sfx/battle/sfx_bt_heal.wav", "res://assets/audio/placeholder/ph_bt_heal.wav"),
+"bt_ko_squad": PackedStringArray("res://assets/audio/sfx/battle/sfx_bt_ko_squad.wav", "res://assets/audio/placeholder/ph_bt_ko_squad.wav"),
+"bt_ko_enemy": PackedStringArray("res://assets/audio/sfx/battle/sfx_bt_ko_enemy.wav", "res://assets/audio/placeholder/ph_bt_ko_enemy.wav"),
+"bt_level_up": PackedStringArray("res://assets/audio/stings/stg_level_up.ogg", "res://assets/audio/placeholder/ph_stg_level_up.wav"),
+"bt_flee": PackedStringArray("res://assets/audio/beatbox/bx_scratch_fled.wav", "res://assets/audio/placeholder/ph_bt_flee.wav"),
+"notice": PackedStringArray("res://assets/audio/sfx/overworld/sfx_ow_notice.wav", "res://assets/audio/placeholder/ph_ow_notice.wav"),
+"chase": PackedStringArray("res://assets/audio/sfx/overworld/sfx_ow_chase.wav", "res://assets/audio/placeholder/ph_ow_chase.wav"),
+"stun": PackedStringArray("res://assets/audio/sfx/overworld/sfx_ow_stun.wav", "res://assets/audio/placeholder/ph_ow_stun.wav"),
+"liberation": PackedStringArray("res://assets/audio/sfx/overworld/sfx_ow_liberation.wav", "res://assets/audio/placeholder/ph_ow_liberation.wav"),
+"liberation_off_screen": PackedStringArray("res://assets/audio/sfx/overworld/sfx_ow_liberation_off.wav", "res://assets/audio/placeholder/ph_ow_liberation_off.wav"),
+"checkpoint_denied": PackedStringArray("res://assets/audio/sfx/overworld/sfx_ow_checkpoint_denied.wav", "res://assets/audio/placeholder/ph_ow_checkpoint_denied.wav")
+})

@@ -1053,6 +1053,12 @@ func _map_id() -> String:
 	return _map.map_id if _map != null else ""
 
 
+## The loaded map's id, "" before one is in (the Audio Manager picks the
+## map's music from it).
+func current_map_id() -> String:
+	return _map_id()
+
+
 # -- Interaction (GDD rule 3) -----------------------------------------------
 
 ## The nearest eligible target within `interact_reach_m` of the probe point

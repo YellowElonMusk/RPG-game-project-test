@@ -99,6 +99,20 @@ var _end_hold_time: float = 0.0
 var _descriptor: EncounterDescriptor = null
 ## Mode-time seconds since `setup()`, advanced by `step_replay()`.
 var _mode_time: float = 0.0
+## Injected by `GameRoot`: impacts, refusals, the level-up chime and the
+## Victory/Defeat stings. Null (tests, the debug harness) plays nothing.
+var audio: AudioManager = null
+
+
+## The fight's encounter, or null before `setup()` (the Audio Manager picks
+## the battle music from it).
+func encounter_descriptor() -> EncounterDescriptor:
+	return _descriptor
+
+
+func _sfx(id: StringName) -> void:
+	if audio != null:
+		audio.play_sfx(id)
 
 
 ## Not `@onready`: `ModeHostSceneLoader` calls `setup()` before `add_child()`
@@ -357,6 +371,7 @@ func _refuse() -> void:
 
 
 func _on_refused(control: Control) -> void:
+	_sfx(AudioIds.UI_REFUSED)
 	if ui_config == null:
 		ui_config = load(UiConfig.DEFAULT_PATH) as UiConfig
 	var reduce_motion: bool = presentation_settings != null and presentation_settings.reduce_motion
@@ -592,6 +607,7 @@ func restore_start_snapshot(snapshot: RefCounted) -> void:
 ## side that was hit -- up into the enemy line when the squad lands a blow,
 ## down into the squad when an enemy does.
 func _on_beat_impact(plan: BeatPlan) -> void:
+	_sfx(AudioIds.beat_sfx(plan))
 	var dir: Vector2 = Vector2.DOWN if plan.actor.is_enemy else Vector2.UP
 	plan.start_punch(_hit_punch, _replay.get_boss_combatant(), dir)
 
@@ -633,6 +649,12 @@ func _on_transition_finished(to: GameStateMachine.Mode) -> void:
 ## ADR-0006 §5 "End of the fight": the last beat has played; start the
 ## end-of-fight hold, after which the outcome is reported.
 func _on_battle_ended_after_replay(won: bool) -> void:
+	if audio != null:
+		var boss: bool = _descriptor != null and _descriptor.is_boss
+		var sting: Array[StringName] = [AudioIds.STG_DEFEAT]
+		if won:
+			sting = AudioIds.victory_sting(boss)
+		audio.play_music(sting)
 	_end_won = won
 	_end_hold_left = presentation_config.victory_hold if won else presentation_config.defeat_hold
 	_end_hold_time = 0.0
@@ -704,6 +726,8 @@ func _report_outcome(won: bool) -> void:
 		if world_state != null:
 			world_state.money += int(r["money"])
 		_results_panel.show_results(int(r["xp"]), int(r["money"]), lines)
+		if not lines.is_empty():
+			_sfx(AudioIds.BT_LEVEL_UP)
 	if _machine == null:
 		return
 	if won:
