@@ -25,6 +25,8 @@ func test_closing_confirm_held_starts_nothing_until_released() -> void:
 	var segment: OverworldMode = root.current_mode_node() as OverworldMode
 	segment.set_process(false)
 	var npc: NpcSpawn = segment.get_map().npc_spawns()[0]
+	# Its single line, not its conversation, so one press closes it.
+	npc.conversation_id = ""
 	segment.set_leader_position(npc.ground_position(segment.get_map()) + Vector2(-1.0, 0.0))
 	segment.set_leader_facing(Vector2.RIGHT)
 
@@ -35,6 +37,7 @@ func test_closing_confirm_held_starts_nothing_until_released() -> void:
 	assert_object(line).is_not_null()
 	source.release(InputActions.CONFIRM)
 	line.advance_guard(0.2)
+	line.reveal_all()
 	# The closing press, then held for 12 frames.
 	source.press(InputActions.CONFIRM)
 	assert_array(root.machine.overlay_stack).is_empty()

@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="Conversation" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/dialogue/conversation.gd" id="1_conv"]
+[ext_resource type="Script" path="res://src/dialogue/dialogue_line.gd" id="2_line"]
+
+[sub_resource type="Resource" id="l_1"]
+script = ExtResource("2_line")
+speaker = "Café owner, sweeping torn posters"
+text = "You liberated the street. Lovely. Who is liberating my broom?"
+
+[sub_resource type="Resource" id="l_2"]
+script = ExtResource("2_line")
+speaker = "Five-Star Chef"
+speaker_id = "char_michelin_chef"
+text = "Your broom is the least of it. That espresso is a crime. A small crime, but a crime."
+
+[sub_resource type="Resource" id="l_3"]
+script = ExtResource("2_line")
+speaker = "Café owner, sweeping torn posters"
+text = "Non! You drank four."
+
+[sub_resource type="Resource" id="l_4"]
+script = ExtResource("2_line")
+speaker = "Five-Star Chef"
+speaker_id = "char_michelin_chef"
+text = "Research."
+
+[resource]
+script = ExtResource("1_conv")
+id = "conv_paris_cafe_owner"
+lines = Array[ExtResource("2_line")]([SubResource("l_1"), SubResource("l_2"), SubResource("l_3"), SubResource("l_4")])

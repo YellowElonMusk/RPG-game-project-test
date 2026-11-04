@@ -91,6 +91,7 @@ marker_id = &"from_dungeon"
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 0, 9.5)
 script = ExtResource("5_npc")
 marker_id = &"npc_union_regular"
+conversation_id = "conv_london_union_regular"
 speaker = "Café regular"
 line = "The drones won't follow you past the café door. Terms and conditions, page nine hundred."
 optional_teach = true

@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="Conversation" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/dialogue/conversation.gd" id="1_conv"]
+[ext_resource type="Script" path="res://src/dialogue/dialogue_line.gd" id="2_line"]
+
+[sub_resource type="Resource" id="l_1"]
+script = ExtResource("2_line")
+text = "The Supervisor stamps his own resignation APPROVED, in triplicate."
+
+[sub_resource type="Resource" id="l_2"]
+script = ExtResource("2_line")
+text = "Nobody cheers. Somebody asks if the counter is open."
+
+[sub_resource type="Resource" id="l_3"]
+script = ExtResource("2_line")
+speaker = "Karen"
+speaker_id = "char_karen"
+text = "Let the record show: I spoke to the manager, and the manager quit."
+
+[sub_resource type="Resource" id="l_4"]
+script = ExtResource("2_line")
+speaker = "Baguette Thrower"
+speaker_id = "char_baguette_thrower"
+text = "Paris is free! The crowd is on its feet! The crowd is... queueing, actually."
+
+[resource]
+script = ExtResource("1_conv")
+id = "conv_paris_supervisor_defeated"
+lines = Array[ExtResource("2_line")]([SubResource("l_1"), SubResource("l_2"), SubResource("l_3"), SubResource("l_4")])

@@ -97,7 +97,7 @@ func _close_line(root: GameRoot) -> void:
 	if line == null:
 		return
 	line.advance_guard(0.2)
-	line.handle_action(InputActions.CONFIRM, true)
+	line.skip_to_end()
 
 
 func _new_game() -> GameRoot:

@@ -79,7 +79,7 @@ func test_fled_returns_to_the_marker_and_the_number_called_line_is_guarded() -> 
 	line.handle_action(InputActions.CONFIRM, true)
 	assert_array(root.machine.overlay_stack).is_not_empty()
 	line.advance_guard(0.2)
-	line.handle_action(InputActions.CONFIRM, true)
+	line.skip_to_end()
 	assert_array(root.machine.overlay_stack).is_empty()
 	# Nothing restarts the fight but a new confirm at the counter.
 	var requests: int = dungeon.encounter_requests

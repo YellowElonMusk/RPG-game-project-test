@@ -13,3 +13,4 @@ can_flee = false
 retreat_allowed = true
 respawn = false
 post_battle_line = "The CEO announces a strategic pivot to leaving Earth. Shares in MegaCorp fall to zero. Somebody asks whether their subscription will be refunded."
+post_battle_conversation_id = "conv_london_ceo_defeated"

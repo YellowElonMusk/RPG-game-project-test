@@ -10,6 +10,7 @@ flags = Dictionary[String, String]({
 "dungeon_pocket_unlatched": "victory_payoff",
 "dungeon_shortcut_unbolted": "victory_payoff",
 "form_27b_stamped": "gag_change",
+"paris_heard_union_tip": "dialogue_choice",
 "paris_liberated": "boss_victory",
 "permits_mandatory": "chapter_step",
 "segment_pocket_unlatched": "victory_payoff"

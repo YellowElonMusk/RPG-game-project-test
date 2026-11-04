@@ -86,7 +86,7 @@ func _beat_the_boss(root: GameRoot) -> void:
 	line.handle_action(InputActions.MENU, true)
 	assert_array(root.machine.overlay_stack).is_equal([GameStateMachine.OverlayKind.DIALOGUE])
 	line.advance_guard(0.2)
-	line.handle_action(InputActions.CONFIRM, true)
+	line.skip_to_end()
 	# The next transition is the walk home's map change, already under way.
 	assert_int(root.machine.phase).is_not_equal(GameStateMachine.Phase.IDLE)
 	assert_str(root.world_state.chapter_step).is_equal("step_walk_home_a")

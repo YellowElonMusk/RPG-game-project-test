@@ -1106,7 +1106,11 @@ func confirm() -> void:
 	var target: Object = probe()
 	if target is NpcSpawn:
 		var npc: NpcSpawn = target
-		say(npc.line, Callable(), npc.speaker)
+		var talk_data: Conversation = Conversation.load_by_id(npc.conversation_id)
+		if talk_data != null:
+			talk(talk_data)
+		else:
+			say(npc.line, Callable(), npc.speaker)
 	elif target is CampSpot:
 		_open_camp_prompt(target as CampSpot)
 	elif target is EncounterSource:
@@ -1265,6 +1269,45 @@ func say(text: String, then: Callable = Callable(), speaker: String = "") -> Gam
 		_after_line = then
 		lines_said.append(text)
 	return result
+
+
+## Opens `conversation` in the Dialogue overlay (Dialogue system, #17). Its
+## lines read and set this world's story flags, and a squad member's line
+## shows their name (skipped when they are not in the party). `then` runs
+## on the same frame as the overlay's `overlay_closed`, as with `say()`.
+## `lines_said` records the conversation's first line.
+func talk(conversation: Conversation, then: Callable = Callable()) -> GameStateMachine.RequestResult:
+	if _machine == null or conversation == null:
+		return GameStateMachine.RequestResult.REJECTED_INVALID_PAYLOAD
+	var names: Callable = squad_member_name if party_source.is_valid() else Callable()
+	var payload := DialogueLinePayload.for_conversation(conversation, _has_flag, _set_flag, names)
+	var result: GameStateMachine.RequestResult = _machine.open_overlay(
+			GameStateMachine.OverlayKind.DIALOGUE, payload)
+	if result == GameStateMachine.RequestResult.OK:
+		_after_line = then
+		if not conversation.lines.is_empty():
+			lines_said.append(conversation.lines[0].text)
+	return result
+
+
+## Plays the conversation `conversation_id` if it exists, else says `line`
+## (the boss reveal).
+func talk_or_say(conversation_id: String, line: String, then: Callable = Callable()) -> GameStateMachine.RequestResult:
+	var conversation: Conversation = Conversation.load_by_id(conversation_id)
+	if conversation != null:
+		return talk(conversation, then)
+	return say(line, then)
+
+
+## The display name of the party member whose record is `char_id`, or ""
+## when they are not in the party (squad banter).
+func squad_member_name(char_id: String) -> String:
+	if not party_source.is_valid():
+		return ""
+	for member: Combatant in party_source.call():
+		if member.record_id == char_id:
+			return member.display_name
+	return ""
 
 
 ## The checkpoint's authored failure line, or a plain default that names the
@@ -2089,6 +2132,7 @@ var chapter_end_calls: int = 0
 ## Dialogue opens on the reveal, and the walk home follows its close.
 var _walk_home_due: bool = false
 var _walk_home_line: String = ""
+var _walk_home_conversation_id: String = ""
 ## The walk home's map change is owed (the request was busy or blocked);
 ## retried every frame until Game State accepts it.
 var _walk_home_pending: bool = false
@@ -2144,6 +2188,7 @@ func _queue_walk_home(rec: EncounterData) -> void:
 		return
 	_walk_home_due = true
 	_walk_home_line = rec.post_battle_line
+	_walk_home_conversation_id = rec.post_battle_conversation_id
 
 
 ## On the reveal after the boss Victory: the post-battle story Dialogue, then
@@ -2153,8 +2198,9 @@ func _open_post_battle_dialogue() -> void:
 	if not _walk_home_due:
 		return
 	_walk_home_due = false
-	if _walk_home_line.is_empty() \
-			or say(_walk_home_line, _start_walk_home) != GameStateMachine.RequestResult.OK:
+	if (_walk_home_line.is_empty() and _walk_home_conversation_id.is_empty()) \
+			or talk_or_say(_walk_home_conversation_id, _walk_home_line, _start_walk_home) \
+					!= GameStateMachine.RequestResult.OK:
 		_start_walk_home()
 
 

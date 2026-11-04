@@ -1,0 +1,59 @@
+[gd_resource type="Resource" script_class="Conversation" load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://src/dialogue/conversation.gd" id="1_conv"]
+[ext_resource type="Script" path="res://src/dialogue/dialogue_line.gd" id="2_line"]
+[ext_resource type="Script" path="res://src/dialogue/dialogue_choice.gd" id="3_choice"]
+
+[sub_resource type="Resource" id="l_open"]
+script = ExtResource("2_line")
+speaker = "Café regular"
+text = "They won't follow you past the café paving. Union rules."
+
+[sub_resource type="Resource" id="l_again"]
+script = ExtResource("2_line")
+speaker = "Café regular"
+text = "Half health, remember. Clerks smell it like warm toast."
+requires_flag = "paris_heard_union_tip"
+next_id = "end"
+
+[sub_resource type="Resource" id="c_yes"]
+script = ExtResource("3_choice")
+label = "Go on then."
+sets_flag = "paris_heard_union_tip"
+goto_id = "tip"
+
+[sub_resource type="Resource" id="c_no"]
+script = ExtResource("3_choice")
+label = "No time."
+goto_id = "bye"
+
+[sub_resource type="Resource" id="l_ask"]
+script = ExtResource("2_line")
+speaker = "Café regular"
+text = "Want a tip? It's free. Nothing may cost anything without a form."
+skip_if_flag = "paris_heard_union_tip"
+choices = Array[ExtResource("3_choice")]([SubResource("c_yes"), SubResource("c_no")])
+
+[sub_resource type="Resource" id="l_tip"]
+script = ExtResource("2_line")
+id = "tip"
+speaker = "Café regular"
+text = "Clerks go for whoever's at half health or lower. They can't help it. It's procedure."
+
+[sub_resource type="Resource" id="l_karen"]
+script = ExtResource("2_line")
+speaker = "Karen"
+speaker_id = "char_karen"
+text = "Then I'm filing a complaint about the procedure. Today. In person."
+next_id = "end"
+
+[sub_resource type="Resource" id="l_bye"]
+script = ExtResource("2_line")
+id = "bye"
+speaker = "Café regular"
+text = "Suit yourself. I'll be here. Third coffee. A fourth needs a permit."
+
+[resource]
+script = ExtResource("1_conv")
+id = "conv_paris_union_regular"
+lines = Array[ExtResource("2_line")]([SubResource("l_open"), SubResource("l_again"), SubResource("l_ask"), SubResource("l_tip"), SubResource("l_karen"), SubResource("l_bye")])

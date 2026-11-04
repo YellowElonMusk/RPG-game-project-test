@@ -40,12 +40,16 @@ extends Resource
 ## 068): one interim line, opened on the reveal after the Victory; the walk
 ## home follows its close. Empty on every non-boss record.
 @export_multiline var post_battle_line: String = ""
+## Dialogue system: a `Conversation` ID played instead of
+## `post_battle_line` when it exists (the line stays as the fallback).
+@export var post_battle_conversation_id: String = ""
 
 ## Player-visible text exports (TR-content-012, ADR-0013 §4).
 const LOC_FIELDS: Array[StringName] = [&"post_battle_line"]
 ## IDs and asset IDs (ADR-0013 §4).
 const NON_LOC_FIELDS: Array[StringName] = [
 	&"id", &"aliases", &"enemy_ids", &"battle_stage_id", &"faction_id",
+	&"post_battle_conversation_id",
 ]
 ## Required fields (story 015, QL-STORY-READY GAPS fix 2026-10-24): none yet.
 ## The GDD marks no field required on this type.

@@ -89,6 +89,7 @@ liberated_role = "mairie_queue"
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.5, 0, 9.5)
 script = ExtResource("6_npc")
 marker_id = &"npc_grumbler"
+conversation_id = "conv_london_grumbler"
 speaker = "Retired accountant"
 line = "No invoices, no late fees. How is anyone supposed to know what they owe?"
 liberated_role = "grumbler"

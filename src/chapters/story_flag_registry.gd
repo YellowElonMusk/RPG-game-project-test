@@ -23,6 +23,9 @@ const BOSS_VICTORY: String = "boss_victory"
 ## An `open` victory payoff's checkpoint (rule 7a): the payoff opens the gate
 ## directly; the flag names the requirement the Victory meets.
 const VICTORY_PAYOFF: String = "victory_payoff"
+## A Dialogue line or choice (`DialogueLine.sets_flag`,
+## `DialogueChoice.sets_flag`; Dialogue system).
+const DIALOGUE_CHOICE: String = "dialogue_choice"
 
 @export var chapter_id: String = ""
 ## Flag name -> what sets it (one of the constants above).

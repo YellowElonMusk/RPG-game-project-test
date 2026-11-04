@@ -1,0 +1,59 @@
+[gd_resource type="Resource" script_class="Conversation" load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://src/dialogue/conversation.gd" id="1_conv"]
+[ext_resource type="Script" path="res://src/dialogue/dialogue_line.gd" id="2_line"]
+[ext_resource type="Script" path="res://src/dialogue/dialogue_choice.gd" id="3_choice"]
+
+[sub_resource type="Resource" id="l_open"]
+script = ExtResource("2_line")
+speaker = "Café regular"
+text = "The drones won't follow you past the café door. Terms and conditions, page nine hundred."
+
+[sub_resource type="Resource" id="l_again"]
+script = ExtResource("2_line")
+speaker = "Café regular"
+text = "Spend it before they bill it. That's the whole economy now."
+requires_flag = "london_heard_billing_tip"
+next_id = "end"
+
+[sub_resource type="Resource" id="c_yes"]
+script = ExtResource("3_choice")
+label = "First one, then."
+sets_flag = "london_heard_billing_tip"
+goto_id = "tip"
+
+[sub_resource type="Resource" id="c_no"]
+script = ExtResource("3_choice")
+label = "I'll pass."
+goto_id = "bye"
+
+[sub_resource type="Resource" id="l_ask"]
+script = ExtResource("2_line")
+speaker = "Café regular"
+text = "Fancy a tip? The first one's free. The second one's a subscription."
+skip_if_flag = "london_heard_billing_tip"
+choices = Array[ExtResource("3_choice")]([SubResource("c_yes"), SubResource("c_no")])
+
+[sub_resource type="Resource" id="l_tip"]
+script = ExtResource("2_line")
+id = "tip"
+speaker = "Café regular"
+text = "Every round, each of you is billed 1 MP. Hit zero and you're suspended: basic Attack only."
+
+[sub_resource type="Resource" id="l_florida"]
+script = ExtResource("2_line")
+speaker = "Florida Man"
+speaker_id = "char_florida_man"
+text = "Spend it all at once? Folks, that is literally my life story. Like and subscribe!"
+next_id = "end"
+
+[sub_resource type="Resource" id="l_bye"]
+script = ExtResource("2_line")
+id = "bye"
+speaker = "Café regular"
+text = "Wise. Never read the small print. It reads you back."
+
+[resource]
+script = ExtResource("1_conv")
+id = "conv_london_union_regular"
+lines = Array[ExtResource("2_line")]([SubResource("l_open"), SubResource("l_again"), SubResource("l_ask"), SubResource("l_tip"), SubResource("l_florida"), SubResource("l_bye")])

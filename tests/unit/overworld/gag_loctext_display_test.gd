@@ -73,11 +73,13 @@ func _assert_shown_verbatim(mode: OverworldMode, gag: GagInteractable, expected:
 	for text_scale: float in _TEXT_SCALES:
 		var line: InterimLineDialogue = auto_free(
 				(load("res://src/game_state/overlays/interim_line_dialogue.tscn") as PackedScene).instantiate())
-		var label: Label = line.get_node(^"Box/Line") as Label
+		var label: Label = line.get_node(^"Box/Margin/Rows/Line") as Label
 		var base_size: int = label.get_theme_font_size(&"font_size")
 		label.add_theme_font_size_override(&"font_size", roundi(base_size * text_scale))
 		add_child(line)
 		line.setup(_machine(mode), DialogueLinePayload.new(mode.lines_said.back()))
+		# The line types out (Dialogue system); shown whole it is the full string.
+		line.reveal_all()
 		var why: String = "scale %.1f" % text_scale
 		assert_str(line.text).override_failure_message(why).is_equal(expected)
 		assert_str(label.text).override_failure_message(why).is_equal(expected)

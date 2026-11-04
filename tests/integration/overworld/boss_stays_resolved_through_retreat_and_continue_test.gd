@@ -36,7 +36,7 @@ func test_boss_stays_absent_through_retreat_save_and_continue() -> void:
 	# Story 068: the post-battle Dialogue, then the walk home to the segment.
 	var line: InterimLineDialogue = root.current_overlay_node() as InterimLineDialogue
 	line.advance_guard(0.2)
-	line.handle_action(InputActions.CONFIRM, true)
+	line.skip_to_end()
 	_run_to_idle(root.machine)
 	# The Street Mime's join line (recruits.md) is up on the walk home; close it.
 	if not root.machine.overlay_stack.is_empty():

@@ -18,8 +18,12 @@ extends Marker3D
 @export var marker_id: StringName = &""
 ## Who speaks; shown before the line.
 @export var speaker: String = ""
-## What `confirm` shows. Plain text until LocText exists.
+## What `confirm` shows. Plain text until LocText exists. With a
+## `conversation_id`, this is the fallback (and the proximity bark).
 @export_multiline var line: String = ""
+## Dialogue system: the `Conversation` (`res://data/dialogue/<id>.tres`)
+## `confirm` plays instead of `line`; "" for the single line.
+@export var conversation_id: String = ""
 ## Rule 16 `optional_teach`: also barks `line` on proximity, no input
 ## needed (within `interact_reach_m * 2`; re-arms beyond twice that).
 @export var optional_teach: bool = false
