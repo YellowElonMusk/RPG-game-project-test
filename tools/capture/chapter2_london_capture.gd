@@ -35,6 +35,7 @@ func _run() -> void:
 	root.size = SIZE
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(_out))
 	_root_node = (load(GAME_ROOT_SCENE) as PackedScene).instantiate() as GameRoot
+	_root_node.tutorial_hints_enabled = false  # no onboarding cards in this evidence
 	_root_node.save_dir_override = SAVE_DIR
 	root.add_child(_root_node)
 	var m: GameStateMachine = _root_node.machine

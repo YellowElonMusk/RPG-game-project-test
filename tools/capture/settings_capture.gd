@@ -32,6 +32,7 @@ func _run() -> void:
 	if FileAccess.file_exists(SETTINGS_PATH):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(SETTINGS_PATH))
 	_root_node = (load(GAME_ROOT_SCENE) as PackedScene).instantiate() as GameRoot
+	_root_node.tutorial_hints_enabled = false  # no onboarding cards in this evidence
 	_root_node.save_dir_override = SAVE_DIR
 	_root_node.settings_path_override = SETTINGS_PATH
 	root.add_child(_root_node)
