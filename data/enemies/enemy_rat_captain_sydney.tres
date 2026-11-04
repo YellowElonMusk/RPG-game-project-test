@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/enemy_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "enemy_rat_captain_sydney"
+display_name = "Rat Catcher Captain"
+is_boss = true
+max_hp = 165
+attack = 18
+defense = 14
+speed = 11
+reward_xp = 60
+reward_money = 42
+move_ids = PackedStringArray("move_wanted_poster", "move_citizens_arrest")
+sprite_set_id = "sprite_rat_captain"

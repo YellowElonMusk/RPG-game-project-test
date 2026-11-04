@@ -63,6 +63,9 @@ static func _build_enemy(enemy_id: String) -> Combatant:
 		"enemy_ceo":
 			return MegaCorpRule.make_ceo()
 		_:
+			# The Rat Catchers: one record per role per chapter.
+			if enemy_id.begins_with("enemy_rat_"):
+				return EnemyAdapter.from_catalog(BattleCatalog.shipped(), enemy_id)
 			return null
 
 
@@ -78,6 +81,8 @@ static func _build_faction_rule(faction_id: String) -> FactionRule:
 		"faction_liberty7":
 			return Liberty7RuleValidator.create(null,
 					BattleCatalog.shipped().get_record(&"faction_rule", "rule_liberty7_freedom") as FactionRuleData)
+		"faction_rat_catchers":
+			return RatCatchersRule.new()
 		_:
 			return null
 

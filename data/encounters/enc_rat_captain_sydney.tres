@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EncounterData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/encounter_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "enc_rat_captain_sydney"
+enemy_ids = PackedStringArray("enemy_rat_captain_sydney", "enemy_rat_trapper_sydney", "enemy_rat_scout_sydney")
+battle_stage_id = "stage_chapter_interim"
+faction_id = "faction_rat_catchers"
+is_boss = true
+can_flee = false
+retreat_allowed = true
+respawn = false
+post_battle_line = "The Captain rolls up the Wanted poster. \"Rats fight dirty. You didn't. Doesn't mean I like you.\" The Rat Catchers slip back into the tunnels."

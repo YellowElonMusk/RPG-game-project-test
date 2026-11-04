@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="RatCatcherConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/overworld/rat_catcher_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+tier_by_map = Dictionary[String, String]({
+"map_london_segment_placeholder": "london",
+"map_newyork_segment_placeholder": "newyork",
+"map_paris_segment_placeholder": "paris",
+"map_sydney_segment_placeholder": "sydney"
+})
+ambush_base_chance = 0.2
+ambush_per_point = 0.15
+ambush_max_chance = 0.8
+ambushes_per_map_max = 2
+captain_min_alien_points = 1
+ambush_conversation_id = "conv_rat_catchers_ambush"
+captain_conversation_id = "conv_rat_catchers_captain"

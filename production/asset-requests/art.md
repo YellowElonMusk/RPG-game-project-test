@@ -273,6 +273,20 @@ Chapter 4 plays today on stand-ins: each Liberty-7 enemy is a MegaCorp enemy's s
 
 Guardrails as section 0, plus: no salutes, no uniforms or insignia that resemble real militaries or political movements, no real flags, no guns. Liberty-7 is a marching band and a fireworks show, never an army.
 
+### 4.4 The Rat Catchers, human bounty hunters (every chapter; added 2026-11-04)
+
+The human resistance's bounty hunters (narrative bible §6.5); they ambush the squad on street segments when it has alien points. They play today on stand-ins: each is a starter's strips recoloured to a flat tunnel brown or green (`tools/art/rat_catcher_placeholder_sprites.gd`, `is_placeholder` in its sprite set), facing the camera as enemies do; the backdrops are painted by `tools/art/rat_catcher_backdrops.gd`. Same spec as 4.2, but they are **human**: draw them in the squad's style and scale (a 64x64 canvas = one human), never as aliens. Tunnel Brown `#8A6A3A` marks them in the UI; no faction colour or shape.
+
+| # | `<id>` / file | What | Prompt (after the Style Anchor) | Silhouette must read as |
+|---|---|---|---|---|
+| R1 | `rat_trapper` | Rat Trapper (regular): `idle`, `attack`, `hurt`, `ko` | *scruffy human bounty hunter in a patched olive work coat and headlamp, a big butterfly net over one shoulder and a wooden rat trap in the other hand, suspicious squint* | Net over the shoulder |
+| R2 | `tunnel_scout` | Tunnel Scout (regular): `idle`, `attack`, `hurt`, `ko` | *wiry human scout in a khaki hoodie and knee pads, bright headlamp on a beanie, a rolled-up metro map in one hand, crouched ready to sprint* | The headlamp beam |
+| R3 | `rat_captain` | Rat Catcher Captain (mini-boss): the four clips plus `special` | *stout human captain in a long brown duster coat and a flat cap with a little rat badge, holding up a hand-drawn WANTED poster (no readable text), whistle on a cord, stern but faintly ridiculous* | The held-up poster |
+| R4 | `bg_battle_rat_catchers.png` | Battle backdrop, 640x360 | *a closed, disused metro platform: white subway tiles, a brown tile band, a yellow safety line, rails below, work lamps under the vault, blank route maps on the wall, tidy and empty, no text, no real logos* | A clean, closed station |
+| R5 | `bg_battle_rat_catchers_boss.png` | Captain backdrop, 640x360 | *the same platform at night lit by hanging lanterns, three blank WANTED posters with a cartoon rat silhouette, no faces* | Lanterns and posters |
+
+Guardrails as section 0, plus: no weapons beyond nets, traps and whistles; no rubble or wreckage (the station is closed, not ruined); no real metro brand, roundel or line colours; no armbands or uniforms (they are civilians in work clothes).
+
 ---
 
 ## 5. Later (not needed for Chapter 1 to play)

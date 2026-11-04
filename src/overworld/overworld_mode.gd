@@ -326,6 +326,7 @@ func _commit_map_entry() -> void:
 	_refresh_gags()
 	_place_symbols(_map)
 	_resolve_zone_rate()
+	_roll_rat_catchers()
 
 
 ## Commits a pending map entry once the swap has succeeded. A node no longer
@@ -433,6 +434,8 @@ func step_frame(ow_dt: float, input_vec: Vector2) -> void:
 	_check_barks_and_sight()
 	_check_teach_barks()
 	_check_tutorial_hints()
+	if _step_rat_catchers():
+		return
 	if _budget == null:
 		_budget = QueryBudget.new(config.repath_per_frame_max)
 	_budget.begin_frame()
@@ -764,6 +767,7 @@ func on_thawed(encounter_id: String, result: GameStateMachine.BattleResult) -> v
 	pending_thaw = true
 	match result:
 		GameStateMachine.BattleResult.VICTORY:
+			_rat_catchers_beaten(encounter_id)
 			if _sources.has(source):
 				_resolve_victory(source)
 			# Rule 10 `encounter` outcome and rule 13a: winning opens the checkpoint.
@@ -2415,3 +2419,71 @@ func get_region_default_camp_id() -> String:
 	if chapter != null and camp_directory.has_camp(chapter.start_camp_id):
 		return chapter.start_camp_id
 	return camp_directory.region_default_camp_id
+
+
+# -- The Rat Catchers (narrative bible §6.5) ---------------------------------
+
+## The ambush tuning; the shipped config when null.
+var rat_catcher_config: RatCatcherConfig = null
+## The encounter the Rat Catchers start on this visit ("" for none), rolled
+## on the map-entry commit (`RatCatchers.pick`, with `rng`).
+var rat_catcher_encounter: String = ""
+## Rat Catcher fights started (tests).
+var rat_catcher_starts: int = 0
+enum RatStage { NONE, TALK_DUE, TALKING, FIGHT_DUE }
+var _rat_stage: RatStage = RatStage.NONE
+
+
+## Rolls on the map-entry commit: an ambush on a chapter's street segment
+## (chance by alien points), or the Captain on the walk home. A Continue
+## never rolls (the save was made in a quiet moment).
+func _roll_rat_catchers() -> void:
+	rat_catcher_encounter = ""
+	_rat_stage = RatStage.NONE
+	if _continuing or world_state == null or _map == null:
+		return
+	if rat_catcher_config == null:
+		rat_catcher_config = RatCatcherConfig.load_default()
+	rat_catcher_encounter = RatCatchers.pick(world_state, _map.map_id, is_region_liberated(),
+			rng, rat_catcher_config)
+	if not rat_catcher_encounter.is_empty():
+		_rat_stage = RatStage.TALK_DUE
+
+
+## One Exploring frame: the Rat Catchers' conversation opens as soon as
+## nothing else is on screen (a join line or a name card's Dialogue goes
+## first), and their fight starts when it closes. `true` while this frame
+## was spent on them.
+func _step_rat_catchers() -> bool:
+	match _rat_stage:
+		RatStage.TALK_DUE:
+			var conv_id: String = rat_catcher_config.captain_conversation_id \
+					if RatCatchers.is_captain(rat_catcher_encounter) else rat_catcher_config.ambush_conversation_id
+			var conversation: Conversation = Conversation.load_by_id(conv_id)
+			if conversation == null:
+				_rat_stage = RatStage.FIGHT_DUE
+				return true
+			if talk(conversation, func() -> void: _rat_stage = RatStage.FIGHT_DUE) \
+					== GameStateMachine.RequestResult.OK:
+				_rat_stage = RatStage.TALKING
+			return true
+		RatStage.FIGHT_DUE:
+			var brain := SymbolBrain.new(PackedVector2Array([_leader_pos]), SymbolBrain.PathMode.LOOP)
+			brain.make_static(false)
+			var source := EncounterSource.new(rat_catcher_encounter, brain, "rat_catchers")
+			if start_encounter(rat_catcher_encounter, source) == GameStateMachine.RequestResult.OK:
+				RatCatchers.mark_met(world_state, _map.map_id, rat_catcher_encounter, rat_catcher_config)
+				rat_catcher_starts += 1
+				_rat_stage = RatStage.NONE
+			return true
+	return false
+
+
+## After a Victory over the Rat Catchers, their parting line opens on the
+## reveal. They are never a symbol on the map, so nothing else resolves.
+func _rat_catchers_beaten(encounter_id: String) -> void:
+	if not RatCatchers.is_rat_catcher_encounter(encounter_id) or encounter_catalog == null:
+		return
+	var rec: EncounterData = encounter_catalog.get_record(&"encounter", encounter_id) as EncounterData
+	if rec != null:
+		_line_on_reveal = rec.post_battle_line

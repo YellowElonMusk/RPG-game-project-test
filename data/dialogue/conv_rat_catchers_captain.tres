@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="Conversation" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://src/dialogue/conversation.gd" id="1_conv"]
+[ext_resource type="Script" path="res://src/dialogue/dialogue_line.gd" id="2_line"]
+
+[sub_resource type="Resource" id="l_1"]
+script = ExtResource("2_line")
+speaker = "Rat Catcher Captain"
+text = "Hold it. Wanted: one squad, for waving an alien boss off home like a cousin after Sunday lunch."
+
+[sub_resource type="Resource" id="l_2"]
+script = ExtResource("2_line")
+speaker = "Florida Man"
+speaker_id = "char_florida_man"
+text = "Is that my good side on the poster? That's my good side."
+
+[sub_resource type="Resource" id="l_3"]
+script = ExtResource("2_line")
+speaker = "Rat Catcher Captain"
+text = "The tunnels voted. Rats get netted. Nothing personal. Bit personal."
+
+[resource]
+script = ExtResource("1_conv")
+id = "conv_rat_catchers_captain"
+lines = Array[ExtResource("2_line")]([SubResource("l_1"), SubResource("l_2"), SubResource("l_3")])

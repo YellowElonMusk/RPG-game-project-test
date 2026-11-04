@@ -40,9 +40,11 @@ var events: Array[Dictionary] = []
 ## Builds the machine, enters Battle with `party` against one Clerk (or the
 ## Bureaucratia boss pair when `is_boss`), and stops just before the reveal
 ## (`reveal()` finishes the swap and opens the gate). `settings` is injected
-## as the mode's `presentation_settings` before `setup()`.
+## as the mode's `presentation_settings` before `setup()`. `descriptor`,
+## when given, replaces the Bureaucratia fight (the Rat Catchers' tests).
 static func create(host: Node, party: Array[Combatant], is_boss: bool = false,
-		settings: PresentationSettings = null, flash_gate: FlashGatePort = null) -> BattleModeHarness:
+		settings: PresentationSettings = null, flash_gate: FlashGatePort = null,
+		p_descriptor: EncounterDescriptor = null) -> BattleModeHarness:
 	var h := BattleModeHarness.new()
 	var env: Dictionary = GameStateFixtures.make_machine_in_overworld(null, flash_gate)
 	h.machine = env["machine"]
@@ -58,6 +60,8 @@ static func create(host: Node, party: Array[Combatant], is_boss: bool = false,
 	descriptor.is_boss = is_boss
 	descriptor.can_flee = true
 	descriptor.retreat_allowed = true
+	if p_descriptor != null:
+		descriptor = p_descriptor
 	var payload := BattleEntryPayload.new()
 	payload.descriptor = descriptor
 	payload.party = party

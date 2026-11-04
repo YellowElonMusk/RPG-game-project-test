@@ -53,3 +53,13 @@ enc_newyork_troopers_keen |
 enc_newyork_troopers_pocket |
 enc_newyork_troopers_shortcut |
 enc_newyork_troopers_west |
+# The Rat Catchers (narrative bible §6.5): started by the overworld's
+# RatCatchers roll (data/config/rat_catcher_config.tres names them by tier),
+# not by any record, so each is unreferenced.
+enc_rat_ambush_london |
+enc_rat_ambush_newyork |
+enc_rat_ambush_sydney |
+enc_rat_captain_london |
+enc_rat_captain_newyork |
+enc_rat_captain_paris |
+enc_rat_captain_sydney |

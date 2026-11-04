@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/enemy_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "enemy_rat_trapper_paris"
+display_name = "Rat Trapper"
+max_hp = 40
+attack = 14
+defense = 9
+speed = 9
+reward_xp = 10
+reward_money = 8
+move_ids = PackedStringArray("move_net_throw", "move_rat_trap")
+sprite_set_id = "sprite_rat_trapper"

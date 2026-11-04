@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="Conversation" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/dialogue/conversation.gd" id="1_conv"]
+[ext_resource type="Script" path="res://src/dialogue/dialogue_line.gd" id="2_line"]
+
+[sub_resource type="Resource" id="l_1"]
+script = ExtResource("2_line")
+speaker = "Rat Trapper"
+text = "Oi! Rats! Word in the tunnels is you've been letting aliens walk home with a smile."
+
+[sub_resource type="Resource" id="l_2"]
+script = ExtResource("2_line")
+speaker = "Tunnel Scout"
+text = "Bold as brass, on OUR street. Collaborators."
+
+[sub_resource type="Resource" id="l_3"]
+script = ExtResource("2_line")
+speaker = "Karen"
+speaker_id = "char_karen"
+text = "Collaborators? I have never collaborated with anyone in my life. Ask my book club."
+
+[sub_resource type="Resource" id="l_4"]
+script = ExtResource("2_line")
+speaker = "Rat Trapper"
+text = "Nets out, lads. Nobody gets hurt, everybody gets bagged."
+
+[resource]
+script = ExtResource("1_conv")
+id = "conv_rat_catchers_ambush"
+lines = Array[ExtResource("2_line")]([SubResource("l_1"), SubResource("l_2"), SubResource("l_3"), SubResource("l_4")])
