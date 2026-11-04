@@ -4,6 +4,6 @@
 
 [resource]
 script = ExtResource("1_a")
-lines = PackedStringArray("GO BACK TO YOUR PLANET!", "", "", "The squad", "Karen", "The Five-Star Chef", "Florida Man", "The Baguette Thrower", "", "and", "The Street Mime", "The Rush-Hour Commuter", "The Boxing Kangaroo", "", "", "The occupation", "Bureaucratia, Paris", "MegaCorp, London", "Influencia, Sydney", "", "", "A game by Yi Long Ma", "", "Made with the Godot Engine", "godotengine.org", "", "", "No forms were harmed in the making of this game.", "Several were filed.", "", "", "Thanks for playing.")
+lines = PackedStringArray("GO BACK TO YOUR PLANET!", "", "", "The squad", "Karen", "The Five-Star Chef", "Florida Man", "The Baguette Thrower", "", "and", "The Street Mime", "The Rush-Hour Commuter", "The Boxing Kangaroo", "The Infomercial Host", "", "", "The occupation", "Bureaucratia, Paris", "MegaCorp, London", "Influencia, Sydney", "Liberty-7, New York", "", "", "A game by Yi Long Ma", "", "Made with the Godot Engine", "godotengine.org", "", "", "No forms were harmed in the making of this game.", "Several were filed.", "", "", "Thanks for playing.")
 scroll_px_per_s = 60.0
 skip_guard_s = 1.0

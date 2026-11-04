@@ -259,6 +259,20 @@ Chapter 3 plays today on stand-ins: each Influencia enemy is a MegaCorp enemy's 
 
 Guardrails as section 0: no real platforms, logos or brands; no real influencers.
 
+### 4.3 Liberty-7 enemies and backdrops (Chapter 4, New York; added 2026-11-04)
+
+Chapter 4 plays today on stand-ins: each Liberty-7 enemy is a MegaCorp enemy's strips recoloured Anthem Blue (`tools/art/liberty7_placeholder_sprites.gd`, `is_placeholder` in its sprite set), and the two backdrops are painted by `tools/art/liberty7_backdrops.gd`. Same spec as 4.2. Faction rule: Anthem Blue `#2F5BEA` and the star shape belong to Liberty-7 only; on navy UI its elements get a cream outline (art bible).
+
+| # | `<id>` / file | What | Prompt (after the Style Anchor) | Silhouette must read as |
+|---|---|---|---|---|
+| L1 | `star_trooper` | Star Trooper (regular) | *alien marching-band trooper with a star-shaped head, tall plumed band hat, big bass drum on a strap, blue band jacket with gold piping, high-stepping* | A drum and a plume, mid-march |
+| L2 | `eagle_drone` | Eagle Drone (regular, also the overworld patrol) | *floating alien drone shaped like a stylised bald eagle, wide metal wings, one round camera eye, blue and white star decals, beak open mid-screech* | Spread wings, open beak |
+| L3 | `super_patriot` | Super Patriot (boss) | *towering alien showman in a star-spangled blue cape and sash, giant foam finger, chest puffed out, fireworks sparking from both shoulders, enormous grin* | Cape, foam finger, puffed chest |
+| L4 | `bg_battle_liberty7.png` | Battle backdrop, 640x360 | *New York avenue at parade noon, skyscrapers, yellow lane dashes on the road, blue and white star bunting strung across the street, no text, no real brands* | Bright, blue bunting |
+| L5 | `bg_battle_liberty7_boss.png` | Boss backdrop, 640x360 | *the same skyline at night, fireworks bursting, a giant glowing blue star hanging in the sky over the street* | The sky star |
+
+Guardrails as section 0, plus: no salutes, no uniforms or insignia that resemble real militaries or political movements, no real flags, no guns. Liberty-7 is a marching band and a fireworks show, never an army.
+
 ---
 
 ## 5. Later (not needed for Chapter 1 to play)
@@ -270,7 +284,7 @@ Guardrails as section 0: no real platforms, logos or brands; no real influencers
 | MegaCorp overworld region | Chapter 2. Needs the city decision (writing.md D-7), then the same list as sections 2-3 in wedge shapes and Terminal Cyan |
 | True 3D low-poly sets | `.glb` per building, once the flats prove the layout |
 | Influencia overworld region | Chapter 3 (Sydney) plays on the London-shaped maps with procedural harbour and Content House surfaces (set styles 4 and 5). Same list as sections 2-3 in circle shapes and Feed Magenta |
-| Liberty-7 | Not yet in the campaign |
+| Liberty-7 overworld region | Chapter 4 (New York) plays on the London-shaped maps with procedural avenue and Liberty Dome surfaces (set styles 6 and 7). Same list as sections 2-3 in star shapes and Anthem Blue |
 
 ## 6. Priority order (one line each)
 

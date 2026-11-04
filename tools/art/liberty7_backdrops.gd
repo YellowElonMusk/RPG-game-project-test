@@ -77,12 +77,15 @@ func _paint(boss: bool) -> Image:
 
 
 func _star(img: Image, c: Vector2, r: int, col: Color) -> void:
+	# A five-pointed star: point-in-polygon over 10 vertices (outer radius r,
+	# inner 0.42 r), first point straight up.
+	var poly := PackedVector2Array()
+	for i: int in 10:
+		var rad: float = float(r) if i % 2 == 0 else float(r) * 0.42
+		poly.append(c + Vector2.UP.rotated(i * PI / 5.0) * rad)
 	for y: int in range(int(c.y) - r, int(c.y) + r + 1):
 		for x: int in range(int(c.x) - r, int(c.x) + r + 1):
-			var d := Vector2(x, y) - c
-			var a: float = atan2(d.y, d.x) + PI / 2.0
-			var edge: float = r * (0.55 + 0.45 * cos(5.0 * a))
-			if x >= 0 and y >= 0 and x < W and y < H and d.length() <= edge:
+			if x >= 0 and y >= 0 and x < W and y < H and Geometry2D.is_point_in_polygon(Vector2(x, y), poly):
 				img.set_pixel(x, y, col)
 
 

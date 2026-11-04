@@ -3,7 +3,7 @@
 ## chapter_newyork's first step with the anthem live and the New York café
 ## as the Retreat camp, and says the New York intro. The chapter survives
 ## Save -> Continue. New York is the campaign's last chapter: its end stays
-## in New York and starts the campaign-complete path. Drives real GameRoots.
+## in New York and plays the ending the squad earned. Drives real GameRoots.
 extends GdUnitTestSuite
 
 const _GAME_ROOT_SCENE: String = "res://src/game_state/game_root.tscn"
@@ -52,16 +52,19 @@ func test_new_york_survives_save_and_continue() -> void:
 	assert_str(back.objective_line()).contains("Liberty Dome")
 
 
-## New York is last: no further chapter, the squad stays in New York.
-func test_ending_new_york_finishes_the_campaign_in_new_york() -> void:
+## New York is the campaign's last chapter: its end plays the ending (an
+## even record here: the split ending), not another chapter.
+func test_ending_new_york_plays_the_campaign_ending() -> void:
 	var root: GameRoot = _new_game()
 	var ny: OverworldMode = _begin_new_york(root)
 	_close_line(root)
 	root.world_state.chapter_step = "newyork_step_walk_home_b"
 	_say_yes_at_cafe(ny)
 	assert_int(ny.chapter_end_calls).is_equal(1)
+	assert_int(root.machine.phase).is_equal(GameStateMachine.Phase.IDLE)
 	assert_str(root.world_state.chapter_id).is_equal("chapter_newyork")
-	assert_object(root.current_overlay_node()).is_not_null()
+	assert_str(root.ending.id).is_equal(EndingRules.SPLIT)
+	assert_str((root.current_overlay_node() as InterimLineDialogue).text).contains("Some bosses finished")
 
 
 ## New Game -> the last step of each of Paris, London and Sydney -> New York.
