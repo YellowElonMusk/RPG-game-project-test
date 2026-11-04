@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/item_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "item_corner_shop_coffee"
+display_name = "Corner-Shop Coffee"
+description = "Regular, which here means milk and three sugars. Restores 32 MP to one ally."
+kind = "consumable"
+effects = Array[Dictionary]([{
+"amount": 32,
+"type": "restore_mp"
+}])
+price = 36

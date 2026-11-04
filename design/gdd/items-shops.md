@@ -43,6 +43,14 @@ The squad carries a bag of consumables, buys them with Victory money at a camp's
 | Unpasteurised Cheese (`item_unpasteurised_cheese`) | `revive` | 50% | 30 |
 | Picnic Basket (`item_picnic_basket`) | `heal_party` | 20 | 35 |
 
+**City cafés (2026-11-04).** Each later café sells its own stock, one tier up per chapter: amounts grow with the squad's HP (about 1.6× per chapter), and prices grow with fight pay (about 1.6× per chapter). Weapons fit the recruit who joins in that city.
+
+| Café | Single heal | MP | Revive | Party heal | Weapon | Outfit |
+|---|---|---|---|---|---|---|
+| London | Bacon Butty 45 / 14 | Builder's Tea 16 / 18 | Sticky Toffee Pudding 60% / 45 | Full English 35 / 55 | Rolled Broadsheet (Commuter) ATK +6 / 60 | Waxed Raincoat DEF +5 / 70 |
+| Sydney | Meat Pie 70 / 22 | Flat White 24 / 26 | Lamington 75% / 60 | Pavlova 50 / 80 | Ringside Gloves (Kangaroo) ATK +8 / 90 | Wide-Brim Sun Hat DEF +7 / 100 |
+| New York | Street Pretzel 100 / 30 | Corner-Shop Coffee 32 / 36 | Cheesecake 100% / 85 | Whole Pizza 75 / 110 | Infomercial Headset (Host) ATK +10 / 120 | Puffer Jacket DEF +9 / 140 |
+
 ## 5. Edge Cases
 
 - **Two members want the last croissant.** Each action resolves before the next member chooses, so the second member's menu already shows the item gone.

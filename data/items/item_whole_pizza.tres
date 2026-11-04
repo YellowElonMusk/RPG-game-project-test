@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/item_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "item_whole_pizza"
+display_name = "Whole Pizza"
+description = "Folded slices for everyone. Restores 75 HP to everyone standing."
+kind = "consumable"
+effects = Array[Dictionary]([{
+"amount": 75,
+"type": "heal_party"
+}])
+price = 110

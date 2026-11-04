@@ -6,7 +6,7 @@
 script = ExtResource("1_a")
 stock_by_camp = {
 "camp_paris_cafe": PackedStringArray("item_croissant", "item_espresso", "item_unpasteurised_cheese", "item_picnic_basket", "item_day_old_baguette", "item_bedazzled_phone_case", "item_selfie_stick_pro", "item_cast_iron_ladle", "item_resolute_beret", "item_trench_coat"),
-"camp_london_cafe": PackedStringArray("item_croissant", "item_espresso", "item_unpasteurised_cheese", "item_picnic_basket", "item_day_old_baguette", "item_bedazzled_phone_case", "item_selfie_stick_pro", "item_cast_iron_ladle", "item_resolute_beret", "item_trench_coat"),
-"camp_sydney_cafe": PackedStringArray("item_croissant", "item_espresso", "item_unpasteurised_cheese", "item_picnic_basket", "item_day_old_baguette", "item_bedazzled_phone_case", "item_selfie_stick_pro", "item_cast_iron_ladle", "item_resolute_beret", "item_trench_coat"),
-"camp_newyork_cafe": PackedStringArray("item_croissant", "item_espresso", "item_unpasteurised_cheese", "item_picnic_basket", "item_day_old_baguette", "item_bedazzled_phone_case", "item_selfie_stick_pro", "item_cast_iron_ladle", "item_resolute_beret", "item_trench_coat")
+"camp_london_cafe": PackedStringArray("item_bacon_butty", "item_builders_tea", "item_sticky_toffee_pudding", "item_full_english", "item_rolled_broadsheet", "item_waxed_raincoat"),
+"camp_sydney_cafe": PackedStringArray("item_meat_pie", "item_flat_white", "item_lamington", "item_pavlova", "item_ringside_gloves", "item_wide_brim_hat"),
+"camp_newyork_cafe": PackedStringArray("item_street_pretzel", "item_corner_shop_coffee", "item_cheesecake", "item_whole_pizza", "item_infomercial_headset", "item_puffer_jacket")
 }
