@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="MoveData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/move_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "move_cool_down_stretch"
+display_name = "Cool-Down Stretch"
+target_type = "single_ally"
+cost = 3
+effects = Array[Dictionary]([{
+"type": "heal_single",
+"power": 12
+}])
+flavor_text = "A guided stretch for one ally. Heals one ally."

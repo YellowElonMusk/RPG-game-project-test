@@ -250,11 +250,15 @@ func _inject_overworld(overworld: OverworldMode, payload: RefCounted = null) -> 
 		# Continue (a committed save) or first entry: build, applying any
 		# loaded levels, XP, HP and MP.
 		_squad_store.rebuild(catalog())
-	var squad: Array[Combatant] = _squad_store.squad
+	# Recruits whose story flag is now set (a boss Victory) join here, on the
+	# next map entry, and say so once the map is in.
+	_queue_line(_join_line(_squad_store.sync_recruits(_world_state, catalog())))
+	var store: SquadStore = _squad_store
 	overworld.world_state = _world_state
 	overworld.encounter_catalog = catalog()
+	# Only the active party fights; the bench waits (recruits.md).
 	overworld.party_source = func() -> Array[Combatant]:
-		return squad
+		return store.active_party()
 
 
 ## Story 138 (ADR-0012 §3; story 080): the load-time map validator. Each
@@ -388,6 +392,11 @@ func save_service() -> SaveService:
 	return _save_service
 
 
+## The squad roster (party and bench), for tests.
+func squad_store() -> SquadStore:
+	return _squad_store
+
+
 ## Story 057 (GDD rule 8): a New Game applies the chapter's opening step
 ## flags (Paris: `permits_mandatory`) to the fresh WorldState before the
 ## Overworld loads its first map or accepts any input.
@@ -423,11 +432,31 @@ func _on_chapter_end_requested(overworld: OverworldMode) -> void:
 		return
 	if not next.start_camp_id.is_empty():
 		_machine.restore_last_camp_id(next.start_camp_id)
-	_pending_intro = next.intro_line
+	_queue_line(next.intro_line)
 	var result: GameStateMachine.RequestResult = _machine.request_transition(
 			GameStateMachine.Mode.OVERWORLD, ChapterProgression.arrival_payload(next))
 	if result != GameStateMachine.RequestResult.OK:
 		push_error("GameRoot: the next chapter's map change was refused (%d)" % result)
+
+
+## Who joined, as one line: each name and their archetype line, then where
+## to swap them in. "" when nobody joined.
+func _join_line(joined: Array[Combatant]) -> String:
+	var parts: PackedStringArray = PackedStringArray()
+	for m: Combatant in joined:
+		var rec: CharacterData = catalog().get_record(&"character", m.record_id) as CharacterData
+		var flavour: String = rec.archetype_line if rec != null else ""
+		parts.append(("%s joins the squad! %s" % [m.display_name, flavour]).strip_edges())
+	if parts.is_empty():
+		return ""
+	return " ".join(parts) + " (Menu > Party to choose who fights.)"
+
+
+## Adds `line` to the line shown once the next Overworld map is in.
+func _queue_line(line: String) -> void:
+	if line.is_empty():
+		return
+	_pending_intro = line if _pending_intro.is_empty() else _pending_intro + "\n\n" + line
 
 
 func _on_transition_finished(to: GameStateMachine.Mode) -> void:

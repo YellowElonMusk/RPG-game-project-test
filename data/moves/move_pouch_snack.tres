@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="MoveData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/move_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "move_pouch_snack"
+display_name = "Pouch Snack"
+target_type = "single_ally"
+cost = 4
+effects = Array[Dictionary]([{
+"type": "heal_single",
+"power": 10
+}])
+flavor_text = "Shares a snack from the pouch. Heals one ally."

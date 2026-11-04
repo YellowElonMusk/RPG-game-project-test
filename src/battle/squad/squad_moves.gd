@@ -42,4 +42,12 @@ static func _special_for(move_id: String) -> Move:
 			return SquadSpecials.make_viral_stunt()
 		"move_home_run":
 			return SquadSpecials.make_home_run()
+	# Recruits beyond the first four (recruits.md): built from their `move_`
+	# record. Unknown ids still degrade to no special.
+	var catalog: ContentCatalogService = BattleCatalog.shipped()
+	if catalog == null or catalog.state != ContentCatalogService.State.READY:
+		return null
+	for record: MoveData in catalog.all_records(&"move"):
+		if record.id == move_id:
+			return MoveAdapter.from_record(record)
 	return null

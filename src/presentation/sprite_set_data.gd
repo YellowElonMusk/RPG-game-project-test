@@ -51,6 +51,10 @@ class Resolution extends RefCounted:
 @export var facings_used: Array[StringName] = [&"front"]
 ## Every authored animation, one entry per role (or move) and facing.
 @export var animations: Array[SpriteAnimationData] = []
+## True for a stand-in set that borrows another character's strips until
+## its art exists (the recruits, recruits.md). The silhouette lineup check
+## skips it: a borrowed shape is the same shape on purpose.
+@export var is_placeholder: bool = false
 
 
 ## The opposite of `facing` (`front` <-> `back`).

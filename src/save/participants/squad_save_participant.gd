@@ -31,7 +31,8 @@ func capture() -> Dictionary:
 		for slot: Variant in m.equipment:
 			gear[String(slot)] = String(m.equipment[slot])
 		members[m.record_id] = {"level": m.level, "xp": m.xp, "hp": m.hp, "mp": m.mp, "equipment": gear}
-	return {"members": members}
+	# The roster order: who is in the party and who is on the bench.
+	return {"members": members, "order": Array(_store.order())}
 
 
 func stage(data: Dictionary, reader: SaveReader) -> SaveStage:
@@ -64,14 +65,22 @@ func stage(data: Dictionary, reader: SaveReader) -> SaveStage:
 			"mp": maxi(0, int(e.get("mp", 0))),
 			"equipment": gear,
 		}
-	return SaveStage.success({"members": members})
+	# The roster order; ids no longer in `members` are dropped silently (an
+	# old save without `order` keeps the default order).
+	var order := PackedStringArray()
+	for id: Variant in reader.get_array("order"):
+		if id is String and members.has(id) and not order.has(id):
+			order.append(id)
+	return SaveStage.success({"members": members, "order": order})
 
 
 func commit(staged: SaveStage) -> void:
 	_store.pending = (staged.staged as Dictionary).get("members", {})
+	_store.pending_order = (staged.staged as Dictionary).get("order", PackedStringArray())
 	_store.squad = []
 
 
 func reset_to_new_game() -> void:
 	_store.pending = {}
+	_store.pending_order = PackedStringArray()
 	_store.squad = []

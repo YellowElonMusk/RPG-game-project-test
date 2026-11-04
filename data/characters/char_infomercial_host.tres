@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="CharacterData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/character_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "char_infomercial_host"
+display_name = "Infomercial Host"
+archetype_line = "Cannot stop selling. Headset mic always on. Call now."
+max_hp = 32
+max_mp = 13
+attack = 13
+defense = 8
+speed = 12
+growth_hp = 3
+growth_mp = 1
+growth_attack = 2
+growth_defense = 1
+growth_speed = 1
+move_ids = PackedStringArray("move_but_wait_theres_more", "move_limited_time_offer")
+sprite_set_id = "sprite_infomercial_host"
+joins_on_flag = "usa_liberated"

@@ -22,10 +22,11 @@ const FACTION_BUREAUCRATIA: String = "bureaucratia"
 const FACTION_MEGACORP: String = "megacorp"
 
 
-## The real squad (story 007): the `character` records in sorted id order.
-## Stats and `move_ids` come from the records, never literals. Each call
-## builds new `Combatant`s; the caller keeps one array for the whole run so
-## HP/MP carry over by construction (ADR-0002 §7).
+## The starting squad (story 007): the `character` records with no
+## `joins_on_flag`, in sorted id order. Later recruits join through
+## `SquadStore.recruit()`. Stats and `move_ids` come from the records, never
+## literals. Each call builds new `Combatant`s; the caller keeps one array
+## for the whole run so HP/MP carry over by construction (ADR-0002 §7).
 static func build_squad(catalog: ContentCatalogService) -> Array[Combatant]:
 	var squad: Array[Combatant] = []
 	if catalog == null:
@@ -33,12 +34,17 @@ static func build_squad(catalog: ContentCatalogService) -> Array[Combatant]:
 		return squad
 	var ids: Array[String] = []
 	for record: CharacterData in catalog.all_records(&"character"):
-		ids.append(record.id)
+		if record.joins_on_flag.is_empty():
+			ids.append(record.id)
 	ids.sort()
 	for id: String in ids:
-		var record: CharacterData = catalog.get_record(&"character", id)
-		var combatant := Combatant.new(record.display_name, record.max_hp,
-				record.max_mp, record.attack, record.defense, record.speed, false, false, record.id)
-		combatant.move_ids = record.move_ids
-		squad.append(combatant)
+		squad.append(make_member(catalog.get_record(&"character", id)))
 	return squad
+
+
+## A level-1 squad member at full HP/MP from its `character` record.
+static func make_member(record: CharacterData) -> Combatant:
+	var combatant := Combatant.new(record.display_name, record.max_hp,
+			record.max_mp, record.attack, record.defense, record.speed, false, false, record.id)
+	combatant.move_ids = record.move_ids
+	return combatant

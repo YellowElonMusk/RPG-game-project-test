@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="MoveData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/move_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "move_penalty_box"
+display_name = "Penalty Box"
+target_type = "single_enemy"
+cost = 5
+effects = Array[Dictionary]([{
+"type": "stun"
+}])
+flavor_text = "Sends one enemy to sit out its next turn. Bosses refuse to go."

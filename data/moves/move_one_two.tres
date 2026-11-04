@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="MoveData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/move_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "move_one_two"
+display_name = "One-Two"
+target_type = "single_enemy"
+cost = 3
+effects = Array[Dictionary]([{
+"type": "direct_damage",
+"power": 16
+}])
+flavor_text = "Two quick jabs from the gloves."

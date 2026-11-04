@@ -102,6 +102,12 @@ func _beat_the_boss(root: GameRoot) -> void:
 func _walk_home_lands_liberated(root: GameRoot) -> OverworldMode:
 	var segment: OverworldMode = root.current_mode_node() as OverworldMode
 	segment.set_process(false)
+	# Liberating Paris recruits the Street Mime (recruits.md): the join line
+	# is up on arrival; close it.
+	assert_bool(root.squad_store().has_member("char_street_mime")).is_true()
+	assert_array(root.machine.overlay_stack).is_equal([GameStateMachine.OverlayKind.DIALOGUE])
+	root.machine.close_overlay()
+	_run_to_idle(root.machine)
 	assert_str(segment.get_map().map_id).is_equal(_SEGMENT)
 	var entry: EntryPoint = segment.get_map().find_entry_point(&"from_dungeon")
 	assert_vector(segment.get_leader_position()).is_equal(entry.ground_position(segment.get_map()))

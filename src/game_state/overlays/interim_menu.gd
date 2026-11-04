@@ -207,14 +207,20 @@ func _show_party(note: String = "") -> void:
 	_note.text = note
 	_reset_list()
 	for c: Combatant in party:
-		var button := _add_button("%s  Lv %d  HP %d/%d  MP %d/%d\nATK %d%s  DEF %d%s  SPD %d" % [
-				c.display_name, c.level, c.hp, c.max_hp, c.mp, c.max_mp,
+		var button := _add_button("%s%s  Lv %d  HP %d/%d  MP %d/%d\nATK %d%s  DEF %d%s  SPD %d" % [
+				"[Bench] " if is_benched(c) else "", c.display_name, c.level, c.hp, c.max_hp, c.mp, c.max_mp,
 				c.effective_attack(), _bonus(c.bonus_attack), c.effective_defense(), _bonus(c.bonus_defense), c.speed])
 		button.pressed.connect(_show_member.bind(c))
 	_wire_and_focus()
 
 
-## `member`'s slots, each with what it wears.
+## `true` when `c` is on the bench: past the first `SquadStore.ACTIVE_SIZE`.
+func is_benched(c: Combatant) -> bool:
+	return party.find(c) >= SquadStore.ACTIVE_SIZE
+
+
+## `member`'s slots, each with what it wears, then "Swap with..." when the
+## roster has a bench.
 func _show_member(member: Combatant, note: String = "") -> void:
 	_screen = &"member"
 	_member = member
@@ -227,7 +233,42 @@ func _show_member(member: Combatant, note: String = "") -> void:
 				"--" if worn == null else "%s (%s)" % [worn.display_name, Equipment.bonus_text(worn)]]
 		var button := _add_button(text)
 		button.pressed.connect(_show_slot.bind(member, slot))
+	if party.size() > SquadStore.ACTIVE_SIZE:
+		var swap := _add_button("Send to the bench..." if not is_benched(member) else "Bring into the party...")
+		swap.pressed.connect(_show_swap.bind(member))
 	_wire_and_focus()
+
+
+## Who `member` can trade places with: the bench for a fighter, the
+## fighters for a benched member.
+func _show_swap(member: Combatant) -> void:
+	_screen = &"swap"
+	_member = member
+	_title.text = "%s -- swap with whom?" % member.display_name
+	_note.text = ""
+	_reset_list()
+	for c: Combatant in party:
+		if c == member or is_benched(c) == is_benched(member):
+			continue
+		var button := _add_button("%s  Lv %d  HP %d/%d" % [c.display_name, c.level, c.hp, c.max_hp])
+		button.pressed.connect(_swap.bind(member, c))
+	_wire_and_focus()
+
+
+## Trades `a` and `b`'s roster places in the shared array. Refused when it
+## would leave nobody standing in the party.
+func _swap(a: Combatant, b: Combatant) -> void:
+	var ia: int = party.find(a)
+	var ib: int = party.find(b)
+	SquadStore.swap_in(party, ia, ib)
+	var standing: bool = false
+	for i: int in mini(SquadStore.ACTIVE_SIZE, party.size()):
+		standing = standing or not party[i].is_knocked_out()
+	if not standing:
+		SquadStore.swap_in(party, ia, ib)
+		_show_member(a, "Someone still standing has to fight.")
+		return
+	_show_party("%s and %s swapped places." % [a.display_name, b.display_name])
 
 
 ## What `member` can put in `slot`: every fitting item in the bag, plus
@@ -337,7 +378,7 @@ func handle_action(action: StringName, pressed: bool) -> bool:
 		InputActions.CANCEL:
 			if _screen == &"targets":
 				_show_items()
-			elif _screen == &"slot":
+			elif _screen == &"slot" or _screen == &"swap":
 				_show_member(_member)
 			elif _screen == &"member":
 				_show_party()

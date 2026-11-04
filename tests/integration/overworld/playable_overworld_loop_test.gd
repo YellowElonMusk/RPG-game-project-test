@@ -24,7 +24,8 @@ func test_new_game_enters_overworld_mode_with_injections() -> void:
 	assert_str(ow.world_state.map_id).is_equal(_TOWN_ID)
 	assert_bool(is_same(ow.encounter_catalog, root.catalog())).is_true()
 	var party: Array = ow.party_source.call()
-	assert_int(party.size()).is_equal(root.catalog().all_records(&"character").size())
+	# New Game: the starting members only (no `joins_on_flag`); recruits join later.
+	assert_int(party.size()).is_equal(ChapterFlow.build_squad(root.catalog()).size())
 	var again: Array = ow.party_source.call()
 	for i: int in party.size():
 		assert_bool(is_same(party[i], again[i])).is_true()

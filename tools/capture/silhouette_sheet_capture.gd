@@ -62,6 +62,9 @@ static func build(sets: Dictionary, t: int) -> Dictionary:
 	ids.sort_custom(func(x: StringName, y: StringName) -> bool: return String(x) < String(y))
 	for id: StringName in ids:
 		var s: SpriteSetData = sets[id]
+		# A placeholder borrows another set's strips: same shape on purpose.
+		if s.is_placeholder:
+			continue
 		var p: Dictionary = SilhouetteLineupCheck.pose_frames(s)
 		var c: Dictionary = {"is_squad": s.is_squad, "facing": p["facing"], "poses": p["poses"],
 				"mirrored": p["mirrored"], "missing": p["missing"], "shown": PackedStringArray(),

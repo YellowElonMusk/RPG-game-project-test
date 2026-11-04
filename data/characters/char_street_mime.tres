@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="CharacterData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/character_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "char_street_mime"
+display_name = "Street Mime"
+archetype_line = "Has been trapped in an invisible box since 2009 and is finally ready to talk about it. Silently."
+max_hp = 31
+max_mp = 14
+attack = 11
+defense = 10
+speed = 13
+growth_hp = 3
+growth_mp = 2
+growth_attack = 1
+growth_defense = 2
+growth_speed = 1
+move_ids = PackedStringArray("move_invisible_rope", "move_trapped_in_a_box")
+sprite_set_id = "sprite_street_mime"
+joins_on_flag = "paris_liberated"

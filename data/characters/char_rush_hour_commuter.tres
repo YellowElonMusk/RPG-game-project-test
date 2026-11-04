@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="CharacterData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/character_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "char_rush_hour_commuter"
+display_name = "Rush-Hour Commuter"
+archetype_line = "Has never once missed the 8:12. Umbrella in one hand, cold coffee in the other."
+max_hp = 33
+max_mp = 12
+attack = 15
+defense = 7
+speed = 15
+growth_hp = 3
+growth_mp = 1
+growth_attack = 2
+growth_defense = 1
+growth_speed = 1
+move_ids = PackedStringArray("move_brolly_jab", "move_elbow_through_the_doors")
+sprite_set_id = "sprite_rush_hour_commuter"
+joins_on_flag = "london_liberated"

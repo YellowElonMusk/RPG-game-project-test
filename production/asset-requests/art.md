@@ -228,6 +228,21 @@ Most battle art is in (`assets/sprites/`, `assets/vfx/`, `assets/backgrounds/`, 
 | 16 | Camp backdrop | `assets/backgrounds/bg_camp_cafe.png` | 640x360 | *Night interior of a cosy Paris café, warm lamp and candle light, empty tables*, lowest contrast. Camp has no scene today |
 | 17 | Squad portraits | `assets/portraits/<hero>_portrait.png` | 96x96, front-facing | For dialogue name cards. Low priority (the cell itself has no portrait) |
 
+### 4.1 Recruits (battle sets; added 2026-11-04)
+
+Six recruits beyond the four (`design/narrative/recruits.md`). Today each one borrows a starter's strips as a flat recoloured silhouette (`is_placeholder` in its sprite set). The Street Mime (Paris) and the Rush-Hour Commuter (London) can already join, so they come first. Same spec as the four: back-facing, 64x64 frames, one horizontal strip per clip at `assets/sprites/squad/<id>/<id>_<clip>.png`. Clips: `idle` (4), `attack` (4), `defend` (2), `hurt` (2), `ko` (3), `victory` (4), `special` (6), plus a `base` still. Replace the PNGs in place; Claude then clears `is_placeholder` and gives each special its own strip if you draw two.
+
+| # | `<id>` | Recruit | Prompt (after the Style Anchor) | Silhouette must read as |
+|---|---|---|---|---|
+| R1 | `street_mime` | Street Mime (Paris) | *street mime in a striped shirt, white gloves, braces and a beret-free bare head, palms pressed flat on an invisible wall, exaggerated pose, no face paint beyond a simple white mask* | Flat palms on a wall nobody can see |
+| R2 | `rush_hour_commuter` | Rush-Hour Commuter (London) | *office commuter in a grey raincoat, long black umbrella held like a fencing foil, paper coffee cup in the other hand, mid-stride, harried* | The umbrella lunge |
+| R3 | `infomercial_host` | Infomercial Host (USA) | *overexcited TV salesman in a loud blazer, headset microphone, holding up a gadget with both hands, huge grin, mid-pitch* | Arms up presenting a product |
+| R4 | `boxing_kangaroo` | Boxing Kangaroo (Sydney) | *kangaroo wearing oversized red boxing gloves and a sweatband, boxing stance on its tail* | The gloves (art bible §1) |
+| R5 | `goalie` | The Goalie (Toronto) | *ice hockey goalie in huge leg pads, catching glove and plain white mask (no team logos), wide blocking crouch* | The pads, filling the gap |
+| R6 | `fitness_instructor` | Fitness Instructor (Mexico City) | *aerobics instructor in a bright tracksuit and headband, whistle in mouth, stopwatch raised, mid-jumping-jack* | Whistle and stopwatch, mid-jump |
+
+Guardrails as section 0: no national flags, team logos or national dress; the joke is the behaviour and the prop.
+
 ---
 
 ## 5. Later (not needed for Chapter 1 to play)

@@ -4,7 +4,9 @@
 ## every strip into `<animation_id>_<facing>` clips of equal-width frames.
 extends GdUnitTestSuite
 
-const SQUAD_IDS: Array[String] = ["char_karen", "char_michelin_chef", "char_florida_man", "char_baguette_thrower"]
+const SQUAD_IDS: Array[String] = ["char_karen", "char_michelin_chef", "char_florida_man", "char_baguette_thrower",
+		"char_street_mime", "char_rush_hour_commuter", "char_infomercial_host", "char_boxing_kangaroo",
+		"char_goalie", "char_fitness_instructor"]
 const ENEMY_IDS: Array[String] = ["enemy_clerk", "enemy_supervisor", "enemy_security_drone",
 		"enemy_middle_manager", "enemy_ceo"]
 

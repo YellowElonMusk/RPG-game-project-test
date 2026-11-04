@@ -41,13 +41,17 @@ extends Resource
 @export var sprite_set_id: String = ""
 ## Asset ID of the portrait.
 @export var portrait_id: String = ""
+## The story flag that brings this character into the squad (e.g.
+## `paris_liberated`); empty = in the squad from New Game. See
+## `SquadStore.sync_recruits()` and design/narrative/recruits.md.
+@export var joins_on_flag: String = ""
 
 ## Player-visible text exports (TR-content-012, ADR-0013 §4).
 const LOC_FIELDS: Array[StringName] = [&"display_name", &"archetype_line"]
 ## IDs and asset IDs (ADR-0013 §4).
 const NON_LOC_FIELDS: Array[StringName] = [
 	&"id", &"aliases", &"nation_id", &"move_ids", &"signature_move_id",
-	&"sprite_set_id", &"portrait_id",
+	&"sprite_set_id", &"portrait_id", &"joins_on_flag",
 ]
 ## Required fields (story 015, QL-STORY-READY GAPS fix 2026-10-24): empty or
 ## whitespace-only text is an error. Widen only after a GDD edit marks more.

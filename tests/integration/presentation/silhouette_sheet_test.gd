@@ -24,7 +24,9 @@ func test_every_shipped_character_has_every_pose_ac33_shows_in_its_role_facing()
 	var r: Dictionary = _build()
 	# Assert: all nine shipped sets, none missing a pose.
 	var chars: Dictionary = r["characters"]
-	assert_int(chars.size()).is_equal(PresentationValidators.load_sprite_sets().size())
+	var authored: int = PresentationValidators.load_sprite_sets().values().filter(
+			func(s: SpriteSetData) -> bool: return not s.is_placeholder).size()
+	assert_int(chars.size()).is_equal(authored)
 	assert_int(chars.size()).is_greater_equal(SilhouetteLineupCheck.LINEUP_SIZE)
 	var missing := PackedStringArray()
 	for id: StringName in chars:

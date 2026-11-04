@@ -38,6 +38,10 @@ func test_boss_stays_absent_through_retreat_save_and_continue() -> void:
 	line.advance_guard(0.2)
 	line.handle_action(InputActions.CONFIRM, true)
 	_run_to_idle(root.machine)
+	# The Street Mime's join line (recruits.md) is up on the walk home; close it.
+	if not root.machine.overlay_stack.is_empty():
+		root.machine.close_overlay()
+		_run_to_idle(root.machine)
 
 	# Beating the boss liberated Paris: every symbol there is now inactive
 	# (rule 9), so the later Retreat-able fight is started straight from a
