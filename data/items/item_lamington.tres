@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/item_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "item_lamington"
+display_name = "Lamington"
+description = "Sponge, chocolate, coconut, a second chance. Revives a knocked-out ally at 75% HP."
+kind = "consumable"
+effects = Array[Dictionary]([{
+"amount": 75,
+"type": "revive"
+}])
+price = 60

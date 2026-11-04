@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/item_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "item_wide_brim_hat"
+display_name = "Wide-Brim Sun Hat"
+description = "Slip, slop, slap, block. Anyone. DEF +7."
+kind = "equipment"
+effects = Array[Dictionary]([{
+"attack": 0,
+"defense": 7,
+"slot": "outfit",
+"type": "equip",
+"user": ""
+}])
+price = 100
