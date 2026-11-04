@@ -91,6 +91,7 @@ func _say_yes_at_cafe(town: OverworldMode) -> void:
 
 func _boot() -> GameRoot:
 	var root: GameRoot = preload(_GAME_ROOT_SCENE).instantiate()
+	root.tutorial_hints_enabled = false  # onboarding cards would gate round 1
 	root.data_root_override = "res://data"
 	root.save_dir_override = _SAVE_DIR
 	add_child(root)

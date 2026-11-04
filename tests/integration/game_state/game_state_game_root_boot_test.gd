@@ -79,6 +79,7 @@ func test_boots_to_content_error_on_failed_root() -> void:
 
 func test_quit_mid_battle_no_orphans() -> void:
 	var game_root: GameRoot = preload(_GAME_ROOT_SCENE).instantiate()
+	game_root.tutorial_hints_enabled = false  # onboarding cards would gate round 1
 	game_root.data_root_override = _VALID_FIXTURE
 	add_child(game_root)
 	var machine: GameStateMachine = game_root.machine
@@ -109,6 +110,7 @@ func test_quit_mid_battle_no_orphans() -> void:
 ## outside BOOT, and registers it for teardown.
 func _boot_game_root(data_root: String) -> GameRoot:
 	var game_root: GameRoot = preload(_GAME_ROOT_SCENE).instantiate()
+	game_root.tutorial_hints_enabled = false  # onboarding cards would gate round 1
 	game_root.data_root_override = data_root
 	add_child(game_root)
 	auto_free(game_root)

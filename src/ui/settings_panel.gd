@@ -31,6 +31,7 @@ const ROWS: Array = [
 	[&"screen_shake", "Screen shake"],
 	[&"reduce_motion", "Reduce motion"],
 	[&"reduce_flashing", "Reduce flashing"],
+	[&"tutorial_hints", "Tutorial hints"],
 ]
 const COLOR_BACKING: Color = Color("#2a2d40")
 const COLOR_BORDER: Color = Color("#f2ead8")

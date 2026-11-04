@@ -11,6 +11,7 @@ const _DT: float = 1.0 / 60.0
 
 func test_closing_confirm_held_starts_nothing_until_released() -> void:
 	var root: GameRoot = preload(_GAME_ROOT_SCENE).instantiate()
+	root.tutorial_hints_enabled = false  # onboarding cards would gate round 1
 	root.data_root_override = "res://data"
 	add_child(root)
 	auto_free(root)

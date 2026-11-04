@@ -432,6 +432,7 @@ func step_frame(ow_dt: float, input_vec: Vector2) -> void:
 	_update_beacon_progress()
 	_check_barks_and_sight()
 	_check_teach_barks()
+	_check_tutorial_hints()
 	if _budget == null:
 		_budget = QueryBudget.new(config.repath_per_frame_max)
 	_budget.begin_frame()
@@ -806,8 +807,10 @@ func _on_transition_started(from: GameStateMachine.Mode, to: GameStateMachine.Mo
 	_map_changing = from == GameStateMachine.Mode.OVERWORLD and to == GameStateMachine.Mode.OVERWORLD
 
 
-func _on_overlay_opened(_kind: GameStateMachine.OverlayKind) -> void:
+func _on_overlay_opened(kind: GameStateMachine.OverlayKind) -> void:
 	_overlays_open += 1
+	if kind == GameStateMachine.OverlayKind.MENU and hints != null:
+		hints.mark_seen(TutorialHints.MENU)
 
 
 func _on_overlay_closed(kind: GameStateMachine.OverlayKind) -> void:
@@ -1104,6 +1107,8 @@ func probe() -> Object:
 ## in reach does nothing (story 012: no line, no sound).
 func confirm() -> void:
 	var target: Object = probe()
+	if target != null and hints != null:
+		hints.mark_seen(TutorialHints.TALK)
 	if target is NpcSpawn:
 		var npc: NpcSpawn = target
 		var talk_data: Conversation = Conversation.load_by_id(npc.conversation_id)
@@ -1193,6 +1198,9 @@ func _open_camp_prompt(camp: CampSpot) -> void:
 	camp_prompt_is_chapter_end = camp.is_region_default and is_on_final_step()
 	camp_prompt_focus = CampChoice.NO if camp_prompt_is_chapter_end else CampChoice.YES
 	_camp_prompt_open = true
+	if hints != null and hints.is_due(TutorialHints.CAMP):
+		hints.mark_seen(TutorialHints.CAMP)
+		_start_bark(TutorialHints.CAMP_TEXT)
 
 
 func _close_camp_prompt() -> void:
@@ -1596,6 +1604,40 @@ func _tick_bark(dt: float) -> void:
 		bark_text = ""
 	elif _bark_elapsed > hold:
 		bark_phase = CardPhase.FADING
+
+
+## Onboarding (systems index #21): the one-time hints, injected by
+## `GameRoot`; null (tests, the demo scene) shows none.
+var hints: TutorialHints = null
+## The active device's prompt labels for the controls strip; null reads as
+## the keyboard.
+var glyphs: PromptGlyphs = null
+
+
+## The controls strip ("[WASD] Move   [Enter] Talk / check   [Tab] Menu")
+## while Exploring with nothing open and any part still due; "" otherwise.
+## Each part goes once the player has done it.
+func controls_hint_text() -> String:
+	if hints == null or not is_exploring() or _camp_prompt_open:
+		return ""
+	return hints.controls_text(glyphs)
+
+
+## The move part goes on the first step taken; the symbol hint barks the
+## first time a symbol comes within its notice distance (`see_m`).
+func _check_tutorial_hints() -> void:
+	if hints == null:
+		return
+	if _last_distance_moved > 0.0 and hints.is_due(TutorialHints.MOVE):
+		hints.mark_seen(TutorialHints.MOVE)
+	if bark_phase != CardPhase.HIDDEN or not hints.is_due(TutorialHints.SYMBOLS):
+		return
+	var near: float = config.see_m()
+	for source: EncounterSource in _sources:
+		if source.brain.contact_eligible() and source.brain.position.distance_to(_leader_pos) <= near:
+			hints.mark_seen(TutorialHints.SYMBOLS)
+			_start_bark(TutorialHints.SYMBOLS_TEXT)
+			return
 
 
 ## Shows a bark in the bark window (held for `text_hold`) and announces it.

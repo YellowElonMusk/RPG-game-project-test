@@ -75,6 +75,12 @@ var warmup_report: Dictionary = {}
 var _warmed_resources: Array[Resource] = []
 
 var _world_state: WorldState = null
+## Test seam: `false` silences the onboarding hints whatever the setting
+## (GameRoot-driven tests, whose battles would wait behind the first card).
+@export var tutorial_hints_enabled: bool = true
+## Onboarding hints and the controls strip's prompt labels (2026-11-04).
+var _tutorial_hints: TutorialHints = null
+var _prompt_glyphs: PromptGlyphs = null
 ## Every camp's return (story 089), read from the map scenes at boot.
 var _camp_directory: CampDirectory = null
 ## Save/Load (ADR-0009), under Services.
@@ -147,6 +153,14 @@ func _ready() -> void:
 	_services.add_child(_save_service)
 	if _world_state == null:
 		_world_state = WorldState.new()
+	# Onboarding (systems index #21): hints live in the one WorldState (saved)
+	# and obey the Settings toggle; prompts follow the active device.
+	var hints_service: SettingsService = _settings_service
+	var hints_on: bool = tutorial_hints_enabled
+	_tutorial_hints = TutorialHints.new(_world_state, func() -> bool:
+		return hints_on and (hints_service == null or bool(hints_service.get_value(&"tutorial_hints"))))
+	_prompt_glyphs = PromptGlyphs.new(load(BattleMode.BINDINGS_PATH) as InputBindings)
+	resolver.active_device_changed.connect(_on_active_device_changed)
 	var presenter := InterimFadePresenter.new(_transition_layer)
 	# machine_box: ModeHostSceneLoader is a constructor argument of
 	# GameStateMachine, so it is built first and has no reference to the
@@ -165,10 +179,13 @@ func _ready() -> void:
 		if mode is OverworldMode:
 			_inject_overworld(mode as OverworldMode, payload)
 			(mode as OverworldMode).camp_directory = _camp_directory
+			(mode as OverworldMode).hints = _tutorial_hints
+			(mode as OverworldMode).glyphs = _prompt_glyphs
 			(mode as OverworldMode).chapter_end_requested.connect(
 					_on_chapter_end_requested.bind(mode))
 		elif mode is InterimCampMode:
 			(mode as InterimCampMode).camp_directory = _camp_directory
+			(mode as InterimCampMode).hints = _tutorial_hints
 			(mode as InterimCampMode).save_service = _save_service
 			(mode as InterimCampMode).world_state = _world_state
 			(mode as InterimCampMode).item_catalog = catalog()
@@ -179,6 +196,7 @@ func _ready() -> void:
 			(mode as TitleMode).settings_service = settings_service
 		elif mode is BattleMode:
 			(mode as BattleMode).flash_gate = flash_gate
+			(mode as BattleMode).hints = _tutorial_hints
 			(mode as BattleMode).presentation_settings = settings_views.presentation
 			(mode as BattleMode).world_state = _world_state
 			(mode as BattleMode).item_catalog = catalog()
@@ -524,3 +542,11 @@ func _on_transition_finished(to: GameStateMachine.Mode) -> void:
 	var overworld: OverworldMode = current_mode_node() as OverworldMode
 	if overworld != null and overworld.say(_pending_intro) == GameStateMachine.RequestResult.OK:
 		_pending_intro = ""
+
+
+## The controls strip relabels for the device the player last used.
+func _on_active_device_changed(kind: InputResolver.DeviceKind, pad_style: StringName) -> void:
+	if _prompt_glyphs == null:
+		return
+	_prompt_glyphs.device = PromptGlyphs.DEVICE_PAD if kind == InputResolver.DeviceKind.GAMEPAD else PromptGlyphs.DEVICE_KEY
+	_prompt_glyphs.pad_style = pad_style

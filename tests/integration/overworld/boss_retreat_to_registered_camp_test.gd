@@ -95,6 +95,7 @@ func _new_game(root: GameRoot) -> void:
 
 func _boot() -> GameRoot:
 	var root: GameRoot = preload(_GAME_ROOT_SCENE).instantiate()
+	root.tutorial_hints_enabled = false  # onboarding cards would gate round 1
 	root.data_root_override = "res://data"
 	root.save_dir_override = "user://test_saves_089"
 	add_child(root)

@@ -134,6 +134,7 @@ func test_menu_pauses_and_closing_it_explores() -> void:
 
 func test_map_change_and_a_failed_load_restores_the_old_map() -> void:
 	var root: GameRoot = preload(_GAME_ROOT_SCENE).instantiate()
+	root.tutorial_hints_enabled = false  # onboarding cards would gate round 1
 	root.data_root_override = "res://data"
 	root.save_dir_override = "user://test_saves_097"
 	add_child(root)

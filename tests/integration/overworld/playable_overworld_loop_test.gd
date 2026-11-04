@@ -142,6 +142,7 @@ func _touch_and_enter_battle(root: GameRoot, ow: OverworldMode,
 
 func _boot() -> GameRoot:
 	var root: GameRoot = preload(_GAME_ROOT_SCENE).instantiate()
+	root.tutorial_hints_enabled = false  # onboarding cards would gate round 1
 	root.data_root_override = _DATA_ROOT
 	add_child(root)
 	auto_free(root)

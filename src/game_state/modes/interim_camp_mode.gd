@@ -30,6 +30,9 @@ var world_state: WorldState = null
 var item_catalog: Object = null
 ## What this camp sells; the shipped config when not injected.
 var shop_config: ShopConfig = null
+## Injected by `GameRoot`: onboarding hints (the "setting out saves" tip on
+## the first camp visit). Null shows none.
+var hints: TutorialHints = null
 
 enum Screen { MAIN, SHOP }
 ## Main-screen entries, in order. Set out is first and selected, so one
@@ -93,6 +96,8 @@ func _render() -> void:
 	var r: Array[String] = rows()
 	if screen == Screen.MAIN:
 		lines.append("Resting at camp. Everyone is back on their feet.")
+		if hints != null and hints.is_due(TutorialHints.SAVE):
+			lines.append(TutorialHints.SAVE_TEXT)
 		if world_state != null:
 			lines.append("Money: %d" % world_state.money)
 		lines.append("")
@@ -175,6 +180,9 @@ func set_out() -> GameStateMachine.RequestResult:
 	if target == null or _machine == null:
 		push_error("InterimCampMode: no return for camp '%s'" % camp_id)
 		return GameStateMachine.RequestResult.REJECTED_INVALID_PAYLOAD
+	# Seen before the save, so the save carries it.
+	if hints != null:
+		hints.mark_seen(TutorialHints.SAVE)
 	if save_service != null:
 		last_save_result = save_service.save_to_slot(1)
 	return _machine.request_transition(GameStateMachine.Mode.OVERWORLD, target)

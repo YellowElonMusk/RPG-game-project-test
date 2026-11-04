@@ -85,6 +85,8 @@ var _bark_label: Label = null
 var _bark_left: float = 0.0
 var _name_card_label: Label = null
 var _payoff_card_label: Label = null
+## Onboarding: the controls strip, bottom left, while any part is due.
+var _controls_label: Label = null
 
 
 func _init() -> void:
@@ -312,6 +314,10 @@ func _update_interact_prompt(delta: float) -> void:
 	_draw_timed(_bark_label, mode.bark_text, mode.bark_phase)
 	_draw_timed(_name_card_label, mode.name_card_text, mode.name_card_phase)
 	_draw_timed(_payoff_card_label, mode.payoff_card_text, mode.payoff_card_phase)
+	if _controls_label != null:
+		var controls: String = mode.controls_hint_text()
+		_controls_label.visible = not controls.is_empty()
+		_controls_label.text = controls
 	if _interact_label == null:
 		return
 	# Story 015: one `probe()` per frame, only while Exploring (rule 3
@@ -340,8 +346,10 @@ func _build_hud_labels(layer: CanvasLayer) -> void:
 	_bark_label.name = "Bark"
 	_bark_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_bark_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	_bark_label.position = Vector2(-220.0, 40.0)
-	_bark_label.size = Vector2(440.0, 48.0)
+	# Wide enough for a one-line onboarding hint (2026-11-04); wraps if not.
+	_bark_label.position = Vector2(-450.0, 40.0)
+	_bark_label.size = Vector2(900.0, 48.0)
+	_bark_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_bark_label.add_theme_font_size_override(&"font_size", 26)
 	_bark_label.visible = false
 	layer.add_child(_bark_label)
@@ -363,7 +371,14 @@ func _build_hud_labels(layer: CanvasLayer) -> void:
 	_payoff_card_label.add_theme_font_size_override(&"font_size", 24)
 	_payoff_card_label.visible = false
 	layer.add_child(_payoff_card_label)
-	for label: Label in [_bark_label, _name_card_label, _payoff_card_label]:
+	_controls_label = Label.new()
+	_controls_label.name = "ControlsHint"
+	_controls_label.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+	_controls_label.position = Vector2(16.0, -64.0)
+	_controls_label.add_theme_font_size_override(&"font_size", 22)
+	_controls_label.visible = false
+	layer.add_child(_controls_label)
+	for label: Label in [_bark_label, _name_card_label, _payoff_card_label, _controls_label]:
 		var panel := StyleBoxFlat.new()
 		panel.bg_color = Color(0.1, 0.09, 0.08, 0.92)
 		panel.set_content_margin_all(10.0)
@@ -377,6 +392,11 @@ func get_interact_label() -> Label:
 
 func get_bark_label() -> Label:
 	return _bark_label
+
+
+## The onboarding controls strip (tests, captures).
+func get_controls_label() -> Label:
+	return _controls_label
 
 
 ## Draws one timed text element from the mode's state: hidden, shown, or

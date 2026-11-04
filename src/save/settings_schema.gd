@@ -23,6 +23,9 @@ var fields: Dictionary[StringName, Array] = {
 	&"reduce_motion": [false, [false, true]],
 	&"reduce_blur": [false, [false, true]],
 	&"reduce_flashing": [false, [false, true]],
+	# Onboarding & Tutorial (2026-11-04): one-time hints on the overworld,
+	# at camp and before a battle.
+	&"tutorial_hints": [true, [false, true]],
 }
 
 

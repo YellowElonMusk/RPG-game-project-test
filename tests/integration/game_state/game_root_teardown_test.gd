@@ -11,6 +11,7 @@ const _GAME_ROOT_SCENE: String = "res://src/game_state/game_root.tscn"
 func test_freeing_game_root_frees_machine_loader_and_resolver() -> void:
 	# Arrange: the real main scene, booted on the shipped data.
 	var game_root: GameRoot = preload(_GAME_ROOT_SCENE).instantiate()
+	game_root.tutorial_hints_enabled = false  # onboarding cards would gate round 1
 	game_root.data_root_override = "res://data"
 	add_child(game_root)
 	var machine_ref: WeakRef = weakref(game_root.machine)

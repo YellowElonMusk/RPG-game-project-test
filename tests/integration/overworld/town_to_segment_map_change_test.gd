@@ -223,6 +223,7 @@ func _walk_through_exit(root: GameRoot, ow: OverworldMode, dir: Vector2) -> Over
 
 func _boot() -> GameRoot:
 	var root: GameRoot = preload(_GAME_ROOT_SCENE).instantiate()
+	root.tutorial_hints_enabled = false  # onboarding cards would gate round 1
 	root.data_root_override = _DATA_ROOT
 	add_child(root)
 	auto_free(root)

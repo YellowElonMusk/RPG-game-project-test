@@ -36,6 +36,7 @@ func test_a_leader_loaded_inside_an_exit_fires_only_after_leaving_and_reentering
 
 func test_a_move_held_across_a_map_change_never_crosses_back() -> void:
 	var root: GameRoot = preload(_GAME_ROOT_SCENE).instantiate()
+	root.tutorial_hints_enabled = false  # onboarding cards would gate round 1
 	root.data_root_override = "res://data"
 	root.save_dir_override = "user://test_saves_081"
 	add_child(root)

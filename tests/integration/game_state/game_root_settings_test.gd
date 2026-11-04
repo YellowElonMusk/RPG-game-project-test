@@ -16,6 +16,7 @@ func after_test() -> void:
 
 func _boot() -> GameRoot:
 	var root: GameRoot = preload(_GAME_ROOT_SCENE).instantiate()
+	root.tutorial_hints_enabled = false  # onboarding cards would gate round 1
 	root.data_root_override = "res://data"
 	root.save_dir_override = "user://test_saves_settings"
 	root.settings_path_override = _PATH

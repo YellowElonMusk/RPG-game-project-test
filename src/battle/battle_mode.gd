@@ -121,6 +121,7 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 	_command_menu.visibility_changed.connect(_queue_fit_command_window)
 	_build_indicator()
 	_build_results_panel()
+	_build_tutorial_card()
 	var entry: BattleEntryPayload = payload as BattleEntryPayload
 	if entry == null or entry.descriptor == null:
 		return
@@ -218,6 +219,56 @@ func _build_indicator() -> void:
 	add_child(_indicator)
 	_indicator.indicator_clicked.connect(_on_indicator_clicked)
 	feedback.refused.connect(_on_refused)
+
+
+## Onboarding (systems index #21): the one-time hints, injected by
+## `GameRoot`; null (tests, the debug harness) shows no cards.
+var hints: TutorialHints = null
+var _tutorial: TutorialCard = null
+
+
+## The tutorial card (tests, captures).
+func tutorial_card() -> TutorialCard:
+	return _tutorial
+
+
+## The tutorial card, above the battle and hidden; its last OK opens the
+## reveal gate (round 1 waits behind it).
+func _build_tutorial_card() -> void:
+	if _tutorial != null:
+		return
+	_tutorial = TutorialCard.new(func() -> float: return _mode_time, presentation_config.input_guard)
+	add_child(_tutorial)
+	_tutorial.finished.connect(func() -> void:
+		if _replay != null:
+			_replay.open_reveal_gate())
+
+
+## The cards due before this fight's round 1, each marked seen as it is
+## queued: "How to fight" in the first battle, then this faction's rule the
+## first time it is met (its own tooltip text, in its identity colour).
+func due_tutorial_cards() -> Array:
+	var cards: Array = []
+	if hints == null or _battle == null:
+		return cards
+	if hints.is_due(TutorialHints.FIRST_BATTLE):
+		hints.mark_seen(TutorialHints.FIRST_BATTLE)
+		cards.append([TutorialHints.FIRST_BATTLE_TITLE, TutorialHints.FIRST_BATTLE_TEXT, TutorialCard.COLOR_BORDER])
+	var faction_id: String = _descriptor.faction_id if _descriptor != null else ""
+	var rule: FactionRule = _battle.faction_rule
+	var text: String = rule.get_tooltip_text(1) if rule != null else ""
+	if not faction_id.is_empty() and not text.is_empty() and hints.is_due(TutorialHints.rule_id(faction_id)):
+		hints.mark_seen(TutorialHints.rule_id(faction_id))
+		cards.append(["%s's rule" % _faction_name(faction_id), text, rule.get_identity_color()])
+	return cards
+
+
+func _faction_name(faction_id: String) -> String:
+	if item_catalog != null:
+		var rec: FactionData = item_catalog.call(&"get_record", &"faction", faction_id) as FactionData
+		if rec != null and not rec.display_name.is_empty():
+			return rec.display_name
+	return faction_id.trim_prefix("faction_").capitalize()
 
 
 ## Builds the results screen above everything else in the mode, hidden.
@@ -444,6 +495,8 @@ func settle_replay() -> void:
 func handle_action(action: StringName, pressed: bool) -> bool:
 	# The results screen owns every press while it is up (its input guard
 	# first; GDD rule 9), and only its Continue reports results done.
+	if _tutorial != null and _tutorial.visible:
+		return _tutorial.handle_action(action, pressed)
 	if _boss_choice != null and _boss_choice.visible:
 		return _boss_choice.handle_action(action, pressed)
 	if _results_panel != null and _results_panel.visible:
@@ -569,7 +622,12 @@ func _find_boss(enemies: Array[Combatant]) -> Combatant:
 ## The reveal gate opens when the swap into Battle finishes (ADR-0006 §5).
 func _on_transition_finished(to: GameStateMachine.Mode) -> void:
 	if to == GameStateMachine.Mode.BATTLE and _replay != null:
-		_replay.open_reveal_gate()
+		# Onboarding: any due tutorial cards first, then round 1.
+		var cards: Array = due_tutorial_cards()
+		if cards.is_empty() or _tutorial == null:
+			_replay.open_reveal_gate()
+		else:
+			_tutorial.show_cards(cards)
 
 
 ## ADR-0006 §5 "End of the fight": the last beat has played; start the
