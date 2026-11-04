@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/item_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "item_sticky_toffee_pudding"
+display_name = "Sticky Toffee Pudding"
+description = "Nobody stays down when there's custard. Revives a knocked-out ally at 60% HP."
+kind = "consumable"
+effects = Array[Dictionary]([{
+"amount": 60,
+"type": "revive"
+}])
+price = 45

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/item_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "item_full_english"
+display_name = "Full English"
+description = "Eggs, beans, toast, a tomato nobody asked for. Restores 35 HP to everyone standing."
+kind = "consumable"
+effects = Array[Dictionary]([{
+"amount": 35,
+"type": "heal_party"
+}])
+price = 55

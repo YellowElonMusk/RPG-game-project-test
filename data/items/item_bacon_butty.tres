@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/item_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "item_bacon_butty"
+display_name = "Bacon Butty"
+description = "Brown sauce or red? The argument heals nobody; the butty restores 45 HP to one ally."
+kind = "consumable"
+effects = Array[Dictionary]([{
+"amount": 45,
+"type": "heal_hp"
+}])
+price = 14

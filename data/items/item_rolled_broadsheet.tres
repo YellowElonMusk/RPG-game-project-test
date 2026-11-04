@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/item_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "item_rolled_broadsheet"
+display_name = "Rolled Broadsheet"
+description = "Yesterday's news, rolled tight enough to make today's. Rush-Hour Commuter only. ATK +6."
+kind = "equipment"
+effects = Array[Dictionary]([{
+"attack": 6,
+"defense": 0,
+"slot": "weapon",
+"type": "equip",
+"user": "char_rush_hour_commuter"
+}])
+price = 60
