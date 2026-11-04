@@ -107,7 +107,7 @@ func _render() -> void:
 				var rec: ItemData = _stock[i]
 				var gear: String = Equipment.bonus_text(rec)
 				text = "%s%s  %d  (have %d)" % [rec.display_name, "" if gear.is_empty() else " [%s]" % gear,
-						rec.price, world_state.inventory.count(rec.id)]
+						Shop.price(world_state, rec), world_state.inventory.count(rec.id)]
 			lines.append(("> %s <" if i == cursor else "%s") % text)
 		lines.append("")
 		lines.append(_stock[cursor].description if cursor < _stock.size() else "Back to the café table.")

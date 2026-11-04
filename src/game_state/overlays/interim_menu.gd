@@ -212,7 +212,8 @@ func _use(move: Move, target: Combatant) -> void:
 func _show_party(note: String = "") -> void:
 	_screen = &"party"
 	_title.text = "Party"
-	_note.text = note
+	# Faction Reputation (§6): where the squad stands, under the roster.
+	_note.text = note if not note.is_empty() else Reputation.status_line(world_state)
 	_reset_list()
 	for c: Combatant in party:
 		var button := _add_button("%s%s  Lv %d  HP %d/%d  MP %d/%d\nATK %d%s  DEF %d%s  SPD %d" % [

@@ -1,0 +1,47 @@
+[gd_resource type="Resource" script_class="Conversation" load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://src/dialogue/conversation.gd" id="1_conv"]
+[ext_resource type="Script" path="res://src/dialogue/dialogue_line.gd" id="2_line"]
+
+[sub_resource type="Resource" id="l_1"]
+script = ExtResource("2_line")
+text = "Boss after boss, the squad chose the street. The street noticed."
+
+[sub_resource type="Resource" id="l_2"]
+script = ExtResource("2_line")
+text = "The stamps, the invoices and the ring lights go quiet. One morning the ships are simply gone."
+
+[sub_resource type="Resource" id="l_3"]
+script = ExtResource("2_line")
+speaker = "Karen"
+speaker_id = "char_karen"
+text = "Gone without leaving a forwarding address. Typical. I'd like to file a complaint."
+
+[sub_resource type="Resource" id="l_4"]
+script = ExtResource("2_line")
+text = "Nobody signs a treaty. The underground comes up from the Metro for good, and keeps the tunnels, just in case."
+
+[sub_resource type="Resource" id="l_5"]
+script = ExtResource("2_line")
+speaker = "Baguette Thrower"
+speaker_id = "char_baguette_thrower"
+text = "Earth: one. Aliens: nil. The crowd goes... back to work. Fair enough."
+
+[sub_resource type="Resource" id="l_6"]
+script = ExtResource("2_line")
+speaker = "Encrypted message"
+text = "Squad. Outcome noted. Humanity has refused all assistance. Admirable. Inadvisable."
+
+[sub_resource type="Resource" id="l_7"]
+script = ExtResource("2_line")
+speaker = "Encrypted message"
+text = "We will keep watching. Do not frak this up."
+
+[sub_resource type="Resource" id="l_8"]
+script = ExtResource("2_line")
+text = "Earth carries on, loud, stubborn and free. The fight is not over. It never really is."
+
+[resource]
+script = ExtResource("1_conv")
+id = "conv_ending_human"
+lines = Array[ExtResource("2_line")]([SubResource("l_1"), SubResource("l_2"), SubResource("l_3"), SubResource("l_4"), SubResource("l_5"), SubResource("l_6"), SubResource("l_7"), SubResource("l_8")])

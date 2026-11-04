@@ -53,7 +53,9 @@ func test_sydney_survives_save_and_continue() -> void:
 	assert_str(back.objective_line()).contains("Content House")
 
 
-func test_ending_sydney_says_the_end_line_and_stays() -> void:
+## Sydney is the campaign's last chapter: its end plays the ending (an even
+## record here: the split ending), not another chapter.
+func test_ending_sydney_plays_the_campaign_ending() -> void:
 	var root: GameRoot = _new_game()
 	var sydney: OverworldMode = _end_london(root)
 	_close_line(root)
@@ -62,7 +64,8 @@ func test_ending_sydney_says_the_end_line_and_stays() -> void:
 	assert_int(sydney.chapter_end_calls).is_equal(1)
 	assert_int(root.machine.phase).is_equal(GameStateMachine.Phase.IDLE)
 	assert_str(root.world_state.chapter_id).is_equal("chapter_sydney")
-	assert_str((root.current_overlay_node() as InterimLineDialogue).text).contains("To be continued")
+	assert_str(root.ending.id).is_equal(EndingRules.SPLIT)
+	assert_str((root.current_overlay_node() as InterimLineDialogue).text).contains("Some bosses finished")
 
 
 ## New Game -> Paris end -> London -> London end -> Sydney.

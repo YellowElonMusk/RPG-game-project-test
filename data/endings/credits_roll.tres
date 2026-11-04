@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="CreditsRoll" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/endings/credits_roll.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+lines = PackedStringArray("GO BACK TO YOUR PLANET!", "", "", "The squad", "Karen", "The Five-Star Chef", "Florida Man", "The Baguette Thrower", "", "and", "The Street Mime", "The Rush-Hour Commuter", "The Boxing Kangaroo", "", "", "The occupation", "Bureaucratia, Paris", "MegaCorp, London", "Influencia, Sydney", "", "", "A game by Yi Long Ma", "", "Made with the Godot Engine", "godotengine.org", "", "", "No forms were harmed in the making of this game.", "Several were filed.", "", "", "Thanks for playing.")
+scroll_px_per_s = 60.0
+skip_guard_s = 1.0

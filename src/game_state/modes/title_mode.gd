@@ -45,9 +45,12 @@ var settings_panel: SettingsPanel = null
 var _settings_button: Button = null
 ## The last Continue preflight, for tests and the load report.
 var last_load: LoadedSave = null
+## The end credits, rolling over the buttons after the campaign ends
+## (entered with a `CreditsPayload`); null otherwise.
+var credits_panel: CreditsPanel = null
 
 
-func setup(machine: GameStateMachine, _payload: RefCounted) -> void:
+func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 	_machine = machine
 	_new_game_button = %NewGameButton
 	_continue_button = %ContinueButton
@@ -66,6 +69,21 @@ func setup(machine: GameStateMachine, _payload: RefCounted) -> void:
 	_quit_confirm.confirmed.connect(_on_quit_confirmed)
 	_quit_confirm.cancelled.connect(_on_quit_cancelled)
 	_quit_confirm.close()
+	var credits: CreditsPayload = payload as CreditsPayload
+	if credits != null:
+		credits_panel = CreditsPanel.new()
+		credits_panel.setup(credits.ending, CreditsRoll.load_default())
+		credits_panel.finished.connect(_on_credits_finished)
+		add_child(credits_panel)
+
+
+## The credits are over: drop them and show the title buttons.
+func _on_credits_finished() -> void:
+	if credits_panel != null:
+		credits_panel.queue_free()
+		credits_panel = null
+	if is_inside_tree():
+		%NewGameButton.grab_focus()
 
 
 ## INTERIM (same tag as `DefeatPrompt._ready()`): this scene grabs its own
@@ -83,6 +101,8 @@ func _ready() -> void:
 ## scene, not a machine overlay, so there is no overlay-stack gate to rely on
 ## (ADR-0002 §2 Implementation Notes).
 func handle_action(action: StringName, pressed: bool) -> bool:
+	if credits_panel != null:
+		return credits_panel.handle_action(action, pressed)
 	if settings_panel != null:
 		return settings_panel.handle_action(action, pressed)
 	if _quit_confirm.visible:

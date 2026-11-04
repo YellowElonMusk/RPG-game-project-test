@@ -301,6 +301,7 @@ func _validate_maps() -> void:
 
 func _process(delta: float) -> void:
 	if _machine != null and _warmup == null:
+		_try_finish_campaign()
 		_machine.tick(delta)
 		# Playtime stops while the Menu is open (ADR-0009 §3).
 		if _save_service != null and not (GameStateMachine.OverlayKind.MENU in _machine.overlay_stack):
@@ -450,13 +451,11 @@ var _pending_intro: String = ""
 
 
 ## Yes in the chapter-end prompt: begin the next chapter and send the squad
-## to its first map; on the last chapter, say its end line instead.
+## to its first map; on the last chapter, play the ending instead.
 func _on_chapter_end_requested(overworld: OverworldMode) -> void:
-	var current: CampaignChapter = campaign.chapter(_world_state.chapter_id) if campaign != null else null
 	var next: CampaignChapter = ChapterProgression.advance(_world_state, campaign)
 	if next == null:
-		if current != null and not current.end_line.is_empty() and is_instance_valid(overworld):
-			overworld.say(current.end_line)
+		_play_ending(overworld)
 		return
 	if not next.start_camp_id.is_empty():
 		_machine.restore_last_camp_id(next.start_camp_id)
@@ -465,6 +464,34 @@ func _on_chapter_end_requested(overworld: OverworldMode) -> void:
 			GameStateMachine.Mode.OVERWORLD, ChapterProgression.arrival_payload(next))
 	if result != GameStateMachine.RequestResult.OK:
 		push_error("GameRoot: the next chapter's map change was refused (%d)" % result)
+
+
+## The ending chosen when the campaign finished (tests); null before.
+var ending: EndingData = null
+## Title's credits payload, owed once the ending conversation has closed;
+## retried every frame until Game State accepts it.
+var _campaign_finish_pending: CreditsPayload = null
+
+
+## The campaign's last chapter is over (narrative bible §6.6): the ending
+## the squad's reputation earned plays as a conversation, then the game
+## fades to Title, which rolls the credits.
+func _play_ending(overworld: OverworldMode) -> void:
+	ending = EndingData.load_by_id(EndingRules.pick_id(_world_state))
+	var payload := CreditsPayload.new(ending)
+	var conversation: Conversation = Conversation.load_by_id(ending.conversation_id) if ending != null else null
+	var queue_finish := func() -> void: _campaign_finish_pending = payload
+	if conversation == null or not is_instance_valid(overworld) \
+			or overworld.talk(conversation, queue_finish) != GameStateMachine.RequestResult.OK:
+		queue_finish.call()
+
+
+## Starts the fade to Title once the ending conversation is closed.
+func _try_finish_campaign() -> void:
+	if _campaign_finish_pending == null or _machine == null:
+		return
+	if _machine.finish_campaign(_campaign_finish_pending) == GameStateMachine.RequestResult.OK:
+		_campaign_finish_pending = null
 
 
 ## Who joined, as one line: each name and their archetype line, then where
@@ -477,6 +504,10 @@ func _join_line(joined: Array[Combatant]) -> String:
 		parts.append(("%s joins the squad! %s" % [m.display_name, flavour]).strip_edges())
 	if parts.is_empty():
 		return ""
+	# Faction Reputation (§6.3): how the recruit sizes up the squad.
+	var aside: String = Reputation.recruit_aside(_world_state)
+	if not aside.is_empty():
+		parts.append(aside)
 	return " ".join(parts) + " (Menu > Party to choose who fights.)"
 
 

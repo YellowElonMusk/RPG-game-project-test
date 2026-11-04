@@ -795,6 +795,25 @@ func _retreat_camp_id() -> String:
 	return ""
 
 
+## The campaign is over (Faction Reputation & Endings, 2026-11-04): after the
+## ending's conversation closes, the Overworld fades to Title with
+## `payload` (a `CreditsPayload`, so Title rolls the credits first). The
+## one non-Menu road to Title, legal only from an idle Overworld with no
+## overlay open.
+func finish_campaign(payload: RefCounted) -> RequestResult:
+	if _current_mode == Mode.CONTENT_ERROR:
+		return RequestResult.REJECTED_TERMINAL
+	if _phase != Phase.IDLE:
+		return RequestResult.REJECTED_BUSY
+	if _current_mode != Mode.OVERWORLD:
+		_log_invalid_pair(Mode.TITLE)
+		return RequestResult.REJECTED_INVALID_PAIR
+	if not _overlay_stack.is_empty():
+		return RequestResult.REJECTED_OVERLAY_BLOCKS
+	_begin_transition(Mode.OVERWORLD, Mode.TITLE, _TRANSITION_TYPES[Mode.OVERWORLD][Mode.TITLE], payload)
+	return RequestResult.OK
+
+
 ## Quit to Title from the Menu (story 025, ADR-0002 §4/§5 ruling 2026-10-23).
 ## Pops every overlay top-down, emitting `overlay_closed` for each, then
 ## re-enables `ModeHost` and frees any frozen Overworld -- all before

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="EndingData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/endings/ending_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "ending_alien"
+title = "Another Chance"
+conversation_id = "conv_ending_alien"
+epilogue = "The squad let the bosses go, and the alliance re-ran its numbers. Humanity is still a risk. Just a smaller one."

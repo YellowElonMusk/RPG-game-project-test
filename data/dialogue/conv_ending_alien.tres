@@ -1,0 +1,47 @@
+[gd_resource type="Resource" script_class="Conversation" load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://src/dialogue/conversation.gd" id="1_conv"]
+[ext_resource type="Script" path="res://src/dialogue/dialogue_line.gd" id="2_line"]
+
+[sub_resource type="Resource" id="l_1"]
+script = ExtResource("2_line")
+text = "Boss after boss, the squad let them go. Word travels fast between alien worlds."
+
+[sub_resource type="Resource" id="l_2"]
+script = ExtResource("2_line")
+text = "A Supervisor files a form. A CEO forwards a memo. A Mega-Influencer posts about it. Everyone reads it."
+
+[sub_resource type="Resource" id="l_3"]
+script = ExtResource("2_line")
+speaker = "Encrypted message"
+text = "Squad. The alliance has done something unprecedented. It has re-run the numbers."
+
+[sub_resource type="Resource" id="l_4"]
+script = ExtResource("2_line")
+speaker = "Encrypted message"
+text = "Your record was submitted as evidence. Humans and aliens, cooperating. The model did not expect this."
+
+[sub_resource type="Resource" id="l_5"]
+script = ExtResource("2_line")
+text = "The 99% becomes 61%. Then 40%. Nobody can agree on a rounding rule, which is somehow very human."
+
+[sub_resource type="Resource" id="l_6"]
+script = ExtResource("2_line")
+speaker = "Five-Star Chef"
+speaker_id = "char_michelin_chef"
+text = "Tonight, a family meal. Everyone is invited. Bring your own tentacle forks."
+
+[sub_resource type="Resource" id="l_7"]
+script = ExtResource("2_line")
+speaker = "Florida Man"
+speaker_id = "char_florida_man"
+text = "I'm adopting an alien. Or it's adopting me. The paperwork was unclear."
+
+[sub_resource type="Resource" id="l_8"]
+script = ExtResource("2_line")
+text = "Humanity gets another chance. Not a big one. But nobody had to queue for it."
+
+[resource]
+script = ExtResource("1_conv")
+id = "conv_ending_alien"
+lines = Array[ExtResource("2_line")]([SubResource("l_1"), SubResource("l_2"), SubResource("l_3"), SubResource("l_4"), SubResource("l_5"), SubResource("l_6"), SubResource("l_7"), SubResource("l_8")])

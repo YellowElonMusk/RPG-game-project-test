@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ReputationConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/reputation/reputation_config.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+price_step = 0.1
+price_min_multiplier = 0.7
+price_max_multiplier = 1.3
+recruit_aside_human = "They've heard about you on the street."
+recruit_aside_alien = "They keep one eye on your alien friends."
