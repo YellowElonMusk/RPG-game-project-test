@@ -177,6 +177,36 @@ func test_battle_music_uses_the_beatbox_seam_when_it_takes_the_fight() -> void:
 	assert_str(String(m.current_music_id)).is_equal("beatbox")
 
 
+func test_battle_music_picks_a_random_track_from_the_battle_dir() -> void:
+	var dir: String = "user://audio_manager_test_battle_dir/"
+	DirAccess.make_dir_recursive_absolute(dir)
+	for file: String in ["one.wav", "two.wav", "notes.txt"]:
+		FileAccess.open(dir + file, FileAccess.WRITE).close()
+	var t := _table_with_pulse()
+	t.battle_music_dir = dir
+	var m := _manager(_all_exist)
+	m.setup(t, _all_exist, _fake_load)
+	assert_array(Array(m.battle_tracks())).is_equal([dir + "one.wav", dir + "two.wav"])
+	var seen: Dictionary[String, bool] = {}
+	m.rng.seed = 7
+	for i: int in 12:
+		m.play_battle_music(null)
+		seen[String(m.current_music_id)] = true
+	assert_bool(seen.has("battle:one.wav") and seen.has("battle:two.wav")).is_true()
+	for file: String in DirAccess.get_files_at(dir):
+		DirAccess.remove_absolute(dir + file)
+	DirAccess.remove_absolute(dir)
+
+
+func test_battle_music_falls_back_to_the_pulse_without_tracks() -> void:
+	var t := _table_with_pulse()
+	t.battle_music_dir = "user://no_such_battle_dir/"
+	var m := _manager(_all_exist)
+	m.setup(t, _all_exist, _fake_load)
+	m.play_battle_music(null)
+	assert_str(String(m.current_music_id)).is_equal(String(AudioIds.BX_FLOOR_PULSE))
+
+
 func _table_with_pulse() -> AudioEventTable:
 	var t := _table()
 	t.music[String(AudioIds.BX_FLOOR_PULSE)] = PackedStringArray([_A])

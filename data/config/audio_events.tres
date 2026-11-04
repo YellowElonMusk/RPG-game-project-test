@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1_audio")
+battle_music_dir = "res://assets/audio/music/battle_placeholder/"
 music = Dictionary[String, PackedStringArray]({
 "mus_title": PackedStringArray("res://assets/audio/music/mus_title.ogg", "res://assets/audio/placeholder/ph_mus_title.wav"),
 "mus_credits": PackedStringArray("res://assets/audio/music/mus_credits.ogg", "res://assets/audio/music/mus_chapter_end.ogg", "res://assets/audio/placeholder/ph_mus_credits.wav"),

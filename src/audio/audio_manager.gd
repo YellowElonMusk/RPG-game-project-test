@@ -33,6 +33,8 @@ const SFX_REPEAT_GAP_S: float = 0.03
 ## built): `(EncounterDescriptor) -> bool`. When set and it returns true it
 ## owns the fight's music; otherwise the floor pulse placeholder plays.
 var battle_music_provider: Callable = Callable()
+## Picks the battle track (seed it in tests).
+var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
 ## The music id playing (or fading in), &"" for none.
 var current_music_id: StringName = &""
@@ -162,12 +164,52 @@ func play_sfx(id: StringName) -> void:
 
 
 ## Battle music for `descriptor`: the beatbox score when its provider takes
-## it, else the floor pulse placeholder.
+## it, else a random track from `battle_music_dir`, else the floor pulse.
 func play_battle_music(descriptor: EncounterDescriptor) -> void:
 	if battle_music_provider.is_valid() and bool(battle_music_provider.call(descriptor)):
 		current_music_id = &"beatbox"
 		return
+	var tracks: PackedStringArray = battle_tracks()
+	if not tracks.is_empty():
+		var path: String = tracks[rng.randi_range(0, tracks.size() - 1)]
+		var stream: AudioStream = _battle_stream(path)
+		if stream != null:
+			_crossfade_to(StringName("battle:" + path.get_file()), stream)
+			return
 	play_music([AudioIds.BX_FLOOR_PULSE])
+
+
+## The battle tracks in the table's `battle_music_dir`, sorted (so a seeded
+## `rng` picks the same one every run).
+func battle_tracks() -> PackedStringArray:
+	var out := PackedStringArray()
+	if _table.battle_music_dir.is_empty() or not DirAccess.dir_exists_absolute(_table.battle_music_dir):
+		return out
+	for file: String in DirAccess.get_files_at(_table.battle_music_dir):
+		if file.get_extension().to_lower() in ["mp3", "ogg", "wav"]:
+			out.append(_table.battle_music_dir.path_join(file))
+	out.sort()
+	return out
+
+
+## Loads a battle track. MP3s are read straight from disk, so a dropped-in
+## file plays without an editor import; anything else goes through `_load`.
+func _battle_stream(path: String) -> AudioStream:
+	if _streams.has(path):
+		return _streams[path]
+	var stream: AudioStream = null
+	if path.get_extension().to_lower() == "mp3":
+		var bytes: PackedByteArray = FileAccess.get_file_as_bytes(path)
+		if not bytes.is_empty():
+			var mp3 := AudioStreamMP3.new()
+			mp3.data = bytes
+			stream = mp3
+	else:
+		stream = _load.call(path) as AudioStream
+	if stream == null:
+		push_warning("AudioManager: could not load battle track '%s'" % path)
+	_streams[path] = stream
+	return stream
 
 
 ## The bus a player of each column uses (tests check the routing).

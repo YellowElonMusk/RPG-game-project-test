@@ -198,3 +198,9 @@ $RECYCLE.BIN/
 /docs/WORKFLOW-GUIDE.md
 /docs/migration-guide-v1.1.md
 /docs/skill-flow-diagrams.md
+
+# === Unlicensed placeholder audio (user, 2026-11-04) ===
+# Reference beatbox tracks the user has no rights to: local play only, never
+# committed or pushed. Real battle music replaces them later.
+assets/audio/music/battle_placeholder/*
+!assets/audio/music/battle_placeholder/README.md
