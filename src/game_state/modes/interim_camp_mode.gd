@@ -23,6 +23,26 @@ var party_source: Callable = Callable()
 ## The camp being rested at (the payload's ID; may be empty on a Retreat
 ## with no camp registered).
 var camp_id: String = ""
+## Injected by `GameRoot`: the wallet and bag the shop reads and writes
+## (Items & Shops rule 9). Null = no shop.
+var world_state: WorldState = null
+## Injected by `GameRoot`: the `item_` record source. Null = no shop.
+var item_catalog: Object = null
+## What this camp sells; the shipped config when not injected.
+var shop_config: ShopConfig = null
+
+enum Screen { MAIN, SHOP }
+## Main-screen entries, in order. Set out is first and selected, so one
+## confirm still sets out (the rest card's original behaviour).
+const SET_OUT: String = "Set out"
+const SHOP: String = "Shop"
+const DONE: String = "Done"
+var screen: Screen = Screen.MAIN
+## The highlighted row of the current screen.
+var cursor: int = 0
+## The last purchase's result line ("" before any).
+var shop_message: String = ""
+var _stock: Array[ItemData] = []
 
 
 func setup(machine: GameStateMachine, payload: RefCounted) -> void:
@@ -30,7 +50,68 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 	var camp: CampEntryPayload = payload as CampEntryPayload
 	camp_id = camp.camp_id if camp != null else ""
 	restore_party()
-	(%Card as Label).text = "Resting at camp. Everyone is back on their feet.\n[Confirm] Set out"
+	_load_stock()
+	_render()
+
+
+## The current screen's rows: Set out (and Shop when this camp sells
+## anything), or one row per item on the shelf plus Done.
+func rows() -> Array[String]:
+	var out: Array[String] = []
+	if screen == Screen.MAIN:
+		out.append(SET_OUT)
+		if not _stock.is_empty():
+			out.append(SHOP)
+		return out
+	for rec: ItemData in _stock:
+		out.append(rec.id)
+	out.append(DONE)
+	return out
+
+
+## The shelf (tests).
+func get_stock() -> Array[ItemData]:
+	return _stock.duplicate()
+
+
+func _load_stock() -> void:
+	_stock.clear()
+	if world_state == null or item_catalog == null:
+		return
+	var cfg: ShopConfig = shop_config if shop_config != null else ShopConfig.load_default()
+	for id: String in cfg.stock_for(camp_id):
+		var rec: ItemData = item_catalog.call(&"get_record", &"item", id) as ItemData
+		if rec != null:
+			_stock.append(rec)
+
+
+func _render() -> void:
+	var card: Label = get_node_or_null(^"%Card") as Label
+	if card == null:
+		return
+	var lines: PackedStringArray = []
+	var r: Array[String] = rows()
+	if screen == Screen.MAIN:
+		lines.append("Resting at camp. Everyone is back on their feet.")
+		if world_state != null:
+			lines.append("Money: %d" % world_state.money)
+		lines.append("")
+		for i: int in r.size():
+			lines.append(("> %s <" if i == cursor else "%s") % r[i])
+	else:
+		lines.append("Café counter -- Money: %d" % world_state.money)
+		lines.append("")
+		for i: int in r.size():
+			var text: String = DONE
+			if i < _stock.size():
+				var rec: ItemData = _stock[i]
+				text = "%s  %d  (have %d)" % [rec.display_name, rec.price, world_state.inventory.count(rec.id)]
+			lines.append(("> %s <" if i == cursor else "%s") % text)
+		lines.append("")
+		lines.append(_stock[cursor].description if cursor < _stock.size() else "Back to the café table.")
+		if not shop_message.is_empty():
+			lines.append(shop_message)
+	card.text = "\n".join(lines)
 
 
 ## Restores every party member to full HP and MP and clears battle-only
@@ -43,11 +124,43 @@ func restore_party() -> void:
 		member.reset_for_battle()
 
 
-## `confirm` sets out; every other action is consumed and does nothing.
+## Up/down move the highlight, `confirm` picks the row (Set out, Shop, buy
+## one of an item, Done), `cancel` leaves the shop. Every action is consumed.
 func handle_action(action: StringName, pressed: bool) -> bool:
-	if action == InputActions.CONFIRM and pressed:
-		set_out()
+	if not pressed:
+		return true
+	var count: int = rows().size()
+	if action == InputActions.NAV_UP or action == InputActions.MOVE_UP:
+		cursor = (cursor - 1 + count) % count
+	elif action == InputActions.NAV_DOWN or action == InputActions.MOVE_DOWN:
+		cursor = (cursor + 1) % count
+	elif action == InputActions.CANCEL and screen == Screen.SHOP:
+		_open(Screen.MAIN)
+	elif action == InputActions.CONFIRM:
+		_pick(rows()[cursor])
+	_render()
 	return true
+
+
+func _pick(row: String) -> void:
+	if row == SET_OUT:
+		set_out()
+	elif row == SHOP:
+		_open(Screen.SHOP)
+	elif row == DONE:
+		_open(Screen.MAIN)
+	else:
+		var rec: ItemData = _stock[cursor]
+		var result: Shop.Result = Shop.buy(world_state, rec)
+		shop_message = "Bought: %s." % rec.display_name if result == Shop.Result.OK \
+				else "%s: %s." % [rec.display_name, Shop.reason(result)]
+
+
+func _open(next: Screen) -> void:
+	screen = next
+	cursor = 0 if next == Screen.SHOP else rows().find(SHOP)
+	cursor = maxi(cursor, 0)
+	shop_message = ""
 
 
 ## Requests the Overworld at the camp's return EntryPoint. Returns Game

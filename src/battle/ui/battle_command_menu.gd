@@ -42,6 +42,13 @@ var _battle: BattleCore = null
 ## stays hidden while the turn plays back (sprite-camera story 033).
 var _replay: BattleReplayController = null
 var _pending_move: Move = null
+## Items & Shops rule 4: returns the ITEM moves for every item in the bag
+## (`Array[Move]`), or is invalid when the battle has no bag -- then no
+## Items entry is shown.
+var _item_source: Callable = Callable()
+## True while the item list (or an item's target pick) is open, so cancel
+## steps back one level at a time.
+var _in_items: bool = false
 
 
 ## Wires this menu to a battle: listens to `turn_started`/`battle_ended` to
@@ -54,7 +61,9 @@ var _pending_move: Move = null
 ## With `replay`, the menu connects only to the controller's gated turn and
 ## end signals, never to `BattleCore`'s (ADR-0006 Implementation Guidelines),
 ## and starts hidden unless the controller is already IDLE.
-func setup(battle: BattleCore, replay: BattleReplayController = null) -> void:
+func setup(battle: BattleCore, replay: BattleReplayController = null,
+		item_source: Callable = Callable()) -> void:
+	_item_source = item_source
 	_command_panel = %CommandPanel
 	_command_title = %CommandTitle
 	_command_list = %CommandList
@@ -99,6 +108,9 @@ func handle_action(action: StringName, pressed: bool) -> bool:
 func _handle_cancel() -> bool:
 	if not _target_panel.visible:
 		return false
+	if _in_items and _pending_move != null:
+		_show_item_list()
+		return true
 	_show_command_list()
 	return true
 
@@ -113,6 +125,7 @@ func _refresh_for_current_state() -> void:
 
 func _show_command_list() -> void:
 	_pending_move = null
+	_in_items = false
 	_target_panel.visible = false
 	_command_panel.visible = true
 	_rebuild_command_list()
@@ -127,6 +140,8 @@ func _rebuild_command_list() -> void:
 	var buttons: Array[Button] = []
 	for move: Move in SquadMoves.moves_for(actor):
 		buttons.append(_make_command_button(actor, move))
+	if _item_source.is_valid():
+		buttons.append(_make_items_button())
 	for button in buttons:
 		_command_list.add_child(button)
 	_wire_vertical_neighbors(buttons)
@@ -165,6 +180,63 @@ func _disabled_reason(actor: Combatant, move: Move) -> String:
 	return ""
 
 
+## The Items entry: opens the bag; disabled with the reason when it is empty.
+func _make_items_button() -> Button:
+	var empty: bool = (_item_source.call() as Array).is_empty()
+	var button := Button.new()
+	button.text = "Items -- the bag is empty" if empty else "Items"
+	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	button.disabled = empty
+	button.focus_mode = Control.FOCUS_ALL
+	button.pressed.connect(_show_item_list)
+	return button
+
+
+## The bag, one button per item with its count; an item no one can use right
+## now (rule 6: it would do nothing) is disabled.
+func _show_item_list() -> void:
+	_in_items = true
+	_pending_move = null
+	_command_panel.visible = false
+	_target_panel.visible = true
+	_clear(_target_list)
+	_target_title.text = "Items -- choose one"
+	var actor: Combatant = _battle.get_active_combatant()
+	var buttons: Array[Button] = []
+	for move: Move in _item_source.call():
+		var reason: String = _disabled_reason(actor, move) if actor != null else ""
+		if reason.is_empty() and _item_targets(move).is_empty():
+			reason = "No one needs it"
+		var button := Button.new()
+		var label: String = "%s x%d" % [move.display_name, _battle.inventory.count(move.item_id) if _battle.inventory != null else 0]
+		button.text = label if reason.is_empty() else "%s -- %s" % [label, reason]
+		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		button.disabled = not reason.is_empty()
+		button.focus_mode = Control.FOCUS_ALL
+		button.pressed.connect(_on_move_chosen.bind(move))
+		buttons.append(button)
+	for button in buttons:
+		_target_list.add_child(button)
+	_wire_vertical_neighbors(buttons)
+	_focus_first_enabled(buttons)
+
+
+## The squad members `move` (an item) can be used on right now; for a party
+## item, the whole living squad when it would help anyone.
+func _item_targets(move: Move) -> Array[Combatant]:
+	var out: Array[Combatant] = []
+	if move.target_type == Move.TargetType.SELF:
+		if _battle.item_usable(move, null):
+			out.assign(_battle.get_living_squad())
+		return out
+	var pool: Array[Combatant] = _battle.get_knocked_out_squad() \
+			if move.target_type == Move.TargetType.SINGLE_KO_ALLY else _battle.get_living_squad()
+	for c: Combatant in pool:
+		if _battle.item_usable(move, c):
+			out.append(c)
+	return out
+
+
 func _on_move_chosen(move: Move) -> void:
 	if move.target_type == Move.TargetType.SELF:
 		_submit(move, null)
@@ -177,8 +249,13 @@ func _show_target_pick(move: Move) -> void:
 	_command_panel.visible = false
 	_target_panel.visible = true
 	_clear(_target_list)
-	var targets: Array[Combatant] = _battle.get_living_enemies() \
-			if move.target_type == Move.TargetType.SINGLE_ENEMY else _battle.get_living_squad()
+	var targets: Array[Combatant] = []
+	if move.category == Move.Category.ITEM:
+		targets = _item_targets(move)
+	elif move.target_type == Move.TargetType.SINGLE_ENEMY:
+		targets = _battle.get_living_enemies()
+	else:
+		targets = _battle.get_living_squad()
 	_target_title.text = "%s -- choose a target" % move.display_name
 	var buttons: Array[Button] = []
 	for target: Combatant in targets:

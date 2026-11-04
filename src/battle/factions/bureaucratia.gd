@@ -159,7 +159,7 @@ func get_banner_text(round_number: int) -> String:
 	if specials_allowed(round_number):
 		return "PERMIT GRANTED — All-out war! Special moves are allowed for both sides."
 	var rounds_left: int = PERMIT_ROUNDS - round_number + 1
-	return "BUREAUCRATIA — Special moves need a government permit. It arrives in %d round%s. Attack and Defend only, for both sides." % [
+	return "BUREAUCRATIA — Special moves need a government permit. It arrives in %d round%s. Attack, Defend and items only, for both sides." % [
 		rounds_left, "" if rounds_left == 1 else "s"]
 
 
@@ -178,4 +178,4 @@ func get_banner_color(round_number: int) -> Color:
 func get_tooltip_text(round_number: int) -> String:
 	if specials_allowed(round_number):
 		return "The permit arrived: Special moves are now allowed for both sides."
-	return "Bureaucratia requires a government permit before anyone can use a Special move. Attack and Defend only until it arrives."
+	return "Bureaucratia requires a government permit before anyone can use a Special move. Attack, Defend and items only until it arrives."

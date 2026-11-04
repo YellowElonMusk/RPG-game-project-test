@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/item_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "item_picnic_basket"
+display_name = "Picnic Basket"
+description = "Bread, cheese, a blanket, no wine (it is a workday). Restores 20 HP to everyone standing."
+kind = "consumable"
+effects = Array[Dictionary]([{
+"amount": 20,
+"type": "heal_party"
+}])
+price = 35

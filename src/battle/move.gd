@@ -17,12 +17,15 @@ extends RefCounted
 ## Move categories. Specials are a distinct category from Attack/Defend per
 ## Acceptance Criterion 7; what a given special *does* is `special_effect`
 ## (Story 003).
-enum Category { ATTACK, DEFEND, SPECIAL }
+## ITEM (Items & Shops GDD rule 4): a consumable from the squad's bag; it is
+## not a Special, so a Special ban never blocks it.
+enum Category { ATTACK, DEFEND, SPECIAL, ITEM }
 
 ## Who a move can legally target. "Enemy"/"ally" are relative to the acting
 ## combatant's side, so the same move definition works for squad and enemy
 ## actors alike.
-enum TargetType { SELF, SINGLE_ENEMY, SINGLE_ALLY }
+## SINGLE_KO_ALLY: a knocked-out ally (revive items; Items & Shops rule 5).
+enum TargetType { SELF, SINGLE_ENEMY, SINGLE_ALLY, SINGLE_KO_ALLY }
 
 ## Which effect a SPECIAL move resolves to (Story 003, `src/battle/squad/
 ## specials.gd`). Meaningless outside `category == SPECIAL`, where it stays
@@ -31,6 +34,10 @@ enum TargetType { SELF, SINGLE_ENEMY, SINGLE_ALLY }
 ## duration instead (its magnitude is a DamageCalculator constant, mirroring
 ## how Defend's -50% is a constant rather than per-move data).
 enum SpecialEffect { NONE, STUN, HEAL_PARTY, HEAL_SINGLE, DAMAGE_DEBUFF, DIRECT_DAMAGE }
+
+## What an ITEM move does (Items & Shops GDD rule 5); `power` is its flat
+## amount (HP or MP; for REVIVE, the percent of max HP returned).
+enum ItemEffect { NONE, HEAL_HP, RESTORE_MP, REVIVE, HEAL_PARTY }
 
 var display_name: String
 var category: Category
@@ -45,6 +52,10 @@ var special_effect: SpecialEffect
 ## Effect duration in rounds. Only meaningful for `SpecialEffect.DAMAGE_DEBUFF`
 ## (Florida Man's Viral Stunt); 0 for every other move.
 var effect_rounds: int
+## Only meaningful when `category == ITEM`: the `item_` record consumed and
+## what it does (`ItemEffects.move_for()` builds these).
+var item_id: String = ""
+var item_effect: ItemEffect = ItemEffect.NONE
 
 
 func _init(p_display_name: String, p_category: Category, p_mp_cost: int,

@@ -146,6 +146,8 @@ func _ready() -> void:
 		elif mode is InterimCampMode:
 			(mode as InterimCampMode).camp_directory = _camp_directory
 			(mode as InterimCampMode).save_service = _save_service
+			(mode as InterimCampMode).world_state = _world_state
+			(mode as InterimCampMode).item_catalog = catalog()
 			var squad: Array[Combatant] = _squad_store.squad
 			(mode as InterimCampMode).party_source = func() -> Array[Combatant]: return squad
 		elif mode is TitleMode:
@@ -153,6 +155,7 @@ func _ready() -> void:
 		elif mode is BattleMode:
 			(mode as BattleMode).flash_gate = flash_gate
 			(mode as BattleMode).world_state = _world_state
+			(mode as BattleMode).item_catalog = catalog()
 		mode.setup(_machine_box[0], payload)
 	# The loader's result getter: the thawed Overworld's on_thawed() needs the
 	# battle result, and the return swap carries no payload (story 014).

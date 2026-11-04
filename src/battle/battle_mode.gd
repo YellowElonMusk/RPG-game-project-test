@@ -72,6 +72,9 @@ var _boss_choice: BossChoicePanel = null
 ## Where the choice's reputation goes (GameRoot injects the Overworld's
 ## WorldState before `setup()`); null (tests, capture) keeps no score.
 var world_state: WorldState = null
+## The `item_` record source for the Items command (GameRoot injects the
+## content catalog); null (tests, capture) shows no Items entry.
+var item_catalog: Object = null
 ## One RNG per Battle-mode instance (ADR-0010 §3): never recreated, never
 ## restored on Retry, so a retried fight draws fresh variance.
 var _rng: RandomNumberGenerator = null
@@ -126,6 +129,8 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 	if result.core == null:
 		return
 	_battle = result.core
+	if world_state != null:
+		_battle.inventory = world_state.inventory
 	BattleCore.clear_transients(_party)
 	if entry.descriptor.is_boss and not _has_exactly_one_boss(_battle.enemies):
 		# ADR-0006 §5 step 3: none or more than one boss is a descriptor
@@ -161,7 +166,7 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 	%BattleView.flash_gate = flash_gate
 	%BattleView.setup(_battle, _replay, entry.descriptor, presentation_config)
 	_hud.setup(_battle, _replay)
-	_command_menu.setup(_battle, _replay)
+	_command_menu.setup(_battle, _replay, _item_moves if _battle.inventory != null and item_catalog != null else Callable())
 	if _machine != null:
 		_machine.transition_finished.connect(_on_transition_finished)
 		_machine.transition_started.connect(_on_transition_started)
@@ -466,12 +471,24 @@ func _replay_owns_input() -> bool:
 	return _replay.is_replaying() or _replay.get_state() == BattleReplayController.State.GATED
 
 
+## The Items command's list (Items & Shops rule 4): one ITEM move per item
+## in the bag, in the bag's order; records that are not usable consumables
+## are skipped.
+func _item_moves() -> Array[Move]:
+	var out: Array[Move] = []
+	for id: String in _battle.inventory.ids():
+		var move: Move = ItemEffects.move_for(item_catalog.call(&"get_record", &"item", id) as ItemData)
+		if move != null:
+			out.append(move)
+	return out
+
+
 ## Battle only (ADR-0002 Key Interfaces). `null` is itself a swap failure --
 ## see the class doc comment.
 func capture_start_snapshot() -> RefCounted:
 	if _battle == null:
 		return null
-	return BattleStartSnapshot.capture(_party)
+	return BattleStartSnapshot.capture(_party, _battle.inventory)
 
 
 ## Retry (ADR-0002 §7, ADR-0010 §5 "Retry"): restores the party's HP/MP from
@@ -491,7 +508,7 @@ func restore_start_snapshot(snapshot: RefCounted) -> void:
 	_end_hold_left = -1.0
 	_clear_end_light()
 	_awaiting_results_done = false
-	start.restore_into(_party)
+	start.restore_into(_party, _battle.inventory)
 	BattleCore.clear_transients(_party)
 	# ADR-0006 §5 "Retry" step 3: the fight's light back over the Defeat
 	# light, hidden behind an uncapped retry flash (blend 0) or blended over

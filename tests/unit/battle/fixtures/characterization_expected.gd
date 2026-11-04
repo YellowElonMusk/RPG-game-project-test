@@ -66,15 +66,15 @@ const RULE_RNG_STATE_AFTER_ONE_DRAW: int = -7485862620809337107
 ## (U+2014) -- never a reference to either class's own string. Colours are
 ## the `Color.to_html(false)` lowercase hex form (no `#`).
 const BUREAUCRATIA_BANNER_TEXT: Dictionary = {
-	1: "BUREAUCRATIA — Special moves need a government permit. It arrives in 3 rounds. Attack and Defend only, for both sides.",
-	2: "BUREAUCRATIA — Special moves need a government permit. It arrives in 2 rounds. Attack and Defend only, for both sides.",
-	3: "BUREAUCRATIA — Special moves need a government permit. It arrives in 1 round. Attack and Defend only, for both sides.",
+	1: "BUREAUCRATIA — Special moves need a government permit. It arrives in 3 rounds. Attack, Defend and items only, for both sides.",
+	2: "BUREAUCRATIA — Special moves need a government permit. It arrives in 2 rounds. Attack, Defend and items only, for both sides.",
+	3: "BUREAUCRATIA — Special moves need a government permit. It arrives in 1 round. Attack, Defend and items only, for both sides.",
 	4: "PERMIT GRANTED — All-out war! Special moves are allowed for both sides.",
 }
 const BUREAUCRATIA_TOOLTIP_TEXT: Dictionary = {
-	1: "Bureaucratia requires a government permit before anyone can use a Special move. Attack and Defend only until it arrives.",
-	2: "Bureaucratia requires a government permit before anyone can use a Special move. Attack and Defend only until it arrives.",
-	3: "Bureaucratia requires a government permit before anyone can use a Special move. Attack and Defend only until it arrives.",
+	1: "Bureaucratia requires a government permit before anyone can use a Special move. Attack, Defend and items only until it arrives.",
+	2: "Bureaucratia requires a government permit before anyone can use a Special move. Attack, Defend and items only until it arrives.",
+	3: "Bureaucratia requires a government permit before anyone can use a Special move. Attack, Defend and items only until it arrives.",
 	4: "The permit arrived: Special moves are now allowed for both sides.",
 }
 const BUREAUCRATIA_BANNER_COLOR_HTML: Dictionary = {

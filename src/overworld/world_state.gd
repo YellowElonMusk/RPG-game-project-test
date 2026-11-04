@@ -44,6 +44,8 @@ var street_cred: int = 0
 var alien_points: int = 0
 ## The squad's wallet (Leveling GDD rule 5): Victory money, kept for shops.
 var money: int = 0
+## The squad's bag (Items & Shops rule 1), saved with the rest.
+var inventory: Inventory = Inventory.new()
 
 # map_id -> { symbol_id -> Respawn }
 var _resolved: Dictionary = {}
@@ -130,6 +132,7 @@ func reset_to_new_game() -> void:
 	street_cred = 0
 	alien_points = 0
 	money = 0
+	inventory.clear()
 	_resolved = {}
 	_opened = {}
 	_flags = {}
@@ -164,6 +167,7 @@ func to_dict() -> Dictionary:
 		"street_cred": street_cred,
 		"alien_points": alien_points,
 		"money": money,
+		"items": inventory.to_dict(),
 		"resolved": resolved,
 		"opened": opened,
 		"flags": flags,
@@ -184,6 +188,7 @@ func from_dict(data: Dictionary) -> void:
 	street_cred = int(data.get("street_cred", 0))
 	alien_points = int(data.get("alien_points", 0))
 	money = int(data.get("money", 0))
+	inventory.from_dict(data.get("items", {}))
 	var resolved: Dictionary = data.get("resolved", {})
 	for m: String in resolved:
 		_resolved[m] = {}

@@ -48,6 +48,7 @@ static func run(catalog: ContentCatalogService, data_root: String = "res://data"
 	if catalog.state != ContentCatalogService.State.UNLOADED:
 		return null
 	BattleEffectTypes.register(catalog)
+	ItemEffects.register(catalog)
 	# Stats has no epic yet; "damage" (named attacks: {type = "damage", power = N})
 	# and "heal" (unused by the migrated set) are registered on its behalf here.
 	catalog.register_known_effect_types(&"stats", PackedStringArray(["damage", "heal"]))

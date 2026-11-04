@@ -56,12 +56,20 @@ func stage(data: Dictionary, reader: SaveReader) -> SaveStage:
 		"street_cred": maxi(0, reader.get_int("street_cred")),
 		"alien_points": maxi(0, reader.get_int("alien_points")),
 		"money": maxi(0, reader.get_int("money")),
+		"items": {},
 		"resolved": {},
 		"opened": {},
 		"flags": [],
 		"stage_stored": {},
 		"liberated": {},
 	}
+	var items: Dictionary = reader.get_dict("items")
+	for id: Variant in items:
+		var n: Variant = items[id]
+		if id is String and (n is float or n is int) and int(n) > 0:
+			staged["items"][id] = int(n)
+		else:
+			reader.dropped.append("items.%s: not a positive count" % id)
 	var resolved: Dictionary = reader.get_dict("resolved")
 	for m: Variant in resolved:
 		if not (resolved[m] is Dictionary):

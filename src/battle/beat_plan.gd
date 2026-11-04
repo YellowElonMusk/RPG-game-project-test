@@ -57,7 +57,9 @@ static func build(p_outcome: BattleOutcome, before: Dictionary, after: Dictionar
 	plan.actor = p_outcome.actor
 	plan.move_name = p_outcome.move_name
 	match p_outcome.category:
-		Move.Category.DEFEND:
+		# An item is shown with the brief defend pose: no wind-up swing, and
+		# the recipient's heal reaction carries the beat (Items & Shops rule 4).
+		Move.Category.DEFEND, Move.Category.ITEM:
 			plan.action_role = ActionRole.DEFEND
 		Move.Category.SPECIAL:
 			plan.action_role = ActionRole.SPECIAL
@@ -77,6 +79,8 @@ static func build(p_outcome: BattleOutcome, before: Dictionary, after: Dictionar
 		elif delta < 0:
 			plan.reactions[c] = Reaction.HIT
 		elif delta > 0:
+			plan.reactions[c] = Reaction.HEAL
+		elif is_target and p_outcome.category == Move.Category.ITEM:
 			plan.reactions[c] = Reaction.HEAL
 		elif is_target and p_outcome.category == Move.Category.ATTACK:
 			plan.reactions[c] = Reaction.HIT

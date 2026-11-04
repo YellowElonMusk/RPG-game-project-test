@@ -50,6 +50,9 @@ var outcome_log: Array[BattleOutcome] = []
 ## injected, it is the neutral FactionRule base (Specials always allowed,
 ## random basic Attack).
 var faction_rule: FactionRule
+## The squad's bag (Items & Shops rule 4): ITEM moves are spent from it.
+## Null = no bag, and every ITEM move is rejected.
+var inventory: Inventory = null
 
 var _active_squad_index: int = 0
 
@@ -187,6 +190,9 @@ func submit_action(move: Move, target: Combatant = null) -> BattleOutcome:
 	if move.target_type != Move.TargetType.SELF and resolved_target == null:
 		push_error("BattleCore.submit_action: invalid target for %s" % move.display_name)
 		return null
+	if move.category == Move.Category.ITEM and not item_usable(move, resolved_target):
+		push_error("BattleCore.submit_action: %s cannot be used on that target (none left, or it would do nothing)" % move.display_name)
+		return null
 
 	var outcome := _resolve_move(actor, move, resolved_target)
 
@@ -214,7 +220,29 @@ func _validate_and_resolve_target(actor: Combatant, move: Move, target: Combatan
 			if target == null or target.is_knocked_out() or _are_foes(actor, target):
 				return null
 			return target
+		Move.TargetType.SINGLE_KO_ALLY:
+			if target == null or not target.is_knocked_out() or _are_foes(actor, target):
+				return null
+			return target
 	return null
+
+
+## Items & Shops rules 4 and 6: `true` when the bag holds `move`'s item and
+## using it on `target` (the whole squad for a party item) would do
+## something. The command menu greys out items this rejects.
+func item_usable(move: Move, target: Combatant) -> bool:
+	if move.category != Move.Category.ITEM or inventory == null or inventory.count(move.item_id) <= 0:
+		return false
+	return ItemEffects.has_effect(move, target, squad)
+
+
+## The knocked-out members of the squad (revive targets).
+func get_knocked_out_squad() -> Array[Combatant]:
+	var out: Array[Combatant] = []
+	for combatant in squad:
+		if combatant.is_knocked_out():
+			out.append(combatant)
+	return out
 
 
 func _are_foes(a: Combatant, b: Combatant) -> bool:
@@ -252,6 +280,9 @@ func _resolve_move(actor: Combatant, move: Move, target: Combatant) -> BattleOut
 					target_knocked_out = target.is_knocked_out()
 				Move.SpecialEffect.NONE:
 					pass  # No effect — not a real Special (shouldn't normally happen).
+		Move.Category.ITEM:
+			inventory.remove(move.item_id)
+			hp_delta = ItemEffects.apply(move, target, get_living_squad())
 
 	var outcome := BattleOutcome.new(actor, move.display_name, move.category,
 			target, hp_delta, mp_delta, target_knocked_out, round_number)

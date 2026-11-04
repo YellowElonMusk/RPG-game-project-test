@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/item_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "item_croissant"
+display_name = "Croissant"
+description = "Flaky, buttery, structurally unsound. Restores 25 HP to one ally."
+kind = "consumable"
+effects = Array[Dictionary]([{
+"amount": 25,
+"type": "heal_hp"
+}])
+price = 8
