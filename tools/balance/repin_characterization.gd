@@ -47,6 +47,13 @@ func _run() -> void:
 			out.append_array(_bureaucratia_block(fight).split("\n"))
 			i = end + 1
 			continue
+		if line.begins_with("const MEGACORP_FIGHT: Dictionary = {"):
+			var m_end: int = i + 1
+			while not lines[m_end].begins_with("}"):
+				m_end += 1
+			out.append_array(_megacorp_block(fight).split("\n"))
+			i = m_end + 1
+			continue
 		if line.begins_with("const CARRYOVER_FIGHT: Dictionary = {"):
 			out.append_array(_carryover_block(fight).split("\n"))
 			while not lines[i].begins_with("}"):
@@ -73,7 +80,7 @@ func _run() -> void:
 	var f := FileAccess.open(ProjectSettings.globalize_path(FIXTURE), FileAccess.WRITE)
 	f.store_string("\n".join(out))
 	f.close()
-	print("repin: %d damage lines changed; BUREAUCRATIA_FIGHT and CARRYOVER_FIGHT regenerated" % changed)
+	print("repin: %d damage lines changed; BUREAUCRATIA_FIGHT, MEGACORP_FIGHT and CARRYOVER_FIGHT regenerated" % changed)
 	_print_specials()
 	dmg.free()
 	fight.free()
@@ -83,11 +90,24 @@ func _run() -> void:
 func _bureaucratia_block(fight: Node) -> String:
 	var enemies: Array[Combatant] = [BattleContentSeam.enemy("enemy_clerk"),
 			BattleContentSeam.enemy("enemy_clerk"), BattleContentSeam.enemy("enemy_supervisor")]
-	var result: Dictionary = fight._run_fight(enemies, BattleContentSeam.rule("rule_bureaucratia_permit"),
+	return _fight_block(fight, "BUREAUCRATIA_FIGHT", enemies, "rule_bureaucratia_permit",
 			CharacterizationExpected.SEED_FIGHT_B, ScriptedFightCommands.BUREAUCRATIA, -1)
+
+
+## MegaCorp retune (Chapter 2, 2026-11-04): the MegaCorp scripted fight.
+func _megacorp_block(fight: Node) -> String:
+	var enemies: Array[Combatant] = [BattleContentSeam.enemy("enemy_security_drone"),
+			BattleContentSeam.enemy("enemy_middle_manager"), BattleContentSeam.enemy("enemy_ceo")]
+	return _fight_block(fight, "MEGACORP_FIGHT", enemies, "rule_megacorp_billing",
+			CharacterizationExpected.SEED_FIGHT_M, ScriptedFightCommands.MEGACORP, 4)
+
+
+func _fight_block(fight: Node, const_name: String, enemies: Array[Combatant], rule_id: String,
+		seed: int, commands: Array[Dictionary], florida_mp: int) -> String:
+	var result: Dictionary = fight._run_fight(enemies, BattleContentSeam.rule(rule_id), seed, commands, florida_mp)
 	var battle: BattleCore = result["battle"]
 	var roster: Array[Combatant] = result["roster"]
-	var s: PackedStringArray = ["const BUREAUCRATIA_FIGHT: Dictionary = {"]
+	var s: PackedStringArray = ["const %s: Dictionary = {" % const_name]
 	s.append('\t"commands_consumed": %d, "won": %s, "final_round": %d,' % [result["commands_consumed"],
 			"true" if result["won"] else "false", battle.round_number])
 	s.append('\t"rng_state": %d,' % battle.rng.state)

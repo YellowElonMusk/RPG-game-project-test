@@ -36,7 +36,7 @@ const MEGACORP_BACKUP_ICON_ID: String = "icon_faction_megacorp"
 
 ## Compliance Clerk per the overworld GDD; MegaCorp has no shipped patrol (Q9).
 const BUREAUCRATIA_PATROL_ARCHETYPE_ID: String = "patrol_compliance_clerk"
-const MEGACORP_PATROL_ARCHETYPE_ID: String = ""
+const MEGACORP_PATROL_ARCHETYPE_ID: String = "patrol_security_drone"
 
 # --- Story 014: the nine enemy named-attack moves ---
 
@@ -80,7 +80,7 @@ const ENEMY_AI_PROFILE_ID: String = ""
 ## MegaCorp provisional).
 const ENEMY_REWARDS: Dictionary = {
 	"enemy_clerk": [8, 5], "enemy_supervisor": [20, 15],
-	"enemy_security_drone": [7, 4], "enemy_middle_manager": [8, 6], "enemy_ceo": [24, 18],
+	"enemy_security_drone": [14, 8], "enemy_middle_manager": [15, 9], "enemy_ceo": [60, 40],
 }
 
 ## enemy id -> faction id and the AI's reachable move_ids, in the shipped

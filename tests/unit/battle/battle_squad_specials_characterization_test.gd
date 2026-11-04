@@ -22,7 +22,7 @@ const _VIRAL_BOOSTED_ATTACK_DAMAGE: int = 10
 const _VIRAL_BOOSTED_ATTACK_RNG_STATE: int = -6618438155849649559
 ## Home Run damage against each of `CharacterizationExpected.ENEMY_IDS`, in
 ## that same order (Clerk, Supervisor, Security Drone, Middle Manager, CEO).
-const _HOME_RUN_DAMAGE: Array[int] = [21, 16, 17, 21, 15]
+const _HOME_RUN_DAMAGE: Array[int] = [21, 16, 14, 16, 14]
 const _HOME_RUN_RNG_STATE: int = 9033400586920292166
 
 
