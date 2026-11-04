@@ -1,13 +1,13 @@
 # Audio Request List: Go back to your planet!
 
-> Written 2026-11-04. Sources: `design/gdd/beatbox-battle-score.md` (R1-R15, F1-F6, Visual/Audio), `design/gdd/overworld-exploration-encounters.md` (Audio direction), `design/narrative/narrative-bible.md` §7, `src/overworld/overworld_sfx.gd`, `data/occupation_stages/*.tres`, `data/encounters/*.tres`. **There is no audio in the project yet**: no files and no Audio Manager. The code only fires event ids.
+> Written 2026-11-04. Sources: `design/gdd/beatbox-battle-score.md` (R1-R15, F1-F6, Visual/Audio), `design/gdd/overworld-exploration-encounters.md` (Audio direction), `design/narrative/narrative-bible.md` §7, `src/overworld/overworld_sfx.gd`, `data/occupation_stages/*.tres`, `data/encounters/*.tres`. **Update 2026-11-04:** the Audio Manager is built and every event below plays a quiet synth PLACEHOLDER (`assets/audio/placeholder/`). Drop a real file at its exact path and it replaces the placeholder with no code change (§6 lists every path the game looks for).
 
 **How to use this**
 1. Work top to bottom. Section 1 (the Paris beatbox kit) is what makes fights sound like this game; section 2 (overworld music and ambience) makes Paris feel alive.
 2. Save each file at the exact path in the tables (create the folders).
 3. Formats: **music and loops = OGG Vorbis, 44.1 kHz, quality 6+**; **short SFX = WAV, 16-bit, 44.1 kHz, mono** unless the table says stereo.
 4. Loops must be cut sample-exact: start on the first downbeat, end exactly at the loop length, no fade, no reverb tail baked past the end.
-5. When a batch is in, tell Claude ("Paris beatbox tier 1 is in"). Claude wires the Audio Manager, the buses and the loop points, and runs a listen test.
+5. When a batch is in, run `godot --headless --path . --import` (or open the editor once) and the game picks the files up; tell Claude ("Paris beatbox tier 1 is in") for a listen test. Loops loop whole-file automatically (OGG `loop`, WAV forward loop); the beatbox kit still needs the Beatbox Battle Score system built.
 
 ---
 
@@ -232,3 +232,54 @@ The first three ids already exist in `data/occupation_stages/ostage_bureaucratia
 6. The other overworld music and ambience beds, `mus_title`.
 7. Battle SFX (3.4), then the rest of the overworld SFX (3.3).
 8. Section 4.
+
+---
+
+## 6. Exact paths the game looks for (Audio Manager, 2026-11-04)
+
+The table is `data/config/audio_events.tres`: each id lists candidate files in order, and the **first file that exists wins**. Every id ends in its placeholder, so the game is never silent and never errors. Paths below are relative to `res://assets/audio/`. Run `godot --headless --path . -s res://tools/audio/audio_smoke.gd` to see which file each id currently uses.
+
+### 6.1 Music (OGG, seamless loop unless a sting)
+
+| Id | Real file (first choice) | When |
+|---|---|---|
+| `mus_title` | `music/mus_title.ogg` | Title screen |
+| `mus_credits` | `music/mus_credits.ogg`, else `music/mus_chapter_end.ogg` | Ending credits (Title, then the title theme) |
+| `mus_camp` | `music/mus_camp_cafe.ogg` | Camp |
+| `mus_paris_{town,segment,dungeon,boss_chamber,liberated}` | `music/mus_paris_town.ogg`, `mus_paris_occupied.ogg`, `mus_paris_ministry.ogg`, `mus_paris_boss_chamber.ogg`, `mus_paris_liberated.ogg` | Paris maps (§2.1) |
+| `mus_london_*`, `mus_sydney_*`, `mus_newyork_*` (same five kinds) | `music/mus_<city>_<kind>.ogg`, e.g. `music/mus_london_dungeon.ogg` (MegaCorp Tower), `music/mus_sydney_liberated.ogg` | That city's town, street segment, dungeon, boss chamber, and every map once liberated |
+| `mus_ow_{town,segment,dungeon,boss_chamber,liberated}` | (placeholder only) | Fallback for a map id outside the `map_<city>_<kind>` pattern |
+| `bx_floor_pulse` | `beatbox/bx_floor_pulse.ogg` | Every fight until the Beatbox Battle Score is built (fights have no background music, §0; a quiet kick-only pulse) |
+| `stg_victory`, `stg_victory_boss`, `stg_defeat` | `stings/stg_victory.ogg`, `stings/stg_victory_boss.ogg`, `stings/stg_defeat.ogg` | End of a fight (one-shot) |
+
+**New since §2:** the 15 London, Sydney and New York tracks (5 kinds x 3 cities; same brief as Paris in each city's faction colour and satire: MegaCorp glass-office cool, Influencia sunny ring-light pop, Liberty-7 brass parade), `mus_credits.ogg` and `beatbox/bx_floor_pulse.ogg`.
+
+### 6.2 Ambience (OGG, -26 LUFS, seamless)
+
+| Id | Real file | Placeholder bed |
+|---|---|---|
+| `amb_<city>_stage{1,2,3}` for paris, london, sydney, newyork | `ambience/amb_<city>_stage<n>.ogg` | street (Sydney stages 1-2: harbour), stage 3: office |
+| `amb_camp_cafe` | `ambience/amb_camp_cafe.ogg` | café |
+| `amb_boss_chamber` | `ambience/amb_boss_chamber.ogg` | office (listed; no stage uses it yet) |
+
+**New since §2.3:** the 9 London, Sydney and New York beds.
+
+### 6.3 SFX (WAV, mono)
+
+| Id | Real file | Fired by |
+|---|---|---|
+| `ui_move`, `ui_confirm`, `ui_cancel` | `sfx/ui/sfx_ui_move.wav`, `sfx_ui_confirm.wav`, `sfx_ui_cancel.wav` | Any press while a menu, overlay, camp, Title or a fight has the input |
+| `ui_refused` | `sfx/ui/sfx_ui_refused.wav` | A refused press (battle, Defeat prompt, a failed purchase) |
+| `ui_text_blip` | `sfx/ui/sfx_ui_text_blip.wav` | Dialogue letters revealing (every second letter) |
+| `ui_save` | `sfx/ui/sfx_ui_save.wav` | Setting out from camp saves |
+| `ui_buy` | `sfx/ui/sfx_ui_buy.wav` (**new**) | A café purchase |
+| `bt_encounter_start` | `sfx/battle/sfx_bt_encounter_start.wav` (**new**; one for all factions until the per-faction wipes) | Touching a patrol |
+| `bt_hit`, `bt_hit_heavy` | `sfx/battle/sfx_bt_hit.wav`, `sfx_bt_hit_heavy.wav` | An impact; heavy = a knockout or the boss acting |
+| `bt_crit` | `sfx/battle/sfx_bt_crit.wav` | Listed only: the game has no critical hits |
+| `bt_heal` | `sfx/battle/sfx_bt_heal.wav` | A heal beat |
+| `bt_ko_squad`, `bt_ko_enemy` | `sfx/battle/sfx_bt_ko_squad.wav`, `sfx_bt_ko_enemy.wav` | A knockout |
+| `bt_level_up` | `stings/stg_level_up.ogg` | The results screen shows a level gained |
+| `bt_flee` | `beatbox/bx_scratch_fled.wav` | Fleeing a fight |
+| `notice`, `chase`, `stun`, `liberation`, `liberation_off_screen`, `checkpoint_denied` | §3.1 paths | The overworld's code-fired cues |
+
+Not wired yet (listed in §3 but nothing fires them): menu open/close, alien text blip, prompt pop, footsteps, map exit, gag sounds, defend/buff/debuff/stun, move-specific attack sounds, billing, goo/spare, results counters, battle cries.

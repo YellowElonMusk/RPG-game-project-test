@@ -1,0 +1,19 @@
+audio_play_log: Title                  music=mus_title ambience= fading=true sfx=[]
+audio_play_log: Title plays mus_title ok
+audio_play_log: New Game: Paris Town   music=mus_paris_town ambience=amb_paris_stage1 fading=true sfx=[]
+audio_play_log: New Game: Paris Town plays mus_paris_town ok
+audio_play_log: enter map_paris_dungeon_placeholder ok
+audio_play_log: Paris dungeon          music=mus_paris_dungeon ambience=amb_paris_stage3 fading=true sfx=[]
+audio_play_log: Paris dungeon plays mus_paris_dungeon ok
+audio_play_log: enter map_paris_segment_placeholder ok
+audio_play_log: Paris segment          music=mus_paris_segment ambience=amb_paris_stage2 fading=true sfx=[]
+audio_play_log: Paris segment plays mus_paris_segment ok
+audio_play_log: encounter SFX: [&"notice", &"bt_encounter_start"]
+audio_play_log: battle started ok
+audio_play_log: Street fight           music=bx_floor_pulse ambience= fading=true sfx=[&"notice", &"bt_encounter_start"]
+audio_play_log: Street fight plays bx_floor_pulse ok
+audio_play_log: battle SFX after one round: [&"notice", &"bt_encounter_start", &"bt_hit", &"bt_ko_enemy"]
+audio_play_log: hits sounded ok
+audio_play_log: missing ids: []
+audio_play_log: no missing ids ok
+audio_play_log: PASS
