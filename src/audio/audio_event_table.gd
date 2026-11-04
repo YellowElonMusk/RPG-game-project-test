@@ -35,6 +35,9 @@ const DEFAULT_PATH: String = "res://data/config/audio_events.tres"
 ## Folder of battle tracks (`.mp3`/`.ogg`/`.wav`); each fight picks one at
 ## random. Empty, missing or holding no tracks: the floor pulse plays.
 @export var battle_music_dir: String = ""
+## Mix offset in dB for the battle tracks, on top of the Music bus (-6 dB
+## is half the amplitude).
+@export var battle_music_db: float = 0.0
 
 
 ## The table at `DEFAULT_PATH`, or an empty one when it is missing.

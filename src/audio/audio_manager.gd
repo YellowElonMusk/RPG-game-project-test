@@ -53,6 +53,10 @@ var _streams: Dictionary[String, AudioStream] = {}
 var _music_in: AudioStreamPlayer = null
 var _music_out: AudioStreamPlayer = null
 var _fade_left: float = 0.0
+## The full volume each music player fades to/from (battle tracks carry
+## `battle_music_db`, everything else `music_db`).
+var _music_in_db: float = 0.0
+var _music_out_db: float = 0.0
 var _ambience: AudioStreamPlayer = null
 var _sfx: Array[AudioStreamPlayer] = []
 var _next_voice: int = 0
@@ -91,8 +95,8 @@ func advance(delta: float) -> void:
 		return
 	_fade_left = maxf(0.0, _fade_left - delta)
 	var t: float = 1.0 - (_fade_left / maxf(_table.crossfade_s, 0.001))
-	_music_in.volume_db = lerpf(SILENT_DB, _table.music_db, t)
-	_music_out.volume_db = lerpf(_table.music_db, SILENT_DB, t)
+	_music_in.volume_db = lerpf(SILENT_DB, _music_in_db, t)
+	_music_out.volume_db = lerpf(_music_out_db, SILENT_DB, t)
 	if _fade_left <= 0.0:
 		_music_out.stop()
 		_music_out.stream = null
@@ -245,6 +249,8 @@ func _crossfade_to(id: StringName, stream: AudioStream) -> void:
 	_music_out = _music_in
 	_music_in = swap
 	_music_in.stop()
+	_music_out_db = _music_in_db
+	_music_in_db = _table.battle_music_db if String(id).begins_with("battle:") else _table.music_db
 	current_music_id = id
 	if stream != null:
 		_music_in.stream = stream if AudioEventTable.is_sting(id) else _looped(stream)

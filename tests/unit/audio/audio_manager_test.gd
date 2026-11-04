@@ -193,6 +193,10 @@ func test_battle_music_picks_a_random_track_from_the_battle_dir() -> void:
 		m.play_battle_music(null)
 		seen[String(m.current_music_id)] = true
 	assert_bool(seen.has("battle:one.wav") and seen.has("battle:two.wav")).is_true()
+	t.battle_music_db = -6.0
+	m.play_battle_music(null)
+	m.advance(t.crossfade_s + 0.1)
+	assert_float(m.music_volume_db()).is_equal_approx(-6.0, 0.01)
 	for file: String in DirAccess.get_files_at(dir):
 		DirAccess.remove_absolute(dir + file)
 	DirAccess.remove_absolute(dir)
