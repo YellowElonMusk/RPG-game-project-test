@@ -78,6 +78,10 @@ var rule_attack_bonus: int = 0
 ## Set by the faction rule when this combatant took damage this round
 ## (Influencia's decay check); the rule clears it at round end.
 var hit_this_round: bool = false
+## The display name of the last command this combatant resolved, written by
+## a faction rule that cares (Liberty-7's no-repeat rule). Cleared by
+## `reset_for_battle()` and `BattleCore.clear_transients()`.
+var rule_last_command: String = ""
 
 ## Catalog record ID this combatant was built from (ADR-0011 §5;
 ## content-migration story 024). Identity only: the damage resolver never
@@ -162,3 +166,4 @@ func reset_for_battle() -> void:
 	rule_stacks = 0
 	rule_attack_bonus = 0
 	hit_this_round = false
+	rule_last_command = ""

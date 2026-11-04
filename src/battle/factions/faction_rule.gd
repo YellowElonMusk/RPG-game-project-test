@@ -73,6 +73,14 @@ func on_round_end(_living_enemies: Array[Combatant]) -> void:
 	pass
 
 
+## Called by BattleCore after any action (either side) resolves, with the
+## actor and the move it used. Liberty-7 remembers the command here so it
+## can't be repeated next turn. Default: no-op.
+## Example: [code]faction_rule.on_action_resolved(actor, move)[/code]
+func on_action_resolved(_actor: Combatant, _move: Move) -> void:
+	pass
+
+
 ## Short card text for a combatant's `rule_stacks` (Influencia: "Followers
 ## 3"), or "" for none. The HUD appends it to the card's HP line. Default: "".
 ## Example: [code]var badge := faction_rule.get_stack_badge(enemy.rule_stacks)[/code]

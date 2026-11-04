@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="Conversation" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/dialogue/conversation.gd" id="1_conv"]
+[ext_resource type="Script" path="res://src/dialogue/dialogue_line.gd" id="2_line"]
+
+[sub_resource type="Resource" id="l_1"]
+script = ExtResource("2_line")
+text = "The Super Patriot declares Earth free enough and orders a victory parade straight back to Liberty-7."
+
+[sub_resource type="Resource" id="l_2"]
+script = ExtResource("2_line")
+text = "The marching band plays him out. Nobody claps in time. Somebody claps out of time on purpose. It's beautiful."
+
+[sub_resource type="Resource" id="l_3"]
+script = ExtResource("2_line")
+speaker = "Florida Man"
+speaker_id = "char_florida_man"
+text = "Did we just win freedom? From the freedom guys? I'm gonna need a minute. And a sparkler."
+
+[sub_resource type="Resource" id="l_4"]
+script = ExtResource("2_line")
+speaker = "Five-Star Chef"
+speaker_id = "char_michelin_chef"
+text = "Fifty-star cuisine, they said. Fifty identical hot dogs. Tonight I cook one good one."
+
+[resource]
+script = ExtResource("1_conv")
+id = "conv_newyork_super_patriot_defeated"
+lines = Array[ExtResource("2_line")]([SubResource("l_1"), SubResource("l_2"), SubResource("l_3"), SubResource("l_4")])

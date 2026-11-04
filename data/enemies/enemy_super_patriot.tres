@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/enemy_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "enemy_super_patriot"
+display_name = "Super Patriot"
+faction_id = "faction_liberty7"
+is_boss = true
+max_hp = 300
+attack = 20
+defense = 15
+speed = 10
+reward_xp = 100
+reward_money = 60
+move_ids = PackedStringArray("move_fireworks_finale", "move_anthem_solo")
+sprite_set_id = "sprite_super_patriot"

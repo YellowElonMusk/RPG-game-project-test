@@ -9,6 +9,8 @@ extends SceneTree
 ##   smart  heal (a SINGLE_ALLY special) the most-hurt ally below 50% HP when
 ##          allowed and affordable; else the first allowed, affordable
 ##          SINGLE_ENEMY special on the weakest enemy; else Attack it
+##          (both policies Defend when the rule refuses Attack, as Liberty-7's
+##          no-repeat rule does right after one)
 ##
 ## Headless:
 ##
@@ -127,6 +129,9 @@ func _choose(core: BattleCore, policy: String) -> Array:
 		for m: Move in moves:
 			if m.category == Move.Category.SPECIAL and m.target_type == Move.TargetType.SINGLE_ENEMY and _usable(core, actor, m):
 				return [m, weakest]
+	# A rule that refuses a repeat (Liberty-7) can refuse Attack; Defend is then free.
+	if not _usable(core, actor, Move.make_attack()):
+		return [Move.make_defend(), null]
 	return [Move.make_attack(), weakest]
 
 

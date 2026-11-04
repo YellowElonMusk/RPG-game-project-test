@@ -12,7 +12,9 @@ render_mode cull_back;
 // 2 = London street (flagstones; glass curtain walls, cyan ad strips),
 // 3 = MegaCorp Tower (polished tiles; white panels, server racks),
 // 4 = Sydney harbour (boardwalk planks; whitewashed fronts, magenta awnings),
-// 5 = the Content House (pink terrazzo; pastel panels, ring lights, neon).
+// 5 = the Content House (pink terrazzo; pastel panels, ring lights, neon),
+// 6 = New York avenue (asphalt, yellow lane dashes; brownstones, star bunting),
+// 7 = the Liberty Dome (striped stadium turf; stands, Anthem Blue banners).
 uniform int style = 0;
 // 0 = floor, 1 = wall.
 uniform int surface = 0;
@@ -224,6 +226,71 @@ vec3 content_wall(float u, float v) {
 	return wall_tint * (fract(u * 2.0) < 0.03 ? 0.88 : 1.0);
 }
 
+vec3 asphalt(vec2 p) {
+	// New York: grey asphalt speckle with a yellow lane dash every 4 m.
+	vec3 c = floor_tint * (0.92 + 0.1 * hash(floor(p * 8.0)));
+	vec2 f = fract(p / vec2(4.0, 3.0));
+	if (f.y < 0.03 && f.x < 0.5) {
+		c = vec3(0.92, 0.76, 0.2);
+	}
+	return c;
+}
+
+vec3 brownstone(float u, float v) {
+	// Brownstone fronts: stoop-level base, two rows of cream-framed windows,
+	// and a strip of Anthem Blue and white star bunting along the top.
+	float bay = fract(u * 0.5);
+	if (v < 0.14) {
+		return wall_tint * 0.62;
+	}
+	if (v > 0.92) {
+		float tri = step(abs(fract(u * 3.0) - 0.5) * 2.0, 1.0 - fract((v - 0.92) * 8.0));
+		vec3 flag = mod(floor(u * 3.0), 2.0) < 1.0 ? vec3(0.18, 0.36, 0.92) : vec3(0.96, 0.95, 0.92);
+		return mix(wall_tint * 0.85, flag, tri);
+	}
+	bool win = bay > 0.2 && bay < 0.8 && ((v > 0.24 && v < 0.48) || (v > 0.58 && v < 0.82));
+	bool frame = bay > 0.17 && bay < 0.83 && ((v > 0.21 && v < 0.51) || (v > 0.55 && v < 0.85));
+	if (win) {
+		return vec3(0.26, 0.32, 0.42) * (0.85 + 0.3 * v);
+	}
+	if (frame) {
+		return vec3(0.9, 0.86, 0.76);
+	}
+	return wall_tint * (0.94 + 0.08 * hash(vec2(floor(u * 4.0), floor(v * 12.0))));
+}
+
+vec3 turf(vec2 p) {
+	// The Liberty Dome: mown stadium turf in 2 m stripes with white yard lines.
+	float stripe = step(0.5, fract(p.x * 0.25));
+	vec3 c = floor_tint * (stripe > 0.5 ? 1.08 : 0.92);
+	c *= 0.96 + 0.06 * hash(floor(p * 8.0));
+	if (fract(p.x * 0.25) < 0.02) {
+		c = vec3(0.94, 0.94, 0.9);
+	}
+	return c;
+}
+
+vec3 stadium_wall(float u, float v) {
+	// Pale stand fronts with rows of seats, an Anthem Blue banner with a white
+	// star in every other bay, and a red-white rail along the top.
+	float bay = fract(u * 0.5);
+	if (v > 1.0) {
+		return mod(floor(u * 4.0), 2.0) < 1.0 ? vec3(0.86, 0.2, 0.22) : vec3(0.96, 0.95, 0.92);
+	}
+	bool banner = mod(floor(u * 0.5), 2.0) < 1.0 && bay > 0.22 && bay < 0.78 && v > 0.3 && v < 0.88;
+	if (banner) {
+		vec2 c = vec2(bay - 0.5, (v - 0.6) * 0.6);
+		float a = atan(c.y, c.x);
+		float r = length(c);
+		float star = 0.09 * (0.55 + 0.45 * cos(5.0 * a));
+		return r < star ? vec3(0.97, 0.97, 0.95) : vec3(0.18, 0.36, 0.92);
+	}
+	if (v < 0.12) {
+		return wall_tint * 0.7;
+	}
+	return wall_tint * (fract(v * 6.0) < 0.12 ? 0.82 : 1.0);
+}
+
 void fragment() {
 	vec3 p = floor(world_pos * texels_per_m) / texels_per_m + 0.5 / texels_per_m;
 	vec3 col;
@@ -231,6 +298,10 @@ void fragment() {
 	if (surface == 0) {
 		if (style == 2) {
 			col = paving(p.xz);
+		} else if (style == 6) {
+			col = asphalt(p.xz);
+		} else if (style == 7) {
+			col = turf(p.xz);
 		} else if (style == 4) {
 			col = boardwalk(p.xz);
 		} else if (style == 5) {
@@ -241,7 +312,11 @@ void fragment() {
 			col = style == 0 ? cobbles(p.xz) : carpet(p.xz);
 		}
 	} else if (world_normal.y > 0.5) {
-		if (style == 4) {
+		if (style == 6) {
+			col = vec3(0.3, 0.27, 0.27);
+		} else if (style == 7) {
+			col = vec3(0.86, 0.88, 0.92);
+		} else if (style == 4) {
 			col = vec3(0.86, 0.5, 0.36);
 		} else if (style == 5) {
 			col = vec3(0.96, 0.84, 0.9);
@@ -252,7 +327,11 @@ void fragment() {
 		}
 	} else {
 		float u = abs(world_normal.x) > 0.5 ? p.z : p.x;
-		if (style == 4) {
+		if (style == 6) {
+			col = brownstone(u, p.y);
+		} else if (style == 7) {
+			col = stadium_wall(u, p.y);
+		} else if (style == 4) {
 			col = harbour_front(u, p.y);
 		} else if (style == 5) {
 			col = content_wall(u, p.y);

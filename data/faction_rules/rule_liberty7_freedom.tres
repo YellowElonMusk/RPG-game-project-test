@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FactionRuleData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/faction_rule_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "rule_liberty7_freedom"
+rule_class = &"liberty7_freedom"
+ref_ids = PackedStringArray("move_marching_orders", "move_baton_twirl", "move_screech_of_liberty", "move_talon_swoop", "move_fireworks_finale", "move_anthem_solo", "enemy_star_trooper", "enemy_eagle_drone", "enemy_super_patriot")
+params = {}
+texts = Dictionary[String, String]({
+"banner": "LIBERTY-7 — Mandatory Freedom. Nobody may use the same command twice in a row. You're free to pick anything else!",
+"tooltip": "Liberty-7 enforces freedom of choice: no one may repeat the command they used last turn (Attack, Defend, a special or an item). Alternate. Liberty-7's troops follow the rule too.",
+"note_repeat": "Freedom! {name} just used {command}. Choose anything else."
+})

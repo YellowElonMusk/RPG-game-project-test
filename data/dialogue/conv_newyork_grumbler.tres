@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="Conversation" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://src/dialogue/conversation.gd" id="1_conv"]
+[ext_resource type="Script" path="res://src/dialogue/dialogue_line.gd" id="2_line"]
+
+[sub_resource type="Resource" id="l_1"]
+script = ExtResource("2_line")
+speaker = "Retired hot-dog vendor"
+text = "No anthem every fifteen minutes. How is anyone supposed to know what time it is?"
+
+[sub_resource type="Resource" id="l_2"]
+script = ExtResource("2_line")
+speaker = "Karen"
+speaker_id = "char_karen"
+text = "I know what time it is. It's time somebody spoke to the manager of fireworks. Every night? At three in the morning?"
+
+[sub_resource type="Resource" id="l_3"]
+script = ExtResource("2_line")
+speaker = "Retired hot-dog vendor"
+text = "Lady, this is New York. The fireworks were the quiet part."
+
+[resource]
+script = ExtResource("1_conv")
+id = "conv_newyork_grumbler"
+lines = Array[ExtResource("2_line")]([SubResource("l_1"), SubResource("l_2"), SubResource("l_3")])

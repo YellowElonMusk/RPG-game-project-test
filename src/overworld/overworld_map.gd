@@ -42,9 +42,11 @@ const SET_SHADER: Shader = preload("res://src/presentation/shaders/paris_set.gds
 ## (carpet tiles, office panels and filing drawers), 2 = London street
 ## (flagstones, glass fronts), 3 = MegaCorp Tower (tiles, server racks),
 ## 4 = Sydney harbour (boardwalk, awnings), 5 = the Content House (terrazzo,
-## ring lights). Tinted by the two
+## ring lights), 6 = New York avenue (asphalt, brownstones, star bunting),
+## 7 = the Liberty Dome (stadium turf, stands, Anthem Blue banners). Tinted
+## by the two
 ## colours above.
-@export_enum("Street", "Interior", "Glass Street", "Tower", "Harbour", "Content House") var set_style: int = 0
+@export_enum("Street", "Interior", "Glass Street", "Tower", "Harbour", "Content House", "Avenue", "Liberty Dome") var set_style: int = 0
 ## Placeholder tint of a MapExit rectangle's floor patch (story 138).
 @export var exit_color: Color = Color(0.35, 0.6, 0.85)
 ## Placeholder tint of a CampSpot's floor patch.

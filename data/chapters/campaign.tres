@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="Campaign" load_steps=11 format=3]
+[gd_resource type="Resource" script_class="Campaign" load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://src/chapters/campaign.gd" id="1_camp"]
 [ext_resource type="Script" path="res://src/chapters/campaign_chapter.gd" id="2_ch"]
@@ -8,6 +8,8 @@
 [ext_resource type="Resource" path="res://data/chapters/chapter_london_flags.tres" id="6_lf"]
 [ext_resource type="Resource" path="res://data/chapters/chapter_sydney_steps.tres" id="7_ss"]
 [ext_resource type="Resource" path="res://data/chapters/chapter_sydney_flags.tres" id="8_sf"]
+[ext_resource type="Resource" path="res://data/chapters/chapter_newyork_steps.tres" id="9_ns"]
+[ext_resource type="Resource" path="res://data/chapters/chapter_newyork_flags.tres" id="10_nf"]
 
 [sub_resource type="Resource" id="ch_paris"]
 script = ExtResource("2_ch")
@@ -30,8 +32,16 @@ flags = ExtResource("8_sf")
 start_entry_id = &"from_arrival"
 start_camp_id = "camp_sydney_cafe"
 intro_line = "Sydney. Influencia turned the whole harbour into content. Every hit you land gets them attention, and attention makes them stronger. Pick one and finish it."
-end_line = "Sydney is unfollowed. Somewhere out there, one more alien world has opinions about Earth. To be continued."
+
+[sub_resource type="Resource" id="ch_newyork"]
+script = ExtResource("2_ch")
+steps = ExtResource("9_ns")
+flags = ExtResource("10_nf")
+start_entry_id = &"from_arrival"
+start_camp_id = "camp_newyork_cafe"
+intro_line = "New York. Liberty-7 landed with a marching band and declared everyone free, whether they liked it or not. Nobody here may use the same command twice in a row. Mix it up."
+end_line = "New York is free. Actually free, at whatever volume it likes. Every alien world that had opinions about Earth has gone home. To be continued."
 
 [resource]
 script = ExtResource("1_camp")
-chapters = Array[ExtResource("2_ch")]([SubResource("ch_paris"), SubResource("ch_london"), SubResource("ch_sydney")])
+chapters = Array[ExtResource("2_ch")]([SubResource("ch_paris"), SubResource("ch_london"), SubResource("ch_sydney"), SubResource("ch_newyork")])

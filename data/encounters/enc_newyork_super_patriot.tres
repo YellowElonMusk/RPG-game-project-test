@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EncounterData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/encounter_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "enc_newyork_super_patriot"
+enemy_ids = PackedStringArray("enemy_super_patriot", "enemy_star_trooper", "enemy_eagle_drone", "enemy_eagle_drone")
+battle_stage_id = "stage_chapter_interim"
+faction_id = "faction_liberty7"
+is_boss = true
+can_flee = false
+retreat_allowed = true
+respawn = false
+post_battle_line = "The Super Patriot declares Earth free enough and leads a victory parade home to Liberty-7. Nobody marches in step."
+post_battle_conversation_id = "conv_newyork_super_patriot_defeated"

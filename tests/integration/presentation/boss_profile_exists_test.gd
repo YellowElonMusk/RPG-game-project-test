@@ -46,7 +46,7 @@ func test_alien_faction_with_its_boss_preset_boots_ready() -> void:
 func test_shipped_data_has_a_boss_preset_for_every_alien_faction() -> void:
 	var profiles: Dictionary = PresentationValidators.load_profile_ids(
 			"res://data/presentation/profiles")
-	for faction: String in ["faction_bureaucratia", "faction_megacorp", "faction_influencia"]:
+	for faction: String in ["faction_bureaucratia", "faction_megacorp", "faction_influencia", "faction_liberty7"]:
 		assert_bool(profiles.has(PresentationValidators.boss_profile_id(faction))).is_true()
 
 

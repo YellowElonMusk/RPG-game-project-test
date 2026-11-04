@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/enemy_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "enemy_star_trooper"
+display_name = "Star Trooper"
+faction_id = "faction_liberty7"
+max_hp = 86
+attack = 23
+defense = 16
+speed = 11
+reward_xp = 22
+reward_money = 12
+move_ids = PackedStringArray("move_marching_orders", "move_baton_twirl")
+sprite_set_id = "sprite_star_trooper"

@@ -1,0 +1,59 @@
+[gd_resource type="Resource" script_class="Conversation" load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://src/dialogue/conversation.gd" id="1_conv"]
+[ext_resource type="Script" path="res://src/dialogue/dialogue_line.gd" id="2_line"]
+[ext_resource type="Script" path="res://src/dialogue/dialogue_choice.gd" id="3_choice"]
+
+[sub_resource type="Resource" id="l_open"]
+script = ExtResource("2_line")
+speaker = "Café regular"
+text = "The Eagle Drones won't follow you past the café door. Indoor voices are un-free, they say."
+
+[sub_resource type="Resource" id="l_again"]
+script = ExtResource("2_line")
+speaker = "Café regular"
+text = "Never the same thing twice. Hit, then guard, then a trick. Variety is the only freedom they allow."
+requires_flag = "newyork_heard_freedom_tip"
+next_id = "end"
+
+[sub_resource type="Resource" id="c_yes"]
+script = ExtResource("3_choice")
+label = "Go on, then."
+sets_flag = "newyork_heard_freedom_tip"
+goto_id = "tip"
+
+[sub_resource type="Resource" id="c_no"]
+script = ExtResource("3_choice")
+label = "No thanks."
+goto_id = "bye"
+
+[sub_resource type="Resource" id="l_ask"]
+script = ExtResource("2_line")
+speaker = "Café regular"
+text = "Want a tip? It's free. Mandatory free, but still."
+skip_if_flag = "newyork_heard_freedom_tip"
+choices = Array[ExtResource("3_choice")]([SubResource("c_yes"), SubResource("c_no")])
+
+[sub_resource type="Resource" id="l_tip"]
+script = ExtResource("2_line")
+id = "tip"
+speaker = "Café regular"
+text = "Nobody may use the same command twice in a row. Not you, not them. Plan your next turn now."
+
+[sub_resource type="Resource" id="l_florida"]
+script = ExtResource("2_line")
+speaker = "Florida Man"
+speaker_id = "char_florida_man"
+text = "Never do the same thing twice? Brother, I've never made the same mistake twice. I make new ones. Every day."
+next_id = "end"
+
+[sub_resource type="Resource" id="l_bye"]
+script = ExtResource("2_line")
+id = "bye"
+speaker = "Café regular"
+text = "Your choice. That's the one thing they can't take off you."
+
+[resource]
+script = ExtResource("1_conv")
+id = "conv_newyork_union_regular"
+lines = Array[ExtResource("2_line")]([SubResource("l_open"), SubResource("l_again"), SubResource("l_ask"), SubResource("l_tip"), SubResource("l_florida"), SubResource("l_bye")])

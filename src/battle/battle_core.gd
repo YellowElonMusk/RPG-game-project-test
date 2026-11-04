@@ -113,6 +113,7 @@ static func clear_transients(party: Array[Combatant]) -> void:
 		combatant.is_defending = false
 		combatant.is_stunned = false
 		combatant.vulnerable_rounds_left = 0
+		combatant.rule_last_command = ""
 
 
 ## Squad members with HP above 0, in turn order.
@@ -286,6 +287,7 @@ func _resolve_move(actor: Combatant, move: Move, target: Combatant) -> BattleOut
 
 	var outcome := BattleOutcome.new(actor, move.display_name, move.category,
 			target, hp_delta, mp_delta, target_knocked_out, round_number)
+	faction_rule.on_action_resolved(actor, move)
 	outcome_log.append(outcome)
 	action_resolved.emit(outcome)
 	return outcome

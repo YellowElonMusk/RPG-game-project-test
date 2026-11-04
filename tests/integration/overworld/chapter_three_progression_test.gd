@@ -2,8 +2,8 @@
 ## sends the squad to Sydney's Circular Quay at its arrival point, in
 ## chapter_sydney's first step with the feed live and the Sydney café as the
 ## Retreat camp, and says the Sydney intro. The chapter survives Save ->
-## Continue. Sydney, now the last chapter, says the end line and goes
-## nowhere. Drives real GameRoots.
+## Continue. Ending Sydney leads on to New York (Chapter 4). Drives real
+## GameRoots.
 extends GdUnitTestSuite
 
 const _GAME_ROOT_SCENE: String = "res://src/game_state/game_root.tscn"
@@ -53,19 +53,20 @@ func test_sydney_survives_save_and_continue() -> void:
 	assert_str(back.objective_line()).contains("Content House")
 
 
-## Sydney is the campaign's last chapter: its end plays the ending (an even
-## record here: the split ending), not another chapter.
-func test_ending_sydney_plays_the_campaign_ending() -> void:
+## Chapter 4: Sydney is no longer the last chapter; its end leads on to
+## New York (chapter_four_progression_test.gd covers New York itself).
+func test_ending_sydney_starts_new_york() -> void:
 	var root: GameRoot = _new_game()
 	var sydney: OverworldMode = _end_london(root)
 	_close_line(root)
 	root.world_state.chapter_step = "sydney_step_walk_home_b"
 	_say_yes_at_cafe(sydney)
 	assert_int(sydney.chapter_end_calls).is_equal(1)
-	assert_int(root.machine.phase).is_equal(GameStateMachine.Phase.IDLE)
-	assert_str(root.world_state.chapter_id).is_equal("chapter_sydney")
-	assert_str(root.ending.id).is_equal(EndingRules.SPLIT)
-	assert_str((root.current_overlay_node() as InterimLineDialogue).text).contains("Some bosses finished")
+	_run_to_idle(root.machine)
+	var new_york: OverworldMode = root.current_mode_node() as OverworldMode
+	new_york.set_process(false)
+	assert_str(new_york.get_map().map_id).is_equal("map_newyork_town_placeholder")
+	assert_str(root.world_state.chapter_id).is_equal("chapter_newyork")
 
 
 ## New Game -> Paris end -> London -> London end -> Sydney.

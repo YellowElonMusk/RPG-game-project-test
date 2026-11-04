@@ -12,9 +12,9 @@ class_name FactionRules
 extends RefCounted
 
 
-## Registers `bureaucratia_permit`, `megacorp_billing` and
-## `influencia_followers`, the rule
-## classes the campaign ships with.
+## Registers `bureaucratia_permit`, `megacorp_billing`,
+## `influencia_followers` and `liberty7_freedom`, the rule classes the
+## campaign ships with.
 ## Example: [code]FactionRules.register_all(registry)[/code]
 static func register_all(registry: FactionRuleRegistry) -> void:
 	registry.register(&"bureaucratia_permit", BureaucratiaRuleValidator.create,
@@ -23,3 +23,5 @@ static func register_all(registry: FactionRuleRegistry) -> void:
 			MegaCorpRuleValidator.validate_record)
 	registry.register(&"influencia_followers", InfluenciaRuleValidator.create,
 			InfluenciaRuleValidator.validate_record)
+	registry.register(&"liberty7_freedom", Liberty7RuleValidator.create,
+			Liberty7RuleValidator.validate_record)

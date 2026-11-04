@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/enemy_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "enemy_eagle_drone"
+display_name = "Eagle Drone"
+faction_id = "faction_liberty7"
+max_hp = 74
+attack = 24
+defense = 16
+speed = 12
+reward_xp = 22
+reward_money = 12
+move_ids = PackedStringArray("move_screech_of_liberty", "move_talon_swoop")
+sprite_set_id = "sprite_eagle_drone"

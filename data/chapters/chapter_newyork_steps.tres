@@ -1,0 +1,61 @@
+[gd_resource type="Resource" script_class="ChapterSteps" load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://src/chapters/chapter_steps.gd" id="1_steps"]
+[ext_resource type="Script" path="res://src/chapters/chapter_step.gd" id="2_step"]
+
+[sub_resource type="Resource" id="step_1"]
+script = ExtResource("2_step")
+id = "newyork_step_leave_town"
+objective = "Head out of Times Square toward the Liberty Dome."
+map_id = "map_newyork_town_placeholder"
+leg_id = "town_out"
+flags_on_enter = PackedStringArray("newyork_anthem_live")
+
+[sub_resource type="Resource" id="step_2"]
+script = ExtResource("2_step")
+id = "newyork_step_reach_liberty_dome"
+objective = "March down Fifth Avenue to the Liberty Dome."
+map_id = "map_newyork_segment_placeholder"
+leg_id = "segment_to_dungeon"
+
+[sub_resource type="Resource" id="step_3"]
+script = ExtResource("2_step")
+id = "newyork_step_get_past_float"
+objective = "Get past the Parade Float."
+map_id = "map_newyork_dungeon_placeholder"
+leg_id = "dungeon_to_counter"
+
+[sub_resource type="Resource" id="step_4"]
+script = ExtResource("2_step")
+id = "newyork_step_find_super_patriot"
+objective = "Find the Super Patriot."
+map_id = "map_newyork_dungeon_placeholder"
+leg_id = "dungeon_to_boss"
+
+[sub_resource type="Resource" id="step_5"]
+script = ExtResource("2_step")
+id = "newyork_step_defeat_super_patriot"
+objective = "Defeat the Super Patriot."
+map_id = "map_newyork_boss_chamber_placeholder"
+leg_id = "boss_fight"
+
+[sub_resource type="Resource" id="step_6"]
+script = ExtResource("2_step")
+id = "newyork_step_walk_home_a"
+objective = "Walk back down a much quieter Fifth Avenue."
+map_id = "map_newyork_segment_placeholder"
+leg_id = "segment_home"
+
+[sub_resource type="Resource" id="step_7"]
+script = ExtResource("2_step")
+id = "newyork_step_walk_home_b"
+objective = "Back to the café."
+map_id = "map_newyork_town_placeholder"
+leg_id = "town_home"
+
+[resource]
+script = ExtResource("1_steps")
+chapter_id = "chapter_newyork"
+last_act_from = "newyork_step_walk_home_a"
+last_act_entry_id = &"from_dungeon"
+steps = Array[ExtResource("2_step")]([SubResource("step_1"), SubResource("step_2"), SubResource("step_3"), SubResource("step_4"), SubResource("step_5"), SubResource("step_6"), SubResource("step_7")])

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="FactionData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/faction_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "faction_liberty7"
+display_name = "Liberty-7"
+kind = "alien"
+base_shape = "star"
+signature_color = "#2f5bea"
+backup_icon_id = "icon_faction_liberty7"
+rule_id = "rule_liberty7_freedom"
+patrol_archetype_id = "patrol_eagle_drone"

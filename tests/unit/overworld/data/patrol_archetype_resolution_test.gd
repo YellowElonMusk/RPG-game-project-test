@@ -55,10 +55,10 @@ func test_resolution_follows_the_configured_registry() -> void:
 	cfg.patrol_archetype_ids = ["patrol_fixture_other"]
 	var errors: PackedStringArray = MapValidator.check_patrol_archetypes(
 			_load_all(_MAP_DIR, "map_"), _shipped_catalog(), cfg)
-	# Chapters 2-3: every shipped faction (Paris, London, Sydney) uses one.
-	assert_int(errors.size()).is_equal(3)
+	# Chapters 2-4: every shipped faction (Paris, London, Sydney, New York) uses one.
+	assert_int(errors.size()).is_equal(4)
 	assert_str(" ".join(errors)).contains("faction_bureaucratia").contains("faction_megacorp") \
-			.contains("faction_influencia")
+			.contains("faction_influencia").contains("faction_liberty7")
 
 
 func _map_using(faction_id: String) -> MapData:

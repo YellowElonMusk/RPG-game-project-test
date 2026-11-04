@@ -58,6 +58,8 @@ static func _build_enemy(enemy_id: String) -> Combatant:
 			return MegaCorpRule.make_middle_manager()
 		"enemy_micro_influencer", "enemy_ring_light", "enemy_mega_influencer":
 			return EnemyAdapter.from_catalog(BattleCatalog.shipped(), enemy_id)
+		"enemy_star_trooper", "enemy_eagle_drone", "enemy_super_patriot":
+			return EnemyAdapter.from_catalog(BattleCatalog.shipped(), enemy_id)
 		"enemy_ceo":
 			return MegaCorpRule.make_ceo()
 		_:
@@ -73,6 +75,9 @@ static func _build_faction_rule(faction_id: String) -> FactionRule:
 		"faction_influencia":
 			return InfluenciaRuleValidator.create(null,
 					BattleCatalog.shipped().get_record(&"faction_rule", "rule_influencia_followers") as FactionRuleData)
+		"faction_liberty7":
+			return Liberty7RuleValidator.create(null,
+					BattleCatalog.shipped().get_record(&"faction_rule", "rule_liberty7_freedom") as FactionRuleData)
 		_:
 			return null
 
