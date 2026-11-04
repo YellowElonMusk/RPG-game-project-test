@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="OccupationStageData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/occupation_stage_data.gd" id="1_ostage"]
+
+[resource]
+script = ExtResource("1_ostage")
+id = "ostage_megacorp_stage2"
+faction_id = "faction_megacorp"
+stage = 2
+clutter_caps = Dictionary[String, int]({
+"poster": 4,
+"queue": 2
+})
+civilian_density = 0.4
+lighting_profile_id = "overworld"
+set_kit_id = "kit_london_occupied"
+ambience_bed_id = "amb_london_stage2"
+name_card_subtitle = "Billing is now live"
+liberation_grumble_min = 0.2
+decree_gag_by_flag = Dictionary[String, String]({
+"london_billing_live": "decree_billing"
+})

@@ -53,29 +53,40 @@ static func validate_catalog(catalog: ContentCatalogService, cfg: OverworldConfi
 	for rec: Resource in catalog.all_records(&"map"):
 		if rec is MapData:
 			records[String(rec.get("id"))] = rec
-	var steps: ChapterSteps = null
-	if ResourceLoader.exists(cfg.chapter_steps_path):
-		steps = ResourceLoader.load(cfg.chapter_steps_path) as ChapterSteps
-	if steps == null:
+	# Chapter 2: every campaign chapter's steps are checked against its own
+	# maps; the flag registries are merged for the reference pass. Without a
+	# campaign, the config's single chapter (tests, fixtures).
+	var chapters: Array = _chapters_to_check(cfg)
+	if chapters.is_empty():
 		errors.append("chapter steps: no ChapterSteps at %s" % cfg.chapter_steps_path)
-	else:
+	var registry: StoryFlagRegistry = null
+	for pair: Array in chapters:
+		var reg: StoryFlagRegistry = pair[1] as StoryFlagRegistry
+		if reg != null:
+			if registry == null:
+				registry = StoryFlagRegistry.new()
+			registry.flags.merge(reg.flags)
+	errors.append_array(check_references(maps, catalog, registry))
+	errors.append_array(check_clutter_placement(maps, cfg, PresentationConfig.new()))
+	for pair: Array in chapters:
+		var steps: ChapterSteps = pair[0] as ChapterSteps
+		var ch_maps: Dictionary = {}
+		var ch_records: Dictionary = {}
+		for step: ChapterStep in steps.steps:
+			if maps.has(step.map_id):
+				ch_maps[step.map_id] = maps[step.map_id]
+			if records.has(step.map_id):
+				ch_records[step.map_id] = records[step.map_id]
 		errors.append_array(validate_steps(steps, records))
 		errors.append_array(validate_last_act(steps, records, maps, cfg))
-	var registry: StoryFlagRegistry = null
-	if ResourceLoader.exists(cfg.flag_registry_path):
-		registry = ResourceLoader.load(cfg.flag_registry_path) as StoryFlagRegistry
-	errors.append_array(check_references(maps, catalog, registry))
-	errors.append_array(CheckpointRules.check(maps, records, steps, catalog, cfg))
-	errors.append_array(check_clutter_placement(maps, cfg, PresentationConfig.new()))
-	errors.append_array(check_reaction_sets(steps, maps))
-	if steps != null:
-		errors.append_array(WalkBudget.compute(steps, records, maps, cfg)["errors"])
-	errors.append_array(check_first_encounter(steps, records, maps, cfg))
-	if steps != null:
+		errors.append_array(CheckpointRules.check(ch_maps, ch_records, steps, catalog, cfg))
+		errors.append_array(check_reaction_sets(steps, ch_maps))
+		errors.append_array(WalkBudget.compute(steps, ch_records, ch_maps, cfg)["errors"])
+		errors.append_array(check_first_encounter(steps, ch_records, ch_maps, cfg))
 		# Story 110, AC-45f (rule 19): junction coverage and leg-end beacons.
-		errors.append_array(BeaconJunctions.check(steps, records, maps, cfg)["errors"])
+		errors.append_array(BeaconJunctions.check(steps, ch_records, ch_maps, cfg)["errors"])
 		# Story 117, AC-49 (rule 16): every active clutter marker responds or blocks.
-		errors.append_array(ClutterResponseCheck.check(steps, records, maps,
+		errors.append_array(ClutterResponseCheck.check(steps, ch_records, ch_maps,
 				catalog.all_records(&"occupation_stage"), cfg)["errors"])
 	errors.append_array(PayoffRules.check(maps, records, catalog, cfg, PresentationConfig.new()))
 	var density: Array = check_density(maps, records, cfg)
@@ -93,6 +104,27 @@ static func validate_catalog(catalog: ContentCatalogService, cfg: OverworldConfi
 	for map: OverworldMap in maps.values():
 		map.free()
 	return errors
+
+
+## `[steps, registry]` pairs: the shipped `Campaign`'s chapters when the
+## config points at its first chapter, else the config's own pair.
+static func _chapters_to_check(cfg: OverworldConfig) -> Array:
+	var out: Array = []
+	var campaign: Campaign = Campaign.load_default()
+	var first: CampaignChapter = campaign.chapter("") if campaign != null else null
+	if first != null and first.steps != null and first.steps.resource_path == cfg.chapter_steps_path:
+		for c: CampaignChapter in campaign.chapters:
+			if c.steps != null:
+				out.append([c.steps, c.flags])
+		return out
+	if ResourceLoader.exists(cfg.chapter_steps_path):
+		var steps: ChapterSteps = ResourceLoader.load(cfg.chapter_steps_path) as ChapterSteps
+		if steps != null:
+			var reg: StoryFlagRegistry = null
+			if ResourceLoader.exists(cfg.flag_registry_path):
+				reg = ResourceLoader.load(cfg.flag_registry_path) as StoryFlagRegistry
+			out.append([steps, reg])
+	return out
 
 
 ## Story 017, AC-8 (GDD rule 4): every MVP `map_` record has `zone_rate`

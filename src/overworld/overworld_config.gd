@@ -354,4 +354,4 @@ func text_hold(text: String) -> float:
 ## patrol archetype presets that exist. A `faction_` record a shipped map
 ## uses must name one of these. No `patrol_` record type exists yet, so this
 ## list is the registry the ID resolves against.
-@export var patrol_archetype_ids: Array[String] = ["patrol_compliance_clerk"]
+@export var patrol_archetype_ids: Array[String] = ["patrol_compliance_clerk", "patrol_security_drone"]

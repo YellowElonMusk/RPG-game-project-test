@@ -39,9 +39,10 @@ const SET_SHADER: Shader = preload("res://src/presentation/shaders/paris_set.gds
 @export var wall_color: Color = Color(0.78, 0.7, 0.55)
 ## Stand-in surface look for the floor and walls (`paris_set.gdshader`):
 ## 0 = street (cobbles, limestone fronts, slate roofs), 1 = interior
-## (carpet tiles, office panels and filing drawers). Tinted by the two
+## (carpet tiles, office panels and filing drawers), 2 = London street
+## (flagstones, glass fronts), 3 = MegaCorp Tower (tiles, server racks). Tinted by the two
 ## colours above.
-@export_enum("Street", "Interior") var set_style: int = 0
+@export_enum("Street", "Interior", "Glass Street", "Tower") var set_style: int = 0
 ## Placeholder tint of a MapExit rectangle's floor patch (story 138).
 @export var exit_color: Color = Color(0.35, 0.6, 0.85)
 ## Placeholder tint of a CampSpot's floor patch.

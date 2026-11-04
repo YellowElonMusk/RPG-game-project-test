@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EncounterData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/encounter_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "enc_london_staff_pocket"
+enemy_ids = PackedStringArray("enemy_middle_manager", "enemy_middle_manager", "enemy_security_drone", "enemy_middle_manager")
+battle_stage_id = "stage_chapter_interim"
+faction_id = "faction_megacorp"
+is_boss = false
+can_flee = true
+retreat_allowed = false
+respawn = true
+victory_payoff = {
+"checkpoint": "cp_dungeon_pocket",
+"label": "the stationery cupboard",
+"type": "open"
+}

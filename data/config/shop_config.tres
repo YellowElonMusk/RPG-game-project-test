@@ -5,5 +5,6 @@
 [resource]
 script = ExtResource("1_a")
 stock_by_camp = {
-"camp_paris_cafe": PackedStringArray("item_croissant", "item_espresso", "item_unpasteurised_cheese", "item_picnic_basket", "item_day_old_baguette", "item_bedazzled_phone_case", "item_selfie_stick_pro", "item_cast_iron_ladle", "item_resolute_beret", "item_trench_coat")
+"camp_paris_cafe": PackedStringArray("item_croissant", "item_espresso", "item_unpasteurised_cheese", "item_picnic_basket", "item_day_old_baguette", "item_bedazzled_phone_case", "item_selfie_stick_pro", "item_cast_iron_ladle", "item_resolute_beret", "item_trench_coat"),
+"camp_london_cafe": PackedStringArray("item_croissant", "item_espresso", "item_unpasteurised_cheese", "item_picnic_basket", "item_day_old_baguette", "item_bedazzled_phone_case", "item_selfie_stick_pro", "item_cast_iron_ladle", "item_resolute_beret", "item_trench_coat")
 }

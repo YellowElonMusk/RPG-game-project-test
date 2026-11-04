@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="MapData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/map_data.gd" id="1_a"]
+[ext_resource type="Script" path="res://src/data/records/critical_path_leg.gd" id="2_leg"]
+
+[sub_resource type="Resource" id="leg_1"]
+script = ExtResource("2_leg")
+id = "segment_to_dungeon"
+from_entry = &"from_town"
+to = "exit_to_dungeon"
+
+[sub_resource type="Resource" id="leg_2"]
+script = ExtResource("2_leg")
+id = "segment_home"
+from_entry = &"from_dungeon"
+to = "exit_to_town"
+
+[resource]
+script = ExtResource("1_a")
+id = "map_london_segment_placeholder"
+display_name = "London - Cheapside"
+faction_id = "faction_megacorp"
+base_stage = 1
+critical_path = Array[ExtResource("2_leg")]([SubResource("leg_1"), SubResource("leg_2")])
+stage_table = { "london_billing_live": 2 }
+region_liberation_flag = "london_liberated"
+density_type = "overworld"
+liberated_profile_id = "overworld_liberated"
+liberated_kit_id = "kit_london_liberated"
+new_game_entry = false

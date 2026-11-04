@@ -23,3 +23,13 @@ enc_paris_clerks_shortcut |
 enc_paris_clerks_west |
 enc_paris_permit_counter |
 enc_paris_supervisor |
+# Chapter 2 (2026-11-04): the London encounters, referenced the same way.
+enc_london_ceo |
+enc_london_reception_desk |
+enc_london_staff_east |
+enc_london_staff_first_room |
+enc_london_staff_hall |
+enc_london_staff_keen |
+enc_london_staff_pocket |
+enc_london_staff_shortcut |
+enc_london_staff_west |

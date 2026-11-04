@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EncounterData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/encounter_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "enc_london_ceo"
+enemy_ids = PackedStringArray("enemy_ceo", "enemy_middle_manager", "enemy_security_drone", "enemy_security_drone")
+battle_stage_id = "stage_chapter_interim"
+faction_id = "faction_megacorp"
+is_boss = true
+can_flee = false
+retreat_allowed = true
+respawn = false
+post_battle_line = "The CEO announces a strategic pivot to leaving Earth. Shares in MegaCorp fall to zero. Somebody asks whether their subscription will be refunded."

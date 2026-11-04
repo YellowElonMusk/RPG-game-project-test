@@ -143,6 +143,8 @@ func _ready() -> void:
 		if mode is OverworldMode:
 			_inject_overworld(mode as OverworldMode, payload)
 			(mode as OverworldMode).camp_directory = _camp_directory
+			(mode as OverworldMode).chapter_end_requested.connect(
+					_on_chapter_end_requested.bind(mode))
 		elif mode is InterimCampMode:
 			(mode as InterimCampMode).camp_directory = _camp_directory
 			(mode as InterimCampMode).save_service = _save_service
@@ -180,6 +182,7 @@ func _ready() -> void:
 	_machine = machine
 	loader.set_machine(machine)
 	machine.mode_entered.connect(loader.on_mode_entered)
+	machine.transition_finished.connect(_on_transition_finished)
 	machine.bind_action_source(resolver)
 	var save_config := SaveConfig.new()
 	if not save_dir_override.is_empty():
@@ -395,6 +398,41 @@ func _apply_opening_step(cfg: OverworldConfig) -> void:
 	var steps: ChapterSteps = ResourceLoader.load(cfg.chapter_steps_path) as ChapterSteps
 	if steps == null or steps.steps.is_empty():
 		return
+	_world_state.chapter_id = steps.chapter_id
 	_world_state.chapter_step = steps.steps[0].id
 	for flag: String in steps.steps[0].flags_on_enter:
 		_world_state.set_flag(flag)
+
+
+# -- Campaign: chapter to chapter (Chapter 2, 2026-11-04) ---------------------
+
+## The shipped campaign; tests may replace it before the chapter ends.
+var campaign: Campaign = Campaign.load_default()
+## The arriving chapter's intro line, shown once its first map is in.
+var _pending_intro: String = ""
+
+
+## Yes in the chapter-end prompt: begin the next chapter and send the squad
+## to its first map; on the last chapter, say its end line instead.
+func _on_chapter_end_requested(overworld: OverworldMode) -> void:
+	var current: CampaignChapter = campaign.chapter(_world_state.chapter_id) if campaign != null else null
+	var next: CampaignChapter = ChapterProgression.advance(_world_state, campaign)
+	if next == null:
+		if current != null and not current.end_line.is_empty() and is_instance_valid(overworld):
+			overworld.say(current.end_line)
+		return
+	if not next.start_camp_id.is_empty():
+		_machine.restore_last_camp_id(next.start_camp_id)
+	_pending_intro = next.intro_line
+	var result: GameStateMachine.RequestResult = _machine.request_transition(
+			GameStateMachine.Mode.OVERWORLD, ChapterProgression.arrival_payload(next))
+	if result != GameStateMachine.RequestResult.OK:
+		push_error("GameRoot: the next chapter's map change was refused (%d)" % result)
+
+
+func _on_transition_finished(to: GameStateMachine.Mode) -> void:
+	if to != GameStateMachine.Mode.OVERWORLD or _pending_intro.is_empty():
+		return
+	var overworld: OverworldMode = current_mode_node() as OverworldMode
+	if overworld != null and overworld.say(_pending_intro) == GameStateMachine.RequestResult.OK:
+		_pending_intro = ""

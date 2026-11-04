@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="StoryFlagRegistry" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/chapters/story_flag_registry.gd" id="1_reg"]
+
+[resource]
+script = ExtResource("1_reg")
+chapter_id = "chapter_london"
+flags = Dictionary[String, String]({
+"london_counter_cleared": "story_victory",
+"london_dungeon_pocket_unlatched": "victory_payoff",
+"london_dungeon_shortcut_unbolted": "victory_payoff",
+"london_form_27b_stamped": "gag_change",
+"london_liberated": "boss_victory",
+"london_billing_live": "chapter_step",
+"london_segment_pocket_unlatched": "victory_payoff"
+})

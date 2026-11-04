@@ -2095,8 +2095,15 @@ var _walk_home_pending: bool = false
 var _chapter: ChapterSteps = null
 
 
-## The chapter's step list (from `config.chapter_steps_path`), or null.
+## The current chapter's step list, or null: `world_state.chapter_id`'s
+## chapter in the shipped `Campaign`, else `config.chapter_steps_path` (the
+## first chapter; also every test that never sets a chapter).
 func chapter_steps() -> ChapterSteps:
+	if _chapter == null and world_state != null and not world_state.chapter_id.is_empty():
+		var campaign: Campaign = Campaign.load_default()
+		var current: CampaignChapter = campaign.chapter(world_state.chapter_id) if campaign != null else null
+		if current != null:
+			_chapter = current.steps
 	if _chapter == null and config != null and ResourceLoader.exists(config.chapter_steps_path):
 		_chapter = ResourceLoader.load(config.chapter_steps_path) as ChapterSteps
 	return _chapter

@@ -41,9 +41,18 @@ static func validate(maps: Dictionary, cfg: OverworldConfig,
 				if not map.symbol_markers().is_empty():
 					errors.append("%s: holds the region default camp '%s' but has %d symbol(s)"
 							% [map_id, camp.marker_id, map.symbol_markers().size()])
-	if defaults.size() != 1:
-		errors.append("region default camp: expected exactly 1 CampSpot with is_region_default, found %d %s"
-				% [defaults.size(), defaults])
+	# Chapter 2: one region default per region (the map ID's region token,
+	# `map_<region>_...`), not one in the whole game.
+	var by_region: Dictionary = {}
+	for map_id: String in maps:
+		by_region[_region_of(map_id)] = []
+	for entry: String in defaults:
+		(by_region[_region_of(entry.get_slice("/", 0))] as Array).append(entry)
+	for region: String in by_region:
+		var found: Array = by_region[region]
+		if found.size() != 1:
+			errors.append("region default camp: expected exactly 1 CampSpot with is_region_default in '%s', found %d %s"
+					% [region, found.size(), found])
 	for map_id: String in maps:
 		_check_patrol_clearance(maps[map_id], cfg, errors)
 		_check_patrol_legality(maps[map_id], cfg, errors)
@@ -344,3 +353,10 @@ static func swept_illegal_cell(grid: WalkGrid, sym: EncounterSymbol, radius: flo
 				if segment_rect_distance(a, b, rect) < radius and not grid.is_symbol_legal(cell):
 					return cell
 	return Vector2i(-1, -1)
+
+
+## The region a map belongs to: the token after `map_` (`map_paris_town` ->
+## `paris`), or the whole ID when it has no such token.
+static func _region_of(map_id: String) -> String:
+	var parts: PackedStringArray = map_id.split("_")
+	return parts[1] if parts.size() >= 3 and parts[0] == "map" else map_id

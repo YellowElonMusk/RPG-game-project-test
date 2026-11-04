@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="Campaign" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://src/chapters/campaign.gd" id="1_camp"]
+[ext_resource type="Script" path="res://src/chapters/campaign_chapter.gd" id="2_ch"]
+[ext_resource type="Resource" path="res://data/chapters/chapter_paris_steps.tres" id="3_ps"]
+[ext_resource type="Resource" path="res://data/chapters/chapter_paris_flags.tres" id="4_pf"]
+[ext_resource type="Resource" path="res://data/chapters/chapter_london_steps.tres" id="5_ls"]
+[ext_resource type="Resource" path="res://data/chapters/chapter_london_flags.tres" id="6_lf"]
+
+[sub_resource type="Resource" id="ch_paris"]
+script = ExtResource("2_ch")
+steps = ExtResource("3_ps")
+flags = ExtResource("4_pf")
+start_camp_id = "camp_paris_cafe"
+
+[sub_resource type="Resource" id="ch_london"]
+script = ExtResource("2_ch")
+steps = ExtResource("5_ls")
+flags = ExtResource("6_lf")
+start_entry_id = &"from_arrival"
+start_camp_id = "camp_london_cafe"
+intro_line = "London. MegaCorp got here first and sold it back to everyone, monthly. Every round of every fight is billed. Spend your MP before they take it."
+end_line = "London is unsubscribed. Somewhere out there, two more alien worlds have opinions about Earth. To be continued."
+
+[resource]
+script = ExtResource("1_camp")
+chapters = Array[ExtResource("2_ch")]([SubResource("ch_paris"), SubResource("ch_london")])

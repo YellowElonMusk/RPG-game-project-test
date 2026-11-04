@@ -8,7 +8,9 @@ shader_type spatial;
 render_mode cull_back;
 
 // 0 = street (cobbles; limestone fronts, windows, slate roofs),
-// 1 = interior (carpet tiles; office panels, filing drawers, grey tops).
+// 1 = interior (carpet tiles; office panels, filing drawers, grey tops),
+// 2 = London street (flagstones; glass curtain walls, cyan ad strips),
+// 3 = MegaCorp Tower (polished tiles; white panels, server racks).
 uniform int style = 0;
 // 0 = floor, 1 = wall.
 uniform int surface = 0;
@@ -102,16 +104,91 @@ vec3 roof(vec2 p) {
 	return row < 0.12 ? slate * 0.7 : slate;
 }
 
+
+vec3 paving(vec2 p) {
+	// London: large grey flagstones, 1 m x 0.5 m, staggered, thin joints.
+	vec2 s = p * vec2(1.0, 2.0);
+	s.x += step(1.0, mod(floor(s.y), 2.0)) * 0.5;
+	vec2 cell = floor(s);
+	vec2 f = fract(s);
+	float joint = step(f.x, 0.03) + step(f.y, 0.06);
+	vec3 slab = floor_tint * (0.9 + 0.14 * hash(cell));
+	return mix(slab, floor_tint * 0.6, clamp(joint, 0.0, 1.0));
+}
+
+vec3 glass_front(float u, float v) {
+	// London: curtain-wall glass in a steel grid, a dark plinth, a thin
+	// Terminal Cyan ad strip at the top of each bay.
+	if (v < 0.2) {
+		return vec3(0.18, 0.2, 0.24);
+	}
+	float bay = fract(u * 2.0);
+	float floor_line = fract(v / 0.3);
+	if (bay < 0.06 || floor_line < 0.08) {
+		return wall_tint * 0.55;
+	}
+	if (v > 1.0) {
+		return vec3(0.1, 0.76, 0.84) * (0.8 + 0.2 * hash(vec2(floor(u * 2.0), 1.0)));
+	}
+	float sky = 0.25 + 0.35 * v + 0.08 * hash(vec2(floor(u * 2.0), floor(v / 0.3)));
+	return mix(vec3(0.16, 0.24, 0.32), wall_tint, sky);
+}
+
+vec3 tower_wall(float u, float v) {
+	// Inside MegaCorp Tower: white panels, a cyan stripe at waist height,
+	// dark server racks with blinking dots along the base.
+	float bay = fract(u * 2.0);
+	if (v < 0.5) {
+		vec2 led = floor(vec2(u * 16.0, v * 16.0));
+		float dot_on = step(0.86, hash(led));
+		vec3 rack = vec3(0.14, 0.16, 0.2);
+		if (bay < 0.05) {
+			return rack * 0.6;
+		}
+		return mix(rack, vec3(0.1, 0.76, 0.84), dot_on);
+	}
+	if (v > 0.56 && v < 0.62) {
+		return vec3(0.1, 0.76, 0.84);
+	}
+	return wall_tint * (bay < 0.03 ? 0.8 : 1.0);
+}
+
+vec3 tower_floor(vec2 p) {
+	// Polished grey tiles, 1 m, with a faint sheen line.
+	vec2 f = fract(p);
+	float seam = step(f.x, 0.02) + step(f.y, 0.02);
+	vec3 c = floor_tint * (0.96 + 0.06 * hash(floor(p)));
+	c += vec3(0.05) * step(0.48, f.x) * step(f.x, 0.52);
+	return mix(c, floor_tint * 0.75, clamp(seam, 0.0, 1.0));
+}
+
 void fragment() {
 	vec3 p = floor(world_pos * texels_per_m) / texels_per_m + 0.5 / texels_per_m;
 	vec3 col;
+	bool interior = style == 1 || style == 3;
 	if (surface == 0) {
-		col = style == 0 ? cobbles(p.xz) : carpet(p.xz);
+		if (style == 2) {
+			col = paving(p.xz);
+		} else if (style == 3) {
+			col = tower_floor(p.xz);
+		} else {
+			col = style == 0 ? cobbles(p.xz) : carpet(p.xz);
+		}
 	} else if (world_normal.y > 0.5) {
-		col = style == 0 ? roof(p.xz) : vec3(0.42, 0.43, 0.45);
+		if (style == 2) {
+			col = vec3(0.3, 0.33, 0.37);
+		} else {
+			col = style == 0 ? roof(p.xz) : vec3(0.42, 0.43, 0.45);
+		}
 	} else {
 		float u = abs(world_normal.x) > 0.5 ? p.z : p.x;
-		col = style == 0 ? facade(u, p.y) : office_wall(u, p.y);
+		if (style == 2) {
+			col = glass_front(u, p.y);
+		} else if (style == 3) {
+			col = tower_wall(u, p.y);
+		} else {
+			col = interior ? office_wall(u, p.y) : facade(u, p.y);
+		}
 	}
 	ALBEDO = col;
 	ROUGHNESS = 1.0;
