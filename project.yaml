@@ -11,9 +11,10 @@ project:
   stage: Systems Design
 
 modes:
-  rigor: standard
-  # Explicit: the remaining stories were written at full rigor with one AC each.
-  story_granularity: fine
+  # 2026-11-04, user: "cut down on the reviews to save time". minimal = solo
+  # review (no director/lead agents), no new GDDs/ADRs required, coarse
+  # stories, new tests waived. Screenshots of visible changes still required.
+  rigor: minimal
   automation: autonomous
 
 engine:
