@@ -43,7 +43,7 @@ A satirical turn-based RPG: the player recruits a squad of mismatched "misfit" h
 | 13 | Camp & Party Management | Progression | MVP | Not Started | — | Squad Roster & Recruitment, Game State & Scene Flow |
 | 14 | Leveling & Loyalty | Progression | Vertical Slice | Not Started | — | Stats & Damage Resolution, Squad Roster & Recruitment, Dialogue Banter & Quests |
 | 15 | Faction Reputation & Endings | Progression | MVP (lite) → Alpha (full) | Not Started | — | Squad Roster & Recruitment, Dialogue Banter & Quests |
-| 16 | Items, Equipment & Shops (inferred) | Economy | Vertical Slice | Designed (consumables + camp shop built 2026-11-04; equipment not started) | design/gdd/items-shops.md | Content Data Definitions, Stats & Damage Resolution |
+| 16 | Items, Equipment & Shops (inferred) | Economy | Vertical Slice | Designed (consumables, camp shop, menu use, equipment built 2026-11-04) | design/gdd/items-shops.md | Content Data Definitions, Stats & Damage Resolution |
 | 17 | Dialogue, Banter & Quests | Narrative | MVP | Not Started | — | Game State & Scene Flow, Input System, Content Data Definitions |
 | 18 | UI Framework (battle UI, menus, HUD, dialogue UI, accessibility) (inferred) | UI | MVP (battle first) | Not Started | — | Input System, Sprite & Camera Presentation, Turn Battle System, Quirk State System, Combo System & Codex, Faction Rule Modifiers, Camp & Party Management, Items Equipment & Shops, Dialogue Banter & Quests, Stats & Damage Resolution |
 | 19 | Save/Load & Settings (inferred) | Persistence | Vertical Slice | Not Started | — | Game State & Scene Flow, Content Data Definitions |

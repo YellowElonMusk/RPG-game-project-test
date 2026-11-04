@@ -4,7 +4,9 @@ extends SceneTree
 ## starts a Clerk fight with one member hurt and opens the Items command.
 ## Saves `01-camp.png`, `02-shop.png`, `03-battle-items.png` and
 ## `04-battle-item-target.png`, plus `05-menu-items.png` (the Overworld
-## Menu's Items screen, taken before the fight). Needs a window and a GPU:
+## Menu's Items screen), `06-equipped.png` and `07-party.png` (the Party
+## screen after Karen puts on a trench coat), all before the fight. Needs a
+## window and a GPU:
 ##
 ##   godot --path . -s res://tools/capture/items_shop_capture.gd [-- --out=res://dir/]
 
@@ -42,7 +44,7 @@ func _run() -> void:
 	await _close_dialogues()
 	var ow: OverworldMode = _root_node.current_mode_node() as OverworldMode
 	var ws: WorldState = ow.world_state
-	ws.money = 60
+	ws.money = 100
 
 	var camp_payload := CampEntryPayload.new()
 	camp_payload.camp_id = "camp_paris_cafe"
@@ -59,10 +61,14 @@ func _run() -> void:
 	camp.handle_action(InputActions.CONFIRM, true)  # croissant
 	camp.handle_action(InputActions.NAV_DOWN, true)
 	camp.handle_action(InputActions.CONFIRM, true)  # espresso
+	for i: int in 8:
+		camp.handle_action(InputActions.NAV_DOWN, true)
+	camp.handle_action(InputActions.CONFIRM, true)  # trench coat (shelf row 10)
 	await _frames(5)
+	ok = _check("bought a trench coat", ws.inventory.count("item_trench_coat") == 1) and ok
 	ok = _check("bought 2 croissants", ws.inventory.count("item_croissant") == 2) and ok
 	ok = _check("bought 1 espresso", ws.inventory.count("item_espresso") == 1) and ok
-	ok = _check("paid 28", ws.money == 60 - 2 * 8 - 12) and ok
+	ok = _check("paid 68", ws.money == 100 - 2 * 8 - 12 - 40) and ok
 	await _shot("02-shop")
 
 	camp.handle_action(InputActions.CANCEL, true)
@@ -84,6 +90,22 @@ func _run() -> void:
 	await _frames(10)
 	await _shot("05-menu-items")
 	if menu_overlay != null:
+		menu_overlay.handle_action(InputActions.CANCEL, true)  # back to Paused
+		await _frames(5)
+		menu_overlay.button_for(&"party").emit_signal(&"pressed")
+		await _frames(5)
+		_button_starting(menu_overlay, "Karen").emit_signal(&"pressed")
+		await _frames(5)
+		_button_starting(menu_overlay, "Outfit").emit_signal(&"pressed")
+		await _frames(5)
+		_button_starting(menu_overlay, "Trench Coat").emit_signal(&"pressed")
+		await _frames(10)
+		ok = _check("Karen wears the coat", String(party[2].equipment.get(&"outfit", "")) == "item_trench_coat" \
+				or _wears_coat(party)) and ok
+		await _shot("06-equipped")
+		menu_overlay.handle_action(InputActions.CANCEL, true)  # back to Party
+		await _frames(10)
+		await _shot("07-party")
 		menu_overlay.handle_action(InputActions.CANCEL, true)
 		menu_overlay.handle_action(InputActions.CANCEL, true)
 	await _frames(10)
@@ -114,6 +136,13 @@ func _run() -> void:
 	await _shot("04-battle-item-target")
 	print("items_shop_capture: %s; wrote %s" % ["PASS" if ok else "FAIL", _out])
 	quit(0 if ok else 1)
+
+
+func _wears_coat(party: Array[Combatant]) -> bool:
+	for c: Combatant in party:
+		if String(c.equipment.get(&"outfit", "")) == "item_trench_coat":
+			return true
+	return false
 
 
 func _find_menu(node: Node) -> BattleCommandMenu:

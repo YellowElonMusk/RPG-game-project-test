@@ -38,8 +38,11 @@ var world_state: WorldState = null
 var item_catalog: Object = null
 var party: Array[Combatant] = []
 var _box: VBoxContainer = null
-## `main`, `items` or `targets`: which list is showing (cancel steps back).
+## `main`, `items`, `targets`, `party`, `member` or `slot`: which list is
+## showing (cancel steps back one level).
 var _screen: StringName = &"main"
+## The member the equipment screens are showing.
+var _member: Combatant = null
 var _title: Label = null
 ## The line under the list on the Items screens ("" = none).
 var _note: Label = null
@@ -127,6 +130,9 @@ func _show_main() -> void:
 		var button := Button.new()
 		button.text = spec[0]
 		button.disabled = not bool(spec[1])
+		if entry == &"party" and has_items_entry():
+			button.text = "Party"
+			button.disabled = false
 		button.focus_mode = Control.FOCUS_ALL
 		button.pressed.connect(_on_entry.bind(entry))
 		box.add_child(button)
@@ -191,6 +197,79 @@ func _use(move: Move, target: Combatant) -> void:
 			living.append(c)
 	ItemEffects.apply(move, target, living)
 	_show_items("Used %s%s." % [move.display_name, "" if target == null else " on " + target.display_name])
+
+
+## Items & Shops rules 10-12: the squad with level and stats (gear bonus in
+## brackets); choosing a member opens their slots.
+func _show_party(note: String = "") -> void:
+	_screen = &"party"
+	_title.text = "Party"
+	_note.text = note
+	_reset_list()
+	for c: Combatant in party:
+		var button := _add_button("%s  Lv %d  HP %d/%d  MP %d/%d\nATK %d%s  DEF %d%s  SPD %d" % [
+				c.display_name, c.level, c.hp, c.max_hp, c.mp, c.max_mp,
+				c.effective_attack(), _bonus(c.bonus_attack), c.effective_defense(), _bonus(c.bonus_defense), c.speed])
+		button.pressed.connect(_show_member.bind(c))
+	_wire_and_focus()
+
+
+## `member`'s slots, each with what it wears.
+func _show_member(member: Combatant, note: String = "") -> void:
+	_screen = &"member"
+	_member = member
+	_title.text = "%s -- equipment" % member.display_name
+	_note.text = note
+	_reset_list()
+	for slot: StringName in Equipment.SLOTS:
+		var worn: ItemData = _record(String(member.equipment.get(slot, "")))
+		var text: String = "%s: %s" % [Equipment.SLOT_NAMES[slot],
+				"--" if worn == null else "%s (%s)" % [worn.display_name, Equipment.bonus_text(worn)]]
+		var button := _add_button(text)
+		button.pressed.connect(_show_slot.bind(member, slot))
+	_wire_and_focus()
+
+
+## What `member` can put in `slot`: every fitting item in the bag, plus
+## "Take off" when the slot is filled.
+func _show_slot(member: Combatant, slot: StringName) -> void:
+	_screen = &"slot"
+	_member = member
+	_title.text = "%s -- %s" % [member.display_name, Equipment.SLOT_NAMES[slot]]
+	_note.text = ""
+	_reset_list()
+	for id: String in world_state.inventory.ids():
+		var rec: ItemData = _record(id)
+		if rec == null or Equipment.slot_of(rec) != slot or not Equipment.fits(member, rec):
+			continue
+		var button := _add_button("%s (%s) x%d" % [rec.display_name, Equipment.bonus_text(rec), world_state.inventory.count(id)])
+		button.pressed.connect(_equip.bind(member, rec))
+	if member.equipment.has(slot):
+		var off := _add_button("Take off")
+		off.pressed.connect(_unequip.bind(member, slot))
+	if _buttons.is_empty():
+		_note.text = "Nothing in the bag fits. The café sells gear."
+	_wire_and_focus()
+
+
+func _equip(member: Combatant, rec: ItemData) -> void:
+	var ok: bool = Equipment.equip(member, rec, world_state.inventory, item_catalog)
+	_show_member(member, ("%s equipped %s." % [member.display_name, rec.display_name]) if ok else "The bag is too full to swap.")
+
+
+func _unequip(member: Combatant, slot: StringName) -> void:
+	var ok: bool = Equipment.unequip(member, slot, world_state.inventory, item_catalog)
+	_show_member(member, "Back in the bag." if ok else "The bag is too full.")
+
+
+func _record(id: String) -> ItemData:
+	if id.is_empty() or item_catalog == null:
+		return null
+	return item_catalog.call(&"get_record", &"item", id) as ItemData
+
+
+static func _bonus(n: int) -> String:
+	return "" if n == 0 else " (%+d)" % n
 
 
 func _item_moves() -> Array[Move]:
@@ -258,7 +337,11 @@ func handle_action(action: StringName, pressed: bool) -> bool:
 		InputActions.CANCEL:
 			if _screen == &"targets":
 				_show_items()
-			elif _screen == &"items":
+			elif _screen == &"slot":
+				_show_member(_member)
+			elif _screen == &"member":
+				_show_party()
+			elif _screen == &"items" or _screen == &"party":
 				_show_main()
 			else:
 				_close()
@@ -277,6 +360,8 @@ func _on_entry(entry: StringName) -> void:
 			_close()
 		&"items":
 			_show_items()
+		&"party":
+			_show_party()
 		&"quit":
 			if _machine != null:
 				_machine.request_transition(GameStateMachine.Mode.TITLE)

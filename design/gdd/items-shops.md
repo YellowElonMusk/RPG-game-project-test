@@ -1,12 +1,12 @@
 # Items & Shops
 
-> **Status**: Designed (consumables and the camp shop built 2026-11-04). Equipment: Not Started.
+> **Status**: Designed. Consumables, the camp shop, menu item use and equipment were built 2026-11-04.
 > **System**: #16 in `systems-index.md`. Rigor: `standard`.
 > **Owner**: economy-designer. **Created**: 2026-11-04, autonomous run (user: "keep building"; classic JRPG direction, 2026-11-03).
 
 ## 1. Overview
 
-The squad carries a bag of consumables, buys them with Victory money at a camp's shop, and uses them in battle as a command alongside Attack, Defend and the Specials. Items are the classic JRPG safety net. They also give the player one honest way round a faction rule: an item is not a Special, so Bureaucratia's permit ban never blocks it. Equipment is out of scope for this version.
+The squad carries a bag of consumables, buys them with Victory money at a camp's shop, and uses them in battle as a command alongside Attack, Defend and the Specials. Items are the classic JRPG safety net. They also give the player one honest way round a faction rule: an item is not a Special, so Bureaucratia's permit ban never blocks it. Each hero also has a weapon slot and an outfit slot for gear bought at the same shop.
 
 ## 3. Detailed Rules
 
@@ -23,6 +23,10 @@ The squad carries a bag of consumables, buys them with Victory money at a camp's
 7. **Retry refunds.** A lost battle's Retry restores the bag to what it held when the fight started, as it restores HP and MP (no lost progress).
 8. **Shops live at camps.** `data/config/shop_config.tres` lists each camp's shelf (`stock_by_camp`), in shelf order. A camp with no entry and an empty `default_stock` has no shop. Paris's café (`camp_paris_cafe`) sells all four Paris items.
 9. **Buying.** The camp screen lists **Set out**, then **Shop**. Set out is first and highlighted, so one confirm still leaves, as before. The shop lists each item with its price and how many are in the bag, plus Done. Confirm buys one; the price leaves the wallet. The reason is shown when a purchase is refused (not enough money, bag full). Cancel or Done returns to the camp screen. Selling is not in this version.
+
+10. **Equipment.** An `item_` record with `kind = "equipment"` whose first effect is `{type: "equip", slot: "weapon"|"outfit", attack, defense, user}`. `user` names the one character who can use it; empty means anyone. Each hero has one weapon slot and one outfit slot. Paris weapons are each hero's own (ATK +4, price 30). The outfits fit anyone: Resolute Beret (DEF +2, price 20) and Trench Coat (DEF +3, price 40).
+11. **Equipping.** Open the Menu outside battle, choose **Party**, then a member, then a slot. The slot list shows each fitting item in the bag, plus **Take off**. Equipping takes the item out of the bag and puts whatever the slot held back into it. It is refused when the old item's stack is full. Gear is bought at the shop like any item.
+12. **Bonuses.** Gear adds flat ATK and DEF on top of the levelled stats (`effective_attack()`/`effective_defense()`), and Stats & Damage F3 reads those effective values. Leveling still sets only the base stats. Each member's equipment is saved by slot and id in the `squad` save section, and its bonuses are recomputed from the records on load. A save from before equipment existed loads with empty slots.
 
 ## 4. Formulas
 
@@ -75,10 +79,13 @@ The squad carries a bag of consumables, buys them with Victory money at a camp's
 - **AC-5** The Retry snapshot gives back items used in the lost attempt (`items_in_battle_test`).
 - **AC-6** At the café, Set out is first and selected; buying moves money into the bag; a refusal names its reason and spends nothing (`camp_shop_test`).
 - **AC-7** The bag survives a save round trip, and New Game empties it (`camp_shop_test`).
+- **AC-9** A weapon fits only its user and an outfit fits anyone; equipping moves the item from the bag to the slot, and a swap returns the old item; the levelled base stat is untouched; the damage formula reads the bonus (`equipment_test`).
+- **AC-10** Equipment is saved per member; a bad slot or id is dropped and reported (`squad_equipment_save_test`).
+- **AC-11** The Menu's Party screen equips a trench coat from the bag (`menu_items_test`; evidence `items-shop/06-equipped.png`, `07-party.png`).
 - **AC-8 [visual]** In the real game, the café shop and the battle Items list and target pick are on screen: `production/qa/evidence/items-shop/` (`tools/capture/items_shop_capture.gd`).
 
 ## Open Questions
 
-- **OQ-1** Equipment (weapons and outfits per hero) is not designed. It needs a stat-modifier hook in Stats & Damage.
+- **OQ-1 — Resolved 2026-11-04.** Equipment is rules 10-12. Possible later additions: accessories, speed or MP gear, and gear dropped by bosses.
 - **OQ-2 — Resolved 2026-11-04.** Using items outside battle: the Overworld and camp Menu shows **Items** under Resume (never in Battle). It lists the bag with the same rule-6 disabling, then a target pick showing each member's HP and MP, and applies the same `ItemEffects` that battle uses (`menu_items_test`; evidence `items-shop/05-menu-items.png`).
 - **OQ-3** Selling, and alien-route prices (narrative bible §6: reputation changes shop prices) are not built.

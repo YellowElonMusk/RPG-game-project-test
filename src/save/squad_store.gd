@@ -14,7 +14,7 @@ var pending: Dictionary = {}
 
 ## Builds the squad from `catalog` (level 1, full HP/MP), then applies and
 ## clears `pending`: each saved member's level (stats rebuilt from its
-## record), XP, HP and MP.
+## record), XP, HP, MP and equipment.
 func rebuild(catalog: ContentCatalogService) -> Array[Combatant]:
 	squad = ChapterFlow.build_squad(catalog)
 	for member: Combatant in squad:
@@ -25,5 +25,9 @@ func rebuild(catalog: ContentCatalogService) -> Array[Combatant]:
 		member.xp = maxi(0, int(saved.get("xp", 0)))
 		member.hp = clampi(int(saved.get("hp", member.max_hp)), 0, member.max_hp)
 		member.mp = clampi(int(saved.get("mp", member.max_mp)), 0, member.max_mp)
+		var gear: Dictionary = saved.get("equipment", {})
+		for slot: String in gear:
+			member.equipment[StringName(slot)] = String(gear[slot])
+		Equipment.refresh_bonuses(member, catalog)
 	pending = {}
 	return squad

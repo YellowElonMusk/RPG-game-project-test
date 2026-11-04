@@ -42,6 +42,13 @@ var move_ids: PackedStringArray = PackedStringArray()
 var level: int = 1
 var xp: int = 0
 
+## Squad members only (Items & Shops rules 10-12): slot -> equipped `item_`
+## id (`weapon`, `outfit`), and the summed stat bonuses that gear gives,
+## kept on top of the levelled base stats (`Equipment.refresh_bonuses()`).
+var equipment: Dictionary = {}
+var bonus_attack: int = 0
+var bonus_defense: int = 0
+
 ## Current HP/MP. Clamped to [0, max_*] by take_damage()/heal()/spend_mp().
 var hp: int
 var mp: int
@@ -88,6 +95,16 @@ func _init(p_display_name: String, p_max_hp: int, p_max_mp: int, p_attack: int,
 	_record_id = p_record_id
 	hp = p_max_hp
 	mp = p_max_mp
+
+
+## Attack with gear (Stats & Damage F3 reads this, never `attack`).
+func effective_attack() -> int:
+	return attack + bonus_attack
+
+
+## Defense with gear (Stats & Damage F3 reads this, never `defense`).
+func effective_defense() -> int:
+	return defense + bonus_defense
 
 
 ## True once HP has reached 0. A knocked-out combatant is skipped in turn

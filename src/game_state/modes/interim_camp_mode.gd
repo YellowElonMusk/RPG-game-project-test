@@ -105,13 +105,17 @@ func _render() -> void:
 			var text: String = DONE
 			if i < _stock.size():
 				var rec: ItemData = _stock[i]
-				text = "%s  %d  (have %d)" % [rec.display_name, rec.price, world_state.inventory.count(rec.id)]
+				var gear: String = Equipment.bonus_text(rec)
+				text = "%s%s  %d  (have %d)" % [rec.display_name, "" if gear.is_empty() else " [%s]" % gear,
+						rec.price, world_state.inventory.count(rec.id)]
 			lines.append(("> %s <" if i == cursor else "%s") % text)
 		lines.append("")
 		lines.append(_stock[cursor].description if cursor < _stock.size() else "Back to the café table.")
 		if not shop_message.is_empty():
 			lines.append(shop_message)
 	card.text = "\n".join(lines)
+	# The shelf is long: a smaller size keeps every row on screen at 720p.
+	card.add_theme_font_size_override(&"font_size", 20 if screen == Screen.SHOP else 30)
 
 
 ## Restores every party member to full HP and MP and clears battle-only

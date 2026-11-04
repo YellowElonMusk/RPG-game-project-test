@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/item_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "item_day_old_baguette"
+display_name = "Day-Old Baguette"
+description = "Rock hard, as tradition demands. Baguette Thrower only. ATK +4."
+kind = "equipment"
+effects = Array[Dictionary]([{
+"attack": 4,
+"defense": 0,
+"slot": "weapon",
+"type": "equip",
+"user": "char_baguette_thrower"
+}])
+price = 30

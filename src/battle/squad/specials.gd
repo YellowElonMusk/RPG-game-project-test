@@ -72,7 +72,7 @@ static func make_home_run() -> Move:
 ## 0), so this is fully deterministic.
 ## Example: [code]SquadSpecials.calculate_heal(10, chef)[/code]
 static func calculate_heal(power: int, healer: Combatant) -> int:
-	var attack_eff := float(maxi(1, healer.attack))
+	var attack_eff := float(maxi(1, healer.effective_attack()))
 	var base: float = float(power) * (1.0 + attack_eff / HEAL_ATTACK_SCALE)  # F4
 	return int(floorf(base + 0.5))  # F7 round-half-up
 

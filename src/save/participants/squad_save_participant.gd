@@ -27,7 +27,10 @@ func capture() -> Dictionary:
 	for m: Combatant in _store.squad:
 		if m.record_id.is_empty():
 			continue
-		members[m.record_id] = {"level": m.level, "xp": m.xp, "hp": m.hp, "mp": m.mp}
+		var gear: Dictionary = {}
+		for slot: Variant in m.equipment:
+			gear[String(slot)] = String(m.equipment[slot])
+		members[m.record_id] = {"level": m.level, "xp": m.xp, "hp": m.hp, "mp": m.mp, "equipment": gear}
 	return {"members": members}
 
 
@@ -43,11 +46,23 @@ func stage(data: Dictionary, reader: SaveReader) -> SaveStage:
 			reader.dropped.append("members.%s: unknown character" % id)
 			continue
 		var e: Dictionary = entry
+		# Items & Shops rule 12: slot -> item id; unknown slots and non-text
+		# ids are dropped and reported.
+		var gear: Dictionary = {}
+		var raw_gear: Variant = e.get("equipment", {})
+		if raw_gear is Dictionary:
+			for slot: Variant in raw_gear:
+				var item_id: Variant = raw_gear[slot]
+				if Equipment.SLOTS.has(StringName(String(slot))) and item_id is String and not (item_id as String).is_empty():
+					gear[String(slot)] = item_id
+				else:
+					reader.dropped.append("members.%s.equipment.%s: not a known slot and item" % [id, slot])
 		members[String(id)] = {
 			"level": clampi(int(e.get("level", 1)), 1, Leveling.LEVEL_MAX),
 			"xp": maxi(0, int(e.get("xp", 0))),
 			"hp": maxi(0, int(e.get("hp", 0))),
 			"mp": maxi(0, int(e.get("mp", 0))),
+			"equipment": gear,
 		}
 	return SaveStage.success({"members": members})
 

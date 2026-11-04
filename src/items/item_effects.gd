@@ -25,7 +25,9 @@ const TYPE_TO_EFFECT: Dictionary = {
 ## Registers the item effect types as the `&"items"` system's vocabulary
 ## (ADR-0004 §1 step 1), so item records validate.
 static func register(catalog: ContentCatalogService) -> void:
-	catalog.register_known_effect_types(&"items", PackedStringArray(TYPE_TO_EFFECT.keys()))
+	var types: PackedStringArray = PackedStringArray(TYPE_TO_EFFECT.keys())
+	types.append("equip")  # Equipment (rules 10-12)
+	catalog.register_known_effect_types(&"items", types)
 
 
 ## The ITEM `Move` for `rec`, or null when `rec` is not a consumable with a

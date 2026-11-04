@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/records/item_data.gd" id="1_a"]
+
+[resource]
+script = ExtResource("1_a")
+id = "item_cast_iron_ladle"
+display_name = "Cast-Iron Ladle"
+description = "Heavy enough to stir a cassoulet or a conscience. Five-Star Chef only. ATK +4."
+kind = "equipment"
+effects = Array[Dictionary]([{
+"attack": 4,
+"defense": 0,
+"slot": "weapon",
+"type": "equip",
+"user": "char_michelin_chef"
+}])
+price = 30

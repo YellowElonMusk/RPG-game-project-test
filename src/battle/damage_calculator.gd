@@ -29,8 +29,8 @@ const DAMAGE_CAP: int = 999           # F7
 ## always >= 1.
 static func calculate_damage(attacker: Combatant, defender: Combatant,
 		power: int, rng: RandomNumberGenerator) -> int:
-	var attack_eff := float(maxi(1, attacker.attack))
-	var defense_eff := float(maxi(0, defender.defense))
+	var attack_eff := float(maxi(1, attacker.effective_attack()))
+	var defense_eff := float(maxi(0, defender.effective_defense()))
 	var base: float = (float(power) / POWER_SCALE) * attack_eff * attack_eff \
 			/ (attack_eff + defense_eff)  # F3
 

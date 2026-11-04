@@ -71,6 +71,36 @@ func test_an_item_no_one_needs_is_disabled() -> void:
 	assert_object(_first_enabled(menu)).is_null()
 
 
+func test_party_screen_equips_gear_from_the_bag() -> void:
+	var karen := Combatant.new("Karen", 34, 12, 10, 6, 10, false, false, "char_karen")
+	var party: Array[Combatant] = [karen]
+	var menu := _menu(true, party)
+	var coat := ItemData.new()
+	coat.id = "item_coat"
+	coat.display_name = "Trench Coat"
+	coat.kind = "equipment"
+	coat.effects = [{"type": "equip", "slot": "outfit", "attack": 0, "defense": 3, "user": ""}]
+	(menu.item_catalog as FakeCatalog).records["item_coat"] = coat
+	menu.world_state.inventory.add("item_coat")
+	var party_button: Button = menu.button_for(&"party")
+	assert_bool(party_button.disabled).is_false()
+	party_button.emit_signal(&"pressed")
+	_first_enabled(menu).emit_signal(&"pressed")  # Karen
+	_button_starting(menu, "Outfit").emit_signal(&"pressed")
+	_button_starting(menu, "Trench Coat").emit_signal(&"pressed")
+	assert_str(String(karen.equipment.get(&"outfit", ""))).is_equal("item_coat")
+	assert_int(karen.effective_defense()).is_equal(9)
+	assert_int(menu.world_state.inventory.count("item_coat")).is_equal(0)
+
+
+func _button_starting(node: Node, prefix: String) -> Button:
+	for child: Node in node.find_children("*", "Button", true, false):
+		var b: Button = child as Button
+		if b.text.begins_with(prefix) and not b.is_queued_for_deletion():
+			return b
+	return null
+
+
 func _first_enabled(node: Node) -> Button:
 	for child: Node in node.find_children("*", "Button", true, false):
 		var b: Button = child as Button
