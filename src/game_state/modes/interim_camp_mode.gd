@@ -36,6 +36,9 @@ var sfx: Callable = Callable()
 ## Injected by `GameRoot`: onboarding hints (the "setting out saves" tip on
 ## the first camp visit). Null shows none.
 var hints: TutorialHints = null
+## City (the second part of a camp id) -> the painting shown behind the
+## camp window. Set in the scene.
+@export var backdrops: Dictionary = {}
 
 enum Screen { MAIN, SHOP }
 ## Main-screen entries, in order. Set out is first and selected, so one
@@ -92,38 +95,91 @@ func _load_stock() -> void:
 
 
 func _render() -> void:
-	var card: Label = get_node_or_null(^"%Card") as Label
-	if card == null:
+	var rows_box: VBoxContainer = get_node_or_null(^"%Rows") as VBoxContainer
+	if rows_box == null:
 		return
-	var lines: PackedStringArray = []
+	_show_painting()
+	for child: Node in rows_box.get_children():
+		rows_box.remove_child(child)
+		child.queue_free()
 	var r: Array[String] = rows()
+	var info: PackedStringArray = []
 	if screen == Screen.MAIN:
-		lines.append("Resting at camp. Everyone is back on their feet.")
+		(%Title as Label).text = "Café"
+		info.append("Resting at camp. Everyone is back on their feet.")
 		if hints != null and hints.is_due(TutorialHints.SAVE):
-			lines.append(TutorialHints.SAVE_TEXT)
+			info.append(TutorialHints.SAVE_TEXT)
 		if world_state != null:
-			lines.append("Money: %d" % world_state.money)
-		lines.append("")
+			info.append("Money: %d" % world_state.money)
 		for i: int in r.size():
-			lines.append(("> %s <" if i == cursor else "%s") % r[i])
+			rows_box.add_child(_row([r[i]], i == cursor))
+		(%Footer as Label).text = ""
 	else:
-		lines.append("Café counter -- Money: %d" % world_state.money)
-		lines.append("")
+		(%Title as Label).text = "Café counter"
+		info.append("Money: %d" % world_state.money)
 		for i: int in r.size():
-			var text: String = DONE
 			if i < _stock.size():
 				var rec: ItemData = _stock[i]
 				var gear: String = Equipment.bonus_text(rec)
-				text = "%s%s  %d  (have %d)" % [rec.display_name, "" if gear.is_empty() else " [%s]" % gear,
-						Shop.price(world_state, rec), world_state.inventory.count(rec.id)]
-			lines.append(("> %s <" if i == cursor else "%s") % text)
-		lines.append("")
-		lines.append(_stock[cursor].description if cursor < _stock.size() else "Back to the café table.")
+				rows_box.add_child(_row([
+						rec.display_name + ("" if gear.is_empty() else "  [%s]" % gear),
+						str(Shop.price(world_state, rec)),
+						"have %d" % world_state.inventory.count(rec.id)], i == cursor))
+			else:
+				rows_box.add_child(_row([DONE], i == cursor))
+		var footer: String = _stock[cursor].description if cursor < _stock.size() else "Back to the café table."
 		if not shop_message.is_empty():
-			lines.append(shop_message)
-	card.text = "\n".join(lines)
-	# The shelf is long: a smaller size keeps every row on screen at 720p.
-	card.add_theme_font_size_override(&"font_size", 20 if screen == Screen.SHOP else 30)
+			footer += "\n" + shop_message
+		(%Footer as Label).text = footer
+	(%Info as Label).text = "\n".join(info)
+	(%Footer as Label).visible = not (%Footer as Label).text.is_empty()
+
+
+## One menu row: a single centred label, or (shop) name / price / count
+## columns. The highlighted row gets the Menu's focus frame.
+func _row(cells: Array, selected: bool) -> PanelContainer:
+	var panel := PanelContainer.new()
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.12, 0.12, 0.17, 1.0)
+	style.set_content_margin_all(6.0)
+	style.content_margin_left = 12.0
+	style.content_margin_right = 12.0
+	if selected:
+		style.set_border_width_all(2)
+		style.border_color = Color(0.94902, 0.917647, 0.847059, 1.0)
+	panel.add_theme_stylebox_override(&"panel", style)
+	var line := HBoxContainer.new()
+	line.add_theme_constant_override(&"separation", 16)
+	panel.add_child(line)
+	for i: int in cells.size():
+		var label := Label.new()
+		label.text = String(cells[i])
+		label.add_theme_font_size_override(&"font_size", 22 if cells.size() == 1 else 18)
+		if cells.size() == 1:
+			label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		elif i == 0:
+			label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		else:
+			label.custom_minimum_size = Vector2(64.0 if i == 1 else 72.0, 0.0)
+			label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		if not selected:
+			label.add_theme_color_override(&"font_color", Color(0.85, 0.86, 0.9, 1.0))
+		line.add_child(label)
+	return panel
+
+
+## The camp's city painting behind the window: `backdrops` keyed by the
+## city in the camp id (`camp_<city>_...`); Paris when none matches.
+func _show_painting() -> void:
+	var painting: TextureRect = get_node_or_null(^"%Painting") as TextureRect
+	if painting == null or painting.texture != null:
+		return
+	var parts: PackedStringArray = camp_id.split("_")
+	var city: String = parts[1] if parts.size() > 2 else "paris"
+	var path: String = String(backdrops.get(city, backdrops.get("paris", "")))
+	if not path.is_empty() and ResourceLoader.exists(path):
+		painting.texture = load(path) as Texture2D
 
 
 ## Restores every party member to full HP and MP and clears battle-only
