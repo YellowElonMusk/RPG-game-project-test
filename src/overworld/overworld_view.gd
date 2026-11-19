@@ -356,8 +356,11 @@ func _build_hud_labels(layer: CanvasLayer) -> void:
 	_name_card_label = Label.new()
 	_name_card_label.name = "NameCard"
 	_name_card_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_name_card_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	_name_card_label.position = Vector2(-240.0, 96.0)
+	# Bottom centre, above the controls strip: arrivals often stand by a map's
+	# north edge, where the camera stops and the squad sits near the top of
+	# the screen, under a top card (2026-11-19).
+	_name_card_label.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	_name_card_label.position = Vector2(-240.0, -136.0)
 	_name_card_label.size = Vector2(480.0, 48.0)
 	_name_card_label.add_theme_font_size_override(&"font_size", 28)
 	_name_card_label.visible = false
