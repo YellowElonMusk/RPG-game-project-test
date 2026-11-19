@@ -195,7 +195,7 @@ func apply_id_overrides(scene_root: Node, actor_layer: int) -> Dictionary:
 			var src := geo.material_override as ShaderMaterial
 			var card := ShaderMaterial.new()
 			card.shader = _get_actor_id_shader(src.shader)
-			for uniform_name: StringName in uniform_names(src.shader.code):
+			for uniform_name: StringName in uniform_names(expand_includes(src.shader.code)):
 				card.set_shader_parameter(uniform_name, src.get_shader_parameter(uniform_name))
 			card.set_shader_parameter(&"capture_id_color", colours[class_of(geo, actor_layer, scene_root)])
 			geo.material_override = card
@@ -211,11 +211,21 @@ func apply_id_overrides(scene_root: Node, actor_layer: int) -> Dictionary:
 	return restore
 
 
+## `code` with each `#include "res://..."` replaced by that file's text: the
+## actor card's projection lives in `sprite_card.gdshaderinc`, and the ID
+## variant and uniform scan need it as plain code.
+static func expand_includes(code: String) -> String:
+	var inc := RegEx.create_from_string("#include \"([^\"]+)\"")
+	for m: RegExMatch in inc.search_all(code):
+		code = code.replace(m.get_string(), FileAccess.get_file_as_string(m.get_string(1)))
+	return code
+
+
 ## Whether `mat` is a `CharacterSprite`'s actor material: a `ShaderMaterial`
 ## whose shader builds the clip-space card from `sprite_rect` (ADR-0005 §2).
 static func is_actor_card_material(mat: Material) -> bool:
 	var sm := mat as ShaderMaterial
-	return sm != null and sm.shader != null and sm.shader.code.contains(_ACTOR_CARD_MARKER)
+	return sm != null and sm.shader != null and expand_includes(sm.shader.code).contains(_ACTOR_CARD_MARKER)
 
 
 ## The per-material (non-`global`) uniform names declared in shader `code`.
@@ -235,6 +245,7 @@ static func uniform_names(code: String) -> Array[StringName]:
 ## bounds), not the pixel-exact card the actor shader draws, so the actor's
 ## ID silhouette would not line up with its pixels in the final frame.
 static func actor_id_shader_code(actor_code: String) -> String:
+	actor_code = expand_includes(actor_code)
 	var re := RegEx.create_from_string("render_mode[^;]*;")
 	var code: String = re.sub(actor_code,
 			"render_mode unshaded, cull_disabled, shadows_disabled;\n"

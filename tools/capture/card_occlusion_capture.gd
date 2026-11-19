@@ -160,10 +160,10 @@ func _overworld() -> Dictionary:
 	for label: String in CONTROLS:
 		var variant := ShaderMaterial.new()
 		variant.shader = Shader.new()
-		variant.shader.code = mat.shader.code.replace(_PLANE_LINE, _PLANE_LINE
+		variant.shader.code = PresentationCapture.expand_includes(mat.shader.code).replace(_PLANE_LINE, _PLANE_LINE
 				+ "\n\tplane_point += normalize((VIEW_MATRIX * vec4(card_normal, 0.0)).xyz) * card_test_offset;") \
 				.replace("uniform vec4 sprite_rect", "uniform float card_test_offset = 0.0;\nuniform vec4 sprite_rect")
-		for u: StringName in PresentationCapture.uniform_names(mat.shader.code):
+		for u: StringName in PresentationCapture.uniform_names(PresentationCapture.expand_includes(mat.shader.code)):
 			variant.set_shader_parameter(u, mat.get_shader_parameter(u))
 		variant.set_shader_parameter(&"card_test_offset", float(CONTROLS[label]))
 		leader.material_override = variant

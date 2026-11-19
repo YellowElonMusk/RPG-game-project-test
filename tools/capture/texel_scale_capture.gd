@@ -332,11 +332,11 @@ func _grab_unlit(stage: DioramaStage, sprites: Dictionary) -> Image:
 			continue
 		if not shaders.has(src.shader):
 			var sh := Shader.new()
-			sh.code = unlit_actor_shader_code(src.shader.code)
+			sh.code = unlit_actor_shader_code(PresentationCapture.expand_includes(src.shader.code))
 			shaders[src.shader] = sh
 		var mat := ShaderMaterial.new()
 		mat.shader = shaders[src.shader]
-		for u: StringName in PresentationCapture.uniform_names(src.shader.code):
+		for u: StringName in PresentationCapture.uniform_names(PresentationCapture.expand_includes(src.shader.code)):
 			mat.set_shader_parameter(u, src.get_shader_parameter(u))
 		restore[s] = src
 		s.material_override = mat

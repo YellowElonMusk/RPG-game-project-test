@@ -12,6 +12,9 @@
 class_name OverworldView
 extends Node
 
+## The squad's see-through-walls pass (`CharacterSprite.xray_shader`).
+const XRAY_SHADER: Shader = preload("res://src/presentation/shaders/sprite_actor_xray.gdshader")
+
 ## The mode whose leader and followers this view presents.
 @export var mode: OverworldMode
 ## The stage the camera is parented under (one per scene, ADR-0005 §3).
@@ -123,9 +126,12 @@ func _start() -> void:
 	_camera.name = "FollowCamera"
 	stage.add_child(_camera)
 	_camera.current = true
+	# The squad shows as a silhouette where walls hide it (narrow lanes).
+	leader_sprite.xray_shader = XRAY_SHADER
 	_setup_sprite(leader_sprite, leader_tint, leader_sprite_set, &"back")
 	for i: int in follower_sprites.size():
 		var sprite: CharacterSprite = follower_sprites[i]
+		sprite.xray_shader = XRAY_SHADER
 		sprite.visible = i < follower_count
 		var follower_set: SpriteSetData = follower_sprite_sets[i] if i < follower_sprite_sets.size() else null
 		_setup_sprite(sprite, follower_tints[i % follower_tints.size()], follower_set, &"back")

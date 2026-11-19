@@ -20,6 +20,11 @@ extends AnimatedSprite3D
 
 var _config: PresentationConfig
 var _material: ShaderMaterial
+## Set before `setup()`: a shader drawn as the material's `next_pass` on the
+## same card and fed the same projection uniforms (the overworld squad's
+## x-ray silhouette, `sprite_actor_xray.gdshader`). Null draws none.
+var xray_shader: Shader = null
+var _xray: ShaderMaterial = null
 var _mirrored: bool = false
 ## The finished-boss gag (narrative bible §6.2): 0 = as drawn, 1 = a pile
 ## of purple goo. Squashes the card toward its feet and tints it (the
@@ -49,6 +54,11 @@ func setup(frames: SpriteFrames, config: PresentationConfig) -> void:
 	_material = ShaderMaterial.new()
 	_material.shader = existing_shader
 	material_override = _material
+	_xray = null
+	if xray_shader != null:
+		_xray = ShaderMaterial.new()
+		_xray.shader = xray_shader
+		_material.next_pass = _xray
 	# Rule 12: actors cast no light shadows; their blob is their only shadow.
 	cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	scale = Vector3.ONE
@@ -161,13 +171,14 @@ func _update_shader_uniforms() -> void:
 		var w: int = int(round(rect.size.x * (1.0 + 0.6 * goo)))
 		rect = Rect2i(rect.position.x - (w - rect.size.x) / 2, rect.end.y - h, w, h)
 	var normal: Vector3 = SpriteProjection.card_normal(cam_state)
-	_material.set_shader_parameter(&"sprite_rect", Rect2(rect))
-	_material.set_shader_parameter(&"viewport_size", Vector2(viewport_size))
-	_material.set_shader_parameter(&"foot_anchor", global_position)
-	_material.set_shader_parameter(&"card_normal", normal)
-	_material.set_shader_parameter(&"flip_h", _mirrored)
-	if frame_tex != null:
-		_material.set_shader_parameter(&"frame_tex", frame_tex)
+	for mat: ShaderMaterial in ([_material, _xray] if _xray != null else [_material]):
+		mat.set_shader_parameter(&"sprite_rect", Rect2(rect))
+		mat.set_shader_parameter(&"viewport_size", Vector2(viewport_size))
+		mat.set_shader_parameter(&"foot_anchor", global_position)
+		mat.set_shader_parameter(&"card_normal", normal)
+		mat.set_shader_parameter(&"flip_h", _mirrored)
+		if frame_tex != null:
+			mat.set_shader_parameter(&"frame_tex", frame_tex)
 
 
 ## The current animation frame's `Texture2D`, or `null` before `setup()`
