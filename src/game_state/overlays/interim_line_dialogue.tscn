@@ -1,6 +1,14 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://src/game_state/overlays/interim_line_dialogue.gd" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_box"]
+bg_color = Color(0.164706, 0.176471, 0.25098, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.94902, 0.917647, 0.847059, 1)
 
 [node name="InterimLineDialogue" type="Control"]
 anchor_right = 1.0
@@ -17,6 +25,7 @@ anchor_right = 0.92
 anchor_bottom = 0.95
 grow_horizontal = 2
 grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_box")
 
 [node name="Margin" type="MarginContainer" parent="Box"]
 layout_mode = 2

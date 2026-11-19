@@ -313,6 +313,10 @@ func _on_barked(_text: String, _at: Vector2) -> void:
 func _update_interact_prompt(delta: float) -> void:
 	_draw_timed(_bark_label, mode.bark_text, mode.bark_phase)
 	_draw_timed(_name_card_label, mode.name_card_text, mode.name_card_phase)
+	# The card sits where the Dialogue box goes; its timer is paused under an
+	# overlay anyway, so it waits hidden and comes back after.
+	if mode.is_overlay_open():
+		_name_card_label.visible = false
 	_draw_timed(_payoff_card_label, mode.payoff_card_text, mode.payoff_card_phase)
 	if _controls_label != null:
 		var controls: String = mode.controls_hint_text()

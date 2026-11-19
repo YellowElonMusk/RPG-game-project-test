@@ -719,6 +719,11 @@ func _check_contact(leader_from: Vector2, symbol_from: Array[Vector2]) -> void:
 ## (Menu, Dialogue), no CampPrompt and no transition running. Every symbol
 ## and grace timer advances only inside `step_frame`, which does nothing
 ## otherwise, so they all freeze together. No `Engine.time_scale`.
+## `true` while a Menu or Dialogue overlay is open over this mode.
+func is_overlay_open() -> bool:
+	return _overlays_open > 0
+
+
 func is_exploring() -> bool:
 	return _state == State.EXPLORING and _overlays_open == 0 and not _transitioning \
 			and not _camp_prompt_open
