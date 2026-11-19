@@ -20,10 +20,16 @@ uniform vec4 xray_color : source_color = vec4(0.16, 0.18, 0.32, 0.55);
 // How much nearer (in reversed-Z depth) the scene must be to count as
 // hiding the card: above the card's own depth jitter.
 uniform float depth_bias = 0.00002;
+// Off while another squad member stands in front of this one (the overworld
+// view decides per frame): their card would read as a wall.
+uniform bool xray_enabled = true;
 
 const float ALPHA_CUTOFF = 0.5;
 
 void fragment() {
+	if (!xray_enabled) {
+		discard;
+	}
 	vec2 uv = clamp((FRAGCOORD.xy - sprite_rect.xy) / sprite_rect.zw, 0.0, 1.0);
 	if (flip_h) {
 		uv.x = 1.0 - uv.x;

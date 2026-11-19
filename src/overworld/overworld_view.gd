@@ -179,7 +179,25 @@ func _present(delta: float) -> void:
 	var followers: Array[Vector2] = mode.get_follower_positions()
 	for i: int in mini(followers.size(), follower_sprites.size()):
 		_place(follower_sprites[i], followers[i], delta)
+	_gate_squad_xray()
 	sync_symbol_sprites(delta)
+
+
+## The x-ray silhouette is for walls: a squad member whose card overlaps a
+## squad member nearer the camera (larger world z; the camera looks down
+## -z) gets none, or the one in front would be painted over.
+func _gate_squad_xray() -> void:
+	var squad: Array[CharacterSprite] = [leader_sprite]
+	for i: int in mini(follower_count, follower_sprites.size()):
+		squad.append(follower_sprites[i])
+	for s: CharacterSprite in squad:
+		var covered: bool = false
+		for t: CharacterSprite in squad:
+			if t != s and t.visible and t.global_position.z > s.global_position.z + 0.01 \
+					and t.screen_rect.intersects(s.screen_rect):
+				covered = true
+				break
+		s.set_xray_enabled(not covered)
 
 
 ## Story 137 (AC-137b): one placeholder `CharacterSprite` per registered

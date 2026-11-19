@@ -25,6 +25,15 @@ var _material: ShaderMaterial
 ## x-ray silhouette, `sprite_actor_xray.gdshader`). Null draws none.
 var xray_shader: Shader = null
 var _xray: ShaderMaterial = null
+## The on-screen pixel rect the card was last drawn at (window px).
+var screen_rect: Rect2i = Rect2i()
+
+
+## Turns the x-ray pass on or off this frame (no-op without one): another
+## actor in front would otherwise read as a wall and get painted over.
+func set_xray_enabled(on: bool) -> void:
+	if _xray != null:
+		_xray.set_shader_parameter(&"xray_enabled", on)
 var _mirrored: bool = false
 ## The finished-boss gag (narrative bible §6.2): 0 = as drawn, 1 = a pile
 ## of purple goo. Squashes the card toward its feet and tints it (the
@@ -171,6 +180,7 @@ func _update_shader_uniforms() -> void:
 		var w: int = int(round(rect.size.x * (1.0 + 0.6 * goo)))
 		rect = Rect2i(rect.position.x - (w - rect.size.x) / 2, rect.end.y - h, w, h)
 	var normal: Vector3 = SpriteProjection.card_normal(cam_state)
+	screen_rect = rect
 	for mat: ShaderMaterial in ([_material, _xray] if _xray != null else [_material]):
 		mat.set_shader_parameter(&"sprite_rect", Rect2(rect))
 		mat.set_shader_parameter(&"viewport_size", Vector2(viewport_size))
