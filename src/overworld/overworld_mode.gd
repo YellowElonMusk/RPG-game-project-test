@@ -273,6 +273,7 @@ func load_map(map: OverworldMap, entry_marker_id: StringName = &"") -> void:
 		(map_parent if map_parent != null else self).add_child(map)
 	_grid = map.bake_walk_grid(config)
 	map.build_set(_grid, presentation)
+	map.add_signs(_place_name)
 	_setup_checkpoints(map)
 	# Story 134 (ADR-0005 §14): capture-ID tags on this map's cue nodes.
 	CaptureIdTags.tag_map(map, is_checkpoint_open)
@@ -1557,6 +1558,21 @@ func map_display_name() -> String:
 	for word: String in STAGE_WORDS:
 		name = name.replace(word, "").strip_edges()
 	return name
+
+
+## A map's sign name: its record's display name without the city ("Paris -
+## Rue de Rivoli" -> "Rue de Rivoli") or a stage word; "" when unknown.
+func _place_name(map_id: String) -> String:
+	if encounter_catalog == null or map_id.is_empty():
+		return ""
+	var rec: Resource = encounter_catalog.call(&"get_record", &"map", map_id)
+	if rec == null:
+		return ""
+	var name: String = String(rec.get("display_name"))
+	for word: String in STAGE_WORDS:
+		name = name.replace(word, "").strip_edges()
+	var parts: PackedStringArray = name.split(" - ")
+	return parts[parts.size() - 1].strip_edges()
 
 
 ## Advances every timed text by `dt`, paused while any overlay is open (GDD

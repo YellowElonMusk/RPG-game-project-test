@@ -60,6 +60,8 @@ const TOWNSFOLK: Array[String] = [
 	"res://assets/sprites/townsfolk/townsfolk_3.png",
 	"res://assets/sprites/townsfolk/townsfolk_4.png",
 ]
+## How high a marker sign floats, in metres (above the squad's heads).
+const SIGN_HEIGHT_M: float = 0.9
 ## A townsfolk card's height, in metres (about the squad's on-screen size).
 const TOWNSFOLK_HEIGHT_M: float = 1.5
 ## Placeholder colours of an NPC's box and a gag's poster board.
@@ -378,6 +380,42 @@ func _marker_box(parent: Node3D, node_name: String, at: Vector2, size: Vector3, 
 	box.layers = DioramaStage.LAYER_SET
 	box.position = Vector3(at.x, size.y * 0.5, at.y)
 	parent.add_child(box)
+
+
+## Floating signs over the placeholder markers: each exit's destination
+## (`name_of.call(target_map_id)`, "" for none) and "Café" / "Rest stop"
+## over each camp, so the blue and green patches say what they are. Called
+## by `OverworldMode.load_map()` after `build_set()`.
+func add_signs(name_of: Callable) -> void:
+	var set_root: Node3D = get_node_or_null(^"PlaceholderSet") as Node3D
+	if set_root == null:
+		return
+	for exit: MapExit in map_exits():
+		var dest: String = String(name_of.call(exit.target_map_id)) if name_of.is_valid() else ""
+		if not dest.is_empty():
+			var c: Vector2 = exit.trigger_rect.get_center()
+			_sign(set_root, "ExitSign_%s" % exit.marker_id, c, "To %s" % dest)
+	for camp: CampSpot in camp_spots():
+		_sign(set_root, "CampSign_%s" % camp.marker_id, camp.ground_position(self),
+				"Café" if camp.camp_id.contains("cafe") else "Rest stop")
+
+
+func _sign(parent: Node3D, node_name: String, at: Vector2, text: String) -> void:
+	var label := Label3D.new()
+	label.name = node_name
+	label.text = text
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.font_size = 44
+	label.outline_size = 12
+	label.pixel_size = 0.01
+	label.modulate = Color(0.98, 0.95, 0.86)
+	label.outline_modulate = Color(0.08, 0.07, 0.1)
+	label.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	# Wayfinding: always readable, even when a block stands in front.
+	label.no_depth_test = true
+	label.layers = DioramaStage.LAYER_SET
+	label.position = Vector3(at.x, SIGN_HEIGHT_M, at.y)
+	parent.add_child(label)
 
 
 ## An NPC stand-in: a palette-swapped townsfolk card (`TOWNSFOLK`, picked by
