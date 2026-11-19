@@ -55,6 +55,8 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 		_retreat_button.queue_free()
 		_retreat_button = null
 	_retry_button.pressed.connect(_on_retry_pressed)
+	(%Note as Label).text = "Retry starts this fight again from the top." + (
+			" Retreat goes back to the last camp, where everyone recovers." if offers_retreat else "")
 	if _machine != null:
 		_machine.overlay_closed.connect(_on_overlay_closed)
 

@@ -1,6 +1,18 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://src/game_state/overlays/defeat_prompt.gd" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_window"]
+content_margin_left = 28.0
+content_margin_top = 18.0
+content_margin_right = 28.0
+content_margin_bottom = 20.0
+bg_color = Color(0.164706, 0.176471, 0.25098, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.94902, 0.917647, 0.847059, 1)
 
 [node name="DefeatPrompt" type="Control"]
 anchor_right = 1.0
@@ -16,18 +28,42 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Buttons" type="VBoxContainer" parent="."]
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
+[node name="Center" type="CenterContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 
-[node name="RetryButton" type="Button" parent="Buttons"]
+[node name="Window" type="PanelContainer" parent="Center"]
+custom_minimum_size = Vector2(420, 0)
+theme_override_styles/panel = SubResource("StyleBoxFlat_window")
+
+[node name="VBox" type="VBoxContainer" parent="Center/Window"]
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Center/Window/VBox"]
+theme_override_colors/font_color = Color(0.94902, 0.917647, 0.847059, 1)
+theme_override_font_sizes/font_size = 28
+text = "The squad is down"
+horizontal_alignment = 1
+
+[node name="Note" type="Label" parent="Center/Window/VBox"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(360, 0)
+theme_override_font_sizes/font_size = 17
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Buttons" type="VBoxContainer" parent="Center/Window/VBox"]
+theme_override_constants/separation = 6
+
+[node name="RetryButton" type="Button" parent="Center/Window/VBox/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
 text = "Retry"
 
-[node name="RetreatButton" type="Button" parent="Buttons"]
+[node name="RetreatButton" type="Button" parent="Center/Window/VBox/Buttons"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
 text = "Retreat"
