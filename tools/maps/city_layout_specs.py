@@ -267,39 +267,43 @@ SYDNEY = {
 }
 
 NEWYORK = {
-    # Times Square: a street grid of blocks; the café on a corner.
+    # Times Square: a street grid of blocks; the café on the south plaza.
+    # The cross streets are three cells wide: a block hides about 2 m of
+    # street behind it from the follow camera (1.2 m walls, 30 deg pitch), so
+    # on narrower streets the block to the south hid the squad's feet.
+    # Arrivals stand on a street's north row, clear of it.
     "town": {
         "grid": [
             "########################",
             "#......................#",
-            "#.###.####.####.####...#",
-            "#.###.####.####.####...#",
+            "#......................#",
             "#......................#",
             "#.###.####.####.####...#",
             "#.###.####.####.####...#",
             "#......................#",
-            "#.###.####.####.####...#",
-            "#.###.####.####.####...#",
+            "#......................#",
             "#......................#",
             "#.###.####.####.####...#",
             "#.###.####.####.####...#",
+            "#......................#",
+            "#......................#",
             "#......................#",
             "#......................#",
             "########################",
         ],
-        "spawn": (12, 4),
+        "spawn": (13, 6),
         "nodes": {
             "ExitToSegment": {"pos": (22, 8), "trigger_rect": "Rect2(21, 7, 2, 2)"},
-            "EntryFromSegment": {"pos": (18.5, 7.5)},
-            "CampCafe": {"pos": (10.5, 10.5)},
+            "EntryFromSegment": {"pos": (18.5, 6.5)},
+            "CampCafe": {"pos": (10.5, 12.5)},
             "NpcMairieQueueA": {"pos": (5.5, 13.5)},
             "NpcMairieQueueB": {"pos": (6.5, 13.5)},
             "NpcGrumbler": {"pos": (14.5, 13.5)},
             "GagTicketMachine": {"pos": (4.5, 13.5)},
-            "NpcCafeOwner": {"pos": (11.5, 10.5)},
+            "NpcCafeOwner": {"pos": (11.5, 12.5)},
             "BeaconTownOut": {"pos": (22, 8)},
-            "BeaconTownHome": {"pos": (10.5, 10.5)},
-            "EntryArrival": {"pos": (12.5, 4.5)},
+            "BeaconTownHome": {"pos": (10.5, 12.5)},
+            "EntryArrival": {"pos": (13.5, 6.5)},
         },
     },
     # Fifth Avenue: blocks between the cross streets; the north avenue is
