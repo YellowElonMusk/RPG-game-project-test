@@ -80,7 +80,7 @@ const ENEMY_AI_PROFILE_ID: String = ""
 ## MegaCorp provisional).
 const ENEMY_REWARDS: Dictionary = {
 	"enemy_clerk": [8, 5], "enemy_supervisor": [20, 15],
-	"enemy_security_drone": [14, 8], "enemy_middle_manager": [15, 9], "enemy_ceo": [60, 40],
+	"enemy_security_drone": [8, 8], "enemy_middle_manager": [8, 9], "enemy_ceo": [33, 40],
 }
 
 ## enemy id -> faction id and the AI's reachable move_ids, in the shipped
