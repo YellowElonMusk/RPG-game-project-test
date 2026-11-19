@@ -60,6 +60,11 @@ const TOWNSFOLK: Array[String] = [
 	"res://assets/sprites/townsfolk/townsfolk_3.png",
 	"res://assets/sprites/townsfolk/townsfolk_4.png",
 ]
+## A beacon lantern's height, in metres: just above the 1.2 m walls. Lower than
+## the GDD's `beacon_h_m` (3.5 m, I18): at the follow camera's 30 deg pitch a
+## 3.5 m post ran off the top of the frame and only its pole showed; exits
+## sit by map edges, where the camera stops, so even 2 m clipped.
+const BEACON_H_M: float = 1.4
 ## How high a marker sign floats, in metres (above the squad's heads).
 const SIGN_HEIGHT_M: float = 0.9
 ## A townsfolk card's height, in metres (about the squad's on-screen size).
@@ -342,6 +347,8 @@ func build_set(grid: WalkGrid, presentation: PresentationConfig = null) -> void:
 		_townsfolk(set_root, "Npc_%s" % npc.marker_id, npc.ground_position(self))
 	for gag: GagInteractable in gags():
 		_gag_prop(set_root, "Gag_%s" % gag.marker_id, gag.ground_position(self), String(gag.marker_id))
+	for beacon: WaypointBeacon in beacons():
+		_beacon_post(set_root, beacon)
 
 
 ## Sprite-camera story 039 (AC-35 coverage): sizes the set's floor to
@@ -416,6 +423,29 @@ func _sign(parent: Node3D, node_name: String, at: Vector2, text: String) -> void
 	label.layers = DioramaStage.LAYER_SET
 	label.position = Vector3(at.x, SIGN_HEIGHT_M, at.y)
 	parent.add_child(label)
+
+
+## A beacon's lantern post (GDD Overworld rule 19 "Diegetic beacon chain"):
+## a dark pole with a lantern at `BEACON_H_M`, glowing amber while the
+## beacon is `lit` (the current leg's chain) and dark otherwise; follows
+## `lit_changed`.
+func _beacon_post(parent: Node3D, beacon: WaypointBeacon) -> void:
+	var post := Node3D.new()
+	post.name = "Beacon_%s" % beacon.marker_id
+	var at: Vector2 = beacon.ground_position(self)
+	post.position = Vector3(at.x, 0.0, at.y)
+	parent.add_child(post)
+	_prop_part(post, Vector3(0.08, BEACON_H_M, 0.08), Vector3(0.0, BEACON_H_M * 0.5, 0.0),
+			_flat_material(Color(0.18, 0.17, 0.2)))
+	var glass := _flat_material(Color(0.25, 0.24, 0.26))
+	_prop_part(post, Vector3(0.36, 0.42, 0.36), Vector3(0.0, BEACON_H_M + 0.21, 0.0), glass)
+	var show_lit := func(is_lit: bool) -> void:
+		glass.albedo_color = Color(1.0, 0.78, 0.35) if is_lit else Color(0.25, 0.24, 0.26)
+		glass.emission_enabled = is_lit
+		glass.emission = Color(1.0, 0.7, 0.25)
+		glass.emission_energy_multiplier = 2.5
+	show_lit.call(beacon.lit)
+	beacon.lit_changed.connect(show_lit)
 
 
 ## An NPC stand-in: a palette-swapped townsfolk card (`TOWNSFOLK`, picked by
