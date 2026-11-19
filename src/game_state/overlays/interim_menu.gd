@@ -50,6 +50,10 @@ var _member: Combatant = null
 var _title: Label = null
 ## The line under the list on the Items screens ("" = none).
 var _note: Label = null
+## Injected by GameRoot's overlay pre-setup over the Overworld: the current
+## chapter step's objective (GDD Overworld rule 19 "Objective line"), shown
+## under the main list. "" shows none.
+var objective: String = ""
 
 
 func setup(machine: GameStateMachine, payload: RefCounted) -> void:
@@ -118,7 +122,7 @@ func _build() -> void:
 func _show_main() -> void:
 	_screen = &"main"
 	_title.text = "Paused"
-	_note.text = ""
+	_note.text = "" if objective.is_empty() else "Goal: %s" % objective
 	_reset_list()
 	var box: VBoxContainer = _box
 	# A Menu without "pause" (Battle: settings, quit) still opens on Resume,

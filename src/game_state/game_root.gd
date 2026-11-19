@@ -234,6 +234,9 @@ func _ready() -> void:
 					func(_c: Control) -> void: audio.play_sfx(AudioIds.UI_REFUSED))
 		if node is InterimMenu:
 			(node as InterimMenu).settings_service = settings_service
+			var over: Node = current_mode_node()
+			if over is OverworldMode:
+				(node as InterimMenu).objective = (over as OverworldMode).objective_line()
 		if node is InterimMenu and machine != null and machine.current_mode != GameStateMachine.Mode.BATTLE \
 				and catalog().state != ContentCatalogService.State.FAILED:
 			(node as InterimMenu).world_state = _world_state

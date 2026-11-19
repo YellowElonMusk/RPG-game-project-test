@@ -147,6 +147,9 @@ var presentation: PresentationConfig = PresentationConfig.new():
 signal party_placed(at: Vector2)
 ## A `confirm`-started Static symbol barked on first touch (rule 13a).
 signal barked(text: String, at: Vector2)
+## A Menu or Dialogue opened over this mode (the view hides what sits where
+## the overlay goes; it may be frozen and not draw again until it closes).
+signal overlay_opened_here(kind: GameStateMachine.OverlayKind)
 ## The CampSpot the open prompt belongs to.
 var _camp_prompt_camp: CampSpot = null
 ## The CampSpot whose safe zone the leader stood in last frame.
@@ -824,6 +827,7 @@ func _on_transition_started(from: GameStateMachine.Mode, to: GameStateMachine.Mo
 
 func _on_overlay_opened(kind: GameStateMachine.OverlayKind) -> void:
 	_overlays_open += 1
+	overlay_opened_here.emit(kind)
 	if kind == GameStateMachine.OverlayKind.MENU and hints != null:
 		hints.mark_seen(TutorialHints.MENU)
 

@@ -122,6 +122,9 @@ func _start() -> void:
 	mode.presentation = presentation_config
 	mode.party_placed.connect(_on_party_placed)
 	mode.barked.connect(_on_barked)
+	mode.overlay_opened_here.connect(func(_kind: GameStateMachine.OverlayKind) -> void:
+		if _name_card_label != null:
+			_name_card_label.visible = false)
 	_camera = FollowCamera.from_config(presentation_config)
 	_camera.name = "FollowCamera"
 	stage.add_child(_camera)
