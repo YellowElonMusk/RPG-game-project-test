@@ -19,7 +19,9 @@ const _N_FRAMES: int = 37
 const _DT: float = 0.013
 
 ## gdUnit4 single-arg parametrized case wrapping (`[[a], [b]]`).
-const _AC1C_ACTIONS: Array = [[InputActions.CONFIRM], [InputActions.CANCEL], [InputActions.MENU]]
+# `cancel` is not here: while exploring it opens the Menu (Esc pauses,
+# 2026-11-20), which freezes the walk by design.
+const _AC1C_ACTIONS: Array = [[InputActions.CONFIRM], [InputActions.INSPECT], [InputActions.MENU]]
 
 
 func test_full_tilt_move_matches_walk_speed_times_elapsed_time() -> void:
@@ -105,14 +107,14 @@ func test_all_three_actions_in_any_order_does_not_change_leader_speed() -> void:
 	mode.handle_action(InputActions.MENU, true)
 	assert_float(_step_and_get_distance(mode, _DT)).is_equal_approx(expected_distance, 1e-4)
 
-	mode.handle_action(InputActions.CANCEL, true)
+	mode.handle_action(InputActions.INSPECT, true)
 	assert_float(_step_and_get_distance(mode, _DT)).is_equal_approx(expected_distance, 1e-4)
 
 	mode.handle_action(InputActions.MENU, false)
 	assert_float(_step_and_get_distance(mode, _DT)).is_equal_approx(expected_distance, 1e-4)
 
 	mode.handle_action(InputActions.CONFIRM, false)
-	mode.handle_action(InputActions.CANCEL, false)
+	mode.handle_action(InputActions.INSPECT, false)
 	assert_float(_step_and_get_distance(mode, _DT)).is_equal_approx(expected_distance, 1e-4)
 
 

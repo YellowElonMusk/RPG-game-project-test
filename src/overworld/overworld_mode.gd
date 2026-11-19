@@ -388,6 +388,11 @@ func get_map() -> OverworldMap:
 func handle_action(action: StringName, pressed: bool) -> bool:
 	if _camp_prompt_open:
 		return _handle_camp_prompt(action, pressed)
+	# Esc (cancel) has nothing to cancel while exploring: it pauses, the way
+	# players expect, alongside the menu key.
+	if action == InputActions.CANCEL and pressed and is_exploring() and _machine != null:
+		_machine.request_menu()
+		return true
 	if action != InputActions.CONFIRM or not pressed or not is_exploring():
 		return false
 	confirm()

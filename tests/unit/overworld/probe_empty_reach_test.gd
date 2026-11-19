@@ -25,7 +25,8 @@ func test_other_actions_start_nothing() -> void:
 	var mode: OverworldMode = auto_free(ProbeFixture.make_mode(
 			[ProbeFixture.npc(ProbeFixture.OPEN_SPOT + Vector2(1.0, 0.0))], machine))
 	ProbeFixture.stand(mode, ProbeFixture.OPEN_SPOT, Vector2.RIGHT)
-	for action: StringName in [InputActions.CANCEL, InputActions.INSPECT, &"pointer_click"]:
+	# `cancel` opens the Menu while exploring (Esc pauses; escape_pauses_test).
+	for action: StringName in [InputActions.INSPECT, &"pointer_click"]:
 		assert_bool(mode.handle_action(action, true)).is_false()
 	assert_array(mode.lines_said).is_empty()
 	assert_array(machine.overlay_stack).is_empty()

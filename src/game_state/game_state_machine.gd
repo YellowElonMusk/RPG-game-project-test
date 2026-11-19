@@ -947,6 +947,12 @@ func _handle_focus_or_device_lost() -> void:
 ## Boot, Title or Content Error silently drops the request instead of
 ## calling `open_overlay()`, which would otherwise need the full overlay
 ## "can open over" table that story 023 (deferred) has not built yet.
+## Opens the Menu as the menu key would (a mode passes on an action it has
+## no use for: the Overworld's `cancel` while exploring, so Esc pauses).
+func request_menu() -> void:
+	_handle_menu_action()
+
+
 func _handle_menu_action() -> void:
 	if _phase != Phase.IDLE:
 		return
