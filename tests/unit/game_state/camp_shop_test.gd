@@ -87,3 +87,26 @@ func test_bag_survives_world_state_save_round_trip_and_new_game_clears_it() -> v
 	assert_int(loaded.inventory.count("item_espresso")).is_equal(2)
 	loaded.reset_to_new_game()
 	assert_array(loaded.inventory.ids()).is_empty()
+
+
+func test_clicking_the_shop_row_opens_the_shop() -> void:
+	var camp := _camp(20)
+	var rows: VBoxContainer = camp.get_node("%Rows")
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+
+	(rows.get_child(1) as Control).gui_input.emit(click)
+	await get_tree().process_frame
+
+	assert_int(camp.screen).is_equal(InterimCampMode.Screen.SHOP)
+
+
+func test_hovering_a_row_moves_the_highlight() -> void:
+	var camp := _camp(20)
+	var rows: VBoxContainer = camp.get_node("%Rows")
+
+	(rows.get_child(1) as Control).gui_input.emit(InputEventMouseMotion.new())
+	await get_tree().process_frame
+
+	assert_int(camp.cursor).is_equal(1)

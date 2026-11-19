@@ -131,8 +131,33 @@ func _render() -> void:
 		if not shop_message.is_empty():
 			footer += "\n" + shop_message
 		(%Footer as Label).text = footer
+	# Mouse: hovering a row highlights it, clicking picks it.
+	for i: int in rows_box.get_child_count():
+		var row: Control = rows_box.get_child(i) as Control
+		row.mouse_filter = Control.MOUSE_FILTER_STOP
+		row.gui_input.connect(_on_row_input.bind(i))
 	(%Info as Label).text = "\n".join(info)
 	(%Footer as Label).visible = not (%Footer as Label).text.is_empty()
+
+
+## A row's mouse input: rows are rebuilt by `_render()`, so the change runs
+## deferred, after the input event has finished with this row.
+func _on_row_input(event: InputEvent, index: int) -> void:
+	if event is InputEventMouseMotion and cursor != index:
+		cursor = index
+		_render.call_deferred()
+	elif event is InputEventMouseButton and (event as InputEventMouseButton).pressed \
+			and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
+		_click_row.call_deferred(index)
+
+
+func _click_row(index: int) -> void:
+	var r: Array[String] = rows()
+	if index >= r.size():
+		return
+	cursor = index
+	_pick(r[index])
+	_render()
 
 
 ## One menu row: a single centred label, or (shop) name / price / count
