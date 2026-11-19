@@ -53,6 +53,15 @@ const SET_SHADER: Shader = preload("res://src/presentation/shaders/paris_set.gds
 @export var camp_color: Color = Color(0.45, 0.7, 0.4)
 ## Placeholder colour of a closed checkpoint's barrier boxes.
 @export var checkpoint_color: Color = Color(0.85, 0.3, 0.25)
+## Placeholder townsfolk cards for NPCs (tools/art/townsfolk_sprites.gd).
+const TOWNSFOLK: Array[String] = [
+	"res://assets/sprites/townsfolk/townsfolk_1.png",
+	"res://assets/sprites/townsfolk/townsfolk_2.png",
+	"res://assets/sprites/townsfolk/townsfolk_3.png",
+	"res://assets/sprites/townsfolk/townsfolk_4.png",
+]
+## A townsfolk card's height, in metres (about the squad's on-screen size).
+const TOWNSFOLK_HEIGHT_M: float = 1.5
 ## Placeholder colours of an NPC's box and a gag's poster board.
 @export var npc_color: Color = Color(0.3, 0.55, 0.75)
 @export var gag_color: Color = Color(0.95, 0.9, 0.6)
@@ -328,8 +337,7 @@ func build_set(grid: WalkGrid, presentation: PresentationConfig = null) -> void:
 		(set_root.get_node("Tape_%s" % exit.marker_id) as Node3D).visible = false
 
 	for npc: NpcSpawn in npc_spawns():
-		_marker_box(set_root, "Npc_%s" % npc.marker_id, npc.ground_position(self),
-				Vector3(0.4, 1.4, 0.4), npc_color)
+		_townsfolk(set_root, "Npc_%s" % npc.marker_id, npc.ground_position(self))
 	for gag: GagInteractable in gags():
 		_marker_box(set_root, "Gag_%s" % gag.marker_id, gag.ground_position(self),
 				Vector3(0.8, 1.0, 0.1), gag_color)
@@ -371,6 +379,29 @@ func _marker_box(parent: Node3D, node_name: String, at: Vector2, size: Vector3, 
 	box.layers = DioramaStage.LAYER_SET
 	box.position = Vector3(at.x, size.y * 0.5, at.y)
 	parent.add_child(box)
+
+
+## An NPC stand-in: a palette-swapped townsfolk card (`TOWNSFOLK`, picked by
+## the node name so a map always looks the same), upright and turned to the
+## camera, feet on the ground; the old box when no townsfolk art loads.
+func _townsfolk(parent: Node3D, node_name: String, at: Vector2) -> void:
+	var path: String = TOWNSFOLK[absi(hash(node_name)) % TOWNSFOLK.size()]
+	var tex: Texture2D = load(path) as Texture2D if ResourceLoader.exists(path) else null
+	if tex == null:
+		_marker_box(parent, node_name, at, Vector3(0.4, 1.4, 0.4), npc_color)
+		return
+	var card := Sprite3D.new()
+	card.name = node_name
+	card.texture = tex
+	card.pixel_size = TOWNSFOLK_HEIGHT_M / float(tex.get_height())
+	card.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
+	card.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	card.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
+	card.shaded = false
+	card.offset = Vector2(0.0, tex.get_height() * 0.5)
+	card.layers = DioramaStage.LAYER_SET
+	card.position = Vector3(at.x, 0.0, at.y)
+	parent.add_child(card)
 
 
 ## Hides gag `marker_id`'s placeholder once its `change` is done.
