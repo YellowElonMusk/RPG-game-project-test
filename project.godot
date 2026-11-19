@@ -43,6 +43,8 @@ actor_rim_strength={
 
 [display]
 
+window/size/viewport_width=1280
+window/size/viewport_height=720
 window/hdr/request_hdr_output=false
 
 [rendering]
