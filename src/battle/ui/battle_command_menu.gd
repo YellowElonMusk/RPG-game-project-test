@@ -141,10 +141,14 @@ func _rebuild_command_list() -> void:
 	if actor == null:
 		return
 	_command_title.text = "%s's turn" % actor.display_name
+	# The rule banner is already on screen: a reason that only repeats it
+	# would grow the menu up over the squad cards.
+	var banner: String = _battle.faction_rule.get_banner_text(_battle.round_number)
 	var hints: PackedStringArray = PackedStringArray()
 	for move: Move in SquadMoves.moves_for(actor):
 		var reason: String = _disabled_reason(actor, move)
-		if not reason.is_empty() and not _is_mp_reason(actor, move) and not hints.has(reason):
+		if not reason.is_empty() and reason != banner and not _is_mp_reason(actor, move) \
+				and not hints.has(reason):
 			hints.append(reason)
 	_command_hint.text = "\n".join(hints)
 	_command_hint.visible = not hints.is_empty()
