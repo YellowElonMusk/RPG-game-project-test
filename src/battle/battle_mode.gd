@@ -97,6 +97,10 @@ var _spotlight: DefeatSpotlight = null
 ## Mode-time seconds since the end-of-fight hold started (its light's clock).
 var _end_hold_time: float = 0.0
 var _descriptor: EncounterDescriptor = null
+## Flee tuning (Run's chance); the shipped config unless a test injects one.
+var battle_config: BattleConfig = BattleConfig.load_default()
+## True once a Run got away (tests; the machine has been told Fled).
+var fled: bool = false
 ## Mode-time seconds since `setup()`, advanced by `step_replay()`.
 var _mode_time: float = 0.0
 ## Injected by `GameRoot`: impacts, refusals, the level-up chime and the
@@ -183,6 +187,8 @@ func setup(machine: GameStateMachine, payload: RefCounted) -> void:
 	%BattleView.flash_gate = flash_gate
 	%BattleView.setup(_battle, _replay, entry.descriptor, presentation_config)
 	_hud.setup(_battle, _replay)
+	_command_menu.can_run = entry.descriptor.can_flee
+	_command_menu.run_chosen.connect(_on_run_chosen)
 	_command_menu.setup(_battle, _replay, _item_moves if _battle.inventory != null and item_catalog != null else Callable())
 	if _machine != null:
 		_machine.transition_finished.connect(_on_transition_finished)
@@ -717,6 +723,21 @@ func _clear_end_light() -> void:
 ## Reporting after the hold (ADR-0010 §5/§6): Victory waits for the end
 ## banner's confirm (AC-12) before `report_results_done()`; Defeat reports at
 ## once and Game State opens the Defeat Prompt. Without a machine (capture
+## Run (the menu's `run_chosen`): `battle_config.flee_chance` on the
+## battle's own RNG. Away: Fled is reported at once (the menu only opens
+## between replays, so nothing is left to show). Caught: the failed attempt
+## is submitted and the turn passes like any action.
+func _on_run_chosen() -> void:
+	if _battle == null or _battle.state != BattleCore.State.SQUAD_TURN:
+		return
+	if _battle.rng.randf() < battle_config.flee_chance:
+		fled = true
+		if _machine != null:
+			_machine.report_battle_outcome(GameStateMachine.BattleResult.FLED)
+		return
+	_battle.submit_action(Move.make_failed_run())
+
+
 ## tools, standalone tests) nothing is reported.
 func _report_outcome(won: bool) -> void:
 	if won and _results_panel != null and _battle != null:

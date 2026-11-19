@@ -59,7 +59,7 @@ static func build(p_outcome: BattleOutcome, before: Dictionary, after: Dictionar
 	match p_outcome.category:
 		# An item is shown with the brief defend pose: no wind-up swing, and
 		# the recipient's heal reaction carries the beat (Items & Shops rule 4).
-		Move.Category.DEFEND, Move.Category.ITEM:
+		Move.Category.DEFEND, Move.Category.ITEM, Move.Category.RUN:
 			plan.action_role = ActionRole.DEFEND
 		Move.Category.SPECIAL:
 			plan.action_role = ActionRole.SPECIAL

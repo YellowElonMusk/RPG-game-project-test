@@ -281,6 +281,8 @@ func _resolve_move(actor: Combatant, move: Move, target: Combatant) -> BattleOut
 					target_knocked_out = target.is_knocked_out()
 				Move.SpecialEffect.NONE:
 					pass  # No effect — not a real Special (shouldn't normally happen).
+		Move.Category.RUN:
+			pass  # A failed flee: the turn is spent and nothing else happens.
 		Move.Category.ITEM:
 			inventory.remove(move.item_id)
 			hp_delta = ItemEffects.apply(move, target, get_living_squad())

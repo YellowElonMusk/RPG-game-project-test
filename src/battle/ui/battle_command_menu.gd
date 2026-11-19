@@ -29,6 +29,14 @@
 class_name BattleCommandMenu
 extends Control
 
+## Run was chosen: BattleMode rolls the flee and either reports Fled or
+## submits the failed attempt (`Move.make_failed_run()`).
+signal run_chosen()
+
+## Set before `setup()`: the encounter lets the squad flee (its
+## `can_flee`), so the list ends with Run.
+var can_run: bool = false
+
 var _command_panel: PanelContainer = null
 var _command_title: Label = null
 var _command_list: VBoxContainer = null
@@ -155,10 +163,27 @@ func _rebuild_command_list() -> void:
 	var buttons: Array[Button] = []
 	for move: Move in SquadMoves.moves_for(actor):
 		buttons.append(_make_command_button(actor, move))
-	if _item_source.is_valid():
-		buttons.append(_make_items_button())
 	for button in buttons:
 		_command_list.add_child(button)
+	# Items and Run share the last row: the column also holds four squad
+	# cards at 720p, and a full row each pushed the window up over them.
+	var tail: Array[Button] = []
+	if _item_source.is_valid():
+		tail.append(_make_items_button())
+	if can_run:
+		tail.append(_make_run_button(actor))
+	if tail.size() == 2:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override(&"separation", 4)
+		for button: Button in tail:
+			button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			row.add_child(button)
+		_command_list.add_child(row)
+		tail[0].focus_neighbor_right = tail[0].get_path_to(tail[1])
+		tail[1].focus_neighbor_left = tail[1].get_path_to(tail[0])
+	elif tail.size() == 1:
+		_command_list.add_child(tail[0])
+	buttons.append_array(tail)
 	_wire_vertical_neighbors(buttons)
 	_focus_first_enabled(buttons)
 
@@ -205,11 +230,30 @@ func _is_mp_reason(actor: Combatant, move: Move) -> bool:
 	return rule.move_allowed(actor, move) and not actor.can_afford(move.mp_cost)
 
 
+## The Run entry: refused like any command when the faction rule would
+## refuse the failed attempt (MegaCorp's suspension: Attack only).
+func _make_run_button(actor: Combatant) -> Button:
+	var button := Button.new()
+	var blocked: bool = not _battle.faction_rule.move_allowed(actor, Move.make_failed_run())
+	button.text = "Run"
+	button.tooltip_text = "The faction rule won't let you right now." if blocked else ""
+	button.disabled = blocked
+	button.focus_mode = Control.FOCUS_ALL
+	button.pressed.connect(_on_run_pressed)
+	return button
+
+
+func _on_run_pressed() -> void:
+	visible = false
+	run_chosen.emit()
+
+
 ## The Items entry: opens the bag; disabled with the reason when it is empty.
 func _make_items_button() -> Button:
 	var empty: bool = (_item_source.call() as Array).is_empty()
 	var button := Button.new()
-	button.text = "Items -- the bag is empty" if empty else "Items"
+	button.text = "No items" if empty else "Items"
+	button.tooltip_text = "The bag is empty." if empty else ""
 	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	button.disabled = empty
 	button.focus_mode = Control.FOCUS_ALL

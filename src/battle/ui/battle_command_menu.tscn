@@ -39,6 +39,7 @@ text = "Command"
 
 [node name="CommandList" type="VBoxContainer" parent="CommandPanel/CommandVBox"]
 unique_name_in_owner = true
+theme_override_constants/separation = 1
 
 [node name="CommandHint" type="Label" parent="CommandPanel/CommandVBox"]
 unique_name_in_owner = true

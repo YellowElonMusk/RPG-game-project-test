@@ -19,7 +19,9 @@ extends RefCounted
 ## (Story 003).
 ## ITEM (Items & Shops GDD rule 4): a consumable from the squad's bag; it is
 ## not a Special, so a Special ban never blocks it.
-enum Category { ATTACK, DEFEND, SPECIAL, ITEM }
+## RUN: a failed attempt to flee; it does nothing and passes the turn (a
+## successful one never reaches BattleCore: BattleMode reports Fled).
+enum Category { ATTACK, DEFEND, SPECIAL, ITEM, RUN }
 
 ## Who a move can legally target. "Enemy"/"ally" are relative to the acting
 ## combatant's side, so the same move definition works for squad and enemy
@@ -81,3 +83,8 @@ static func make_attack() -> Move:
 ## until the user's next turn (DamageCalculator applies the F5 modifier).
 static func make_defend() -> Move:
 	return Move.new("Defend", Category.DEFEND, 0, 0, TargetType.SELF)
+
+
+## A failed Run: 0 MP, no effect, the actor's turn passes.
+static func make_failed_run() -> Move:
+	return Move.new("Couldn't get away", Category.RUN, 0, 0, TargetType.SELF)
