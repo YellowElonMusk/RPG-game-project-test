@@ -94,6 +94,8 @@ func _ready() -> void:
 	# before (or without) `setup()`.
 	var new_game: Button = %NewGameButton
 	new_game.grab_focus()
+	# The game's name, from the one place it is set (project.godot).
+	(%GameTitle as Label).text = String(ProjectSettings.get_setting("application/config/name", ""))
 
 
 ## `true` = consumed (ADR-0002 Key Interfaces). While `QuitConfirm` is open,
