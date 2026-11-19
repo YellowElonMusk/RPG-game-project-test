@@ -40,6 +40,13 @@ text = "Command"
 [node name="CommandList" type="VBoxContainer" parent="CommandPanel/CommandVBox"]
 unique_name_in_owner = true
 
+[node name="CommandHint" type="Label" parent="CommandPanel/CommandVBox"]
+unique_name_in_owner = true
+visible = false
+theme_override_colors/font_color = Color(0.78, 0.8, 0.86, 1)
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 3
+
 [node name="TargetPanel" type="PanelContainer" parent="."]
 unique_name_in_owner = true
 visible = false

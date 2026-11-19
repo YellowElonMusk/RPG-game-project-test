@@ -32,6 +32,9 @@ extends Control
 var _command_panel: PanelContainer = null
 var _command_title: Label = null
 var _command_list: VBoxContainer = null
+## Under the list: why the greyed-out commands are refused, each rule
+## reason once (a button only carries a short tag; the column is narrow).
+var _command_hint: Label = null
 var _target_panel: PanelContainer = null
 var _target_title: Label = null
 var _target_list: VBoxContainer = null
@@ -67,6 +70,7 @@ func setup(battle: BattleCore, replay: BattleReplayController = null,
 	_command_panel = %CommandPanel
 	_command_title = %CommandTitle
 	_command_list = %CommandList
+	_command_hint = %CommandHint
 	_target_panel = %TargetPanel
 	_target_title = %TargetTitle
 	_target_list = %TargetList
@@ -137,6 +141,13 @@ func _rebuild_command_list() -> void:
 	if actor == null:
 		return
 	_command_title.text = "%s's turn" % actor.display_name
+	var hints: PackedStringArray = PackedStringArray()
+	for move: Move in SquadMoves.moves_for(actor):
+		var reason: String = _disabled_reason(actor, move)
+		if not reason.is_empty() and not _is_mp_reason(actor, move) and not hints.has(reason):
+			hints.append(reason)
+	_command_hint.text = "\n".join(hints)
+	_command_hint.visible = not hints.is_empty()
 	var buttons: Array[Button] = []
 	for move: Move in SquadMoves.moves_for(actor):
 		buttons.append(_make_command_button(actor, move))
@@ -151,8 +162,10 @@ func _rebuild_command_list() -> void:
 func _make_command_button(actor: Combatant, move: Move) -> Button:
 	var reason: String = _disabled_reason(actor, move)
 	var button := Button.new()
-	button.text = "%s (MP %d)" % [move.display_name, move.mp_cost] if reason.is_empty() \
-			else "%s (MP %d) -- %s" % [move.display_name, move.mp_cost, reason]
+	button.text = "%s (MP %d)" % [move.display_name, move.mp_cost]
+	if not reason.is_empty():
+		# The full reason is in the tooltip and, for a rule, the hint line.
+		button.text += " -- %s" % ("needs %d MP" % move.mp_cost if _is_mp_reason(actor, move) else "blocked")
 	button.tooltip_text = reason
 	# The menu is a narrow column beside the stage (BattleHud.COLUMN_WIDTH).
 	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -178,6 +191,14 @@ func _disabled_reason(actor: Combatant, move: Move) -> String:
 	if not actor.can_afford(move.mp_cost):
 		return "Not enough MP (needs %d)" % move.mp_cost
 	return ""
+
+
+## True when `move`'s only refusal is MP (`_disabled_reason()`'s last check).
+func _is_mp_reason(actor: Combatant, move: Move) -> bool:
+	var rule: FactionRule = _battle.faction_rule
+	if move.category == Move.Category.SPECIAL and not rule.specials_allowed(_battle.round_number):
+		return false
+	return rule.move_allowed(actor, move) and not actor.can_afford(move.mp_cost)
 
 
 ## The Items entry: opens the bag; disabled with the reason when it is empty.

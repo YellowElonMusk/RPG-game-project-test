@@ -48,6 +48,33 @@ func test_specials_disabled_under_bureaucratia_permit_ban_with_reason() -> void:
 	assert_str(special_button.tooltip_text).is_equal(expected_reason)
 
 
+func test_rule_refusal_shows_short_tag_and_reason_once_in_hint() -> void:
+	var menu: BattleCommandMenu = _build_menu()
+	var battle: BattleCore = _make_bureaucratia_battle(menu)
+	var expected_reason: String = BureaucratiaRule.new().get_banner_text(battle.round_number)
+
+	var special_button: Button = _find_button(menu.get_node("%CommandList"), "Home Run")
+	assert_str(special_button.text).ends_with("-- blocked")
+	var hint: Label = menu.get_node("%CommandHint")
+	assert_bool(hint.visible).is_true()
+	assert_str(hint.text).is_equal(expected_reason)
+
+
+func test_mp_refusal_tags_the_cost_and_leaves_hint_hidden() -> void:
+	var squad: Array[Combatant] = _make_real_squad()
+	squad[0].mp = 0
+	var battle := BattleCore.new(squad, [BureaucratiaRule.make_clerk()],
+			RandomNumberGenerator.new(), FactionRule.new())
+	battle.start_battle(false)
+	var menu: BattleCommandMenu = _build_menu()
+	menu.setup(battle)
+
+	var special_button: Button = _find_button(menu.get_node("%CommandList"), "Home Run")
+	assert_str(special_button.text).ends_with(
+			"-- needs %d MP" % SquadSpecials.make_home_run().mp_cost)
+	assert_bool((menu.get_node("%CommandHint") as Label).visible).is_false()
+
+
 func test_confirm_attack_then_confirm_target_submits_and_damages_enemy() -> void:
 	var menu: BattleCommandMenu = _build_menu()
 	var battle: BattleCore = _make_bureaucratia_battle(menu)
