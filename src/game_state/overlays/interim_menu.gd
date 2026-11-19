@@ -16,7 +16,6 @@ class_name InterimMenu extends GameOverlay
 const ENTRIES: Dictionary = {
 	&"pause": ["Resume", true],
 	&"party": ["Party (coming soon)", false],
-	&"codex": ["Codex (coming soon)", false],
 	&"settings": ["Settings (coming soon)", false],
 	&"quit": ["Quit to Title", true],
 	&"items": ["Items", true],

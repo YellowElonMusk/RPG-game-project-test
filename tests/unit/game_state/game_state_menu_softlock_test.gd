@@ -55,7 +55,7 @@ func test_menu_renders_exactly_the_payload_entries_and_resume_closes() -> void:
 	var machine: GameStateMachine = env["machine"]
 	machine.open_overlay(GameStateMachine.OverlayKind.MENU, MenuPayload.new())
 	var payload := MenuPayload.new()
-	payload.entries = [&"pause", &"party", &"codex", &"settings", &"quit"]
+	payload.entries = [&"pause", &"party", &"settings", &"quit"]
 	var menu: InterimMenu = auto_free((load("res://src/game_state/overlays/interim_menu.tscn") as PackedScene).instantiate())
 	menu.setup(machine, payload)
 	add_child(menu)

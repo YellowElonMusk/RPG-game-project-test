@@ -90,7 +90,7 @@ const _OVERLAY_ALLOWED_MODES: Dictionary = {
 ## to settings and quit; Overworld and Camp get the full menu.
 const _MENU_ENTRIES_BATTLE: Array[StringName] = [&"settings", &"quit"]
 const _MENU_ENTRIES_FULL: Array[StringName] = [
-	&"pause", &"party", &"codex", &"settings", &"quit"]
+	&"pause", &"party", &"settings", &"quit"]
 
 ## The transition types that flash, and each one's source id. `fade` and
 ## `none` are absent on purpose: ADR-0002 §11 forbids `fade` from ever

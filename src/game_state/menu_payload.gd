@@ -6,5 +6,5 @@ class_name MenuPayload extends RefCounted
 
 ## Ordered, exact list (AC-31). Battle, including Battle with the Defeat
 ## Prompt on top: `[&"settings", &"quit"]`. Overworld and Camp:
-## `[&"pause", &"party", &"codex", &"settings", &"quit"]`.
+## `[&"pause", &"party", &"settings", &"quit"]` (the Codex was cut 2026-11-03).
 var entries: Array[StringName] = []

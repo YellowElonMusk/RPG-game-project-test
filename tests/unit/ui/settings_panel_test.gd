@@ -86,7 +86,7 @@ func test_menu_settings_entry_opens_and_closes_the_panel() -> void:
 	var env: Dictionary = GameStateFixtures.make_machine_in_overworld(SequenceRecorder.new())
 	var machine: GameStateMachine = env["machine"]
 	var payload := MenuPayload.new()
-	payload.entries = [&"pause", &"party", &"codex", &"settings", &"quit"]
+	payload.entries = [&"pause", &"party", &"settings", &"quit"]
 	var menu: InterimMenu = auto_free((load("res://src/game_state/overlays/interim_menu.tscn") as PackedScene).instantiate())
 	menu.settings_service = _service()
 	menu.setup(machine, payload)

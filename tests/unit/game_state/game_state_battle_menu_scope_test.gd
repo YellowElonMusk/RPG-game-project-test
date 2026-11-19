@@ -7,7 +7,7 @@ extends GdUnitTestSuite
 
 const _BATTLE_ENTRIES: Array[StringName] = [&"settings", &"quit"]
 const _FULL_ENTRIES: Array[StringName] = [
-	&"pause", &"party", &"codex", &"settings", &"quit"]
+	&"pause", &"party", &"settings", &"quit"]
 
 const _CASES: Array = [
 	["battle", false], ["battle_with_defeat_prompt", true],
@@ -52,7 +52,7 @@ func test_menu_entries_per_mode(case_name: String, with_defeat_prompt: bool,
 	source.press(InputActions.MENU)
 
 	# Assert: the payload passed to open_overlay(MENU, ...) carries the
-	# expected entries, in order -- no &"party" or &"codex" in a Battle case
+	# expected entries, in order -- no &"party" in a Battle case
 	# -- and is plain data (MenuPayload has no Callable field).
 	var menu_payload: MenuPayload = loader.last_push_overlay_payload as MenuPayload
 	assert_object(menu_payload).override_failure_message(
