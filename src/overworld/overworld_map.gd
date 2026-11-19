@@ -339,8 +339,7 @@ func build_set(grid: WalkGrid, presentation: PresentationConfig = null) -> void:
 	for npc: NpcSpawn in npc_spawns():
 		_townsfolk(set_root, "Npc_%s" % npc.marker_id, npc.ground_position(self))
 	for gag: GagInteractable in gags():
-		_marker_box(set_root, "Gag_%s" % gag.marker_id, gag.ground_position(self),
-				Vector3(0.8, 1.0, 0.1), gag_color)
+		_gag_prop(set_root, "Gag_%s" % gag.marker_id, gag.ground_position(self), String(gag.marker_id))
 
 
 ## Sprite-camera story 039 (AC-35 coverage): sizes the set's floor to
@@ -402,6 +401,67 @@ func _townsfolk(parent: Node3D, node_name: String, at: Vector2) -> void:
 	card.layers = DioramaStage.LAYER_SET
 	card.position = Vector3(at.x, 0.0, at.y)
 	parent.add_child(card)
+
+
+## A gag's stand-in prop, by what its id names: a poster (paper on a
+## stand), a ticket machine (a grey kiosk with a red display) or, for
+## cupboards, crates and anything else, a wooden crate. One node named
+## `node_name`, so `set_gag_shown()` hides the whole prop.
+func _gag_prop(parent: Node3D, node_name: String, at: Vector2, marker_id: String) -> void:
+	var prop := Node3D.new()
+	prop.name = node_name
+	prop.position = Vector3(at.x, 0.0, at.y)
+	parent.add_child(prop)
+	if marker_id.contains("poster"):
+		_prop_part(prop, Vector3(0.06, 1.5, 0.06), Vector3(-0.36, 0.75, 0.0), _flat_material(Color(0.25, 0.22, 0.2)))
+		_prop_part(prop, Vector3(0.06, 1.5, 0.06), Vector3(0.36, 0.75, 0.0), _flat_material(Color(0.25, 0.22, 0.2)))
+		var sheet := _flat_material(Color.WHITE)
+		sheet.albedo_texture = _poster_texture()
+		sheet.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+		_prop_part(prop, Vector3(0.8, 1.0, 0.04), Vector3(0.0, 0.95, 0.0), sheet)
+	elif marker_id.contains("ticket"):
+		_prop_part(prop, Vector3(0.5, 1.25, 0.4), Vector3(0.0, 0.625, 0.0), _flat_material(Color(0.42, 0.45, 0.5)))
+		var screen := _flat_material(Color(0.85, 0.15, 0.12))
+		screen.emission_enabled = true
+		screen.emission = Color(0.85, 0.15, 0.12)
+		_prop_part(prop, Vector3(0.3, 0.16, 0.02), Vector3(0.0, 1.0, 0.21), screen)
+	else:
+		var wood := _flat_material(Color.WHITE)
+		wood.albedo_texture = _crate_texture()
+		wood.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+		_prop_part(prop, Vector3(0.75, 0.75, 0.75), Vector3(0.0, 0.375, 0.0), wood)
+
+
+func _prop_part(prop: Node3D, size: Vector3, offset: Vector3, mat: Material) -> void:
+	var mesh := BoxMesh.new()
+	mesh.size = size
+	mesh.material = mat
+	var part := MeshInstance3D.new()
+	part.mesh = mesh
+	part.layers = DioramaStage.LAYER_SET
+	part.position = offset
+	prop.add_child(part)
+
+
+## A notice: cream paper, a red header band, dark lines of "text".
+static func _poster_texture() -> ImageTexture:
+	var img := Image.create(16, 20, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0.95, 0.92, 0.82))
+	img.fill_rect(Rect2i(0, 0, 16, 5), Color(0.78, 0.16, 0.14))
+	for y: int in [7, 9, 11, 13, 15]:
+		img.fill_rect(Rect2i(2, y, 12 if y != 15 else 8, 1), Color(0.2, 0.2, 0.22))
+	return ImageTexture.create_from_image(img)
+
+
+## Planks: brown with darker seams and a frame.
+static func _crate_texture() -> ImageTexture:
+	var img := Image.create(16, 16, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0.62, 0.44, 0.26))
+	for y: int in [5, 10]:
+		img.fill_rect(Rect2i(0, y, 16, 1), Color(0.42, 0.28, 0.16))
+	for r: Rect2i in [Rect2i(0, 0, 16, 1), Rect2i(0, 15, 16, 1), Rect2i(0, 0, 1, 16), Rect2i(15, 0, 1, 16)]:
+		img.fill_rect(r, Color(0.36, 0.24, 0.13))
+	return ImageTexture.create_from_image(img)
 
 
 ## Hides gag `marker_id`'s placeholder once its `change` is done.
