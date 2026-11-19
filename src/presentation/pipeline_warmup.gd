@@ -51,6 +51,7 @@ var report: Dictionary = {}
 
 var _done: bool = false
 var _cover: CanvasLayer = null
+var _bar: ProgressBar = null
 
 ## Every material, shader and environment the warm-up stages drew, kept
 ## alive for the session by whoever owns Boot (`GameRoot`). A pipeline lives
@@ -174,7 +175,13 @@ func run(catalog: ContentCatalogService) -> void:
 	rect.set_anchors_preset(Control.PRESET_FULL_RECT)
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_cover.add_child(rect)
+	_add_loading_ui()
 	add_child(_cover)
+	# The stage is thousands of tiny frames: vsync would pace each one to the
+	# monitor (measured 2026-11-19: ~10 s at 100 Hz, about 1 s without), so it
+	# is off for the warm-up and the player's mode is restored after.
+	var vsync: DisplayServer.VSyncMode = DisplayServer.window_get_vsync_mode()
+	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 	var profiles: Array[LightingProfile] = []
 	for id: String in profile_ids():
 		var p: LightingProfile = load(PROFILES_DIR.path_join(id + ".tres")) as LightingProfile
@@ -183,7 +190,9 @@ func run(catalog: ContentCatalogService) -> void:
 	var frames: int = 0
 	var stages: PackedStringArray = PackedStringArray()
 	var squad: Array[Combatant] = ChapterFlow.build_squad(catalog)
-	for entry: Dictionary in build_plan(catalog):
+	var plan: Array[Dictionary] = build_plan(catalog)
+	_bar.max_value = plan.size()
+	for entry: Dictionary in plan:
 		if String(entry["kind"]) == KIND_OVERWORLD:
 			frames += await _warm_overworld(String(entry["map_id"]), catalog, squad, profiles)
 			stages.append("overworld:%s" % entry["map_id"])
@@ -191,6 +200,8 @@ func run(catalog: ContentCatalogService) -> void:
 			var d: EncounterDescriptor = entry["descriptor"]
 			frames += await _warm_battle(d, squad, profiles)
 			stages.append("battle:%s" % d.encounter_id)
+		_bar.value = stages.size()
+	DisplayServer.window_set_vsync_mode(vsync)
 	_cover.queue_free()
 	_cover = null
 	await get_tree().process_frame
@@ -203,6 +214,28 @@ func run(catalog: ContentCatalogService) -> void:
 	}
 	_done = true
 	finished.emit()
+
+
+## The cover's "Loading" line and the progress bar `run()` fills, one step
+## per planned stage, so a long first boot never reads as a frozen window.
+func _add_loading_ui() -> void:
+	var box := VBoxContainer.new()
+	box.set_anchors_preset(Control.PRESET_CENTER)
+	box.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	box.grow_vertical = Control.GROW_DIRECTION_BOTH
+	box.custom_minimum_size = Vector2(320.0, 0.0)
+	box.add_theme_constant_override(&"separation", 12)
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var label := Label.new()
+	label.text = "Loading..."
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override(&"font_size", 24)
+	box.add_child(label)
+	_bar = ProgressBar.new()
+	_bar.show_percentage = false
+	_bar.custom_minimum_size = Vector2(320.0, 10.0)
+	box.add_child(_bar)
+	_cover.add_child(box)
 
 
 func _warm_overworld(map_id: String, catalog: ContentCatalogService, squad: Array[Combatant],
